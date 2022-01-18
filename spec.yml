@@ -1,0 +1,10 @@
+amwa_id: NC-DEVICE-MOCK
+url: https://specs.amwa.tv/nmos-device-control-mock
+name: AMWA NMOS Control Block Specs
+status: Work In Progress
+repo_name: nmos-device-control-mock
+alt_repo_name: nmos-device-control-mock
+repo_url: https://github.com/AMWA-TV/nmos-device-control-mock
+releases:
+default_branch: main
+show_in_index: false

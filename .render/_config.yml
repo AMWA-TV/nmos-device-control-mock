@@ -3,10 +3,10 @@ theme: jekyll-theme-primer
 spec_server: specs.amwa.tv
 
 # AMWA ID
-amwa_id: INFO-TEMPLATE
+amwa_id: NC-DEVICE-MOCK
 
 # Base name for site (typically lower case version of AMWA ID, or the repo name)
-baseurl: /info-template
+baseurl: /nmos-device-control-mock
 
 # Which release or branch appears in header links and on the home page
 default_tree: branches/main # alternatively e.g. releases/v1.0
