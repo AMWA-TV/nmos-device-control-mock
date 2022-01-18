@@ -1,0 +1,20 @@
+name: Render
+on:
+  workflow_dispatch:
+
+  push:
+    branches:
+        - main
+        - 'publish-*'
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    name: Build
+    steps:
+      - name: Use NMOS Render
+        uses: docker://amwa/nmos-render:latest
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
