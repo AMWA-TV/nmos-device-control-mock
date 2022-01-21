@@ -39,6 +39,26 @@ export class CommandResponseNoValue extends ProtoMsg
     }
 }
 
+export class CommandResponseWithValue extends ProtoMsg
+{
+    public result: { [key: string]: any };
+
+    constructor(
+        handle: number,
+        status: NcaMethodStatus,
+        value: any | null,
+        errorMessage: string | null)
+    {
+        super(handle);
+
+        this.result = {};
+        this.result['status'] = status;
+        if(errorMessage != null)
+            this.result['errorMessage'] = errorMessage;
+        this.result['value'] = value;
+    }
+}
+
 export class EventSubscriptionData
 {
     public emitterOid: number;

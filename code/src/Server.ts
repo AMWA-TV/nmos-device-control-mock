@@ -12,9 +12,9 @@ import { NmosReceiverVideo } from './NmosReceiverVideo';
 import { NmosReceiverActiveRtp } from './NmosReceiverActiveRtp';
 import { SessionManager } from './SessionManager';
 import { NcaBlock } from './NCModel/Blocks';
-import { ClassManager, SubscriptionManager } from './NCModel/Managers';
+import { NcaClassManager, NcaSubscriptionManager } from './NCModel/Managers';
 import { NcaReceiverMonitor } from './NCModel/Agents';
-import { NcaTouchpointNmos, TouchpointResourceNmos } from './NCModel/Core';
+import { NcaLockState, NcaTouchpointNmos, TouchpointResourceNmos } from './NCModel/Core';
 
 export interface WebSocketConnection extends WebSocket {
     isAlive: boolean;
@@ -54,31 +54,60 @@ try
 
     const sessionManager = new SessionManager();
 
-    const classManager = new ClassManager(
+    const classManager = new NcaClassManager(
         3,
-        null,
         true,
+        1,
+        'ClassManager',
+        'Class manager',
+        false,
+        NcaLockState.NoLock,
+        null,
         sessionManager);
 
-    const subscriptionManager = new SubscriptionManager(
+    const subscriptionManager = new NcaSubscriptionManager(
         5,
-        null,
         true,
+        1,
+        'SubscriptionManager',
+        'Subscription manager',
+        false,
+        NcaLockState.NoLock,
+        null,
         sessionManager);
 
     const receiverMonitorAgent = new NcaReceiverMonitor(
-            11,
-            [ new NcaTouchpointNmos(`is-04`, [ new TouchpointResourceNmos('receiver', myVideoReceiver.id)]) ],
-            true,
-            sessionManager);
+        11,
+        true,
+        1,
+        'ReceiverMonitor_01',
+        'Receiver monitor 01',
+        false,
+        NcaLockState.NoLock,
+        [ new NcaTouchpointNmos(`is-04`, [ new TouchpointResourceNmos('receiver', myVideoReceiver.id)]) ],
+        sessionManager);
 
     myVideoReceiver.AttachMonitoringAgent(receiverMonitorAgent);
 
     const rootBlock = new NcaBlock(
         1,
-        null,
-        [ classManager, subscriptionManager, receiverMonitorAgent ],
         true,
+        null,
+        'Root',
+        'Root',
+        false,
+        NcaLockState.NoLock,
+        null,
+        true,
+        null,
+        null,
+        null,
+        null,
+        null,
+        false,
+        [ classManager, subscriptionManager, receiverMonitorAgent ],
+        null,
+        null,
         sessionManager);
 
     registrationClient.RegisterOrUpdateResource('node', myNode);

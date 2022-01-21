@@ -1,16 +1,22 @@
 import { jsonIgnoreReplacer, jsonIgnore } from 'json-ignore';
+import { CommandResponseNoValue, CommandResponseWithValue } from '../NCProtocol/Commands';
 import { INotificationContext } from '../SessionManager';
-import { NcaElementID, NcaObject, NcaTouchpoint } from './Core';
+import { myIdDecorator, NcaElementID, NcaLockState, NcaMethodStatus, NcaObject, NcaTouchpoint } from './Core';
 
 export abstract class NcaAgent extends NcaObject
 {
     public constructor(
         oid: number,
-        resources: NcaTouchpoint[],
         constantOid: boolean,
+        owner: number | null,
+        role: string,
+        userLabel: string,
+        lockable: boolean,
+        lockState: NcaLockState,
+        touchpoints: NcaTouchpoint[],
         notificationContext: INotificationContext)
     {
-        super(oid, resources, constantOid, notificationContext);
+        super(oid, constantOid, owner, role, userLabel, lockable, lockState, touchpoints, notificationContext);
     }
 }
 
@@ -32,30 +38,42 @@ enum NcaPayloadStatus
 
 export class NcaReceiverMonitor extends NcaAgent
 {
+    @myIdDecorator('1p1')
     public classID: number[] = [ 1, 4, 1 ];
+
+    @myIdDecorator('1p2')
     public classVersion: number = 1;
 
+    @myIdDecorator('3p1')
     public connectionStatus: NcaConnectionStatus;
+
+    @myIdDecorator('3p2')
     public connectionStatusMessage: string | null;
 
+    @myIdDecorator('3p3')
     public payloadStatus: NcaPayloadStatus;
+
+    @myIdDecorator('3p4')
     public payloadStatusMessage: string | null;
 
     public constructor(
         oid: number,
-        resources: NcaTouchpoint[],
         constantOid: boolean,
+        owner: number | null,
+        role: string,
+        userLabel: string,
+        lockable: boolean,
+        lockState: NcaLockState,
+        touchpoints: NcaTouchpoint[],
         notificationContext: INotificationContext)
     {
-        super(oid, resources, constantOid, notificationContext);
+        super(oid, constantOid, owner, role, userLabel, lockable, lockState, touchpoints, notificationContext);
 
         this.connectionStatus = NcaConnectionStatus.Undefined;
         this.connectionStatusMessage = null;
         
         this.payloadStatus = NcaPayloadStatus.Undefined;
         this.payloadStatusMessage = null;
-
-        this.notificationContext = notificationContext;
     }
 
     public Connected()
@@ -80,5 +98,42 @@ export class NcaReceiverMonitor extends NcaAgent
 
         this.notificationContext.NotifyPropertyChanged(this.oid, new NcaElementID(3, 1), this.connectionStatus);
         this.notificationContext.NotifyPropertyChanged(this.oid, new NcaElementID(3, 3), this.payloadStatus);
+    }
+
+    //'1m1'
+    public override Get(id: NcaElementID, handle: number) : CommandResponseWithValue
+    {
+        let key: string = `${id.level}p${id.index}`;
+
+        switch(key)
+        {
+            case '3p1':
+                return new CommandResponseWithValue(handle, NcaMethodStatus.OK, this.connectionStatus, null);
+            case '3p2':
+                return new CommandResponseWithValue(handle, NcaMethodStatus.OK, this.connectionStatusMessage, null);
+            case '3p3':
+                return new CommandResponseWithValue(handle, NcaMethodStatus.OK, this.payloadStatus, null);
+            case '3p4':
+                return new CommandResponseWithValue(handle, NcaMethodStatus.OK, this.payloadStatusMessage, null);
+            default:
+                return super.Get(id, handle);
+        }
+    }
+
+    //'1m2'
+    public override Set(id: NcaElementID, value: any, handle: number) : CommandResponseNoValue
+    {
+        let key: string = `${id.level}p${id.index}`;
+
+        switch(key)
+        {
+            case '3p1':
+            case '3p2':
+            case '3p3':
+            case '3p4':
+                return new CommandResponseNoValue(handle, NcaMethodStatus.ProcessingFailed, 'Property is readonly');
+            default:
+                return super.Set(id, value, handle);
+        }
     }
 }

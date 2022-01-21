@@ -22,13 +22,6 @@ export class SessionManager implements INotificationContext
     {
         this.lastSubId = 0;
         this.sessions = {};
-        // setInterval(() => {
-        //     for (let key in this.sessions) {
-        //         let value = this.sessions[key];
-
-        //         value.socket.send(value.sessionId);
-        //     }
-        // }, 5000);
     }
 
     public NotifyPropertyChanged(oid: number, propertyID: NcaElementID, value: any)
