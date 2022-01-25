@@ -17,7 +17,7 @@ First install dependencies with
 `npm install`
 
 Modify the config.json properties for your configuration.
-At the very least point `registry_address` and `registry_address` to the NMMOS registry on your network.
+At the very least point `registry_address` and `registry_address` to the NMOS registry on your network.
 
 ## Usage
 
