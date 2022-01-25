@@ -1,5 +1,8 @@
 import { jsonIgnoreReplacer, jsonIgnore } from 'json-ignore';
-import { CommandResponseNoValue, CommandResponseWithValue } from '../NCProtocol/Commands';
+import { CommandMsg, CommandResponseNoValue, CommandResponseWithValue, ProtoCommand, ProtoCommandResponse } from '../NCProtocol/Commands';
+import { ProtocolWrapper } from '../NCProtocol/Core';
+import { CreateSessionResponse, ProtoCreateSession, ProtoCreateSessionResponse } from '../NCProtocol/Sessions';
+import { WebSocketConnection } from '../Server';
 import { INotificationContext } from '../SessionManager';
 import { myIdDecorator, NcaElementID, NcaLockState, NcaMethodStatus, NcaObject, NcaPort, NcaSignalPath, NcaTouchpoint } from './Core';
 
@@ -89,60 +92,230 @@ export class NcaBlock extends NcaObject
     }
 
     //'1m1'
-    public override Get(id: NcaElementID, handle: number) : CommandResponseWithValue
+    public override Get(oid: number, propertyId: NcaElementID, handle: number) : CommandResponseWithValue
     {
-        let key: string = `${id.level}p${id.index}`;
-
-        switch(key)
+        if(oid == this.oid)
         {
-            case '2p1':
-                return new CommandResponseWithValue(handle, NcaMethodStatus.OK, this.enabled, null);
-            case '2p2':
-                return new CommandResponseWithValue(handle, NcaMethodStatus.OK, this.specId, null);
-            case '2p3':
-                return new CommandResponseWithValue(handle, NcaMethodStatus.OK, this.specVersion, null);
-            case '2p4':
-                return new CommandResponseWithValue(handle, NcaMethodStatus.OK, this.parentSpecId, null);
-            case '2p5':
-                return new CommandResponseWithValue(handle, NcaMethodStatus.OK, this.parentSpecVersion, null);
-            case '2p6':
-                return new CommandResponseWithValue(handle, NcaMethodStatus.OK, this.specDescription, null);
-            case '2p7':
-                return new CommandResponseWithValue(handle, NcaMethodStatus.OK, this.isDynamic, null);
-            case '2p8':
-                return new CommandResponseWithValue(handle, NcaMethodStatus.OK, this.isModified, null);
-            case '2p9':
-                return new CommandResponseWithValue(handle, NcaMethodStatus.OK, this.members, null);
-            case '2p10':
-                return new CommandResponseWithValue(handle, NcaMethodStatus.OK, this.ports, null);
-            case '2p11':
-                return new CommandResponseWithValue(handle, NcaMethodStatus.OK, this.signalPaths, null);
-            default:
-                return super.Get(id, handle);
+            let key: string = `${propertyId.level}p${propertyId.index}`;
+
+            switch(key)
+            {
+                case '2p1':
+                    return new CommandResponseWithValue(handle, NcaMethodStatus.OK, this.enabled, null);
+                case '2p2':
+                    return new CommandResponseWithValue(handle, NcaMethodStatus.OK, this.specId, null);
+                case '2p3':
+                    return new CommandResponseWithValue(handle, NcaMethodStatus.OK, this.specVersion, null);
+                case '2p4':
+                    return new CommandResponseWithValue(handle, NcaMethodStatus.OK, this.parentSpecId, null);
+                case '2p5':
+                    return new CommandResponseWithValue(handle, NcaMethodStatus.OK, this.parentSpecVersion, null);
+                case '2p6':
+                    return new CommandResponseWithValue(handle, NcaMethodStatus.OK, this.specDescription, null);
+                case '2p7':
+                    return new CommandResponseWithValue(handle, NcaMethodStatus.OK, this.isDynamic, null);
+                case '2p8':
+                    return new CommandResponseWithValue(handle, NcaMethodStatus.OK, this.isModified, null);
+                case '2p9':
+                    return new CommandResponseWithValue(handle, NcaMethodStatus.OK, this.members, null);
+                case '2p10':
+                    return new CommandResponseWithValue(handle, NcaMethodStatus.OK, this.ports, null);
+                case '2p11':
+                    return new CommandResponseWithValue(handle, NcaMethodStatus.OK, this.signalPaths, null);
+                default:
+                    return super.Get(oid, propertyId, handle);
+            }
         }
+        else if(this.memberObjects != null)
+        {
+            let member = this.memberObjects.find(e => e.oid === oid);
+            if(member !== undefined)
+                return member.Get(oid, propertyId, handle);
+        }
+
+        return new CommandResponseNoValue(handle, NcaMethodStatus.InvalidRequest, 'OID could not be found');
     }
 
     //'1m2'
-    public override Set(id: NcaElementID, value: any, handle: number) : CommandResponseNoValue
+    public override Set(oid: number, id: NcaElementID, value: any, handle: number) : CommandResponseNoValue
     {
-        let key: string = `${id.level}p${id.index}`;
-
-        switch(key)
+        if(oid == this.oid)
         {
-            case '2p1':
-            case '2p2':
-            case '2p3':
-            case '2p4':
-            case '2p5':
-            case '2p6':
-            case '2p7':
-            case '2p8':
-            case '2p9':
-            case '2p10':
-            case '2p11':
-                return new CommandResponseNoValue(handle, NcaMethodStatus.ProcessingFailed, 'Property is readonly');
-            default:
-                return super.Set(id, value, handle);
+            let key: string = `${id.level}p${id.index}`;
+
+            switch(key)
+            {
+                case '2p1':
+                case '2p2':
+                case '2p3':
+                case '2p4':
+                case '2p5':
+                case '2p6':
+                case '2p7':
+                case '2p8':
+                case '2p9':
+                case '2p10':
+                case '2p11':
+                    return new CommandResponseNoValue(handle, NcaMethodStatus.ProcessingFailed, 'Property is readonly');
+                default:
+                    return super.Set(oid, id, value, handle);
+            }
         }
+        else if(this.memberObjects != null)
+        {
+            let member = this.memberObjects.find(e => e.oid === oid);
+            if(member !== undefined)
+                return member.Set(oid, id, value, handle)
+        }
+
+        return new CommandResponseNoValue(handle, NcaMethodStatus.InvalidRequest, 'OID could not be found');
+    }
+}
+
+export class RootBlock extends NcaBlock
+{
+    public constructor(
+        oid: number,
+        constantOid: boolean,
+        owner: number | null,
+        role: string,
+        userLabel: string,
+        lockable: boolean,
+        lockState: NcaLockState,
+        touchpoints: NcaTouchpoint[] | null,
+        enabled: boolean,
+        specId: string | null,
+        specVersion: number | null,
+        parentSpecId: string | null,
+        parentSpecVersion: number | null,
+        specDescription: string | null,
+        isDynamic: boolean,
+        memberObjects: NcaObject[] | null,
+        ports: NcaPort[] | null,
+        signalPaths: NcaSignalPath[] | null,
+        notificationContext: INotificationContext)
+    {
+        super(oid,
+            constantOid,
+            owner,
+            role,
+            userLabel,
+            lockable,
+            lockState,
+            touchpoints,
+            enabled,
+            specId,
+            specVersion,
+            parentSpecId,
+            parentSpecVersion,
+            specDescription,
+            isDynamic,
+            memberObjects,
+            ports,
+            signalPaths,
+            notificationContext);
+    }
+
+    public ProcessMessage(msg: string, socket: WebSocketConnection)
+    {
+        let message = JSON.parse(msg) as ProtocolWrapper;
+
+        switch(message.messageType)
+        {
+            case 'CreateSession':
+            {
+                let msgCreateSession = JSON.parse(msg) as ProtoCreateSession;
+                let outcome = this.notificationContext.CreateSession(socket, msgCreateSession.messages[0].arguments['heartBeatTime']);
+                if(outcome[0] != 0)
+                {
+                    socket.send(new ProtoCreateSessionResponse([
+                        new CreateSessionResponse(msgCreateSession.messages[0].handle, NcaMethodStatus.OK, outcome[0], null)
+                    ]).ToJson());
+                }
+                else
+                {
+                    socket.send(new ProtoCreateSessionResponse([
+                        new CreateSessionResponse(msgCreateSession.messages[0].handle, NcaMethodStatus.OK, null, outcome[1])
+                    ]).ToJson());
+                }
+            }
+            break;
+
+            case 'Command':
+            {
+                let msgCommand = JSON.parse(msg) as ProtoCommand;
+                socket.send(this.ProcessCommand(msgCommand).ToJson());
+            }
+            break;
+        }
+    }
+
+    public ProcessCommand(command: ProtoCommand) : ProtoCommandResponse
+    {
+        let responses = new ProtoCommandResponse(command.sessionId, []);
+
+        for (var i = 0; i < command.messages.length; i++) {
+            let msg = command.messages[i];
+            responses.AddCommandResponse(this.ProcessCommandMessage(msg));
+        }
+
+        return responses;
+    }
+
+    public ProcessCommandMessage(commandMsg: CommandMsg) : CommandResponseNoValue
+    {
+        if (this.IsGenericGetter(commandMsg.methodID))
+        {
+            if(commandMsg.arguments != null)
+            {
+                let propertyId = commandMsg.arguments['id'] as NcaElementID;
+
+                if(commandMsg.oid == this.oid)
+                    return this.Get(commandMsg.oid, propertyId, commandMsg.handle);
+                else if(this.memberObjects != null)
+                {
+                    let member = this.memberObjects.find(e => e.oid === commandMsg.oid);
+                    if(member !== undefined)
+                        return member.Get(commandMsg.oid, propertyId, commandMsg.handle);
+                }
+            }
+        }
+        else if (this.IsGenericSetter(commandMsg.methodID))
+        {
+            if(commandMsg.arguments != null)
+            {
+                let propertyId = commandMsg.arguments['id'] as NcaElementID;
+                let propertyValue = commandMsg.arguments['value'];
+
+                if(commandMsg.oid == this.oid)
+                    return this.Set(commandMsg.oid, propertyId, propertyValue, commandMsg.handle)
+                else if(this.memberObjects != null)
+                {
+                    let member = this.memberObjects.find(e => e.oid === commandMsg.oid);
+                    if(member !== undefined)
+                        return member.Set(commandMsg.oid, propertyId, propertyValue, commandMsg.handle)
+                }
+            }
+        }
+        else
+        {
+            //TODO add treatment for other methods
+        }
+
+        return new CommandResponseNoValue(commandMsg.handle, NcaMethodStatus.OK, null);
+    }
+
+    public IsGenericGetter(propertyId: NcaElementID) : boolean
+    {
+        if(propertyId.level == 1 && propertyId.index == 1)
+            return true;
+        return false;
+    }
+
+    public IsGenericSetter(propertyId: NcaElementID) : boolean
+    {
+        if(propertyId.level == 1 && propertyId.index == 2)
+            return true;
+        return false;
     }
 }

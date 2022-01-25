@@ -1,15 +1,14 @@
 import { jsonIgnoreReplacer, jsonIgnore } from 'json-ignore';
-import { v4 as uuidv4 } from 'uuid';
 
 import { WebSocketConnection } from './Server';
-import { ProtocolWrapper } from './NCProtocol/Core';
-import { ProtoCreateSession, ProtoCreateSessionResponse, CreateSessionResponse } from './NCProtocol/Sessions';
 import { NcaElementID, NcaMethodStatus, NcaPropertyChangeType } from './NCModel/Core';
 import { NcaEventData, NcaNotification, ProtoNotification } from './NCProtocol/Notifications';
 
 export interface INotificationContext
 {
     NotifyPropertyChanged(oid: number, propertyID: NcaElementID, value: any);
+    Subscribe(oid: number);
+    CreateSession(socket: WebSocketConnection, heartBeatTime: number) : [number | null, string | null]
 }
 
 export class SessionManager implements INotificationContext
@@ -24,9 +23,13 @@ export class SessionManager implements INotificationContext
         this.sessions = {};
     }
 
+    public Subscribe(oid: number) {
+        throw new Error('Method not implemented.');
+    }
+
     public NotifyPropertyChanged(oid: number, propertyID: NcaElementID, value: any)
     {
-        console.log(`NotifyPropertyChanged oid: ${oid}, property: ${propertyID.ToJson()}, value: ${JSON.stringify(value)}`);
+        console.log(`NotifyPropertyChanged oid: ${oid}, property: ${propertyID.level}p${propertyID.index}, value: ${JSON.stringify(value)}`);
 
         for (let key in this.sessions) {
             let session = this.sessions[key];
@@ -38,34 +41,7 @@ export class SessionManager implements INotificationContext
         }
     }
 
-    public ProcessMessage(msg: string, socket: WebSocketConnection)
-    {
-        let message = JSON.parse(msg) as ProtocolWrapper;
-
-        switch(message.messageType)
-        {
-            case 'CreateSession':
-            {
-                let msgCreateSession = JSON.parse(msg) as ProtoCreateSession;
-                let outcome = this.CreateSession(socket, msgCreateSession.messages[0].arguments['heartBeatTime']);
-                if(outcome[0] != 0)
-                {
-                    socket.send(new ProtoCreateSessionResponse([
-                        new CreateSessionResponse(msgCreateSession.messages[0].handle, NcaMethodStatus.OK, outcome[0], null)
-                    ]).ToJson());
-                }
-                else
-                {
-                    socket.send(new ProtoCreateSessionResponse([
-                        new CreateSessionResponse(msgCreateSession.messages[0].handle, NcaMethodStatus.OK, null, outcome[1])
-                    ]).ToJson());
-                }
-                break;
-            }
-        }
-    }
-
-    private CreateSession(socket: WebSocketConnection, heartBeatTime: number) : [number | null, string | null]
+    public CreateSession(socket: WebSocketConnection, heartBeatTime: number) : [number | null, string | null]
     {
         let sub = new Session(socket, ++this.lastSubId, heartBeatTime);
         this.sessions[sub.sessionId] = sub;

@@ -9,15 +9,19 @@ export class CommandMsg extends ProtoMsg
 
     public methodID: NcaElementID;
 
+    public arguments: { [key: string]: any } | null;
+
     constructor(
         handle: number,
         oid: number,
-        methodID: NcaElementID)
+        methodID: NcaElementID,
+        commandArguments: { [key: string]: any } | null)
     {
         super(handle);
 
         this.oid = oid;
         this.methodID = methodID;
+        this.arguments = commandArguments;
     }
 }
 
@@ -39,22 +43,15 @@ export class CommandResponseNoValue extends ProtoMsg
     }
 }
 
-export class CommandResponseWithValue extends ProtoMsg
+export class CommandResponseWithValue extends CommandResponseNoValue
 {
-    public result: { [key: string]: any };
-
     constructor(
         handle: number,
         status: NcaMethodStatus,
         value: any | null,
         errorMessage: string | null)
     {
-        super(handle);
-
-        this.result = {};
-        this.result['status'] = status;
-        if(errorMessage != null)
-            this.result['errorMessage'] = errorMessage;
+        super(handle, status, errorMessage);
         this.result['value'] = value;
     }
 }
@@ -71,23 +68,6 @@ export class EventSubscriptionData
     {
         this.emitterOid = emitterOid;
         this.eventID = eventID;
-    }
-}
-
-export class AddSubscriptionMsg extends CommandMsg
-{
-    public arguments: { [key: string]: any };
-
-    constructor(
-        handle: number,
-        oid: number,
-        methodID: NcaElementID,
-        eventSubData: EventSubscriptionData)
-    {
-        super(handle, oid, methodID);
-
-        this.arguments = {};
-        this.arguments['event'] = eventSubData;
     }
 }
 
@@ -127,6 +107,11 @@ export class ProtoCommandResponse extends ProtocolWrapper
 
         this.sessionId = sessionId;
         this.messages = messages;
+    }
+
+    public AddCommandResponse(response: CommandResponseNoValue)
+    {
+        this.messages.push(response);
     }
 
     public ToJson()

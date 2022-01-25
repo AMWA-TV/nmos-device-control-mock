@@ -11,10 +11,11 @@ import { RegistrationClient } from './RegistrationClient';
 import { NmosReceiverVideo } from './NmosReceiverVideo';
 import { NmosReceiverActiveRtp } from './NmosReceiverActiveRtp';
 import { SessionManager } from './SessionManager';
-import { NcaBlock } from './NCModel/Blocks';
+import { NcaBlock, RootBlock } from './NCModel/Blocks';
 import { NcaClassManager, NcaSubscriptionManager } from './NCModel/Managers';
 import { NcaReceiverMonitor } from './NCModel/Agents';
 import { NcaLockState, NcaTouchpointNmos, TouchpointResourceNmos } from './NCModel/Core';
+import { ProtocolWrapper } from './NCProtocol/Core';
 
 export interface WebSocketConnection extends WebSocket {
     isAlive: boolean;
@@ -89,7 +90,7 @@ try
 
     myVideoReceiver.AttachMonitoringAgent(receiverMonitorAgent);
 
-    const rootBlock = new NcaBlock(
+    const rootBlock = new RootBlock(
         1,
         true,
         null,
@@ -144,7 +145,7 @@ try
         //subscribe to messages
         ws.on('message', (msg: string) => {
             console.log(`WS msg received - connection id: ${extWs.connectionId}, msg: ${msg}`);
-            sessionManager.ProcessMessage(msg, extWs);
+            rootBlock.ProcessMessage(msg, extWs);
         });
     
         ws.on('error', (err) => {

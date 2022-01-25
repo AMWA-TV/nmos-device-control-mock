@@ -63,7 +63,7 @@ export abstract class NcaObject
     }
 
     //'1m1'
-    public Get(id: NcaElementID, handle: number) : CommandResponseWithValue
+    public Get(oid: number, id: NcaElementID, handle: number) : CommandResponseWithValue
     {
         let key: string = `${id.level}p${id.index}`;
 
@@ -95,7 +95,7 @@ export abstract class NcaObject
     }
 
     //'1m2'
-    public Set(id: NcaElementID, value: any, handle: number) : CommandResponseNoValue
+    public Set(oid: number, id: NcaElementID, value: any, handle: number) : CommandResponseNoValue
     {
         let key: string = `${id.level}p${id.index}`;
 

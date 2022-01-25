@@ -101,7 +101,7 @@ export class NcaReceiverMonitor extends NcaAgent
     }
 
     //'1m1'
-    public override Get(id: NcaElementID, handle: number) : CommandResponseWithValue
+    public override Get(oid: number, id: NcaElementID, handle: number) : CommandResponseWithValue
     {
         let key: string = `${id.level}p${id.index}`;
 
@@ -116,12 +116,12 @@ export class NcaReceiverMonitor extends NcaAgent
             case '3p4':
                 return new CommandResponseWithValue(handle, NcaMethodStatus.OK, this.payloadStatusMessage, null);
             default:
-                return super.Get(id, handle);
+                return super.Get(oid, id, handle);
         }
     }
 
     //'1m2'
-    public override Set(id: NcaElementID, value: any, handle: number) : CommandResponseNoValue
+    public override Set(oid: number, id: NcaElementID, value: any, handle: number) : CommandResponseNoValue
     {
         let key: string = `${id.level}p${id.index}`;
 
@@ -133,7 +133,7 @@ export class NcaReceiverMonitor extends NcaAgent
             case '3p4':
                 return new CommandResponseNoValue(handle, NcaMethodStatus.ProcessingFailed, 'Property is readonly');
             default:
-                return super.Set(id, value, handle);
+                return super.Set(oid, id, value, handle);
         }
     }
 }

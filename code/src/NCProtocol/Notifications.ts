@@ -1,7 +1,7 @@
 import { jsonIgnoreReplacer, jsonIgnore } from 'json-ignore';
 import { NcaElementID, NcaPropertyChangeType } from '../NCModel/Core';
 
-import { ProtocolWrapper, ProtoMsg } from './Core';
+import { ProtocolWrapper } from './Core';
 
 export class NcaEventData
 {
