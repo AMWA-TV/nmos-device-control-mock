@@ -15,7 +15,6 @@ import { NcaBlock, RootBlock } from './NCModel/Blocks';
 import { NcaClassManager, NcaSubscriptionManager } from './NCModel/Managers';
 import { NcaReceiverMonitor } from './NCModel/Agents';
 import { NcaLockState, NcaTouchpointNmos, TouchpointResourceNmos } from './NCModel/Core';
-import { ProtocolWrapper } from './NCProtocol/Core';
 
 export interface WebSocketConnection extends WebSocket {
     isAlive: boolean;
@@ -173,7 +172,7 @@ try
         if(request.url !== undefined)
         {
             console.log(`Request url ${request.url})`);
-            if (request.url === '/x-nmos/nca/v1.0/connect')
+            if (request.url === '/x-nmos/ncp/v1.0/connect')
             {
                 webSocketServer.handleUpgrade(request, socket as Socket, head, function done(ws) {
                     webSocketServer.emit('connection', ws, request);
