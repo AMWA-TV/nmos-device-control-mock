@@ -1,5 +1,5 @@
 import { jsonIgnoreReplacer, jsonIgnore } from 'json-ignore';
-import { NcaMethodStatus } from '../NCModel/Core';
+import { NcMethodStatus } from '../NCModel/Core';
 
 import { ProtocolWrapper, ProtoMsg } from './Core';
 
@@ -24,7 +24,7 @@ export class CreateSessionResponse extends ProtoMsg
 
     constructor(
         handle: number,
-        status: NcaMethodStatus,
+        status: NcMethodStatus,
         value: number | null,
         errorMessage: string | null)
     {

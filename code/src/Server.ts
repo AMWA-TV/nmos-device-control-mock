@@ -11,10 +11,10 @@ import { RegistrationClient } from './RegistrationClient';
 import { NmosReceiverVideo } from './NmosReceiverVideo';
 import { NmosReceiverActiveRtp } from './NmosReceiverActiveRtp';
 import { SessionManager } from './SessionManager';
-import { NcaBlock, RootBlock } from './NCModel/Blocks';
-import { NcaClassManager, NcaSubscriptionManager } from './NCModel/Managers';
-import { NcaReceiverMonitor } from './NCModel/Agents';
-import { NcaLockState, NcaTouchpointNmos, TouchpointResourceNmos } from './NCModel/Core';
+import { NcBlock, RootBlock } from './NCModel/Blocks';
+import { NcClassManager, NcSubscriptionManager } from './NCModel/Managers';
+import { NcReceiverMonitor } from './NCModel/Agents';
+import { NcLockState, NcTouchpointNmos, NcTouchpointResourceNmos } from './NCModel/Core';
 
 export interface WebSocketConnection extends WebSocket {
     isAlive: boolean;
@@ -54,37 +54,37 @@ try
 
     const sessionManager = new SessionManager();
 
-    const classManager = new NcaClassManager(
+    const classManager = new NcClassManager(
         3,
         true,
         1,
         'ClassManager',
         'Class manager',
         false,
-        NcaLockState.NoLock,
+        NcLockState.NoLock,
         null,
         sessionManager);
 
-    const subscriptionManager = new NcaSubscriptionManager(
+    const subscriptionManager = new NcSubscriptionManager(
         5,
         true,
         1,
         'SubscriptionManager',
         'Subscription manager',
         false,
-        NcaLockState.NoLock,
+        NcLockState.NoLock,
         null,
         sessionManager);
 
-    const receiverMonitorAgent = new NcaReceiverMonitor(
+    const receiverMonitorAgent = new NcReceiverMonitor(
         11,
         true,
         1,
         'ReceiverMonitor_01',
         'Receiver monitor 01',
         false,
-        NcaLockState.NoLock,
-        [ new NcaTouchpointNmos(`is-04`, [ new TouchpointResourceNmos('receiver', myVideoReceiver.id)]) ],
+        NcLockState.NoLock,
+        [ new NcTouchpointNmos(`is-04`, [ new NcTouchpointResourceNmos('receiver', myVideoReceiver.id)]) ],
         sessionManager);
 
     myVideoReceiver.AttachMonitoringAgent(receiverMonitorAgent);
@@ -96,7 +96,7 @@ try
         'Root',
         'Root',
         false,
-        NcaLockState.NoLock,
+        NcLockState.NoLock,
         null,
         true,
         null,

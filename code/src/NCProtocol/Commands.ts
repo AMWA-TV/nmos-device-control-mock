@@ -1,5 +1,5 @@
 import { jsonIgnoreReplacer, jsonIgnore } from 'json-ignore';
-import { NcaElementID, NcaMethodStatus } from '../NCModel/Core';
+import { NcElementID, NcMethodStatus } from '../NCModel/Core';
 
 import { ProtocolWrapper, ProtoMsg } from './Core';
 
@@ -7,14 +7,14 @@ export class CommandMsg extends ProtoMsg
 {
     public oid: number;
 
-    public methodID: NcaElementID;
+    public methodID: NcElementID;
 
     public arguments: { [key: string]: any } | null;
 
     constructor(
         handle: number,
         oid: number,
-        methodID: NcaElementID,
+        methodID: NcElementID,
         commandArguments: { [key: string]: any } | null)
     {
         super(handle);
@@ -31,7 +31,7 @@ export class CommandResponseNoValue extends ProtoMsg
 
     constructor(
         handle: number,
-        status: NcaMethodStatus,
+        status: NcMethodStatus,
         errorMessage: string | null)
     {
         super(handle);
@@ -47,7 +47,7 @@ export class CommandResponseWithValue extends CommandResponseNoValue
 {
     constructor(
         handle: number,
-        status: NcaMethodStatus,
+        status: NcMethodStatus,
         value: any | null,
         errorMessage: string | null)
     {
@@ -60,11 +60,11 @@ export class EventSubscriptionData
 {
     public emitterOid: number;
 
-    public eventID: NcaElementID;
+    public eventID: NcElementID;
 
     constructor(
         emitterOid: number,
-        eventID: NcaElementID)
+        eventID: NcElementID)
     {
         this.emitterOid = emitterOid;
         this.eventID = eventID;

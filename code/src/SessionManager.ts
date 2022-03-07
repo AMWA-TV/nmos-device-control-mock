@@ -1,12 +1,12 @@
 import { jsonIgnoreReplacer, jsonIgnore } from 'json-ignore';
 
 import { WebSocketConnection } from './Server';
-import { NcaElementID, NcaMethodStatus, NcaPropertyChangeType } from './NCModel/Core';
-import { NcaEventData, NcaNotification, ProtoNotification } from './NCProtocol/Notifications';
+import { NcElementID, NcMethodStatus, NcPropertyChangeType } from './NCModel/Core';
+import { NcEventData, NcNotification, ProtoNotification } from './NCProtocol/Notifications';
 
 export interface INotificationContext
 {
-    NotifyPropertyChanged(oid: number, propertyID: NcaElementID, value: any);
+    NotifyPropertyChanged(oid: number, propertyID: NcElementID, value: any);
     Subscribe(oid: number);
     CreateSession(socket: WebSocketConnection, heartBeatTime: number) : [number | null, string | null]
 }
@@ -27,7 +27,7 @@ export class SessionManager implements INotificationContext
         throw new Error('Method not implemented.');
     }
 
-    public NotifyPropertyChanged(oid: number, propertyID: NcaElementID, value: any)
+    public NotifyPropertyChanged(oid: number, propertyID: NcElementID, value: any)
     {
         console.log(`NotifyPropertyChanged oid: ${oid}, property: ${propertyID.level}p${propertyID.index}, value: ${JSON.stringify(value)}`);
 
@@ -36,7 +36,7 @@ export class SessionManager implements INotificationContext
             session.socket.send(
                 new ProtoNotification(
                     session.sessionId,
-                    [ new NcaNotification(oid, new NcaElementID(1, 1), new NcaEventData(propertyID, NcaPropertyChangeType.CurrentChanged, value)) ]
+                    [ new NcNotification(oid, new NcElementID(1, 1), new NcEventData(propertyID, NcPropertyChangeType.CurrentChanged, value)) ]
                 ).ToJson());
         }
     }

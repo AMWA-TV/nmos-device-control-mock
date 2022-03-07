@@ -1,19 +1,19 @@
 import { jsonIgnoreReplacer, jsonIgnore } from 'json-ignore';
-import { NcaElementID, NcaPropertyChangeType } from '../NCModel/Core';
+import { NcElementID, NcPropertyChangeType } from '../NCModel/Core';
 
 import { ProtocolWrapper } from './Core';
 
-export class NcaEventData
+export class NcEventData
 {
-    public propertyID: NcaElementID;
+    public propertyID: NcElementID;
 
-    public changeType: NcaPropertyChangeType;
+    public changeType: NcPropertyChangeType;
 
     public propertyValue: any | null;
 
     constructor(
-        propertyID: NcaElementID,
-        changeType: NcaPropertyChangeType,
+        propertyID: NcElementID,
+        changeType: NcPropertyChangeType,
         propertyValue: any | null)
     {
         this.propertyID = propertyID;
@@ -22,20 +22,20 @@ export class NcaEventData
     }
 }
 
-export class NcaNotification
+export class NcNotification
 {
     public type: string = 'Event';
 
     public oid: number;
 
-    public eventID: NcaElementID;
+    public eventID: NcElementID;
 
-    public eventData: NcaEventData;
+    public eventData: NcEventData;
 
     constructor(
         oid: number,
-        eventID: NcaElementID,
-        eventData: NcaEventData)
+        eventID: NcElementID,
+        eventData: NcEventData)
     {
         this.oid = oid;
         this.eventID = eventID;
@@ -47,11 +47,11 @@ export class ProtoNotification extends ProtocolWrapper
 {
     public sessionId: number;
 
-    public messages: NcaNotification[];
+    public messages: NcNotification[];
 
     public constructor(
         sessionId: number,
-        messages: NcaNotification[])
+        messages: NcNotification[])
     {
         super('1.0', 'Notification');
 

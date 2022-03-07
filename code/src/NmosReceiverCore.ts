@@ -1,5 +1,5 @@
 import { jsonIgnoreReplacer, jsonIgnore } from 'json-ignore';
-import { NcaReceiverMonitor } from './NCModel/Agents';
+import { NcReceiverMonitor } from './NCModel/Agents';
 
 import { NmosResource } from './NmosResource';
 import { RegistrationClient } from './RegistrationClient';
@@ -21,7 +21,7 @@ export abstract class NmosReceiverCore extends NmosResource
     public staged: NmosReceiverActive | null;
 
     @jsonIgnore()
-    public agent: NcaReceiverMonitor | null;
+    public agent: NcReceiverMonitor | null;
 
     public constructor(
         id: string,
@@ -70,7 +70,7 @@ export abstract class NmosReceiverCore extends NmosResource
         this.registrationClient.RegisterOrUpdateResource<NmosReceiverCore>('receiver', this);
     }
 
-    public AttachMonitoringAgent(agent: NcaReceiverMonitor)
+    public AttachMonitoringAgent(agent: NcReceiverMonitor)
     {
         this.agent = agent;
     }
