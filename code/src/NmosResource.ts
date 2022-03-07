@@ -1,3 +1,4 @@
+import { jsonIgnoreReplacer, jsonIgnore } from 'json-ignore';
 import { TAI64 } from "tai64";
 
 import { RegistrationClient } from './RegistrationClient';
@@ -10,6 +11,7 @@ export abstract class NmosResource
     public description: string;
     public tags: object;
 
+    @jsonIgnore()
     public registrationClient: RegistrationClient;
 
     public constructor(
