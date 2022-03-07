@@ -39,7 +39,7 @@ export class NmosNode extends NmosResource
         this.interfaces = [ new NmosInterface('00-15-5d-67-c3-4e', 'eth0', '00-15-5d-67-c3-4e') ];
     }
 
-    public ToJson() 
+    public ToJson()
     {
         return JSON.stringify(this, jsonIgnoreReplacer);
     }
@@ -58,7 +58,7 @@ class NmosClock
         this.ref_type = ref_type;
     }
 
-    public ToJson() 
+    public ToJson()
     {
         return JSON.stringify(this, jsonIgnoreReplacer);
     }
@@ -80,7 +80,7 @@ class NmosEndpoint
         this.protocol = protocol;
     }
 
-    public ToJson() 
+    public ToJson()
     {
         return JSON.stringify(this, jsonIgnoreReplacer);
     }
@@ -99,7 +99,7 @@ class NmosApi
         this.versions = [ 'v1.3' ];
     }
 
-    public ToJson() 
+    public ToJson()
     {
         return JSON.stringify(this, jsonIgnoreReplacer);
     }
@@ -121,7 +121,7 @@ class NmosInterface
         this.port_id = port_id;
     }
 
-    public ToJson() 
+    public ToJson()
     {
         return JSON.stringify(this, jsonIgnoreReplacer);
     }
