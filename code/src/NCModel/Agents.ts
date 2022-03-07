@@ -42,7 +42,7 @@ export class NcReceiverMonitor extends NcAgent
     public classID: number[] = [ 1, 4, 1 ];
 
     @myIdDecorator('1p2')
-    public classVersion: number = 1;
+    public classVersion: string = "1.0.0";
 
     @myIdDecorator('3p1')
     public connectionStatus: NcConnectionStatus;

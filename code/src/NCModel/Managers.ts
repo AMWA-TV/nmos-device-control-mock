@@ -22,7 +22,7 @@ export abstract class NcManager extends NcObject
 export class NcClassManager extends NcManager
 {
     public classID: number[] = [ 1, 7, 3 ];
-    public classVersion: number = 1;
+    public classVersion: string = "1.0.0";
 
     public constructor(
         oid: number,
@@ -42,7 +42,7 @@ export class NcClassManager extends NcManager
 export class NcSubscriptionManager extends NcManager
 {
     public classID: number[] = [ 1, 7, 5 ];
-    public classVersion: number = 1;
+    public classVersion: string = "1.0.0";
 
     public constructor(
         oid: number,

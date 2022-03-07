@@ -12,7 +12,7 @@ export class NcBlock extends NcObject
     public classID: number[] = [ 1, 1 ];
 
     @myIdDecorator('1p2')
-    public classVersion: number = 1;
+    public classVersion: string = "1.0.0";
 
     @myIdDecorator('2p1')
     public enabled: boolean;
@@ -21,13 +21,13 @@ export class NcBlock extends NcObject
     public specId: string | null;
 
     @myIdDecorator('2p3')
-    public specVersion: number | null;
+    public specVersion: string | null;
 
     @myIdDecorator('2p4')
     public parentSpecId: string | null;
 
     @myIdDecorator('2p5')
-    public parentSpecVersion: number | null;
+    public parentSpecVersion: string | null;
 
     @myIdDecorator('2p6')
     public specDescription: string | null;
@@ -60,9 +60,9 @@ export class NcBlock extends NcObject
         touchpoints: NcTouchpoint[] | null,
         enabled: boolean,
         specId: string | null,
-        specVersion: number | null,
+        specVersion: string | null,
         parentSpecId: string | null,
-        parentSpecVersion: number | null,
+        parentSpecVersion: string | null,
         specDescription: string | null,
         isDynamic: boolean,
         memberObjects: NcObject[] | null,
@@ -185,9 +185,9 @@ export class RootBlock extends NcBlock
         touchpoints: NcTouchpoint[] | null,
         enabled: boolean,
         specId: string | null,
-        specVersion: number | null,
+        specVersion: string | null,
         parentSpecId: string | null,
-        parentSpecVersion: number | null,
+        parentSpecVersion: string | null,
         specDescription: string | null,
         isDynamic: boolean,
         memberObjects: NcObject[] | null,

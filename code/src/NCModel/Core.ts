@@ -14,7 +14,7 @@ export abstract class NcObject
     public abstract classID: number[];
 
     @myIdDecorator('1p2')
-    public abstract classVersion: number;
+    public abstract classVersion: string;
 
     @myIdDecorator('1p3')
     public oid: number;
