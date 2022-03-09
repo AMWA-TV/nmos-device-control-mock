@@ -4,7 +4,7 @@ import { ProtocolWrapper } from '../NCProtocol/Core';
 import { CreateSessionResponse, ProtoCreateSession, ProtoCreateSessionResponse } from '../NCProtocol/Sessions';
 import { WebSocketConnection } from '../Server';
 import { INotificationContext } from '../SessionManager';
-import { myIdDecorator, NcElementID, NcLockState, NcMethodStatus, NcObject, NcPort, NcSignalPath, NcTouchpoint } from './Core';
+import { myIdDecorator, NcBlockMemberDescriptor, NcClassDescriptor, NcElementID, NcEventDescriptor, NcLockState, NcMethodDescriptor, NcMethodStatus, NcObject, NcParameterDescriptor, NcPort, NcPropertyDescriptor, NcSignalPath, NcTouchpoint } from './Core';
 
 export class NcBlock extends NcObject
 {
@@ -165,10 +165,89 @@ export class NcBlock extends NcObject
         {
             let member = this.memberObjects.find(e => e.oid === oid);
             if(member !== undefined)
-                return member.Set(oid, id, value, handle)
+                return member.Set(oid, id, value, handle);
         }
 
         return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
+    }
+
+    public override InvokeMethod(oid: number, methodID: NcElementID, args: { [key: string]: any; } | null, handle: number): CommandResponseWithValue 
+    {
+        if(oid == this.oid)
+        {
+            let key: string = `${methodID.level}m${methodID.index}`;
+
+            switch(key)
+            {
+                case '2m1':
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.GenerateMemberDescriptors(), null);
+                default:
+                    return super.InvokeMethod(oid, methodID, args, handle);
+            }
+        }
+        else if(this.memberObjects != null)
+        {
+            let member = this.memberObjects.find(e => e.oid === oid);
+            if(member !== undefined)
+                return member.InvokeMethod(oid, methodID, args, handle);
+        }
+
+        return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
+    }
+
+    public static override GetClassDescriptor(): NcClassDescriptor 
+    {
+        let baseDescriptor = super.GetClassDescriptor();
+
+        let currentClassDescriptor = new NcClassDescriptor("NcBlock class descriptor",
+            [ 
+                new NcPropertyDescriptor(new NcElementID(2, 1), "enabled", "ncBoolean", true, true, true),
+                new NcPropertyDescriptor(new NcElementID(2, 2), "specId", "ncString", true, true, true),
+                new NcPropertyDescriptor(new NcElementID(2, 3), "specVersion", "ncVersionCode", true, true, true),
+                new NcPropertyDescriptor(new NcElementID(2, 4), "parentSpecId", "ncString", true, true, true),
+                new NcPropertyDescriptor(new NcElementID(2, 5), "parentSpecVersion", "ncVersionCode", true, true, true),
+                new NcPropertyDescriptor(new NcElementID(2, 6), "specDescription", "ncString", true, true, true),
+                new NcPropertyDescriptor(new NcElementID(2, 7), "isDynamic", "ncBoolean", true, true, true),
+                new NcPropertyDescriptor(new NcElementID(2, 8), "isModified", "ncBoolean", true, true, true),
+                new NcPropertyDescriptor(new NcElementID(2, 9), "members", "ncOid", true, true, true),
+                new NcPropertyDescriptor(new NcElementID(2, 10), "ports", "ncPort", true, true, true),
+                new NcPropertyDescriptor(new NcElementID(2, 11), "signalPaths", "ncSignalPath", true, true, true),
+            ],
+            [ 
+                new NcMethodDescriptor(new NcElementID(2, 1), "getMemberDescriptors", "ncMethodResultBlockMemberDescriptors", [new NcParameterDescriptor("recurse", "ncBoolean", true)]),
+                new NcMethodDescriptor(new NcElementID(2, 2), "getNestedBlocks", "ncMethodResultBlockDescriptors", []),
+                new NcMethodDescriptor(new NcElementID(2, 3), "findMembersByRole", "ncMethodResultBlockMemberDescriptors", [
+                    new NcParameterDescriptor("role", "ncRole", true),
+                    new NcParameterDescriptor("nameComparisonType", "ncStringComparisonType", true),
+                    new NcParameterDescriptor("classId", "ncClassId", true),
+                    new NcParameterDescriptor("recurse", "ncBoolean", true),
+                ]),
+                new NcMethodDescriptor(new NcElementID(2, 4), "findMembersByUserLabel", "ncMethodResultBlockMemberDescriptors", [
+                    new NcParameterDescriptor("userLabel", "ncString", true),
+                    new NcParameterDescriptor("nameComparisonType", "ncStringComparisonType", true),
+                    new NcParameterDescriptor("classId", "ncClassId", true),
+                    new NcParameterDescriptor("recurse", "ncBoolean", true),
+                ]),
+                new NcMethodDescriptor(new NcElementID(2, 5), "findMembersByPath", "ncMethodResultBlockMemberDescriptors", [
+                    new NcParameterDescriptor("path", "ncRolePath", true)
+                ])
+            ],
+            []
+        );
+
+        currentClassDescriptor.properties = currentClassDescriptor.properties.concat(baseDescriptor.properties);
+        currentClassDescriptor.methods = currentClassDescriptor.methods.concat(baseDescriptor.methods);
+        currentClassDescriptor.events = currentClassDescriptor.events.concat(baseDescriptor.events);
+
+        return currentClassDescriptor;
+    }
+
+    private GenerateMemberDescriptors() : NcBlockMemberDescriptor[]
+    {
+        if(this.memberObjects != null)
+            return this.memberObjects.map(x => x.GenerateMemberDescriptor());
+        else
+            return new Array<NcBlockMemberDescriptor>()
     }
 }
 
@@ -288,18 +367,25 @@ export class RootBlock extends NcBlock
                 let propertyValue = commandMsg.arguments['value'];
 
                 if(commandMsg.oid == this.oid)
-                    return this.Set(commandMsg.oid, propertyId, propertyValue, commandMsg.handle)
+                    return this.Set(commandMsg.oid, propertyId, propertyValue, commandMsg.handle);
                 else if(this.memberObjects != null)
                 {
                     let member = this.memberObjects.find(e => e.oid === commandMsg.oid);
                     if(member !== undefined)
-                        return member.Set(commandMsg.oid, propertyId, propertyValue, commandMsg.handle)
+                        return member.Set(commandMsg.oid, propertyId, propertyValue, commandMsg.handle);
                 }
             }
         }
         else
         {
-            //TODO add treatment for other methods
+            if(commandMsg.oid == this.oid)
+                return this.InvokeMethod(commandMsg.oid, commandMsg.methodID, commandMsg.arguments, commandMsg.handle);
+            else if(this.memberObjects != null)
+            {
+                let member = this.memberObjects.find(e => e.oid === commandMsg.oid);
+                if(member !== undefined)
+                    return member.InvokeMethod(commandMsg.oid, commandMsg.methodID, commandMsg.arguments, commandMsg.handle);
+            }
         }
 
         return new CommandResponseNoValue(commandMsg.handle, NcMethodStatus.OK, null);

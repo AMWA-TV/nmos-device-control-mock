@@ -120,6 +120,70 @@ export abstract class NcObject
 
         return new CommandResponseNoValue(handle, NcMethodStatus.ProcessingFailed, 'Property does not exist in object');
     }
+
+    public InvokeMethod(oid: number, methodID: NcElementID, args: { [key: string]: any } | null, handle: number) : CommandResponseWithValue
+    {
+        return new CommandResponseWithValue(handle, NcMethodStatus.BadMethodID, null, 'Method does not exist in object');
+    }
+
+    public GenerateMemberDescriptor() : NcBlockMemberDescriptor
+    {
+        return new NcBlockMemberDescriptor(this.role, this.oid, this.constantOid, new NcClassIdentity(this.classID, this.classVersion), this.userLabel, this.owner);
+    }
+
+    public static GetClassDescriptor() : NcClassDescriptor
+    {
+        return new NcClassDescriptor("NcObject class descriptor",
+            [ 
+                new NcPropertyDescriptor(new NcElementID(1, 1), "classId", "ncClassID", true, true, true),
+                new NcPropertyDescriptor(new NcElementID(1, 2), "classVersion", "ncVersionCode", true, true, true),
+                new NcPropertyDescriptor(new NcElementID(1, 3), "oid", "ncOid", true, true, true),
+                new NcPropertyDescriptor(new NcElementID(1, 4), "constantOid", "ncBoolean", true, true, true),
+                new NcPropertyDescriptor(new NcElementID(1, 5), "owner", "ncOid", true, true, true),
+                new NcPropertyDescriptor(new NcElementID(1, 6), "role", "ncOid", true, true, true),
+                new NcPropertyDescriptor(new NcElementID(1, 7), "userLabel", "ncOid", false, true, true),
+                new NcPropertyDescriptor(new NcElementID(1, 8), "lockable", "ncOid", true, true, true),
+                new NcPropertyDescriptor(new NcElementID(1, 9), "lockState", "ncOid", false, true, true),
+                new NcPropertyDescriptor(new NcElementID(1, 10), "touchpoints", "ncTouchpoint", true, true, true),
+            ],
+            [ 
+                new NcMethodDescriptor(new NcElementID(1, 1), "get", "ncMethodResultPropertyValue", [new NcParameterDescriptor("id", "ncPropertyId", true)]),
+                new NcMethodDescriptor(new NcElementID(1, 2), "set", "ncMethodResult", [
+                    new NcParameterDescriptor("id", "ncPropertyId", true),
+                    new NcParameterDescriptor("value", "", true)
+                ]),
+                new NcMethodDescriptor(new NcElementID(1, 3), "clear", "ncMethodResult", [
+                    new NcParameterDescriptor("id", "ncPropertyId", true)
+                ]),
+                new NcMethodDescriptor(new NcElementID(1, 4), "getCollectionItem", "ncMethodResultPropertyValue", [
+                    new NcParameterDescriptor("id", "ncPropertyId", true),
+                    new NcParameterDescriptor("index", "ncId32", true)
+                ]),
+                new NcMethodDescriptor(new NcElementID(1, 5), "setCollectionItem", "ncMethodResult", [
+                    new NcParameterDescriptor("id", "ncPropertyId", true),
+                    new NcParameterDescriptor("index", "ncId32", true),
+                    new NcParameterDescriptor("value", "", true)
+                ]),
+                new NcMethodDescriptor(new NcElementID(1, 6), "addCollectionItem", "ncMethodResultId32", [
+                    new NcParameterDescriptor("id", "ncPropertyId", true),
+                    new NcParameterDescriptor("value", "", true)
+                ]),
+                new NcMethodDescriptor(new NcElementID(1, 7), "removeCollectionItem", "ncMethodResult", [
+                    new NcParameterDescriptor("id", "ncPropertyId", true),
+                    new NcParameterDescriptor("index", "ncId32", true),
+                ]),
+                new NcMethodDescriptor(new NcElementID(1, 8), "lockWait", "ncMethodResult", [
+                    new NcParameterDescriptor("target", "ncOid", true),
+                    new NcParameterDescriptor("requestedLockStatus", "ncLockStatus", true),
+                    new NcParameterDescriptor("timeout", "ncTimeInterval", true),
+                ]),
+                new NcMethodDescriptor(new NcElementID(1, 9), "abortWaits", "ncMethodResult", [
+                    new NcParameterDescriptor("target", "ncOid", true)
+                ]),
+            ],
+            [ new NcEventDescriptor(new NcElementID(1, 1), "PropertyChanged", "ncPropertyChangedEventData") ]
+        );
+    }
 }
 
 export class NcElementID
@@ -278,5 +342,180 @@ export class NcTouchpointNmos extends NcTouchpoint
         resources: NcTouchpointResourceNmos[])
     {
         super(contextNamespace, resources);
+    }
+}
+
+export class NcClassIdentity
+{
+    public classID: number[];
+    public version: string;
+
+    constructor(
+        classID: number[],
+        version: string) 
+    {
+        this.classID = classID;
+        this.version = version;
+    }
+
+    public ToJson() 
+    {
+        return JSON.stringify(this, jsonIgnoreReplacer);
+    }
+}
+
+export class NcBlockMemberDescriptor
+{
+    public role: string;
+    public oid: number;
+    public constantOid: boolean;
+    public identity: NcClassIdentity;
+    public userLabel: string;
+    public owner: number | null;
+
+    constructor(
+        role: string,
+        oid: number,
+        constantOid: boolean,
+        identity: NcClassIdentity,
+        userLabel: string,
+        owner: number | null)
+    {
+        this.role = role;
+        this.oid = oid;
+        this.constantOid = constantOid;
+        this.identity = identity;
+        this.userLabel = userLabel;
+        this.owner = owner;
+    }
+
+    public ToJson() 
+    {
+        return JSON.stringify(this, jsonIgnoreReplacer);
+    }
+}
+
+export class NcPropertyDescriptor
+{
+    public id: NcElementID;
+    public name: string;
+    public typeName: string;
+    public readOnly: boolean;
+    public persistent: boolean;
+    public required: boolean;
+
+    constructor(
+        id: NcElementID,
+        name: string,
+        typeName: string,
+        readOnly: boolean,
+        persistent: boolean,
+        required: boolean)
+    {
+        this.id = id;
+        this.name = name;
+        this.typeName = typeName;
+        this.readOnly = readOnly;
+        this.persistent = persistent;
+        this.required = required;
+    }
+
+    public ToJson() 
+    {
+        return JSON.stringify(this, jsonIgnoreReplacer);
+    }
+}
+
+export class NcParameterDescriptor
+{
+    public name: string;
+    public typeName: string;
+    public required: boolean;
+
+    constructor(
+        name: string,
+        typeName: string,
+        required: boolean)
+    {
+        this.name = name;
+        this.typeName = typeName;
+        this.required = required;
+    }
+
+    public ToJson() 
+    {
+        return JSON.stringify(this, jsonIgnoreReplacer);
+    }
+}
+
+export class NcMethodDescriptor
+{
+    public id: NcElementID;
+    public name: string;
+    public resultDatatype: string;
+    public parameters: NcParameterDescriptor[];
+
+    constructor(
+        id: NcElementID,
+        name: string,
+        resultDatatype: string,
+        parameters: NcParameterDescriptor[])
+    {
+        this.id = id;
+        this.name = name;
+        this.resultDatatype = resultDatatype;
+        this.parameters = parameters;
+    }
+
+    public ToJson() 
+    {
+        return JSON.stringify(this, jsonIgnoreReplacer);
+    }
+}
+
+export class NcEventDescriptor
+{
+    public id: NcElementID;
+    public name: string;
+    public eventDatatype: string;
+
+    constructor(
+        id: NcElementID,
+        name: string,
+        eventDatatype: string)
+    {
+        this.id = id;
+        this.name = name;
+        this.eventDatatype = eventDatatype;
+    }
+
+    public ToJson() 
+    {
+        return JSON.stringify(this, jsonIgnoreReplacer);
+    }
+}
+
+export class NcClassDescriptor
+{
+    public description: string;
+    public properties: NcPropertyDescriptor[];
+    public methods: NcMethodDescriptor[];
+    public events: NcEventDescriptor[];
+
+    constructor(
+        description: string,
+        properties: NcPropertyDescriptor[],
+        methods: NcMethodDescriptor[],
+        events: NcEventDescriptor[])
+    {
+        this.description = description;
+        this.properties = properties;
+        this.methods = methods;
+        this.events = events;
+    }
+
+    public ToJson() 
+    {
+        return JSON.stringify(this, jsonIgnoreReplacer);
     }
 }
