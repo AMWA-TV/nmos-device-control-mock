@@ -1,7 +1,7 @@
 import { jsonIgnoreReplacer, jsonIgnore } from 'json-ignore';
 import { CommandResponseNoValue, CommandResponseWithValue } from '../NCProtocol/Commands';
 import { INotificationContext } from '../SessionManager';
-import { myIdDecorator, NcElementID, NcLockState, NcMethodStatus, NcObject, NcTouchpoint } from './Core';
+import { myIdDecorator, NcClassDescriptor, NcElementID, NcLockState, NcMethodDescriptor, NcMethodStatus, NcObject, NcParameterDescriptor, NcPropertyDescriptor, NcTouchpoint } from './Core';
 
 export abstract class NcAgent extends NcObject
 {
@@ -135,5 +135,29 @@ export class NcReceiverMonitor extends NcAgent
             default:
                 return super.Set(oid, id, value, handle);
         }
+    }
+
+    public static override GetClassDescriptor(): NcClassDescriptor 
+    {
+        let baseDescriptor = super.GetClassDescriptor();
+
+        let currentClassDescriptor = new NcClassDescriptor("NcReceiverMonitor class descriptor",
+            [ 
+                new NcPropertyDescriptor(new NcElementID(3, 1), "connectionStatus", "ncConnectionStatus", true, false, true),
+                new NcPropertyDescriptor(new NcElementID(3, 2), "connectionStatusMessage", "ncString", true, false, true),
+                new NcPropertyDescriptor(new NcElementID(3, 3), "payloadStatus", "ncPayloadStatus", true, false, true),
+                new NcPropertyDescriptor(new NcElementID(3, 4), "payloadStatusMessage", "ncString", true, false, true)
+            ],
+            [ 
+                new NcMethodDescriptor(new NcElementID(3, 1), "getStatus", "ncMethodResultReceiverStatus", [])
+            ],
+            []
+        );
+
+        currentClassDescriptor.properties = currentClassDescriptor.properties.concat(baseDescriptor.properties);
+        currentClassDescriptor.methods = currentClassDescriptor.methods.concat(baseDescriptor.methods);
+        currentClassDescriptor.events = currentClassDescriptor.events.concat(baseDescriptor.events);
+
+        return currentClassDescriptor;
     }
 }

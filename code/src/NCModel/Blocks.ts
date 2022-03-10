@@ -208,7 +208,7 @@ export class NcBlock extends NcObject
                 new NcPropertyDescriptor(new NcElementID(2, 5), "parentSpecVersion", "ncVersionCode", true, true, true),
                 new NcPropertyDescriptor(new NcElementID(2, 6), "specDescription", "ncString", true, true, true),
                 new NcPropertyDescriptor(new NcElementID(2, 7), "isDynamic", "ncBoolean", true, true, true),
-                new NcPropertyDescriptor(new NcElementID(2, 8), "isModified", "ncBoolean", true, true, true),
+                new NcPropertyDescriptor(new NcElementID(2, 8), "isModified", "ncBoolean", true, false, true),
                 new NcPropertyDescriptor(new NcElementID(2, 9), "members", "ncOid", true, true, true),
                 new NcPropertyDescriptor(new NcElementID(2, 10), "ports", "ncPort", true, true, true),
                 new NcPropertyDescriptor(new NcElementID(2, 11), "signalPaths", "ncSignalPath", true, true, true),

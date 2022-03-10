@@ -143,7 +143,7 @@ export abstract class NcObject
                 new NcPropertyDescriptor(new NcElementID(1, 6), "role", "ncOid", true, true, true),
                 new NcPropertyDescriptor(new NcElementID(1, 7), "userLabel", "ncOid", false, true, true),
                 new NcPropertyDescriptor(new NcElementID(1, 8), "lockable", "ncOid", true, true, true),
-                new NcPropertyDescriptor(new NcElementID(1, 9), "lockState", "ncOid", false, true, true),
+                new NcPropertyDescriptor(new NcElementID(1, 9), "lockState", "ncOid", false, false, true),
                 new NcPropertyDescriptor(new NcElementID(1, 10), "touchpoints", "ncTouchpoint", true, true, true),
             ],
             [ 
