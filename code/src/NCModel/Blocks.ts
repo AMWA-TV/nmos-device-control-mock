@@ -131,6 +131,8 @@ export class NcBlock extends NcObject
             let member = this.memberObjects.find(e => e.oid === oid);
             if(member !== undefined)
                 return member.Get(oid, propertyId, handle);
+            else
+                return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
         }
 
         return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
@@ -166,6 +168,8 @@ export class NcBlock extends NcObject
             let member = this.memberObjects.find(e => e.oid === oid);
             if(member !== undefined)
                 return member.Set(oid, id, value, handle);
+            else
+                return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
         }
 
         return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
@@ -190,6 +194,8 @@ export class NcBlock extends NcObject
             let member = this.memberObjects.find(e => e.oid === oid);
             if(member !== undefined)
                 return member.InvokeMethod(oid, methodID, args, handle);
+            else
+                return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
         }
 
         return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
@@ -356,6 +362,8 @@ export class RootBlock extends NcBlock
                     let member = this.memberObjects.find(e => e.oid === commandMsg.oid);
                     if(member !== undefined)
                         return member.Get(commandMsg.oid, propertyId, commandMsg.handle);
+                    else
+                        return new CommandResponseNoValue(commandMsg.handle, NcMethodStatus.InvalidRequest, "OID could not be found");
                 }
             }
         }
@@ -373,6 +381,8 @@ export class RootBlock extends NcBlock
                     let member = this.memberObjects.find(e => e.oid === commandMsg.oid);
                     if(member !== undefined)
                         return member.Set(commandMsg.oid, propertyId, propertyValue, commandMsg.handle);
+                    else
+                        return new CommandResponseNoValue(commandMsg.handle, NcMethodStatus.InvalidRequest, "OID could not be found");
                 }
             }
         }
@@ -385,10 +395,12 @@ export class RootBlock extends NcBlock
                 let member = this.memberObjects.find(e => e.oid === commandMsg.oid);
                 if(member !== undefined)
                     return member.InvokeMethod(commandMsg.oid, commandMsg.methodID, commandMsg.arguments, commandMsg.handle);
+                else
+                return new CommandResponseNoValue(commandMsg.handle, NcMethodStatus.InvalidRequest, "OID could not be found");
             }
         }
 
-        return new CommandResponseNoValue(commandMsg.handle, NcMethodStatus.OK, null);
+        return new CommandResponseNoValue(commandMsg.handle, NcMethodStatus.InvalidRequest, "OID could not be found");
     }
 
     public IsGenericGetter(propertyId: NcElementID) : boolean
