@@ -1,9 +1,9 @@
 import { jsonIgnoreReplacer, jsonIgnore } from 'json-ignore';
 import { CommandResponseNoValue, CommandResponseWithValue } from '../NCProtocol/Commands';
 import { INotificationContext } from '../SessionManager';
-import { NcReceiverMonitor } from './Agents';
+import { NcReceiverMonitor, NcReceiverStatus } from './Agents';
 import { NcBlock } from './Blocks';
-import { NcClassDescriptor, NcClassIdentity, NcElementID, NcLockState, NcMethodDescriptor, NcMethodStatus, NcObject, NcParameterDescriptor, NcPropertyDescriptor, NcTouchpoint } from './Core';
+import { NcBlockMemberDescriptor, NcClassDescriptor, NcClassIdentity, NcDatatypeDescriptor, NcDatatypeDescriptorEnum, NcDatatypeDescriptorPrimitive, NcDatatypeDescriptorStruct, NcDatatypeDescriptorTypeDef, NcDatatypeType, NcElementID, NcEnumItemDescriptor, NcLockState, NcMethodDescriptor, NcMethodStatus, NcObject, NcParameterDescriptor, NcPort, NcPropertyDescriptor, NcSignalPath, NcTouchpoint, NcTouchpointNmos, NcTouchpointResourceNmos } from './Core';
 
 export abstract class NcManager extends NcObject
 {
@@ -63,6 +63,20 @@ export class NcClassManager extends NcManager
                         else
                             return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'No class identity has been provided');
                     }
+                case '3m2':
+                {
+                    if(args != null)
+                    {
+                        let name = args['name'] as string;
+                        let descriptors = this.GetTypeDescriptors(name);
+                        if(descriptors.length > 0)
+                            return new CommandResponseWithValue(handle, NcMethodStatus.OK, descriptors, null);
+                        else
+                            return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Type name could not be found');
+                    }
+                    else
+                        return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'No type name has been provided');
+                }
                 default:
                     return super.InvokeMethod(oid, methodID, args, handle);
             }
@@ -126,6 +140,157 @@ export class NcClassManager extends NcManager
                 return [ NcReceiverMonitor.GetClassDescriptor() ];
             default:
                 return new Array<NcClassDescriptor>();
+        }
+    }
+
+    private GetTypeDescriptors(name: string) : NcDatatypeDescriptor[]
+    {
+        switch(name)
+        {
+            case 'ncBoolean': 
+                return [ new NcDatatypeDescriptorPrimitive("ncBoolean")];
+            case 'ncInt8': 
+                return [ new NcDatatypeDescriptorPrimitive("ncInt8")];
+            case 'ncInt16': 
+                return [ new NcDatatypeDescriptorPrimitive("ncInt16")];
+            case 'ncInt32': 
+                return [ new NcDatatypeDescriptorPrimitive("ncInt32")];
+            case 'ncInt64': 
+                return [ new NcDatatypeDescriptorPrimitive("ncInt64")];
+            case 'ncUint8': 
+                return [ new NcDatatypeDescriptorPrimitive("ncUint8")];
+            case 'ncUint16': 
+                return [ new NcDatatypeDescriptorPrimitive("ncUint16")];
+            case 'ncUint32': 
+                return [ new NcDatatypeDescriptorPrimitive("ncUint32")];
+            case 'ncUint64': 
+                return [ new NcDatatypeDescriptorPrimitive("ncUint64")];
+            case 'ncFloat32': 
+                return [ new NcDatatypeDescriptorPrimitive("ncFloat32")];
+            case 'ncFloat64': 
+                return [ new NcDatatypeDescriptorPrimitive("ncFloat64")];
+            case 'ncString': 
+                return [ new NcDatatypeDescriptorPrimitive("ncString")];
+            case 'ncBlob': 
+                return [ new NcDatatypeDescriptorPrimitive("ncBlob")];
+            case 'ncBlobFixedLen': 
+                return [ new NcDatatypeDescriptorPrimitive("ncBlobFixedLen")];
+            case 'ncClassId': 
+                return [ new NcDatatypeDescriptorTypeDef("ncClassId", "ncClassIdField")];
+            case 'ncClassIdField': 
+                return [ new NcDatatypeDescriptorTypeDef("ncClassIdField", "ncInt32")];
+            case 'ncVersionCode': 
+                return [ new NcDatatypeDescriptorTypeDef("ncVersionCode", "ncString")];
+            case 'ncOid': 
+                return [ new NcDatatypeDescriptorTypeDef("ncOid", "ncUint32")];
+            case 'ncRole': 
+                return [ new NcDatatypeDescriptorTypeDef("ncRole", "ncName")];
+            case 'ncRolePath': 
+                return [ new NcDatatypeDescriptorTypeDef("ncRolePath", "ncName")];
+            case 'ncLabel': 
+                return [ new NcDatatypeDescriptorTypeDef("ncLabel", "ncString")];
+            case 'ncName': 
+                return [ new NcDatatypeDescriptorTypeDef("ncName", "ncString")];
+            case 'ncId32': 
+                return [ new NcDatatypeDescriptorTypeDef("ncId32", "ncUint32")];
+            case 'ncTimeInterval': 
+                return [ new NcDatatypeDescriptorTypeDef("ncTimeInterval", "ncFloat64")];
+            case 'ncPropertyId': 
+                return [ new NcDatatypeDescriptorTypeDef("ncPropertyId", "ncElementID")];
+            case 'ncElementID': 
+                return [ NcElementID.GetTypeDescriptor() ];
+            case 'ncLockState': 
+                return [ new NcDatatypeDescriptorEnum("ncLockState", [
+                    new NcEnumItemDescriptor("noLock", 0),
+                    new NcEnumItemDescriptor("lockNoWrite", 1),
+                    new NcEnumItemDescriptor("lockNoReadWrite", 2),
+                ])];
+            case 'ncMethodStatus': 
+                return [ new NcDatatypeDescriptorEnum("ncMethodStatus", [
+                    new NcEnumItemDescriptor("ok", 0),
+                    new NcEnumItemDescriptor("protocolVersionError", 1),
+                    new NcEnumItemDescriptor("deviceError", 2),
+                    new NcEnumItemDescriptor("readonly", 3),
+                    new NcEnumItemDescriptor("locked", 4),
+                    new NcEnumItemDescriptor("badCommandFormat", 5),
+                    new NcEnumItemDescriptor("badOid", 6),
+                    new NcEnumItemDescriptor("parameterError", 7),
+                    new NcEnumItemDescriptor("parameterOutOfRange", 8),
+                    new NcEnumItemDescriptor("notImplemented", 9),
+                    new NcEnumItemDescriptor("invalidRequest", 10),
+                    new NcEnumItemDescriptor("processingFailed", 11),
+                    new NcEnumItemDescriptor("badMethodID", 12),
+                    new NcEnumItemDescriptor("partiallySucceeded", 13),
+                    new NcEnumItemDescriptor("timeout", 14),
+                    new NcEnumItemDescriptor("bufferOverflow", 15),
+                    new NcEnumItemDescriptor("omittedProperty", 16),
+                ])];
+            case 'ncMethodResult':
+                return [ new NcDatatypeDescriptorStruct("ncMethodResult", [
+                    new NcPropertyDescriptor(new NcElementID(1, 1), "status", "ncMethodStatus", true, true, true),
+                    new NcPropertyDescriptor(new NcElementID(1, 1), "errorMessage", "ncString", true, true, true)
+                ])];
+            case 'ncMethodResultPropertyValue':
+                return [ new NcDatatypeDescriptorStruct("ncMethodResultPropertyValue", [
+                    new NcPropertyDescriptor(new NcElementID(1, 1), "status", "ncMethodStatus", true, true, true),
+                    new NcPropertyDescriptor(new NcElementID(1, 1), "errorMessage", "ncString", true, true, true),
+                    new NcPropertyDescriptor(new NcElementID(2, 1), "value", "", true, true, true)
+                ])];
+            case 'ncMethodResultId32':
+                return [ new NcDatatypeDescriptorStruct("ncMethodResultId32", [
+                    new NcPropertyDescriptor(new NcElementID(1, 1), "status", "ncMethodStatus", true, true, true),
+                    new NcPropertyDescriptor(new NcElementID(1, 1), "errorMessage", "ncString", true, true, true),
+                    new NcPropertyDescriptor(new NcElementID(2, 1), "value", "ncId32", true, true, true)
+                ])];
+            case 'ncClassIdentity': 
+                return [ NcClassIdentity.GetTypeDescriptor() ];
+            case 'ncBlockMemberDescriptor': 
+                return [ NcBlockMemberDescriptor.GetTypeDescriptor() ];
+            case 'ncMethodResultBlockMemberDescriptors':
+                return [ new NcDatatypeDescriptorStruct("ncMethodResultBlockMemberDescriptors", [
+                    new NcPropertyDescriptor(new NcElementID(1, 1), "status", "ncMethodStatus", true, true, true),
+                    new NcPropertyDescriptor(new NcElementID(1, 1), "errorMessage", "ncString", true, true, true),
+                    new NcPropertyDescriptor(new NcElementID(2, 1), "value", "ncBlockMemberDescriptor", true, true, true)
+                ])];
+            case 'ncReceiverStatus': 
+                return [ NcReceiverStatus.GetTypeDescriptor() ];
+            case 'ncMethodResultReceiverStatus':
+                return [ new NcDatatypeDescriptorStruct("ncMethodResultReceiverStatus", [
+                    new NcPropertyDescriptor(new NcElementID(1, 1), "status", "ncMethodStatus", true, true, true),
+                    new NcPropertyDescriptor(new NcElementID(1, 1), "errorMessage", "ncString", true, true, true),
+                    new NcPropertyDescriptor(new NcElementID(2, 1), "value", "ncReceiverStatus", true, true, true)
+                ])];
+            case 'ncIoDirection': 
+                return [ new NcDatatypeDescriptorEnum("ncIoDirection", [
+                    new NcEnumItemDescriptor("undefined", 0),
+                    new NcEnumItemDescriptor("input", 1),
+                    new NcEnumItemDescriptor("output", 2),
+                    new NcEnumItemDescriptor("bidirectional", 3),
+                ])];
+            case 'ncConnectionStatus': 
+                return [ new NcDatatypeDescriptorEnum("ncConnectionStatus", [
+                    new NcEnumItemDescriptor("Undefined", 0),
+                    new NcEnumItemDescriptor("Connected", 1),
+                    new NcEnumItemDescriptor("Disconnected", 2),
+                    new NcEnumItemDescriptor("ConnectionError", 3),
+                ])];
+            case 'ncPayloadStatus': 
+                return [ new NcDatatypeDescriptorEnum("ncPayloadStatus", [
+                    new NcEnumItemDescriptor("Undefined", 0),
+                    new NcEnumItemDescriptor("PayloadOK", 1),
+                    new NcEnumItemDescriptor("PayloadFormatUnsupported", 2),
+                    new NcEnumItemDescriptor("PayloadError", 3),
+                ])];
+            case 'ncPort': 
+                return [ NcPort.GetTypeDescriptor() ];
+            case 'ncSignalPath': 
+                return [ NcSignalPath.GetTypeDescriptor() ];
+            case 'ncTouchpointNmos': 
+                return [ NcTouchpointNmos.GetTypeDescriptor() ];
+            case 'ncTouchpointResourceNmos': 
+                return [ NcTouchpointResourceNmos.GetTypeDescriptor() ];
+            default:
+                return new Array<NcDatatypeDescriptor>();
         }
     }
 }

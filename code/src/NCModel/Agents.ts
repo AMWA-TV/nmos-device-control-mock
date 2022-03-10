@@ -1,7 +1,7 @@
 import { jsonIgnoreReplacer, jsonIgnore } from 'json-ignore';
 import { CommandResponseNoValue, CommandResponseWithValue } from '../NCProtocol/Commands';
 import { INotificationContext } from '../SessionManager';
-import { myIdDecorator, NcClassDescriptor, NcElementID, NcLockState, NcMethodDescriptor, NcMethodStatus, NcObject, NcParameterDescriptor, NcPropertyDescriptor, NcTouchpoint } from './Core';
+import { BaseType, myIdDecorator, NcClassDescriptor, NcDatatypeDescriptor, NcDatatypeDescriptorStruct, NcElementID, NcLockState, NcMethodDescriptor, NcMethodStatus, NcObject, NcParameterDescriptor, NcPropertyDescriptor, NcTouchpoint } from './Core';
 
 export abstract class NcAgent extends NcObject
 {
@@ -34,6 +34,35 @@ enum NcPayloadStatus
     PayloadOK = 1,
     PayloadFormatUnsupported = 2,
     PayloadError = 3
+}
+
+export class NcReceiverStatus extends BaseType
+{
+    public connectionStatus: NcConnectionStatus;
+    public payloadStatus: NcPayloadStatus;
+
+    constructor(
+        connectionStatus: NcConnectionStatus,
+        payloadStatus: NcPayloadStatus) 
+    {
+        super();
+
+        this.connectionStatus = connectionStatus;
+        this.payloadStatus = payloadStatus;
+    }
+
+    public static override GetTypeDescriptor(): NcDatatypeDescriptor
+    {
+        return new NcDatatypeDescriptorStruct("ncReceiverStatus", [
+            new NcPropertyDescriptor(new NcElementID(1, 1), "connectionStatus", "ncConnectionStatus", true, true, true),
+            new NcPropertyDescriptor(new NcElementID(1, 2), "payloadStatus", "ncPayloadStatus", true, true, true)
+        ]);
+    }
+
+    public ToJson()
+    {
+        return JSON.stringify(this, jsonIgnoreReplacer);
+    }
 }
 
 export class NcReceiverMonitor extends NcAgent
