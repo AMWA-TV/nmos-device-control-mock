@@ -89,7 +89,7 @@ class NmosReceiverSubscription
         this.active = active;
     }
 
-    public ToJson() 
+    public ToJson()
     {
         return JSON.stringify(this, jsonIgnoreReplacer);
     }

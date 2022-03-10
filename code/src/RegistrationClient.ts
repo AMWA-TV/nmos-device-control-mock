@@ -105,7 +105,7 @@ class RegisterResourceMsg<Type>
         this.data = data;
     }
 
-    public ToJson() {
+    public ToJson(){
         return JSON.stringify(this, jsonIgnoreReplacer);
     }
 }
@@ -119,7 +119,7 @@ class Health
         this.health = TAI64.now().toUnix().toString();
     }
 
-    public ToJson() {
+    public ToJson(){
         return JSON.stringify(this, jsonIgnoreReplacer);
     }
 }

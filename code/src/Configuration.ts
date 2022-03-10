@@ -60,7 +60,7 @@ export class Configuration implements IConfiguration
             this.WriteConfig();
     }
 
-    public ToJson() 
+    public ToJson()
     {
         return JSON.stringify(this, jsonIgnoreReplacer);
     }

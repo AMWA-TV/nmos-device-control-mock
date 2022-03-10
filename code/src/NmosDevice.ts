@@ -80,7 +80,7 @@ export class NmosDevice extends NmosResource
         return uris;
     }
 
-    public ToJson() 
+    public ToJson()
     {
         return JSON.stringify(this, jsonIgnoreReplacer);
     }
@@ -99,7 +99,7 @@ class NmosControl
         this.type = type;
     }
 
-    public ToJson() 
+    public ToJson()
     {
         return JSON.stringify(this, jsonIgnoreReplacer);
     }
