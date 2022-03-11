@@ -41,7 +41,7 @@ export class NcClassManager extends NcManager
         super(oid, constantOid, owner, role, userLabel, lockable, lockState, touchpoints, notificationContext);
     }
 
-    public override InvokeMethod(oid: number, methodID: NcElementID, args: { [key: string]: any; } | null, handle: number): CommandResponseWithValue 
+    public override InvokeMethod(oid: number, methodID: NcElementID, args: { [key: string]: any; } | null, handle: number): CommandResponseNoValue 
     {
         if(oid == this.oid)
         {

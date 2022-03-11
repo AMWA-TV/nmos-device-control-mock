@@ -129,7 +129,7 @@ export abstract class NcObject
         return new CommandResponseNoValue(handle, NcMethodStatus.ProcessingFailed, 'Property does not exist in object');
     }
 
-    public InvokeMethod(oid: number, methodID: NcElementID, args: { [key: string]: any } | null, handle: number) : CommandResponseWithValue
+    public InvokeMethod(oid: number, methodID: NcElementID, args: { [key: string]: any } | null, handle: number) : CommandResponseNoValue
     {
         return new CommandResponseNoValue(handle, NcMethodStatus.BadMethodID, 'Method does not exist in object');
     }
