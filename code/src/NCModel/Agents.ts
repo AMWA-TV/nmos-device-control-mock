@@ -166,6 +166,26 @@ export class NcReceiverMonitor extends NcAgent
         }
     }
 
+    public override InvokeMethod(oid: number, methodID: NcElementID, args: { [key: string]: any; } | null, handle: number): CommandResponseNoValue 
+    {
+        if(oid == this.oid)
+        {
+            let key: string = `${methodID.level}m${methodID.index}`;
+
+            switch(key)
+            {
+                case '3m1':
+                {
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, new NcReceiverStatus(this.connectionStatus, this.payloadStatus), null);
+                }
+                default:
+                    return super.InvokeMethod(oid, methodID, args, handle);
+            }
+        }
+
+        return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
+    }
+
     public static override GetClassDescriptor(): NcClassDescriptor 
     {
         let baseDescriptor = super.GetClassDescriptor();
