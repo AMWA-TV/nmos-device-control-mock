@@ -51,7 +51,7 @@ export class NcClassManager extends NcManager
             {
                 case '3m1':
                     {
-                        if(args != null)
+                        if(args != null && 'identity' in args)
                         {
                             let identity = args['identity'] as NcClassIdentity;
                             let descriptors = this.GetClassDescriptors(identity);
@@ -65,7 +65,7 @@ export class NcClassManager extends NcManager
                     }
                 case '3m2':
                 {
-                    if(args != null)
+                    if(args != null && 'name' in args)
                     {
                         let name = args['name'] as string;
                         let descriptors = this.GetTypeDescriptors(name);

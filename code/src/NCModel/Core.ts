@@ -131,7 +131,7 @@ export abstract class NcObject
 
     public InvokeMethod(oid: number, methodID: NcElementID, args: { [key: string]: any } | null, handle: number) : CommandResponseWithValue
     {
-        return new CommandResponseWithValue(handle, NcMethodStatus.BadMethodID, null, 'Method does not exist in object');
+        return new CommandResponseNoValue(handle, NcMethodStatus.BadMethodID, 'Method does not exist in object');
     }
 
     public GenerateMemberDescriptor() : NcBlockMemberDescriptor

@@ -351,7 +351,7 @@ export class RootBlock extends NcBlock
     {
         if (this.IsGenericGetter(commandMsg.methodID))
         {
-            if(commandMsg.arguments != null)
+            if(commandMsg.arguments != null && 'id' in commandMsg.arguments)
             {
                 let propertyId = commandMsg.arguments['id'] as NcElementID;
 
@@ -366,10 +366,12 @@ export class RootBlock extends NcBlock
                         return new CommandResponseNoValue(commandMsg.handle, NcMethodStatus.InvalidRequest, "OID could not be found");
                 }
             }
+            else
+                return new CommandResponseNoValue(commandMsg.handle, NcMethodStatus.InvalidRequest, "OID could not be found");
         }
         else if (this.IsGenericSetter(commandMsg.methodID))
         {
-            if(commandMsg.arguments != null)
+            if(commandMsg.arguments != null && 'id' in commandMsg.arguments)
             {
                 let propertyId = commandMsg.arguments['id'] as NcElementID;
                 let propertyValue = commandMsg.arguments['value'];
@@ -385,6 +387,8 @@ export class RootBlock extends NcBlock
                         return new CommandResponseNoValue(commandMsg.handle, NcMethodStatus.InvalidRequest, "OID could not be found");
                 }
             }
+            else
+                return new CommandResponseNoValue(commandMsg.handle, NcMethodStatus.InvalidRequest, "OID could not be found");
         }
         else
         {
