@@ -103,7 +103,7 @@ export class ProtoCommandResponse extends ProtocolWrapper
         sessionId: number,
         messages: CommandResponseNoValue[])
     {
-        super('1.0', 'Command');
+        super('1.0', 'CommandResponse');
 
         this.sessionId = sessionId;
         this.messages = messages;
