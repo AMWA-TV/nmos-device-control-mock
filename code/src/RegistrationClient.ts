@@ -2,7 +2,7 @@ import { TAI64 } from "tai64";
 
 import { jsonIgnoreReplacer, jsonIgnore } from 'json-ignore';
 
-import { Axios } from 'axios';
+import { Axios, AxiosResponse } from 'axios';
 import { NmosNode } from './NmosNode';
 const axios = require('axios').default as Axios;
 
@@ -32,7 +32,7 @@ export class RegistrationClient
         }, 4000);
     }
 
-    public RegisterOrUpdateResource<NmosResource>(resourceType: string, resource: NmosResource) : boolean
+    public async RegisterOrUpdateResource<NmosResource>(resourceType: string, resource: NmosResource) : Promise<AxiosResponse | null>
     {
         try 
         {
@@ -40,25 +40,20 @@ export class RegistrationClient
 
             let payload = new RegisterResourceMsg(resourceType, resource);
 
-            axios.post<NmosResource>(
+            return await axios.post<NmosResource>(
                 `http://${this.registry_address}:${this.registry_port}/x-nmos/registration/v1.3/resource`,
                 payload.ToJson(), 
                 {
                     headers: {
                         'Content-Type': 'application/json'
                     }
-                })
-                .then(response => { 
-                    return true;
                 });
         }
         catch (error) 
         {
             console.log(error);
-                return false;
+                return null;
         }
-
-        return false;
     }
 
     SendHeartbeat(nodeId: string | null) : boolean

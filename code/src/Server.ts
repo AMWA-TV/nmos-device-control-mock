@@ -21,6 +21,11 @@ export interface WebSocketConnection extends WebSocket {
     connectionId: string;
 }
 
+function DelayTask(timeMs: number | undefined) 
+{
+    return new Promise(resolve => setTimeout(resolve, timeMs));
+}
+
 try
 {
     console.log('App started');
@@ -110,12 +115,15 @@ try
         null,
         sessionManager);
 
-    registrationClient.RegisterOrUpdateResource('node', myNode);
-    registrationClient.RegisterOrUpdateResource('device', myDevice);
-    registrationClient.RegisterOrUpdateResource('receiver', myVideoReceiver);
+    async function doAsync () {
+        await registrationClient.RegisterOrUpdateResource('node', myNode);
+        registrationClient.StartHeatbeats(myNode.id);
+        await registrationClient.RegisterOrUpdateResource('device', myDevice);
+        await registrationClient.RegisterOrUpdateResource('receiver', myVideoReceiver);
+    };
 
-    registrationClient.StartHeatbeats(myNode.id);
-    
+    doAsync();
+
     //initialize the Express HTTP listener
     const app = application();
     app.use(application.json());
@@ -125,7 +133,7 @@ try
     
     //initialize the WebSocket server instance
     const webSocketServer = new WebSocket.Server({ noServer: true });
-    
+
     webSocketServer.on('connection', (ws: WebSocket) => {
         let extWs = ws as WebSocketConnection;
     
@@ -152,7 +160,7 @@ try
             sessionManager.ConnectionClosed(extWs.connectionId);
         })
     });
-    
+
     setInterval(() => {
         webSocketServer.clients.forEach((ws: WebSocket) => {
             const extWs = ws as WebSocketConnection;
