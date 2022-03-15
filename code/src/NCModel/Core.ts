@@ -71,62 +71,72 @@ export abstract class NcObject
     }
 
     //'1m1'
-    public Get(oid: number, id: NcElementID, handle: number) : CommandResponseWithValue
+    public Get(oid: number, id: NcElementID, handle: number) : CommandResponseNoValue
     {
-        let key: string = `${id.level}p${id.index}`;
-
-        switch(key)
+        if(oid == this.oid)
         {
-            case '1p1':
-                return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.classID, null);
-            case '1p2':
-                return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.classVersion, null);
-            case '1p3':
-                return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.oid, null);
-            case '1p4':
-                return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.constantOid, null);
-            case '1p5':
-                return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.owner, null);
-            case '1p6':
-                return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.role, null);
-            case '1p7':
-                return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.userLabel, null);
-            case '1p8':
-                return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.lockable, null);
-            case '1p9':
-                return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.lockState, null);
-            case '1p10':
-                return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.touchpoints, null);
+            let key: string = `${id.level}p${id.index}`;
+
+            switch(key)
+            {
+                case '1p1':
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.classID, null);
+                case '1p2':
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.classVersion, null);
+                case '1p3':
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.oid, null);
+                case '1p4':
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.constantOid, null);
+                case '1p5':
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.owner, null);
+                case '1p6':
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.role, null);
+                case '1p7':
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.userLabel, null);
+                case '1p8':
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.lockable, null);
+                case '1p9':
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.lockState, null);
+                case '1p10':
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.touchpoints, null);
+                default:
+                    return new CommandResponseNoValue(handle, NcMethodStatus.ProcessingFailed, 'Property does not exist in object');
+            }
         }
 
-        return new CommandResponseWithValue(handle, NcMethodStatus.ProcessingFailed, null, 'Property does not exist in object');
+        return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
     }
 
     //'1m2'
     public Set(oid: number, id: NcElementID, value: any, handle: number) : CommandResponseNoValue
     {
-        let key: string = `${id.level}p${id.index}`;
-
-        switch(key)
+        if(oid == this.oid)
         {
-            case '1p1':
-            case '1p2':
-            case '1p3':
-            case '1p4':
-            case '1p5':
-            case '1p6':
-                return new CommandResponseNoValue(handle, NcMethodStatus.ProcessingFailed, 'Property is readonly');
-            case '1p7':
-                this.userLabel = value;
-                this.notificationContext.NotifyPropertyChanged(this.oid, id, this.userLabel);
-                return new CommandResponseNoValue(handle, NcMethodStatus.OK, null);
-            case '1p8':
-            case '1p9':
-            case '1p10':
-                return new CommandResponseNoValue(handle, NcMethodStatus.ProcessingFailed, 'Property is readonly');
+            let key: string = `${id.level}p${id.index}`;
+
+            switch(key)
+            {
+                case '1p1':
+                case '1p2':
+                case '1p3':
+                case '1p4':
+                case '1p5':
+                case '1p6':
+                    return new CommandResponseNoValue(handle, NcMethodStatus.ProcessingFailed, 'Property is readonly');
+                case '1p7':
+                    this.userLabel = value;
+                    this.notificationContext.NotifyPropertyChanged(this.oid, id, this.userLabel);
+                    return new CommandResponseNoValue(handle, NcMethodStatus.OK, null);
+                case '1p8':
+                case '1p9':
+                case '1p10':
+                    return new CommandResponseNoValue(handle, NcMethodStatus.ProcessingFailed, 'Property is readonly');
+                default:
+                    return new CommandResponseNoValue(handle, NcMethodStatus.ProcessingFailed, 'Property does not exist in object');
+            }
         }
 
-        return new CommandResponseNoValue(handle, NcMethodStatus.ProcessingFailed, 'Property does not exist in object');
+        return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
     }
 
     public InvokeMethod(oid: number, methodID: NcElementID, args: { [key: string]: any } | null, handle: number) : CommandResponseNoValue
@@ -299,21 +309,46 @@ export class NcPort extends BaseType
     }
 }
 
+export class NcPortReference extends BaseType
+{
+    public owner: string[];
+
+    public role: string;
+
+    public constructor(
+        owner: string[],
+        role: string)
+    {
+        super();
+
+        this.owner = owner;
+        this.role = role;
+    }
+
+    public static override GetTypeDescriptor(): NcDatatypeDescriptor
+    {
+        return new NcDatatypeDescriptorStruct("ncPortReference", [
+            new NcPropertyDescriptor(new NcElementID(1, 1), "owner", "ncRolePath", true, true, true),
+            new NcPropertyDescriptor(new NcElementID(1, 2), "role", "ncRole", true, true, true)
+        ]);
+    }
+}
+
 export class NcSignalPath extends BaseType
 {
     public role: string;
 
     public label: string;
 
-    public source: string;
+    public source: NcPortReference;
 
-    public sink: string;
+    public sink: NcPortReference;
 
     public constructor(
         role: string,
         label: string,
-        source: string,
-        sink: string)
+        source: NcPortReference,
+        sink: NcPortReference)
     {
         super();
 
@@ -326,9 +361,10 @@ export class NcSignalPath extends BaseType
     public static override GetTypeDescriptor(): NcDatatypeDescriptor
     {
         return new NcDatatypeDescriptorStruct("ncSignalPath", [
-            new NcPropertyDescriptor(new NcElementID(1, 1), "role", "ncName", true, true, true),
-            new NcPropertyDescriptor(new NcElementID(1, 2), "source", "ncRole", true, true, true),
-            new NcPropertyDescriptor(new NcElementID(1, 3), "sink", "ncRole", true, true, true)
+            new NcPropertyDescriptor(new NcElementID(1, 1), "role", "ncRole", true, true, true),
+            new NcPropertyDescriptor(new NcElementID(1, 2), "label", "ncLabel", true, true, true),
+            new NcPropertyDescriptor(new NcElementID(1, 3), "source", "ncPortReference", true, true, true),
+            new NcPropertyDescriptor(new NcElementID(1, 4), "sink", "ncPortReference", true, true, true)
         ]);
     }
 }

@@ -65,7 +65,7 @@ export class NmosDevice extends NmosResource
     public ChangeReceiverSettings(id: string, settings: NmosReceiverActiveRtp)
     {
         let receiver = this.receiverObjects.find(e => e.id === id);
-        if(receiver !== undefined)
+        if(receiver)
             (receiver as NmosReceiverVideo).ChangeReceiverSettings(settings);
     }
 

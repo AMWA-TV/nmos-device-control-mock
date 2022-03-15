@@ -1,9 +1,9 @@
 import { jsonIgnoreReplacer, jsonIgnore } from 'json-ignore';
 import { CommandResponseNoValue, CommandResponseWithValue } from '../NCProtocol/Commands';
 import { INotificationContext } from '../SessionManager';
-import { NcReceiverMonitor, NcReceiverStatus } from './Agents';
 import { NcBlock } from './Blocks';
-import { NcBlockMemberDescriptor, NcClassDescriptor, NcClassIdentity, NcDatatypeDescriptor, NcDatatypeDescriptorEnum, NcDatatypeDescriptorPrimitive, NcDatatypeDescriptorStruct, NcDatatypeDescriptorTypeDef, NcDatatypeType, NcElementID, NcEnumItemDescriptor, NcLockState, NcMethodDescriptor, NcMethodStatus, NcObject, NcParameterDescriptor, NcPort, NcPropertyDescriptor, NcSignalPath, NcTouchpoint, NcTouchpointNmos, NcTouchpointResourceNmos } from './Core';
+import { NcBlockMemberDescriptor, NcClassDescriptor, NcClassIdentity, NcDatatypeDescriptor, NcDatatypeDescriptorEnum, NcDatatypeDescriptorPrimitive, NcDatatypeDescriptorStruct, NcDatatypeDescriptorTypeDef, NcDatatypeType, NcElementID, NcEnumItemDescriptor, NcLockState, NcMethodDescriptor, NcMethodStatus, NcObject, NcParameterDescriptor, NcPort, NcPortReference, NcPropertyDescriptor, NcSignalPath, NcTouchpoint, NcTouchpointNmos, NcTouchpointResourceNmos } from './Core';
+import { NcGain, NcReceiverMonitor, NcReceiverStatus } from './Features';
 
 export abstract class NcManager extends NcObject
 {
@@ -138,6 +138,8 @@ export class NcClassManager extends NcManager
                 return [ NcSubscriptionManager.GetClassDescriptor() ];
             case '1.4.1': 
                 return [ NcReceiverMonitor.GetClassDescriptor() ];
+            case '1.2.1.1': 
+                return [ NcGain.GetClassDescriptor() ];
             default:
                 return new Array<NcClassDescriptor>();
         }
@@ -195,6 +197,8 @@ export class NcClassManager extends NcManager
                 return [ new NcDatatypeDescriptorTypeDef("ncId32", "ncUint32")];
             case 'ncTimeInterval': 
                 return [ new NcDatatypeDescriptorTypeDef("ncTimeInterval", "ncFloat64")];
+            case 'ncDB': 
+                return [ new NcDatatypeDescriptorTypeDef("ncDB", "ncFloat32")];
             case 'ncPropertyId': 
                 return [ new NcDatatypeDescriptorTypeDef("ncPropertyId", "ncElementID")];
             case 'ncElementID': 
@@ -283,6 +287,8 @@ export class NcClassManager extends NcManager
                 ])];
             case 'ncPort': 
                 return [ NcPort.GetTypeDescriptor() ];
+            case 'ncPortReference': 
+                return [ NcPortReference.GetTypeDescriptor() ];
             case 'ncSignalPath': 
                 return [ NcSignalPath.GetTypeDescriptor() ];
             case 'ncTouchpointNmos': 
