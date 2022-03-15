@@ -13,8 +13,8 @@ import { NmosReceiverActiveRtp } from './NmosReceiverActiveRtp';
 import { SessionManager } from './SessionManager';
 import { NcBlock, RootBlock } from './NCModel/Blocks';
 import { NcClassManager, NcSubscriptionManager } from './NCModel/Managers';
-import { NcReceiverMonitor } from './NCModel/Agents';
-import { NcLockState, NcTouchpointNmos, NcTouchpointResourceNmos } from './NCModel/Core';
+import { NcIoDirection, NcLockState, NcPort, NcPortReference, NcSignalPath, NcTouchpointNmos, NcTouchpointResourceNmos } from './NCModel/Core';
+import { NcGain, NcReceiverMonitor } from './NCModel/Features';
 
 export interface WebSocketConnection extends WebSocket {
     isAlive: boolean;
@@ -94,6 +94,87 @@ try
 
     myVideoReceiver.AttachMonitoringAgent(receiverMonitorAgent);
 
+    const channelGainBlock = new NcBlock(
+        21,
+        true,
+        31,
+        'channel-gain',
+        'Channel gain',
+        false,
+        NcLockState.NoLock,
+        null,
+        true,
+        null,
+        null,
+        null,
+        null,
+        null,
+        false,
+        [
+            new NcGain(22, true, 21, "left-gain", "Left gain", false, NcLockState.NoLock, [], true, [
+                new NcPort('input_1', NcIoDirection.Input, null),
+                new NcPort('output_1', NcIoDirection.Output, null),
+            ], null, 0, sessionManager),
+            new NcGain(23, true, 21, "right-gain", "Right gain", false, NcLockState.NoLock, [], true, [
+                new NcPort('input_1', NcIoDirection.Input, null),
+                new NcPort('output_1', NcIoDirection.Output, null),
+            ], null, 0, sessionManager)
+        ],
+        [ 
+            new NcPort('stereo_gain_input_1', NcIoDirection.Input, null),
+            new NcPort('stereo_gain_input_2', NcIoDirection.Input, null),
+            new NcPort('stereo_gain_output_1', NcIoDirection.Output, null),
+            new NcPort('stereo_gain_output_2', NcIoDirection.Output, null)
+        ],
+        [
+            new NcSignalPath('left_gain_input', 'Left gain input', new NcPortReference([], "stereo_gain_input_1"), new NcPortReference(['left-gain'], 'input_1')),
+            new NcSignalPath('left_gain_output', 'Left gain output', new NcPortReference(['left-gain'], 'output_1'), new NcPortReference([], "stereo_gain_output_1")),
+            new NcSignalPath('right_gain_input', 'Right gain input', new NcPortReference([], "stereo_gain_input_2"), new NcPortReference(['right-gain'], 'input_1')),
+            new NcSignalPath('right_gain_output', 'Right gain output', new NcPortReference(['right-gain'], 'output_1'), new NcPortReference([], "stereo_gain_output_2")),
+        ],
+        sessionManager);
+
+        const stereoGainBlock = new NcBlock(
+            31,
+            true,
+            1,
+            'stereo-gain',
+            'Stereo gain',
+            false,
+            NcLockState.NoLock,
+            null,
+            true,
+            null,
+            null,
+            null,
+            null,
+            null,
+            false,
+            [
+                channelGainBlock,
+                new NcGain(22, true, 31, "master-gain", "Master gain", false, NcLockState.NoLock, [], true, [
+                    new NcPort('input_1', NcIoDirection.Input, null),
+                    new NcPort('input_2', NcIoDirection.Input, null),
+                    new NcPort('output_1', NcIoDirection.Output, null),
+                    new NcPort('output_2', NcIoDirection.Output, null),
+                ], null, 0, sessionManager)
+            ],
+            [ 
+                new NcPort('block_input_1', NcIoDirection.Input, null),
+                new NcPort('block_input_2', NcIoDirection.Input, null),
+                new NcPort('block_output_1', NcIoDirection.Output, null),
+                new NcPort('block_output_2', NcIoDirection.Output, null)
+            ],
+            [
+                new NcSignalPath('block-in-1-to-left-gain-in', 'Block input 1 to left gain input', new NcPortReference([], "block_input_1"), new NcPortReference(['stereo-gain'], 'stereo_gain_input_1')),
+                new NcSignalPath('left-gain-out-to-master-gain-in-1', 'Left gain output to master gain input 1', new NcPortReference(['stereo-gain'], 'stereo_gain_output_1'), new NcPortReference(['master-gain'], "input_1")),
+                new NcSignalPath('master-gain-out-1-to-block-out-1', 'Master gain output 1 to block output 1', new NcPortReference(['master-gain'], "output_1"), new NcPortReference([], 'block_output_1')),
+                new NcSignalPath('block-in-2-to-right-gain-in', 'Block input 2 to right gain input', new NcPortReference([], "block_input_2"), new NcPortReference(['stereo-gain'], 'stereo_gain_input_2')),
+                new NcSignalPath('right-gain-out-to-master-gain-in-2', 'Right gain output to master gain input 2', new NcPortReference(['stereo-gain'], 'stereo_gain_output_2'), new NcPortReference(['master-gain'], "input_2")),
+                new NcSignalPath('master-gain-out-2-to-block-out-2', 'Master gain output 2 to block output 2', new NcPortReference(['master-gain'], "output_2"), new NcPortReference([], 'block_output_2'))
+            ],
+            sessionManager);
+
     const rootBlock = new RootBlock(
         1,
         true,
@@ -110,7 +191,7 @@ try
         null,
         null,
         false,
-        [ classManager, subscriptionManager, receiverMonitorAgent ],
+        [ classManager, subscriptionManager, receiverMonitorAgent, stereoGainBlock ],
         null,
         null,
         sessionManager);
@@ -177,7 +258,7 @@ try
     
     //forward WS upgrades to the webSocketServer
     server.on('upgrade', function upgrade(request, socket, head) {
-        if(request.url !== undefined)
+        if(request.url)
         {
             console.log(`Request url ${request.url})`);
             if (request.url === '/x-nmos/ncp/v1.0/connect')
