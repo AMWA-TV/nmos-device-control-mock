@@ -1,5 +1,5 @@
 import { jsonIgnoreReplacer, jsonIgnore } from 'json-ignore';
-import { NcReceiverMonitor } from './NCModel/Agents';
+import { NcReceiverMonitor } from './NCModel/Features';
 
 import { NmosResource } from './NmosResource';
 import { RegistrationClient } from './RegistrationClient';
