@@ -1,6 +1,7 @@
 import { jsonIgnoreReplacer, jsonIgnore } from 'json-ignore';
 import { CommandMsg, CommandResponseNoValue, CommandResponseWithValue, ProtoCommand, ProtoCommandResponse } from '../NCProtocol/Commands';
 import { ProtocolWrapper } from '../NCProtocol/Core';
+import { ProtoHeartbeat, ProtoHeartbeatResponse } from '../NCProtocol/Heartbeats';
 import { CreateSessionResponse, ProtoCreateSession, ProtoCreateSessionResponse } from '../NCProtocol/Sessions';
 import { WebSocketConnection } from '../Server';
 import { INotificationContext } from '../SessionManager';
@@ -339,8 +340,18 @@ export class RootBlock extends NcBlock
                 let msgCommand = JSON.parse(msg) as ProtoCommand;
                 socket.send(this.ProcessCommand(msgCommand).ToJson());
             }
+            case 'Heartbeat':
+            {
+                let msgHeartbeat = JSON.parse(msg) as ProtoHeartbeat;
+                socket.send(this.ProcessHeartbeat(msgHeartbeat).ToJson());
+            }
             break;
         }
+    }
+
+    public ProcessHeartbeat(command: ProtoHeartbeat) : ProtoHeartbeatResponse
+    {
+        return new ProtoHeartbeatResponse(command.sessionId, [ new CommandResponseNoValue(0, NcMethodStatus.OK, null) ]);
     }
 
     public ProcessCommand(command: ProtoCommand) : ProtoCommandResponse
