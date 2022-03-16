@@ -53,7 +53,7 @@ export class ProtoNotification extends ProtocolWrapper
         sessionId: number,
         messages: NcNotification[])
     {
-        super('1.0', 'Notification');
+        super('1.0.0', 'Notification');
 
         this.sessionId = sessionId;
         this.messages = messages;

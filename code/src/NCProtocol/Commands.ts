@@ -81,7 +81,7 @@ export class ProtoCommand extends ProtocolWrapper
         sessionId: number,
         messages: CommandMsg[])
     {
-        super('1.0', 'Command');
+        super('1.0.0', 'Command');
 
         this.sessionId = sessionId;
         this.messages = messages;
@@ -103,7 +103,7 @@ export class ProtoCommandResponse extends ProtocolWrapper
         sessionId: number,
         messages: CommandResponseNoValue[])
     {
-        super('1.0', 'CommandResponse');
+        super('1.0.0', 'CommandResponse');
 
         this.sessionId = sessionId;
         this.messages = messages;

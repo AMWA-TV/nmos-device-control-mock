@@ -46,7 +46,7 @@ export class ProtoCreateSession extends ProtocolWrapper
     public constructor(
         messages: CreateSessionMsg[])
     {
-        super('1.0', 'CreateSession');
+        super('1.0.0', 'CreateSession');
 
         this.messages = messages;
     }
@@ -64,7 +64,7 @@ export class ProtoCreateSessionResponse extends ProtocolWrapper
     public constructor(
         messages: CreateSessionResponse[])
     {
-        super('1.0', 'CreateSessionResponse');
+        super('1.0.0', 'CreateSessionResponse');
 
         this.messages = messages;
     }
