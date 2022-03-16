@@ -14,18 +14,19 @@ It also has support for IS-04 and IS-05 with some limitations:
 
 ## Installation
 
+`Note`: npm commands need to be executed from the `/code` subfolder.
+
 First install dependencies with
 
 `npm install`
 
 Modify the config.json properties for your configuration.
-At the very least point `registry_address` and `registry_address` to the NMOS registry on your network.
+At the very least point `registry_address` and `registry_port` to the NMOS registry on your network.
 
-## Usage
+### Usage
 
 Run with
 
 `npm run serve`
 
 <!-- INTRO-END -->
-
