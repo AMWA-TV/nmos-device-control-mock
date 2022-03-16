@@ -1,7 +1,7 @@
 import { jsonIgnoreReplacer, jsonIgnore } from 'json-ignore';
 import { CommandMsg, CommandResponseNoValue, CommandResponseWithValue, ProtoCommand, ProtoCommandResponse } from '../NCProtocol/Commands';
 import { ProtocolWrapper } from '../NCProtocol/Core';
-import { ProtoHeartbeat, ProtoHeartbeatResponse } from '../NCProtocol/Heartbeats';
+import { CommandResponseHeartbeat, ProtoHeartbeat, ProtoHeartbeatResponse } from '../NCProtocol/Heartbeats';
 import { CreateSessionResponse, ProtoCreateSession, ProtoCreateSessionResponse } from '../NCProtocol/Sessions';
 import { WebSocketConnection } from '../Server';
 import { INotificationContext } from '../SessionManager';
@@ -351,7 +351,7 @@ export class RootBlock extends NcBlock
 
     public ProcessHeartbeat(command: ProtoHeartbeat) : ProtoHeartbeatResponse
     {
-        return new ProtoHeartbeatResponse(command.sessionId, [ new CommandResponseNoValue(0, NcMethodStatus.OK, null) ]);
+        return new ProtoHeartbeatResponse(command.sessionId, [ new CommandResponseHeartbeat(NcMethodStatus.OK, null) ]);
     }
 
     public ProcessCommand(command: ProtoCommand) : ProtoCommandResponse
