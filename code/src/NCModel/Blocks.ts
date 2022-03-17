@@ -340,6 +340,7 @@ export class RootBlock extends NcBlock
                 let msgCommand = JSON.parse(msg) as ProtoCommand;
                 socket.send(this.ProcessCommand(msgCommand).ToJson());
             }
+            break;
             case 'Heartbeat':
             {
                 let msgHeartbeat = JSON.parse(msg) as ProtoHeartbeat;
