@@ -158,10 +158,10 @@ export abstract class NcObject
                 new NcPropertyDescriptor(new NcElementID(1, 3), "oid", "ncOid", true, true, true),
                 new NcPropertyDescriptor(new NcElementID(1, 4), "constantOid", "ncBoolean", true, true, true),
                 new NcPropertyDescriptor(new NcElementID(1, 5), "owner", "ncOid", true, true, true),
-                new NcPropertyDescriptor(new NcElementID(1, 6), "role", "ncOid", true, true, true),
-                new NcPropertyDescriptor(new NcElementID(1, 7), "userLabel", "ncOid", false, true, true),
-                new NcPropertyDescriptor(new NcElementID(1, 8), "lockable", "ncOid", true, true, true),
-                new NcPropertyDescriptor(new NcElementID(1, 9), "lockState", "ncOid", false, false, true),
+                new NcPropertyDescriptor(new NcElementID(1, 6), "role", "ncRole", true, true, true),
+                new NcPropertyDescriptor(new NcElementID(1, 7), "userLabel", "ncString", false, true, true),
+                new NcPropertyDescriptor(new NcElementID(1, 8), "lockable", "ncBoolean", true, true, true),
+                new NcPropertyDescriptor(new NcElementID(1, 9), "lockState", "ncLockState", false, false, true),
                 new NcPropertyDescriptor(new NcElementID(1, 10), "touchpoints", "ncTouchpoint", true, true, true),
             ],
             [ 
@@ -192,7 +192,7 @@ export abstract class NcObject
                 ]),
                 new NcMethodDescriptor(new NcElementID(1, 8), "lockWait", "ncMethodResult", [
                     new NcParameterDescriptor("target", "ncOid", true),
-                    new NcParameterDescriptor("requestedLockStatus", "ncLockStatus", true),
+                    new NcParameterDescriptor("requestedLockStatus", "ncLockState", true),
                     new NcParameterDescriptor("timeout", "ncTimeInterval", true),
                 ]),
                 new NcMethodDescriptor(new NcElementID(1, 9), "abortWaits", "ncMethodResult", [
@@ -222,8 +222,8 @@ export class NcElementID extends BaseType
     public static override GetTypeDescriptor(): NcDatatypeDescriptor
     {
         return new NcDatatypeDescriptorStruct("ncElementID", [
-            new NcPropertyDescriptor(new NcElementID(1, 1), "level", "ncUint16", true, true, true),
-            new NcPropertyDescriptor(new NcElementID(1, 1), "index", "ncUint16", true, true, true)
+            new NcFieldDescriptor("level", "ncUint16"),
+            new NcFieldDescriptor("index", "ncUint16")
         ]);
     }
 
@@ -302,9 +302,9 @@ export class NcPort extends BaseType
     public static override GetTypeDescriptor(): NcDatatypeDescriptor
     {
         return new NcDatatypeDescriptorStruct("ncPort", [
-            new NcPropertyDescriptor(new NcElementID(1, 1), "role", "ncRole", true, true, true),
-            new NcPropertyDescriptor(new NcElementID(1, 2), "direction", "ncIoDirection", true, true, true),
-            new NcPropertyDescriptor(new NcElementID(1, 3), "clockPath", "ncRolePath", true, true, true)
+            new NcFieldDescriptor("role", "ncRole"),
+            new NcFieldDescriptor("direction", "ncIoDirection"),
+            new NcFieldDescriptor("clockPath", "ncRolePath")
         ]);
     }
 }
@@ -328,8 +328,8 @@ export class NcPortReference extends BaseType
     public static override GetTypeDescriptor(): NcDatatypeDescriptor
     {
         return new NcDatatypeDescriptorStruct("ncPortReference", [
-            new NcPropertyDescriptor(new NcElementID(1, 1), "owner", "ncRolePath", true, true, true),
-            new NcPropertyDescriptor(new NcElementID(1, 2), "role", "ncRole", true, true, true)
+            new NcFieldDescriptor("owner", "ncRolePath"),
+            new NcFieldDescriptor("role", "ncRole")
         ]);
     }
 }
@@ -361,10 +361,10 @@ export class NcSignalPath extends BaseType
     public static override GetTypeDescriptor(): NcDatatypeDescriptor
     {
         return new NcDatatypeDescriptorStruct("ncSignalPath", [
-            new NcPropertyDescriptor(new NcElementID(1, 1), "role", "ncRole", true, true, true),
-            new NcPropertyDescriptor(new NcElementID(1, 2), "label", "ncLabel", true, true, true),
-            new NcPropertyDescriptor(new NcElementID(1, 3), "source", "ncPortReference", true, true, true),
-            new NcPropertyDescriptor(new NcElementID(1, 4), "sink", "ncPortReference", true, true, true)
+            new NcFieldDescriptor("role", "ncRole"),
+            new NcFieldDescriptor("label", "ncLabel"),
+            new NcFieldDescriptor("source", "ncPortReference"),
+            new NcFieldDescriptor("sink", "ncPortReference")
         ]);
     }
 }
@@ -386,7 +386,7 @@ abstract class NcTouchpointResource extends BaseType
     public static override GetTypeDescriptor(): NcDatatypeDescriptor
     {
         return new NcDatatypeDescriptorStruct("ncTouchpointResource", [
-            new NcPropertyDescriptor(new NcElementID(1, 1), "resourceType", "ncString", true, true, true)
+            new NcFieldDescriptor("resourceType", "ncString")
         ]);
     }
 }
@@ -409,7 +409,7 @@ export class NcTouchpointResourceNmos extends NcTouchpointResource
         let baseDescriptor = super.GetTypeDescriptor();
 
         let currentClassDescriptor = new NcDatatypeDescriptorStruct("ncTouchpointResourceNmos", [
-            new NcPropertyDescriptor(new NcElementID(2, 1), "id", "ncString", true, true, true)
+            new NcFieldDescriptor("id", "ncString")
         ]);
 
         currentClassDescriptor.content = currentClassDescriptor.content.concat(baseDescriptor.content);
@@ -437,7 +437,7 @@ export abstract class NcTouchpoint extends BaseType
     public static override GetTypeDescriptor(): NcDatatypeDescriptor
     {
         return new NcDatatypeDescriptorStruct("ncTouchpoint", [
-            new NcPropertyDescriptor(new NcElementID(1, 1), "contextNamespace", "ncString", true, true, true)
+            new NcFieldDescriptor("contextNamespace", "ncString")
         ]);
     }
 }
@@ -456,7 +456,7 @@ export class NcTouchpointNmos extends NcTouchpoint
         let baseDescriptor = super.GetTypeDescriptor();
 
         let currentClassDescriptor = new NcDatatypeDescriptorStruct("ncTouchpointNmos", [
-            new NcPropertyDescriptor(new NcElementID(1, 1), "resources", "ncTouchpointResourceNmos", true, true, true),
+            new NcFieldDescriptor("resources", "ncTouchpointResourceNmos"),
         ]);
 
         currentClassDescriptor.content = currentClassDescriptor.content.concat(baseDescriptor.content);
@@ -483,8 +483,8 @@ export class NcClassIdentity extends BaseType
     public static override GetTypeDescriptor(): NcDatatypeDescriptor
     {
         return new NcDatatypeDescriptorStruct("ncClassIdentity", [
-            new NcPropertyDescriptor(new NcElementID(1, 1), "id", "ncClassId", true, true, true),
-            new NcPropertyDescriptor(new NcElementID(1, 2), "version", "ncVersionCode", true, true, true)
+            new NcFieldDescriptor("id", "ncClassId"),
+            new NcFieldDescriptor("version", "ncVersionCode")
         ]);
     }
 
@@ -524,12 +524,12 @@ export class NcBlockMemberDescriptor extends BaseType
     public static override GetTypeDescriptor(): NcDatatypeDescriptor
     {
         return new NcDatatypeDescriptorStruct("ncBlockMemberDescriptor", [
-            new NcPropertyDescriptor(new NcElementID(1, 1), "role", "ncRole", true, true, true),
-            new NcPropertyDescriptor(new NcElementID(1, 2), "oid", "ncOid", true, true, true),
-            new NcPropertyDescriptor(new NcElementID(1, 3), "constantOid", "ncBoolean", true, true, true),
-            new NcPropertyDescriptor(new NcElementID(1, 4), "identity", "ncClassIdentity", true, true, true),
-            new NcPropertyDescriptor(new NcElementID(1, 5), "userLabel", "ncLabel", true, true, true),
-            new NcPropertyDescriptor(new NcElementID(1, 6), "owner", "ncOid", true, true, true)
+            new NcFieldDescriptor("role", "ncRole"),
+            new NcFieldDescriptor("oid", "ncOid"),
+            new NcFieldDescriptor("constantOid", "ncBoolean"),
+            new NcFieldDescriptor("identity", "ncClassIdentity"),
+            new NcFieldDescriptor("userLabel", "ncLabel"),
+            new NcFieldDescriptor("owner", "ncOid")
         ]);
     }
 
@@ -771,11 +771,11 @@ export class NcDatatypeDescriptorTypeDef extends NcDatatypeDescriptor
 
 export class NcDatatypeDescriptorStruct extends NcDatatypeDescriptor
 {
-    public override content: NcPropertyDescriptor[];
+    public override content: NcFieldDescriptor[];
 
     constructor(
         name: string,
-        content: NcPropertyDescriptor[])
+        content: NcFieldDescriptor[])
     {
         super(name, NcDatatypeType.Struct);
 
