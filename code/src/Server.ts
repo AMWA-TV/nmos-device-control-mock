@@ -152,7 +152,7 @@ try
             false,
             [
                 channelGainBlock,
-                new NcGain(22, true, 31, "master-gain", "Master gain", false, NcLockState.NoLock, [], true, [
+                new NcGain(24, true, 31, "master-gain", "Master gain", false, NcLockState.NoLock, [], true, [
                     new NcPort('input_1', NcIoDirection.Input, null),
                     new NcPort('input_2', NcIoDirection.Input, null),
                     new NcPort('output_1', NcIoDirection.Output, null),
