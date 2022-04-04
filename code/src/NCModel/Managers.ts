@@ -2,7 +2,7 @@ import { jsonIgnoreReplacer, jsonIgnore } from 'json-ignore';
 import { CommandResponseNoValue, CommandResponseWithValue } from '../NCProtocol/Commands';
 import { INotificationContext } from '../SessionManager';
 import { NcBlock } from './Blocks';
-import { NcBlockMemberDescriptor, NcClassDescriptor, NcClassIdentity, NcDatatypeDescriptor, NcDatatypeDescriptorEnum, NcDatatypeDescriptorPrimitive, NcDatatypeDescriptorStruct, NcDatatypeDescriptorTypeDef, NcDatatypeType, NcElementID, NcEnumItemDescriptor, NcLockState, NcMethodDescriptor, NcMethodStatus, NcObject, NcParameterDescriptor, NcPort, NcPortReference, NcPropertyDescriptor, NcSignalPath, NcTouchpoint, NcTouchpointNmos, NcTouchpointResourceNmos } from './Core';
+import { NcBlockMemberDescriptor, NcClassDescriptor, NcClassIdentity, NcDatatypeDescriptor, NcDatatypeDescriptorEnum, NcDatatypeDescriptorPrimitive, NcDatatypeDescriptorStruct, NcDatatypeDescriptorTypeDef, NcDatatypeType, NcElementID, NcEnumItemDescriptor, NcLockState, NcMethodDescriptor, NcMethodStatus, NcObject, NcParameterDescriptor, NcPort, NcPortReference, NcPropertyDescriptor, NcSignalPath, NcTouchpoint, NcTouchpointNmos, NcTouchpointResource, NcTouchpointResourceNmos } from './Core';
 import { NcGain, NcReceiverMonitor, NcReceiverStatus } from './Features';
 
 export abstract class NcManager extends NcObject
@@ -291,6 +291,10 @@ export class NcClassManager extends NcManager
                 return [ NcPortReference.GetTypeDescriptor() ];
             case 'ncSignalPath': 
                 return [ NcSignalPath.GetTypeDescriptor() ];
+            case 'ncTouchpoint': 
+                return [ NcTouchpoint.GetTypeDescriptor() ];
+            case 'ncTouchpointResource': 
+                return [ NcTouchpointResource.GetTypeDescriptor() ];
             case 'ncTouchpointNmos': 
                 return [ NcTouchpointNmos.GetTypeDescriptor() ];
             case 'ncTouchpointResourceNmos': 
