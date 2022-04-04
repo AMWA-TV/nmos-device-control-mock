@@ -369,7 +369,7 @@ export class NcSignalPath extends BaseType
     }
 }
 
-abstract class NcTouchpointResource extends BaseType
+export abstract class NcTouchpointResource extends BaseType
 {
     public resourceType: string;
 
