@@ -5,18 +5,18 @@ import { ProtocolWrapper } from './Core';
 
 export class NcEventData
 {
-    public propertyID: NcElementID;
+    public propertyId: NcElementID;
 
     public changeType: NcPropertyChangeType;
 
     public propertyValue: any | null;
 
     constructor(
-        propertyID: NcElementID,
+        propertyId: NcElementID,
         changeType: NcPropertyChangeType,
         propertyValue: any | null)
     {
-        this.propertyID = propertyID;
+        this.propertyId = propertyId;
         this.changeType = changeType;
         this.propertyValue = propertyValue;
     }
