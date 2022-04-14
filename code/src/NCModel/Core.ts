@@ -153,7 +153,7 @@ export abstract class NcObject
     {
         return new NcClassDescriptor("NcObject class descriptor",
             [ 
-                new NcPropertyDescriptor(new NcElementID(1, 1), "classId", "ncClassID", true, true, true),
+                new NcPropertyDescriptor(new NcElementID(1, 1), "classId", "ncClassId", true, true, true),
                 new NcPropertyDescriptor(new NcElementID(1, 2), "classVersion", "ncVersionCode", true, true, true),
                 new NcPropertyDescriptor(new NcElementID(1, 3), "oid", "ncOid", true, true, true),
                 new NcPropertyDescriptor(new NcElementID(1, 4), "constantOid", "ncBoolean", true, true, true),
