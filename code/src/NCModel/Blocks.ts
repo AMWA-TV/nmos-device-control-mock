@@ -170,6 +170,16 @@ export class NcBlock extends NcObject
             {
                 case '2m1':
                     return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.GenerateMemberDescriptors(), null);
+                case '2m5':
+                    {
+                        if(args != null)
+                        {
+                            let rolePath = args['path'] as string[];
+
+                            return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.GenerateMemberDescriptorsForRolePath(rolePath), null);
+                        }
+                    }
+                    break;
                 default:
                     return super.InvokeMethod(oid, methodID, args, handle);
             }
@@ -261,6 +271,42 @@ export class NcBlock extends NcObject
     {
         if(this.memberObjects != null)
             return this.memberObjects.map(x => x.GenerateMemberDescriptor());
+        else
+            return new Array<NcBlockMemberDescriptor>()
+    }
+
+    public GenerateMemberDescriptorsForRolePath(rolePath: string[]) : NcBlockMemberDescriptor[]
+    {
+        if(rolePath.length == 1 && rolePath[0] == this.role)
+        {
+            return [ this.GenerateMemberDescriptor() ];
+        }
+        else if(rolePath.length > 1 && rolePath[0] == this.role)
+        {
+            let childRole = rolePath[1];
+            if(this.memberObjects != null)
+            {
+                let member = this.memberObjects.find(e => e.role === childRole);
+                if(member)
+                {
+                    if(rolePath.length == 2)
+                    {
+                        return [ member.GenerateMemberDescriptor() ];
+                    }
+                    else if(member instanceof NcBlock)
+                    {
+                        let furtherPath = rolePath.splice(1);
+                            return member.GenerateMemberDescriptorsForRolePath(furtherPath);
+                    }
+                    else
+                        return new Array<NcBlockMemberDescriptor>()
+                }
+                else
+                    return new Array<NcBlockMemberDescriptor>()
+            }
+            else
+                return new Array<NcBlockMemberDescriptor>()
+        }
         else
             return new Array<NcBlockMemberDescriptor>()
     }
