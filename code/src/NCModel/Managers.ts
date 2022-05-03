@@ -3,7 +3,7 @@ import { CommandResponseNoValue, CommandResponseWithValue } from '../NCProtocol/
 import { INotificationContext } from '../SessionManager';
 import { NcBlock } from './Blocks';
 import { NcBlockMemberDescriptor, NcClassDescriptor, NcClassIdentity, NcDatatypeDescriptor, NcDatatypeDescriptorEnum, NcDatatypeDescriptorPrimitive, NcDatatypeDescriptorStruct, NcDatatypeDescriptorTypeDef, NcDatatypeType, NcElementID, NcEnumItemDescriptor, NcLockState, NcMethodDescriptor, NcMethodStatus, NcObject, NcParameterDescriptor, NcPort, NcPortReference, NcPropertyDescriptor, NcSignalPath, NcTouchpoint, NcTouchpointNmos, NcTouchpointResource, NcTouchpointResourceNmos } from './Core';
-import { NcGain, NcReceiverMonitor, NcReceiverStatus } from './Features';
+import { NcDemo, NcGain, NcReceiverMonitor, NcReceiverStatus } from './Features';
 
 export abstract class NcManager extends NcObject
 {
@@ -136,6 +136,8 @@ export class NcClassManager extends NcManager
                 return [ NcClassManager.GetClassDescriptor() ];
             case '1.7.5': 
                 return [ NcSubscriptionManager.GetClassDescriptor() ];
+            case '1.2.2':
+                return [ NcDemo.GetClassDescriptor() ];
             case '1.4.1': 
                 return [ NcReceiverMonitor.GetClassDescriptor() ];
             case '1.2.1.1': 
@@ -299,6 +301,13 @@ export class NcClassManager extends NcManager
                 return [ NcTouchpointNmos.GetTypeDescriptor() ];
             case 'ncTouchpointResourceNmos': 
                 return [ NcTouchpointResourceNmos.GetTypeDescriptor() ];
+            case 'ncDemoEnum': 
+                return [ new NcDatatypeDescriptorEnum("ncDemoEnum", [
+                    new NcEnumItemDescriptor("Undefined", 0),
+                    new NcEnumItemDescriptor("Alpha", 1),
+                    new NcEnumItemDescriptor("Beta", 2),
+                    new NcEnumItemDescriptor("Gamma", 3),
+                ])];
             default:
                 return new Array<NcDatatypeDescriptor>();
         }

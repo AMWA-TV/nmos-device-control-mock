@@ -14,7 +14,7 @@ import { SessionManager } from './SessionManager';
 import { NcBlock, RootBlock } from './NCModel/Blocks';
 import { NcClassManager, NcSubscriptionManager } from './NCModel/Managers';
 import { NcIoDirection, NcLockState, NcPort, NcPortReference, NcSignalPath, NcTouchpointNmos, NcTouchpointResourceNmos } from './NCModel/Core';
-import { NcGain, NcReceiverMonitor } from './NCModel/Features';
+import { NcDemo, NcGain, NcReceiverMonitor } from './NCModel/Features';
 
 export interface WebSocketConnection extends WebSocket {
     isAlive: boolean;
@@ -93,6 +93,20 @@ try
         sessionManager);
 
     myVideoReceiver.AttachMonitoringAgent(receiverMonitorAgent);
+
+    const demoClass = new NcDemo(
+        111,
+        true,
+        1,
+        'DemoClass',
+        'Demo class',
+        false,
+        NcLockState.NoLock,
+        [],
+        true,
+        [],
+        null,
+        sessionManager);
 
     const channelGainBlock = new NcBlock(
         21,
@@ -191,7 +205,7 @@ try
         null,
         null,
         false,
-        [ classManager, subscriptionManager, receiverMonitorAgent, stereoGainBlock ],
+        [ classManager, subscriptionManager, receiverMonitorAgent, stereoGainBlock, demoClass ],
         null,
         null,
         sessionManager);

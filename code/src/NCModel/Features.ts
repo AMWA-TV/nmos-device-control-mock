@@ -390,3 +390,150 @@ export class NcReceiverMonitor extends NcAgent
         return currentClassDescriptor;
     }
 }
+
+enum NcDemoEnum
+{
+    Undefined = 0,
+    Alpha = 1,
+    Beta = 2,
+    Gamma = 3
+}
+
+export class NcDemo extends NcWorker
+{
+    @myIdDecorator('1p1')
+    public classID: number[] = [ 1, 2, 2 ];
+
+    @myIdDecorator('1p2')
+    public classVersion: string = "1.0.0";
+
+    @myIdDecorator('3p1')
+    public enumProperty: NcDemoEnum;
+
+    @myIdDecorator('3p2')
+    public stringProperty: string | null;
+
+    @myIdDecorator('3p3')
+    public numberProperty: number;
+
+    @myIdDecorator('3p4')
+    public booleanProperty: boolean;
+
+    public constructor(
+        oid: number,
+        constantOid: boolean,
+        owner: number | null,
+        role: string,
+        userLabel: string,
+        lockable: boolean,
+        lockState: NcLockState,
+        touchpoints: NcTouchpoint[],
+        enabled: boolean,
+        ports: NcPort[] | null,
+        latency: number | null,
+        notificationContext: INotificationContext)
+    {
+        super(oid, constantOid, owner, role, userLabel, lockable, lockState, touchpoints, enabled, ports, latency, notificationContext);
+
+        this.enumProperty = NcDemoEnum.Undefined;
+        this.stringProperty = "test";
+        this.numberProperty = 3;
+        this.booleanProperty = false;
+    }
+
+    //'1m1'
+    public override Get(oid: number, id: NcElementID, handle: number) : CommandResponseNoValue
+    {
+        if(oid == this.oid)
+        {
+            let key: string = `${id.level}p${id.index}`;
+
+            switch(key)
+            {
+                case '3p1':
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.enumProperty, null);
+                case '3p2':
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.stringProperty, null);
+                case '3p3':
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.numberProperty, null);
+                case '3p4':
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.booleanProperty, null);
+                default:
+                    return super.Get(oid, id, handle);
+            }
+        }
+
+        return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
+    }
+
+    //'1m2'
+    public override Set(oid: number, id: NcElementID, value: any, handle: number) : CommandResponseNoValue
+    {
+        if(oid == this.oid)
+        {
+            let key: string = `${id.level}p${id.index}`;
+
+            switch(key)
+            {
+                case '3p1':
+                    this.enumProperty = value;
+                    this.notificationContext.NotifyPropertyChanged(this.oid, id, this.enumProperty);
+                    return new CommandResponseNoValue(handle, NcMethodStatus.OK, null);
+                case '3p2':
+                    this.stringProperty = value;
+                    this.notificationContext.NotifyPropertyChanged(this.oid, id, this.stringProperty);
+                    return new CommandResponseNoValue(handle, NcMethodStatus.OK, null);
+                case '3p3':
+                    this.numberProperty = value;
+                    this.notificationContext.NotifyPropertyChanged(this.oid, id, this.numberProperty);
+                    return new CommandResponseNoValue(handle, NcMethodStatus.OK, null);
+                case '3p4':
+                    this.booleanProperty = value;
+                    this.notificationContext.NotifyPropertyChanged(this.oid, id, this.booleanProperty);
+                    return new CommandResponseNoValue(handle, NcMethodStatus.OK, null);
+                default:
+                    return super.Set(oid, id, value, handle);
+            }
+        }
+
+        return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
+    }
+
+    public override InvokeMethod(oid: number, methodID: NcElementID, args: { [key: string]: any; } | null, handle: number): CommandResponseNoValue 
+    {
+        if(oid == this.oid)
+        {
+            let key: string = `${methodID.level}m${methodID.index}`;
+
+            switch(key)
+            {
+                default:
+                    return super.InvokeMethod(oid, methodID, args, handle);
+            }
+        }
+
+        return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
+    }
+
+    public static override GetClassDescriptor(): NcClassDescriptor 
+    {
+        let baseDescriptor = super.GetClassDescriptor();
+
+        let currentClassDescriptor = new NcClassDescriptor("NcDemo class descriptor",
+            [ 
+                new NcPropertyDescriptor(new NcElementID(3, 1), "enumProperty", "ncDemoEnum", true, false, true),
+                new NcPropertyDescriptor(new NcElementID(3, 2), "stringProperty", "ncString", true, false, true),
+                new NcPropertyDescriptor(new NcElementID(3, 3), "numberProperty", "ncUint64", true, false, true),
+                new NcPropertyDescriptor(new NcElementID(3, 4), "booleanProperty", "ncBoolean", true, false, true)
+            ],
+            [],
+            []
+        );
+
+        currentClassDescriptor.properties = currentClassDescriptor.properties.concat(baseDescriptor.properties);
+        currentClassDescriptor.methods = currentClassDescriptor.methods.concat(baseDescriptor.methods);
+        currentClassDescriptor.events = currentClassDescriptor.events.concat(baseDescriptor.events);
+
+        return currentClassDescriptor;
+    }
+}
