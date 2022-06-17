@@ -2,7 +2,7 @@ import { jsonIgnoreReplacer, jsonIgnore } from 'json-ignore';
 import { CommandResponseNoValue, CommandResponseWithValue } from '../NCProtocol/Commands';
 import { INotificationContext } from '../SessionManager';
 import { NcAgent } from './Agents';
-import { BaseType, myIdDecorator, NcClassDescriptor, NcDatatypeDescriptor, NcDatatypeDescriptorStruct, NcElementID, NcLockState, NcMethodDescriptor, NcMethodStatus, NcObject, NcPort, NcPropertyDescriptor, NcTouchpoint } from './Core';
+import { BaseType, myIdDecorator, NcClassDescriptor, NcDatatypeDescriptor, NcDatatypeDescriptorStruct, NcElementId, NcLockState, NcMethodDescriptor, NcMethodStatus, NcObject, NcPort, NcPropertyDescriptor, NcTouchpoint } from './Core';
 
 export abstract class NcWorker extends NcObject
 {
@@ -37,7 +37,7 @@ export abstract class NcWorker extends NcObject
     }
 
     //'1m1'
-    public override Get(oid: number, propertyId: NcElementID, handle: number) : CommandResponseNoValue
+    public override Get(oid: number, propertyId: NcElementId, handle: number) : CommandResponseNoValue
     {
         if(oid == this.oid)
         {
@@ -60,7 +60,7 @@ export abstract class NcWorker extends NcObject
     }
 
     //'1m2'
-    public override Set(oid: number, id: NcElementID, value: any, handle: number) : CommandResponseNoValue
+    public override Set(oid: number, id: NcElementId, value: any, handle: number) : CommandResponseNoValue
     {
         if(oid == this.oid)
         {
@@ -130,7 +130,7 @@ export class NcGain extends NcActuator
     }
 
     //'1m1'
-    public override Get(oid: number, propertyId: NcElementID, handle: number) : CommandResponseNoValue
+    public override Get(oid: number, propertyId: NcElementId, handle: number) : CommandResponseNoValue
     {
         if(oid == this.oid)
         {
@@ -149,7 +149,7 @@ export class NcGain extends NcActuator
     }
 
     //'1m2'
-    public override Set(oid: number, id: NcElementID, value: any, handle: number) : CommandResponseNoValue
+    public override Set(oid: number, id: NcElementId, value: any, handle: number) : CommandResponseNoValue
     {
         if(oid == this.oid)
         {
@@ -175,10 +175,10 @@ export class NcGain extends NcActuator
 
         let currentClassDescriptor = new NcClassDescriptor("NcGain class descriptor",
             [ 
-                new NcPropertyDescriptor(new NcElementID(2, 1), "enabled", "ncBoolean", true, false, true),
-                new NcPropertyDescriptor(new NcElementID(2, 2), "ports", "ncPort", true, false, true),
-                new NcPropertyDescriptor(new NcElementID(2, 3), "latency", "ncTimeInterval", true, false, true),
-                new NcPropertyDescriptor(new NcElementID(4, 1), "setPoint", "ncDB", true, false, true)
+                new NcPropertyDescriptor(new NcElementId(2, 1), "enabled", "ncBoolean", true, false, true),
+                new NcPropertyDescriptor(new NcElementId(2, 2), "ports", "ncPort", true, false, true),
+                new NcPropertyDescriptor(new NcElementId(2, 3), "latency", "ncTimeInterval", true, false, true),
+                new NcPropertyDescriptor(new NcElementId(4, 1), "setPoint", "ncDB", true, false, true)
             ],
             [],
             []
@@ -226,8 +226,8 @@ export class NcReceiverStatus extends BaseType
     public static override GetTypeDescriptor(): NcDatatypeDescriptor
     {
         return new NcDatatypeDescriptorStruct("ncReceiverStatus", [
-            new NcPropertyDescriptor(new NcElementID(1, 1), "connectionStatus", "ncConnectionStatus", true, true, true),
-            new NcPropertyDescriptor(new NcElementID(1, 2), "payloadStatus", "ncPayloadStatus", true, true, true)
+            new NcPropertyDescriptor(new NcElementId(1, 1), "connectionStatus", "ncConnectionStatus", true, true, true),
+            new NcPropertyDescriptor(new NcElementId(1, 2), "payloadStatus", "ncPayloadStatus", true, true, true)
         ]);
     }
 
@@ -285,8 +285,8 @@ export class NcReceiverMonitor extends NcAgent
         this.connectionStatusMessage = null;
         this.payloadStatusMessage = null;
 
-        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementID(3, 1), this.connectionStatus);
-        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementID(3, 3), this.payloadStatus);
+        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 1), this.connectionStatus);
+        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 3), this.payloadStatus);
     }
 
     public Disconnected()
@@ -297,12 +297,12 @@ export class NcReceiverMonitor extends NcAgent
         this.connectionStatusMessage = null;
         this.payloadStatusMessage = null;
 
-        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementID(3, 1), this.connectionStatus);
-        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementID(3, 3), this.payloadStatus);
+        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 1), this.connectionStatus);
+        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 3), this.payloadStatus);
     }
 
     //'1m1'
-    public override Get(oid: number, id: NcElementID, handle: number) : CommandResponseNoValue
+    public override Get(oid: number, id: NcElementId, handle: number) : CommandResponseNoValue
     {
         if(oid == this.oid)
         {
@@ -327,7 +327,7 @@ export class NcReceiverMonitor extends NcAgent
     }
 
     //'1m2'
-    public override Set(oid: number, id: NcElementID, value: any, handle: number) : CommandResponseNoValue
+    public override Set(oid: number, id: NcElementId, value: any, handle: number) : CommandResponseNoValue
     {
         if(oid == this.oid)
         {
@@ -348,7 +348,7 @@ export class NcReceiverMonitor extends NcAgent
         return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
     }
 
-    public override InvokeMethod(oid: number, methodID: NcElementID, args: { [key: string]: any; } | null, handle: number): CommandResponseNoValue 
+    public override InvokeMethod(oid: number, methodID: NcElementId, args: { [key: string]: any; } | null, handle: number): CommandResponseNoValue 
     {
         if(oid == this.oid)
         {
@@ -372,13 +372,13 @@ export class NcReceiverMonitor extends NcAgent
 
         let currentClassDescriptor = new NcClassDescriptor("NcReceiverMonitor class descriptor",
             [ 
-                new NcPropertyDescriptor(new NcElementID(3, 1), "connectionStatus", "ncConnectionStatus", true, false, true),
-                new NcPropertyDescriptor(new NcElementID(3, 2), "connectionStatusMessage", "ncString", true, false, true),
-                new NcPropertyDescriptor(new NcElementID(3, 3), "payloadStatus", "ncPayloadStatus", true, false, true),
-                new NcPropertyDescriptor(new NcElementID(3, 4), "payloadStatusMessage", "ncString", true, false, true)
+                new NcPropertyDescriptor(new NcElementId(3, 1), "connectionStatus", "ncConnectionStatus", true, false, true),
+                new NcPropertyDescriptor(new NcElementId(3, 2), "connectionStatusMessage", "ncString", true, false, true),
+                new NcPropertyDescriptor(new NcElementId(3, 3), "payloadStatus", "ncPayloadStatus", true, false, true),
+                new NcPropertyDescriptor(new NcElementId(3, 4), "payloadStatusMessage", "ncString", true, false, true)
             ],
             [ 
-                new NcMethodDescriptor(new NcElementID(3, 1), "getStatus", "ncMethodResultReceiverStatus", [])
+                new NcMethodDescriptor(new NcElementId(3, 1), "getStatus", "ncMethodResultReceiverStatus", [])
             ],
             []
         );
@@ -442,7 +442,7 @@ export class NcDemo extends NcWorker
     }
 
     //'1m1'
-    public override Get(oid: number, id: NcElementID, handle: number) : CommandResponseNoValue
+    public override Get(oid: number, id: NcElementId, handle: number) : CommandResponseNoValue
     {
         if(oid == this.oid)
         {
@@ -467,7 +467,7 @@ export class NcDemo extends NcWorker
     }
 
     //'1m2'
-    public override Set(oid: number, id: NcElementID, value: any, handle: number) : CommandResponseNoValue
+    public override Set(oid: number, id: NcElementId, value: any, handle: number) : CommandResponseNoValue
     {
         if(oid == this.oid)
         {
@@ -499,7 +499,7 @@ export class NcDemo extends NcWorker
         return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
     }
 
-    public override InvokeMethod(oid: number, methodID: NcElementID, args: { [key: string]: any; } | null, handle: number): CommandResponseNoValue 
+    public override InvokeMethod(oid: number, methodID: NcElementId, args: { [key: string]: any; } | null, handle: number): CommandResponseNoValue 
     {
         if(oid == this.oid)
         {
@@ -521,10 +521,10 @@ export class NcDemo extends NcWorker
 
         let currentClassDescriptor = new NcClassDescriptor("NcDemo class descriptor",
             [ 
-                new NcPropertyDescriptor(new NcElementID(3, 1), "enumProperty", "ncDemoEnum", true, false, true),
-                new NcPropertyDescriptor(new NcElementID(3, 2), "stringProperty", "ncString", true, false, true),
-                new NcPropertyDescriptor(new NcElementID(3, 3), "numberProperty", "ncUint64", true, false, true),
-                new NcPropertyDescriptor(new NcElementID(3, 4), "booleanProperty", "ncBoolean", true, false, true)
+                new NcPropertyDescriptor(new NcElementId(3, 1), "enumProperty", "ncDemoEnum", true, false, true),
+                new NcPropertyDescriptor(new NcElementId(3, 2), "stringProperty", "ncString", true, false, true),
+                new NcPropertyDescriptor(new NcElementId(3, 3), "numberProperty", "ncUint64", true, false, true),
+                new NcPropertyDescriptor(new NcElementId(3, 4), "booleanProperty", "ncBoolean", true, false, true)
             ],
             [],
             []

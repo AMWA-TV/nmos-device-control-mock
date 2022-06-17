@@ -1,5 +1,5 @@
 import { jsonIgnoreReplacer, jsonIgnore } from 'json-ignore';
-import { NcElementID, NcMethodStatus } from '../NCModel/Core';
+import { NcElementId, NcMethodStatus } from '../NCModel/Core';
 
 import { ProtocolWrapper, ProtoMsg } from './Core';
 
@@ -7,14 +7,14 @@ export class CommandMsg extends ProtoMsg
 {
     public oid: number;
 
-    public methodID: NcElementID;
+    public methodID: NcElementId;
 
     public arguments: { [key: string]: any } | null;
 
     constructor(
         handle: number,
         oid: number,
-        methodID: NcElementID,
+        methodID: NcElementId,
         commandArguments: { [key: string]: any } | null)
     {
         super(handle);
@@ -60,11 +60,11 @@ export class EventSubscriptionData
 {
     public emitterOid: number;
 
-    public eventID: NcElementID;
+    public eventID: NcElementId;
 
     constructor(
         emitterOid: number,
-        eventID: NcElementID)
+        eventID: NcElementId)
     {
         this.emitterOid = emitterOid;
         this.eventID = eventID;

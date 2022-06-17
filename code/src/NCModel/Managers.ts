@@ -2,7 +2,7 @@ import { jsonIgnoreReplacer, jsonIgnore } from 'json-ignore';
 import { CommandResponseNoValue, CommandResponseWithValue } from '../NCProtocol/Commands';
 import { INotificationContext } from '../SessionManager';
 import { NcBlock } from './Blocks';
-import { NcBlockMemberDescriptor, NcClassDescriptor, NcClassIdentity, NcDatatypeDescriptor, NcDatatypeDescriptorEnum, NcDatatypeDescriptorPrimitive, NcDatatypeDescriptorStruct, NcDatatypeDescriptorTypeDef, NcDatatypeType, NcElementID, NcEnumItemDescriptor, NcLockState, NcMethodDescriptor, NcMethodStatus, NcObject, NcParameterDescriptor, NcPort, NcPortReference, NcPropertyDescriptor, NcSignalPath, NcTouchpoint, NcTouchpointNmos, NcTouchpointResource, NcTouchpointResourceNmos } from './Core';
+import { NcBlockMemberDescriptor, NcClassDescriptor, NcClassIdentity, NcDatatypeDescriptor, NcDatatypeDescriptorEnum, NcDatatypeDescriptorPrimitive, NcDatatypeDescriptorStruct, NcDatatypeDescriptorTypeDef, NcDatatypeType, NcElementId, NcEnumItemDescriptor, NcLockState, NcMethodDescriptor, NcMethodStatus, NcObject, NcParameterDescriptor, NcPort, NcPortReference, NcPropertyDescriptor, NcSignalPath, NcTouchpoint, NcTouchpointNmos, NcTouchpointResource, NcTouchpointResourceNmos } from './Core';
 import { NcDemo, NcGain, NcReceiverMonitor, NcReceiverStatus } from './Features';
 
 export abstract class NcManager extends NcObject
@@ -16,15 +16,16 @@ export abstract class NcManager extends NcObject
         lockable: boolean,
         lockState: NcLockState,
         touchpoints: NcTouchpoint[] | null,
+        description: string,
         notificationContext: INotificationContext)
     {
-        super(oid, constantOid, owner, role, userLabel, lockable, lockState, touchpoints, notificationContext);
+        super(oid, constantOid, owner, role, userLabel, lockable, lockState, touchpoints, description, notificationContext);
     }
 }
 
 export class NcClassManager extends NcManager
 {
-    public classID: number[] = [ 1, 7, 3 ];
+    public classID: number[] = [ 1, 3, 3 ];
     public classVersion: string = "1.0.0";
 
     public constructor(
@@ -36,12 +37,13 @@ export class NcClassManager extends NcManager
         lockable: boolean,
         lockState: NcLockState,
         touchpoints: NcTouchpoint[] | null,
+        description, string,
         notificationContext: INotificationContext)
     {
-        super(oid, constantOid, owner, role, userLabel, lockable, lockState, touchpoints, notificationContext);
+        super(oid, constantOid, owner, role, userLabel, lockable, lockState, touchpoints, description, notificationContext);
     }
 
-    public override InvokeMethod(oid: number, methodID: NcElementID, args: { [key: string]: any; } | null, handle: number): CommandResponseNoValue 
+    public override InvokeMethod(oid: number, methodID: NcElementId, args: { [key: string]: any; } | null, handle: number): CommandResponseNoValue 
     {
         if(oid == this.oid)
         {
@@ -91,28 +93,28 @@ export class NcClassManager extends NcManager
 
         let currentClassDescriptor = new NcClassDescriptor("NcClassManager class descriptor",
             [ 
-                new NcPropertyDescriptor(new NcElementID(3, 1), "controlClasses", "ncClassDescriptor", true, true, true),
-                new NcPropertyDescriptor(new NcElementID(3, 2), "datatypes", "ncDatatypeDescriptor", true, true, true)
+                new NcPropertyDescriptor(new NcElementId(3, 1), "controlClasses", "NcClassDescriptor", true, true, false, true, null, "Descriptions of all control classes in the device"),
+                new NcPropertyDescriptor(new NcElementId(3, 2), "datatypes", "NcDatatypeDescriptor", true, true, false, true, null, "Descriptions of all data types in the device")
             ],
             [ 
-                new NcMethodDescriptor(new NcElementID(3, 1), "GetControlClass", "ncMethodResultClassDescriptors", [
-                    new NcParameterDescriptor("identity", "ncClassIdentity", true),
-                    new NcParameterDescriptor("allElements", "ncBoolean", true)
-                ]),
-                new NcMethodDescriptor(new NcElementID(3, 2), "GetDatatype", "ncMethodResultDatatypeDescriptors", [
-                    new NcParameterDescriptor("name", "ncName", true),
-                    new NcParameterDescriptor("allDefs", "ncBoolean", true)
-                ]),
-                new NcMethodDescriptor(new NcElementID(3, 3), "GetControlClasses", "ncMethodResultClassDescriptors", [
-                    new NcParameterDescriptor("blockPath", "ncRolePath", true),
-                    new NcParameterDescriptor("recurseBlocks", "ncBoolean", true),
-                    new NcParameterDescriptor("allElements", "ncBoolean", true)
-                ]),
-                new NcMethodDescriptor(new NcElementID(3, 4), "GetDataTypes", "ncMethodResultDatatypeDescriptors", [
-                    new NcParameterDescriptor("blockPath", "ncRolePath", true),
-                    new NcParameterDescriptor("recurseBlocks", "ncBoolean", true),
-                    new NcParameterDescriptor("allDefs", "ncBoolean", true)
-                ])
+                new NcMethodDescriptor(new NcElementId(3, 1), "GetControlClass", "NcMethodResultClassDescriptors", [
+                    new NcParameterDescriptor("identity", "NcClassIdentity", false, null, "class ID & version"),
+                    new NcParameterDescriptor("allElements", "NcBoolean", false, null, "TRUE to include inherited class elements")
+                ], "Get a single class descriptor"),
+                new NcMethodDescriptor(new NcElementId(3, 2), "GetDatatype", "NcMethodResultDatatypeDescriptors", [
+                    new NcParameterDescriptor("name", "NcName", false, null, "name of datatype"),
+                    new NcParameterDescriptor("allDefs", "NcBoolean", false, null, "TRUE to include descriptors of component datatypes")
+                ], "Get descriptor of datatype and maybe its component datatypes"),
+                new NcMethodDescriptor(new NcElementId(3, 3), "GetControlClasses", "NcMethodResultClassDescriptors", [
+                    new NcParameterDescriptor("blockPath", "NcNamePath", false, null, "path to block"),
+                    new NcParameterDescriptor("recurseBlocks", "NcBoolean", false, null, "TRUE to recurse contained blocks"),
+                    new NcParameterDescriptor("allElements", "NcBoolean", false, null, "TRUE to include inherited class elements")
+                ], "Get descriptors of classes used by block(s)"),
+                new NcMethodDescriptor(new NcElementId(3, 4), "GetDataTypes", "NcMethodResultDatatypeDescriptors", [
+                    new NcParameterDescriptor("blockPath", "NcNamePath", false, null, "path to block"),
+                    new NcParameterDescriptor("recurseBlocks", "NcBoolean", false, null, "TRUE to recurse contained blocks"),
+                    new NcParameterDescriptor("allDefs", "NcBoolean", false, null, "TRUE to include descriptors of referenced datatypes")
+                ], " Get descriptors of datatypes used by blocks(s)")
             ],
             []
         );
@@ -151,60 +153,58 @@ export class NcClassManager extends NcManager
     {
         switch(name)
         {
-            case 'ncBoolean': 
-                return [ new NcDatatypeDescriptorPrimitive("ncBoolean")];
-            case 'ncInt8': 
-                return [ new NcDatatypeDescriptorPrimitive("ncInt8")];
-            case 'ncInt16': 
-                return [ new NcDatatypeDescriptorPrimitive("ncInt16")];
-            case 'ncInt32': 
-                return [ new NcDatatypeDescriptorPrimitive("ncInt32")];
-            case 'ncInt64': 
-                return [ new NcDatatypeDescriptorPrimitive("ncInt64")];
-            case 'ncUint8': 
-                return [ new NcDatatypeDescriptorPrimitive("ncUint8")];
-            case 'ncUint16': 
-                return [ new NcDatatypeDescriptorPrimitive("ncUint16")];
-            case 'ncUint32': 
-                return [ new NcDatatypeDescriptorPrimitive("ncUint32")];
-            case 'ncUint64': 
-                return [ new NcDatatypeDescriptorPrimitive("ncUint64")];
-            case 'ncFloat32': 
-                return [ new NcDatatypeDescriptorPrimitive("ncFloat32")];
-            case 'ncFloat64': 
-                return [ new NcDatatypeDescriptorPrimitive("ncFloat64")];
-            case 'ncString': 
-                return [ new NcDatatypeDescriptorPrimitive("ncString")];
-            case 'ncBlob': 
-                return [ new NcDatatypeDescriptorPrimitive("ncBlob")];
-            case 'ncBlobFixedLen': 
-                return [ new NcDatatypeDescriptorPrimitive("ncBlobFixedLen")];
-            case 'ncClassId': 
-                return [ new NcDatatypeDescriptorTypeDef("ncClassId", "ncClassIdField")];
-            case 'ncClassIdField': 
-                return [ new NcDatatypeDescriptorTypeDef("ncClassIdField", "ncInt32")];
-            case 'ncVersionCode': 
-                return [ new NcDatatypeDescriptorTypeDef("ncVersionCode", "ncString")];
-            case 'ncOid': 
-                return [ new NcDatatypeDescriptorTypeDef("ncOid", "ncUint32")];
-            case 'ncRole': 
-                return [ new NcDatatypeDescriptorTypeDef("ncRole", "ncName")];
-            case 'ncRolePath': 
-                return [ new NcDatatypeDescriptorTypeDef("ncRolePath", "ncName")];
-            case 'ncLabel': 
-                return [ new NcDatatypeDescriptorTypeDef("ncLabel", "ncString")];
-            case 'ncName': 
-                return [ new NcDatatypeDescriptorTypeDef("ncName", "ncString")];
-            case 'ncId32': 
-                return [ new NcDatatypeDescriptorTypeDef("ncId32", "ncUint32")];
-            case 'ncTimeInterval': 
-                return [ new NcDatatypeDescriptorTypeDef("ncTimeInterval", "ncFloat64")];
-            case 'ncDB': 
-                return [ new NcDatatypeDescriptorTypeDef("ncDB", "ncFloat32")];
-            case 'ncPropertyId': 
-                return [ new NcDatatypeDescriptorTypeDef("ncPropertyId", "ncElementID")];
-            case 'ncElementID': 
-                return [ NcElementID.GetTypeDescriptor() ];
+            case 'NcBoolean': 
+                return [ new NcDatatypeDescriptorPrimitive("NcBoolean", "Boolean primitive type")];
+            case 'NcInt8': 
+                return [ new NcDatatypeDescriptorPrimitive("NcInt8", "byte")];
+            case 'NcInt16': 
+                return [ new NcDatatypeDescriptorPrimitive("NcInt16", "short")];
+            case 'NcInt32': 
+                return [ new NcDatatypeDescriptorPrimitive("NcInt32", "long")];
+            case 'McInt64': 
+                return [ new NcDatatypeDescriptorPrimitive("NcInt64", "longlong")];
+            case 'NcUint8': 
+                return [ new NcDatatypeDescriptorPrimitive("NcUint8", "octet")];
+            case 'NcUint16': 
+                return [ new NcDatatypeDescriptorPrimitive("NcUint16", "unsignedshort")];
+            case 'NcUint32': 
+                return [ new NcDatatypeDescriptorPrimitive("NcUint32", "unsignedlong")];
+            case 'NcUint64': 
+                return [ new NcDatatypeDescriptorPrimitive("NcUint64", "unsignedlonglong")];
+            case 'NcFloat32': 
+                return [ new NcDatatypeDescriptorPrimitive("NcFloat32", "unrestrictedfloat")];
+            case 'NcFloat64': 
+                return [ new NcDatatypeDescriptorPrimitive("NcFloat64", "unrestricteddouble")];
+            case 'NcString': 
+                return [ new NcDatatypeDescriptorPrimitive("NcString", "UTF-8 string")];
+            case 'NcBlob': 
+                return [ new NcDatatypeDescriptorPrimitive("NcBlob", "blob")];
+            case 'NcBlobFixedLen': 
+                return [ new NcDatatypeDescriptorPrimitive("NcBlobFixedLen", "fixed length blob")];
+            case 'NcClassId': 
+                return [ new NcDatatypeDescriptorTypeDef("NcClassId", "NcClassIdField", true, "Sequence of class ID fields.")];
+            case 'NcClassIdField': 
+                return [ new NcDatatypeDescriptorTypeDef("NcClassIdField", "NcInt32", false, "Class ID field. Either a definition index or an authority key.")];
+            case 'NcVersionCode': 
+                return [ new NcDatatypeDescriptorTypeDef("NcVersionCode", "NcString", false, "Version code in semantic versioning format")];
+            case 'NcOid': 
+                return [ new NcDatatypeDescriptorTypeDef("NcOid", "NcUint32", false, "Object id")];
+            case 'NcName': 
+                return [ new NcDatatypeDescriptorTypeDef("NcName", "NcString", false, "Programmatically significant name, alphanumerics + underscore, no spaces")];
+            case 'NcNamePath': 
+                return [ new NcDatatypeDescriptorTypeDef("NcNamePath", "NcName", false, "Name path")];
+            case 'NcString': 
+                return [ new NcDatatypeDescriptorPrimitive("NcString", "UTF-8 string")];
+            case 'NcId32': 
+                return [ new NcDatatypeDescriptorTypeDef("NcId32", "NcUint32", false, "Identity handler")];
+            case 'NcTimeInterval': 
+                return [ new NcDatatypeDescriptorTypeDef("NcTimeInterval", "NcFloat64", false, "Floating point seconds")];
+            case 'NcDB': 
+                return [ new NcDatatypeDescriptorTypeDef("NcDB", "NcFloat32", false, "A ratio expressed in dB.")];
+            case 'NcPropertyId': 
+                return [ new NcDatatypeDescriptorTypeDef("NcPropertyId", "NcElementId", false, "Class property id which contains the level and index")];
+            case 'NcElementId': 
+                return [ NcElementId.GetTypeDescriptor() ];
             case 'ncLockState': 
                 return [ new NcDatatypeDescriptorEnum("ncLockState", [
                     new NcEnumItemDescriptor("noLock", 0),
@@ -233,20 +233,20 @@ export class NcClassManager extends NcManager
                 ])];
             case 'ncMethodResult':
                 return [ new NcDatatypeDescriptorStruct("ncMethodResult", [
-                    new NcPropertyDescriptor(new NcElementID(1, 1), "status", "ncMethodStatus", true, true, true),
-                    new NcPropertyDescriptor(new NcElementID(1, 1), "errorMessage", "ncString", true, true, true)
+                    new NcPropertyDescriptor(new NcElementId(1, 1), "status", "ncMethodStatus", true, true, true),
+                    new NcPropertyDescriptor(new NcElementId(1, 1), "errorMessage", "ncString", true, true, true)
                 ])];
             case 'ncMethodResultPropertyValue':
                 return [ new NcDatatypeDescriptorStruct("ncMethodResultPropertyValue", [
-                    new NcPropertyDescriptor(new NcElementID(1, 1), "status", "ncMethodStatus", true, true, true),
-                    new NcPropertyDescriptor(new NcElementID(1, 1), "errorMessage", "ncString", true, true, true),
-                    new NcPropertyDescriptor(new NcElementID(2, 1), "value", "", true, true, true)
+                    new NcPropertyDescriptor(new NcElementId(1, 1), "status", "ncMethodStatus", true, true, true),
+                    new NcPropertyDescriptor(new NcElementId(1, 1), "errorMessage", "ncString", true, true, true),
+                    new NcPropertyDescriptor(new NcElementId(2, 1), "value", "", true, true, true)
                 ])];
             case 'ncMethodResultId32':
                 return [ new NcDatatypeDescriptorStruct("ncMethodResultId32", [
-                    new NcPropertyDescriptor(new NcElementID(1, 1), "status", "ncMethodStatus", true, true, true),
-                    new NcPropertyDescriptor(new NcElementID(1, 1), "errorMessage", "ncString", true, true, true),
-                    new NcPropertyDescriptor(new NcElementID(2, 1), "value", "ncId32", true, true, true)
+                    new NcPropertyDescriptor(new NcElementId(1, 1), "status", "ncMethodStatus", true, true, true),
+                    new NcPropertyDescriptor(new NcElementId(1, 1), "errorMessage", "ncString", true, true, true),
+                    new NcPropertyDescriptor(new NcElementId(2, 1), "value", "ncId32", true, true, true)
                 ])];
             case 'ncClassIdentity': 
                 return [ NcClassIdentity.GetTypeDescriptor() ];
@@ -254,17 +254,17 @@ export class NcClassManager extends NcManager
                 return [ NcBlockMemberDescriptor.GetTypeDescriptor() ];
             case 'ncMethodResultBlockMemberDescriptors':
                 return [ new NcDatatypeDescriptorStruct("ncMethodResultBlockMemberDescriptors", [
-                    new NcPropertyDescriptor(new NcElementID(1, 1), "status", "ncMethodStatus", true, true, true),
-                    new NcPropertyDescriptor(new NcElementID(1, 1), "errorMessage", "ncString", true, true, true),
-                    new NcPropertyDescriptor(new NcElementID(2, 1), "value", "ncBlockMemberDescriptor", true, true, true)
+                    new NcPropertyDescriptor(new NcElementId(1, 1), "status", "ncMethodStatus", true, true, true),
+                    new NcPropertyDescriptor(new NcElementId(1, 1), "errorMessage", "ncString", true, true, true),
+                    new NcPropertyDescriptor(new NcElementId(2, 1), "value", "ncBlockMemberDescriptor", true, true, true)
                 ])];
             case 'ncReceiverStatus': 
                 return [ NcReceiverStatus.GetTypeDescriptor() ];
             case 'ncMethodResultReceiverStatus':
                 return [ new NcDatatypeDescriptorStruct("ncMethodResultReceiverStatus", [
-                    new NcPropertyDescriptor(new NcElementID(1, 1), "status", "ncMethodStatus", true, true, true),
-                    new NcPropertyDescriptor(new NcElementID(1, 1), "errorMessage", "ncString", true, true, true),
-                    new NcPropertyDescriptor(new NcElementID(2, 1), "value", "ncReceiverStatus", true, true, true)
+                    new NcPropertyDescriptor(new NcElementId(1, 1), "status", "ncMethodStatus", true, true, true),
+                    new NcPropertyDescriptor(new NcElementId(1, 1), "errorMessage", "ncString", true, true, true),
+                    new NcPropertyDescriptor(new NcElementId(2, 1), "value", "ncReceiverStatus", true, true, true)
                 ])];
             case 'ncIoDirection': 
                 return [ new NcDatatypeDescriptorEnum("ncIoDirection", [
@@ -316,7 +316,7 @@ export class NcClassManager extends NcManager
 
 export class NcSubscriptionManager extends NcManager
 {
-    public classID: number[] = [ 1, 7, 5 ];
+    public classID: number[] = [ 1, 3, 5 ];
     public classVersion: string = "1.0.0";
 
     public constructor(
@@ -328,9 +328,10 @@ export class NcSubscriptionManager extends NcManager
         lockable: boolean,
         lockState: NcLockState,
         touchpoints: NcTouchpoint[] | null,
+        description: string,
         notificationContext: INotificationContext)
     {
-        super(oid, constantOid, owner, role, userLabel, lockable, lockState, touchpoints, notificationContext);
+        super(oid, constantOid, owner, role, userLabel, lockable, lockState, touchpoints, description, notificationContext);
     }
 
     public static override GetClassDescriptor(): NcClassDescriptor 
@@ -340,20 +341,20 @@ export class NcSubscriptionManager extends NcManager
         let currentClassDescriptor = new NcClassDescriptor("NcSubscriptionManager class descriptor",
             [],
             [ 
-                new NcMethodDescriptor(new NcElementID(3, 1), "AddSubscription", "ncMethodResult", [
-                    new NcParameterDescriptor("event", "ncEvent", true)
-                ]),
-                new NcMethodDescriptor(new NcElementID(3, 2), "RemoveSubscription", "ncMethodResult", [
-                    new NcParameterDescriptor("event", "ncEvent", true)
-                ]),
-                new NcMethodDescriptor(new NcElementID(3, 3), "addPropertyChangeSubscription", "ncMethodResult", [
-                    new NcParameterDescriptor("emitter", "ncOid", true),
-                    new NcParameterDescriptor("property", "ncPropertyID", true)
-                ]),
-                new NcMethodDescriptor(new NcElementID(3, 4), "removePropertyChangeSubscription", "ncMethodResult", [
-                    new NcParameterDescriptor("emitter", "ncOid", true),
-                    new NcParameterDescriptor("property", "ncPropertyID", true)
-                ])
+                new NcMethodDescriptor(new NcElementId(3, 1), "AddSubscription", "NcMethodResult", [
+                    new NcParameterDescriptor("event", "NcEvent", false, null, "Event identifying information")
+                ], "When used to subscribe to the property changed event it will subscribe to changes from all of the properties"),
+                new NcMethodDescriptor(new NcElementId(3, 2), "RemoveSubscription", "NcMethodResult", [
+                    new NcParameterDescriptor("event", "NcEvent", false, null, "Event identifying information")
+                ], "When used to unsubscribe to the property changed event it will unsubscribe to changes from all of the properties"),
+                new NcMethodDescriptor(new NcElementId(3, 3), "AddPropertyChangeSubscription", "NcMethodResult", [
+                    new NcParameterDescriptor("emitter", "NcOid", false, null, "ID of object where property is"),
+                    new NcParameterDescriptor("property", "NcPropertyID", false, null, "ID of the property")
+                ], "Subscribe to individual property on an object"),
+                new NcMethodDescriptor(new NcElementId(3, 4), "RemovePropertyChangeSubscription", "NcMethodResult", [
+                    new NcParameterDescriptor("emitter", "NcOid", false, null, "ID of object where property is"),
+                    new NcParameterDescriptor("property", "NcPropertyID", false, null, "ID of the property")
+                ], "Unsubscribe from individual property on an object")
             ],
             []
         );
