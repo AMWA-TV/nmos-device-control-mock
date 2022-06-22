@@ -150,7 +150,7 @@ export abstract class NcObject
 
     public GenerateMemberDescriptor() : NcBlockMemberDescriptor
     {
-        return new NcBlockMemberDescriptor(this.role, this.oid, this.constantOid, new NcClassIdentity(this.classID, this.classVersion), this.userLabel, this.owner, this.description);
+        return new NcBlockMemberDescriptor(this.role, this.oid, this.constantOid, new NcClassIdentity(this.classID, this.classVersion), this.userLabel, this.owner, this.description, null);
     }
 
     public static GetClassDescriptor() : NcClassDescriptor
@@ -159,7 +159,7 @@ export abstract class NcObject
             [ 
                 new NcPropertyDescriptor(new NcElementId(1, 1), "classId", "NcClassId", true, true, false, false, null, "Class identity"),
                 new NcPropertyDescriptor(new NcElementId(1, 2), "classVersion", "NcVersionCode", true, true, false, false, null, "Class version"),
-                new NcPropertyDescriptor(new NcElementId(1, 3), "oid", "ncOid", true, true, false, false, null, "Object identifier"),
+                new NcPropertyDescriptor(new NcElementId(1, 3), "oid", "NcOid", true, true, false, false, null, "Object identifier"),
                 new NcPropertyDescriptor(new NcElementId(1, 4), "constantOid", "NcBoolean", true, true, false, false, null, "TRUE iff OID is hardwired into device"),
                 new NcPropertyDescriptor(new NcElementId(1, 5), "owner", "NcOid", true, true, true, false, null, "OID of containing block. Can only ever be null for the root block" ),
                 new NcPropertyDescriptor(new NcElementId(1, 6), "role", "NcName", true, true, false, false, null, "role of obj in containing block"),
@@ -363,7 +363,7 @@ export class NcSignalPath extends BaseType
     {
         return new NcDatatypeDescriptorStruct("ncSignalPath", [
             new NcFieldDescriptor("role", "NcName", false, false, "Unique identifier of this signal path in this block"),
-            new NcFieldDescriptor("label", "NcString", false, false, "Optional label"),
+            new NcFieldDescriptor("label", "NcString", true, false, "Optional label"),
             new NcFieldDescriptor("source", "NcPortReference", false, false, "Source reference"),
             new NcFieldDescriptor("sink", "NcPortReference", false, false, "Sink reference")
         ], null, "Signal path descriptor");
@@ -515,6 +515,7 @@ export class NcBlockMemberDescriptor extends BaseType
     public userLabel: string;
     public owner: number | null;
     public description: string;
+    public constraints: NcPropertyConstraint | null;
 
     constructor(
         role: string,
@@ -523,7 +524,8 @@ export class NcBlockMemberDescriptor extends BaseType
         identity: NcClassIdentity,
         userLabel: string,
         owner: number | null,
-        description: string)
+        description: string,
+        constraints: NcPropertyConstraint | null)
     {
         super();
 
@@ -534,6 +536,7 @@ export class NcBlockMemberDescriptor extends BaseType
         this.userLabel = userLabel;
         this.owner = owner;
         this.description = description;
+        this.constraints = constraints;
     }
 
     public static override GetTypeDescriptor(): NcDatatypeDescriptor
@@ -566,9 +569,10 @@ export class NcBlockDescriptor extends NcBlockMemberDescriptor
         identity: NcClassIdentity,
         userLabel: string,
         owner: number | null,
-        description: string)
+        description: string,
+        constraints: NcPropertyConstraint | null)
     {
-        super(role, oid, constantOid, identity, userLabel, owner, description);
+        super(role, oid, constantOid, identity, userLabel, owner, description, constraints);
 
         this.blockSpecId = blockSpecId;
         this.oid = oid;
@@ -630,6 +634,79 @@ export class NcPropertyDescriptor extends NcDescriptor
         this.isNullable = isNullable;
         this.isSequence = isSequence;
         this.constraints = constraints;
+    }
+
+    public ToJson()
+    {
+        return JSON.stringify(this, jsonIgnoreReplacer);
+    }
+}
+
+export class NcPropertyConstraint
+{
+    public path: string[] | null;
+    public propertyId: NcElementId;
+    public value: any | null;
+
+    constructor(
+        path: string[] | null,
+        propertyId: NcElementId,
+        value: any | null)
+    {
+        this.path = path;
+        this.propertyId = propertyId;
+        this.value = value;
+    }
+
+    public ToJson()
+    {
+        return JSON.stringify(this, jsonIgnoreReplacer);
+    }
+}
+
+export class NcPropertyConstraintNumber extends NcPropertyConstraint
+{
+    public maximum: number;
+    public minimum: number;
+    public step: number;
+
+    constructor(
+        path: string[] | null,
+        propertyId: NcElementId,
+        value: any | null,
+        maximum: number,
+        minimum: number,
+        step: number)
+    {
+        super(path, propertyId, value);
+
+        this.maximum = maximum;
+        this.minimum = minimum;
+        this.step = step;
+    }
+
+    public ToJson()
+    {
+        return JSON.stringify(this, jsonIgnoreReplacer);
+    }
+}
+
+export class NcPropertyConstraintString extends NcPropertyConstraint
+{
+    public maxCharacters: number;
+    public pattern: string;
+
+    constructor(
+        path: string[] | null,
+        propertyId: NcElementId,
+        value: any | null,
+        maxCharacters: number,
+        pattern: string)
+    {
+        super(path, propertyId, value);
+        
+        this.maxCharacters = maxCharacters;
+        this.pattern = pattern;
     }
 
     public ToJson()
@@ -810,13 +887,13 @@ export class NcFieldDescriptor extends NcDescriptor
     public name: string;
     public typeName: string | null;
     public isNullable: boolean;
-    public isSequence: boolean;
+    public isSequence: boolean | null;
 
     constructor(
         name: string,
         typeName: string | null,
         isNullable: boolean,
-        isSequence: boolean,
+        isSequence: boolean | null,
         description: string)
     {
         super(description);

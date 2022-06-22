@@ -16,7 +16,7 @@ export class NcBlock extends NcObject
     public classVersion: string = "1.0.0";
 
     @myIdDecorator('2p1')
-    public enabled: boolean;
+    public isRoot: boolean;
 
     @myIdDecorator('2p2')
     public specId: string | null;
@@ -25,13 +25,13 @@ export class NcBlock extends NcObject
     public specVersion: string | null;
 
     @myIdDecorator('2p4')
-    public parentSpecId: string | null;
+    public specDescription: string | null;
 
     @myIdDecorator('2p5')
-    public parentSpecVersion: string | null;
+    public parentSpecId: string | null;
 
     @myIdDecorator('2p6')
-    public specDescription: string | null;
+    public parentSpecVersion: string | null;
 
     @myIdDecorator('2p7')
     public isDynamic: boolean;
@@ -40,17 +40,21 @@ export class NcBlock extends NcObject
     public isModified: boolean;
 
     @myIdDecorator('2p9')
-    public members: number[] | null;
+    public enabled: boolean;
 
     @myIdDecorator('2p10')
-    public ports: NcPort[] | null;
+    public members: NcBlockMemberDescriptor[];
 
     @myIdDecorator('2p11')
+    public ports: NcPort[] | null;
+
+    @myIdDecorator('2p12')
     public signalPaths: NcSignalPath[] | null;
 
-    public memberObjects: NcObject[] | null;
+    public memberObjects: NcObject[];
 
     public constructor(
+        isRoot: boolean,
         oid: number,
         constantOid: boolean,
         owner: number | null,
@@ -66,7 +70,7 @@ export class NcBlock extends NcObject
         parentSpecVersion: string | null,
         specDescription: string | null,
         isDynamic: boolean,
-        memberObjects: NcObject[] | null,
+        memberObjects: NcObject[],
         ports: NcPort[] | null,
         signalPaths: NcSignalPath[] | null,
         description: string,
@@ -74,6 +78,7 @@ export class NcBlock extends NcObject
     {
         super(oid, constantOid, owner, role, userLabel, lockable, lockState, touchpoints, description, notificationContext);
 
+        this.isRoot = isRoot;
         this.enabled = enabled;
         this.specId = specId;
         this.specVersion = specVersion;
@@ -84,10 +89,7 @@ export class NcBlock extends NcObject
         this.isModified = false;
         this.memberObjects = memberObjects;
 
-        if(this.memberObjects != null)
-            this.members = this.memberObjects.map(x => x.oid);
-        else
-            this.members = null;
+        this.members = this.memberObjects.map(x => x.GenerateMemberDescriptor());
 
         this.ports = ports;
         this.signalPaths = signalPaths;
@@ -103,26 +105,28 @@ export class NcBlock extends NcObject
             switch(key)
             {
                 case '2p1':
-                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.enabled, null);
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.isRoot, null);
                 case '2p2':
                     return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.specId, null);
                 case '2p3':
                     return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.specVersion, null);
                 case '2p4':
-                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.parentSpecId, null);
-                case '2p5':
-                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.parentSpecVersion, null);
-                case '2p6':
                     return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.specDescription, null);
+                case '2p5':
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.parentSpecId, null);
+                case '2p6':
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.parentSpecVersion, null);
                 case '2p7':
                     return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.isDynamic, null);
                 case '2p8':
                     return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.isModified, null);
                 case '2p9':
-                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.members, null);
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.enabled, null);
                 case '2p10':
-                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.ports, null);
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.members, null);
                 case '2p11':
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.ports, null);
+                case '2p12':
                     return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.signalPaths, null);
                 default:
                     return super.Get(oid, propertyId, handle);
@@ -152,6 +156,7 @@ export class NcBlock extends NcObject
                 case '2p9':
                 case '2p10':
                 case '2p11':
+                case '2p12':
                     return new CommandResponseNoValue(handle, NcMethodStatus.ProcessingFailed, 'Property is readonly');
                 default:
                     return super.Set(oid, id, value, handle);
@@ -171,7 +176,7 @@ export class NcBlock extends NcObject
             {
                 case '2m1':
                     return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.GenerateMemberDescriptors(), null);
-                case '2m5':
+                case '2m2':
                     {
                         if(args != null)
                         {
@@ -191,7 +196,7 @@ export class NcBlock extends NcObject
 
     public override GenerateMemberDescriptor() : NcBlockMemberDescriptor
     {
-        return new NcBlockDescriptor(this.specId, this.role, this.oid, this.constantOid, new NcClassIdentity(this.classID, this.classVersion), this.userLabel, this.owner, this.description);
+        return new NcBlockDescriptor(this.specId, this.role, this.oid, this.constantOid, new NcClassIdentity(this.classID, this.classVersion), this.userLabel, this.owner, this.description, null);
     }
 
     public FindNestedMember(oid: number): NcObject | null
@@ -258,10 +263,10 @@ export class NcBlock extends NcObject
                     new NcParameterDescriptor("recurse", "NcBoolean", false, null, "TRUE to search nested blocks"),
                 ], "finds members with given role name or fragment"),
                 new NcMethodDescriptor(new NcElementId(2, 4), "FindMembersByUserLabel", "NcMethodResultBlockMemberDescriptors", [
-                    new NcParameterDescriptor("userLabel", "ncString", false, null, "label text to search for"),
-                    new NcParameterDescriptor("nameComparisonType", "ncStringComparisonType", false, null, "type of string comparison to use"),
-                    new NcParameterDescriptor("classId", "ncClassId", true, null, " if nonnull, finds only members with this class ID"),
-                    new NcParameterDescriptor("recurse", "ncBoolean", false, null, "TRUE to search nested blocks"),
+                    new NcParameterDescriptor("userLabel", "NcString", false, null, "label text to search for"),
+                    new NcParameterDescriptor("nameComparisonType", "NcStringComparisonType", false, null, "type of string comparison to use"),
+                    new NcParameterDescriptor("classId", "NcClassId", true, null, " if nonnull, finds only members with this class ID"),
+                    new NcParameterDescriptor("recurse", "NcBoolean", false, null, "TRUE to search nested blocks"),
                 ], "finds members with given user label or fragment")
             ],
             []
@@ -337,13 +342,15 @@ export class RootBlock extends NcBlock
         parentSpecVersion: string | null,
         specDescription: string | null,
         isDynamic: boolean,
-        memberObjects: NcObject[] | null,
+        memberObjects: NcObject[],
         ports: NcPort[] | null,
         signalPaths: NcSignalPath[] | null,
         description: string,
         notificationContext: INotificationContext)
     {
-        super(oid,
+        super(
+            true,
+            oid,
             constantOid,
             owner,
             role,
