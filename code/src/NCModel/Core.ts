@@ -468,16 +468,16 @@ export class NcTouchpointNmos extends NcTouchpoint
 
 export class NcClassIdentity extends BaseType
 {
-    public classID: number[];
+    public id: number[];
     public version: string;
 
     constructor(
-        classID: number[],
+        id: number[],
         version: string) 
     {
         super();
 
-        this.classID = classID;
+        this.id = id;
         this.version = version;
     }
 

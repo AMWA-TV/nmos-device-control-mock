@@ -128,7 +128,7 @@ export class NcClassManager extends NcManager
 
     private GetClassDescriptors(identity: NcClassIdentity) : NcClassDescriptor[]
     {
-        let key: string = identity.classID.join('.');
+        let key: string = identity.id.join('.');
 
         switch(key)
         {
