@@ -98,22 +98,22 @@ export class NcClassManager extends NcManager
             ],
             [ 
                 new NcMethodDescriptor(new NcElementId(3, 1), "GetControlClass", "NcMethodResultClassDescriptors", [
-                    new NcParameterDescriptor("identity", "NcClassIdentity", false, null, "class ID & version"),
-                    new NcParameterDescriptor("allElements", "NcBoolean", false, null, "TRUE to include inherited class elements")
+                    new NcParameterDescriptor("identity", "NcClassIdentity", false, false,  null, "class ID & version"),
+                    new NcParameterDescriptor("allElements", "NcBoolean", false, false,  null, "TRUE to include inherited class elements")
                 ], "Get a single class descriptor"),
                 new NcMethodDescriptor(new NcElementId(3, 2), "GetDatatype", "NcMethodResultDatatypeDescriptors", [
-                    new NcParameterDescriptor("name", "NcName", false, null, "name of datatype"),
-                    new NcParameterDescriptor("allDefs", "NcBoolean", false, null, "TRUE to include descriptors of component datatypes")
+                    new NcParameterDescriptor("name", "NcName", false, false,  null, "name of datatype"),
+                    new NcParameterDescriptor("allDefs", "NcBoolean", false, false,  null, "TRUE to include descriptors of component datatypes")
                 ], "Get descriptor of datatype and maybe its component datatypes"),
                 new NcMethodDescriptor(new NcElementId(3, 3), "GetControlClasses", "NcMethodResultClassDescriptors", [
-                    new NcParameterDescriptor("blockPath", "NcNamePath", false, null, "path to block"),
-                    new NcParameterDescriptor("recurseBlocks", "NcBoolean", false, null, "TRUE to recurse contained blocks"),
-                    new NcParameterDescriptor("allElements", "NcBoolean", false, null, "TRUE to include inherited class elements")
+                    new NcParameterDescriptor("blockPath", "NcNamePath", false, false,  null, "path to block"),
+                    new NcParameterDescriptor("recurseBlocks", "NcBoolean", false, false,  null, "TRUE to recurse contained blocks"),
+                    new NcParameterDescriptor("allElements", "NcBoolean", false, false,  null, "TRUE to include inherited class elements")
                 ], "Get descriptors of classes used by block(s)"),
                 new NcMethodDescriptor(new NcElementId(3, 4), "GetDataTypes", "NcMethodResultDatatypeDescriptors", [
-                    new NcParameterDescriptor("blockPath", "NcNamePath", false, null, "path to block"),
-                    new NcParameterDescriptor("recurseBlocks", "NcBoolean", false, null, "TRUE to recurse contained blocks"),
-                    new NcParameterDescriptor("allDefs", "NcBoolean", false, null, "TRUE to include descriptors of referenced datatypes")
+                    new NcParameterDescriptor("blockPath", "NcNamePath", false, false,  null, "path to block"),
+                    new NcParameterDescriptor("recurseBlocks", "NcBoolean", false, false,  null, "TRUE to recurse contained blocks"),
+                    new NcParameterDescriptor("allDefs", "NcBoolean", false, false,  null, "TRUE to include descriptors of referenced datatypes")
                 ], " Get descriptors of datatypes used by blocks(s)")
             ],
             []
@@ -340,18 +340,18 @@ export class NcSubscriptionManager extends NcManager
             [],
             [ 
                 new NcMethodDescriptor(new NcElementId(3, 1), "AddSubscription", "NcMethodResult", [
-                    new NcParameterDescriptor("event", "NcEvent", false, null, "Event identifying information")
+                    new NcParameterDescriptor("event", "NcEvent", false,  false, null, "Event identifying information")
                 ], "When used to subscribe to the property changed event it will subscribe to changes from all of the properties"),
                 new NcMethodDescriptor(new NcElementId(3, 2), "RemoveSubscription", "NcMethodResult", [
-                    new NcParameterDescriptor("event", "NcEvent", false, null, "Event identifying information")
+                    new NcParameterDescriptor("event", "NcEvent", false, false,  null, "Event identifying information")
                 ], "When used to unsubscribe to the property changed event it will unsubscribe to changes from all of the properties"),
                 new NcMethodDescriptor(new NcElementId(3, 3), "AddPropertyChangeSubscription", "NcMethodResult", [
-                    new NcParameterDescriptor("emitter", "NcOid", false, null, "ID of object where property is"),
-                    new NcParameterDescriptor("property", "NcPropertyID", false, null, "ID of the property")
+                    new NcParameterDescriptor("emitter", "NcOid", false, false,  null, "ID of object where property is"),
+                    new NcParameterDescriptor("property", "NcPropertyID", false,  false, null, "ID of the property")
                 ], "Subscribe to individual property on an object"),
                 new NcMethodDescriptor(new NcElementId(3, 4), "RemovePropertyChangeSubscription", "NcMethodResult", [
-                    new NcParameterDescriptor("emitter", "NcOid", false, null, "ID of object where property is"),
-                    new NcParameterDescriptor("property", "NcPropertyID", false, null, "ID of the property")
+                    new NcParameterDescriptor("emitter", "NcOid", false,  false, null, "ID of object where property is"),
+                    new NcParameterDescriptor("property", "NcPropertyID",  false, false, null, "ID of the property")
                 ], "Unsubscribe from individual property on an object")
             ],
             []

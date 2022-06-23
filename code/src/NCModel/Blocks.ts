@@ -252,21 +252,21 @@ export class NcBlock extends NcObject
             ],
             [ 
                 new NcMethodDescriptor(new NcElementId(2, 1), "GetMemberDescriptors", "NcMethodResultBlockMemberDescriptors",
-                    [new NcParameterDescriptor("recurse", "NcBoolean", false, null, "If recurse is set to true, nested members can be retrieved")], "gets descriptors of members of the block"),
+                    [new NcParameterDescriptor("recurse", "NcBoolean", false, false, null, "If recurse is set to true, nested members can be retrieved")], "gets descriptors of members of the block"),
                 new NcMethodDescriptor(new NcElementId(2, 2), "FindMembersByPath", "NcMethodResultBlockMemberDescriptors", [
-                    new NcParameterDescriptor("path", "NcNamePath", false, null, "path to search for")
+                    new NcParameterDescriptor("path", "NcNamePath", false, false, null, "path to search for")
                 ], "finds member(s) by path"),
                 new NcMethodDescriptor(new NcElementId(2, 3), "FindMembersByRole", "NcMethodResultBlockMemberDescriptors", [
-                    new NcParameterDescriptor("role", "NcName", false, null, "role text to search for"),
-                    new NcParameterDescriptor("nameComparisonType", "NcStringComparisonType", false, null, "type of string comparison to use"),
-                    new NcParameterDescriptor("classId", "NcClassId", true, null, "if non null, finds only members with this class ID"),
-                    new NcParameterDescriptor("recurse", "NcBoolean", false, null, "TRUE to search nested blocks"),
+                    new NcParameterDescriptor("role", "NcName", false, false, null, "role text to search for"),
+                    new NcParameterDescriptor("nameComparisonType", "NcStringComparisonType", false,  false, null, "type of string comparison to use"),
+                    new NcParameterDescriptor("classId", "NcClassId", true,  false, null, "if non null, finds only members with this class ID"),
+                    new NcParameterDescriptor("recurse", "NcBoolean", false,  false, null, "TRUE to search nested blocks"),
                 ], "finds members with given role name or fragment"),
                 new NcMethodDescriptor(new NcElementId(2, 4), "FindMembersByUserLabel", "NcMethodResultBlockMemberDescriptors", [
-                    new NcParameterDescriptor("userLabel", "NcString", false, null, "label text to search for"),
-                    new NcParameterDescriptor("nameComparisonType", "NcStringComparisonType", false, null, "type of string comparison to use"),
-                    new NcParameterDescriptor("classId", "NcClassId", true, null, " if nonnull, finds only members with this class ID"),
-                    new NcParameterDescriptor("recurse", "NcBoolean", false, null, "TRUE to search nested blocks"),
+                    new NcParameterDescriptor("userLabel", "NcString", false,  false, null, "label text to search for"),
+                    new NcParameterDescriptor("nameComparisonType", "NcStringComparisonType", false,  false, null, "type of string comparison to use"),
+                    new NcParameterDescriptor("classId", "NcClassId", true,  false, null, " if nonnull, finds only members with this class ID"),
+                    new NcParameterDescriptor("recurse", "NcBoolean", false,  false, null, "TRUE to search nested blocks"),
                 ], "finds members with given user label or fragment")
             ],
             []
