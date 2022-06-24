@@ -154,53 +154,53 @@ export class NcClassManager extends NcManager
         switch(name)
         {
             case 'NcBoolean': 
-                return [ new NcDatatypeDescriptorPrimitive("NcBoolean", "Boolean primitive type")];
+                return [ new NcDatatypeDescriptorPrimitive("NcBoolean", null, "Boolean primitive type")];
             case 'NcInt8': 
-                return [ new NcDatatypeDescriptorPrimitive("NcInt8", "byte")];
+                return [ new NcDatatypeDescriptorPrimitive("NcInt8", null, "byte")];
             case 'NcInt16': 
-                return [ new NcDatatypeDescriptorPrimitive("NcInt16", "short")];
+                return [ new NcDatatypeDescriptorPrimitive("NcInt16", null, "short")];
             case 'NcInt32': 
-                return [ new NcDatatypeDescriptorPrimitive("NcInt32", "long")];
+                return [ new NcDatatypeDescriptorPrimitive("NcInt32", null, "long")];
             case 'NcInt64': 
-                return [ new NcDatatypeDescriptorPrimitive("NcInt64", "longlong")];
+                return [ new NcDatatypeDescriptorPrimitive("NcInt64", null, "longlong")];
             case 'NcUint8': 
-                return [ new NcDatatypeDescriptorPrimitive("NcUint8", "octet")];
+                return [ new NcDatatypeDescriptorPrimitive("NcUint8", null, "octet")];
             case 'NcUint16': 
-                return [ new NcDatatypeDescriptorPrimitive("NcUint16", "unsignedshort")];
+                return [ new NcDatatypeDescriptorPrimitive("NcUint16", null, "unsignedshort")];
             case 'NcUint32': 
-                return [ new NcDatatypeDescriptorPrimitive("NcUint32", "unsignedlong")];
+                return [ new NcDatatypeDescriptorPrimitive("NcUint32", null, "unsignedlong")];
             case 'NcUint64': 
-                return [ new NcDatatypeDescriptorPrimitive("NcUint64", "unsignedlonglong")];
+                return [ new NcDatatypeDescriptorPrimitive("NcUint64", null, "unsignedlonglong")];
             case 'NcFloat32': 
-                return [ new NcDatatypeDescriptorPrimitive("NcFloat32", "unrestrictedfloat")];
+                return [ new NcDatatypeDescriptorPrimitive("NcFloat32", null, "unrestrictedfloat")];
             case 'NcFloat64': 
-                return [ new NcDatatypeDescriptorPrimitive("NcFloat64", "unrestricteddouble")];
+                return [ new NcDatatypeDescriptorPrimitive("NcFloat64", null, "unrestricteddouble")];
             case 'NcString': 
-                return [ new NcDatatypeDescriptorPrimitive("NcString", "UTF-8 string")];
+                return [ new NcDatatypeDescriptorPrimitive("NcString", null, "UTF-8 string")];
             case 'NcBlob': 
-                return [ new NcDatatypeDescriptorPrimitive("NcBlob", "blob")];
+                return [ new NcDatatypeDescriptorPrimitive("NcBlob", null, "blob")];
             case 'NcBlobFixedLen': 
-                return [ new NcDatatypeDescriptorPrimitive("NcBlobFixedLen", "fixed length blob")];
+                return [ new NcDatatypeDescriptorPrimitive("NcBlobFixedLen", null, "fixed length blob")];
             case 'NcClassId': 
-                return [ new NcDatatypeDescriptorTypeDef("NcClassId", "NcClassIdField", true, "Sequence of class ID fields.")];
+                return [ new NcDatatypeDescriptorTypeDef("NcClassId", "NcClassIdField", true, null, "Sequence of class ID fields.")];
             case 'NcClassIdField': 
-                return [ new NcDatatypeDescriptorTypeDef("NcClassIdField", "NcInt32", false, "Class ID field. Either a definition index or an authority key.")];
+                return [ new NcDatatypeDescriptorTypeDef("NcClassIdField", "NcInt32", false, null, "Class ID field. Either a definition index or an authority key.")];
             case 'NcVersionCode': 
-                return [ new NcDatatypeDescriptorTypeDef("NcVersionCode", "NcString", false, "Version code in semantic versioning format")];
+                return [ new NcDatatypeDescriptorTypeDef("NcVersionCode", "NcString", false, null, "Version code in semantic versioning format")];
             case 'NcOid': 
-                return [ new NcDatatypeDescriptorTypeDef("NcOid", "NcUint32", false, "Object id")];
+                return [ new NcDatatypeDescriptorTypeDef("NcOid", "NcUint32", false, null, "Object id")];
             case 'NcName': 
-                return [ new NcDatatypeDescriptorTypeDef("NcName", "NcString", false, "Programmatically significant name, alphanumerics + underscore, no spaces")];
+                return [ new NcDatatypeDescriptorTypeDef("NcName", "NcString", false, null, "Programmatically significant name, alphanumerics + underscore, no spaces")];
             case 'NcNamePath': 
-                return [ new NcDatatypeDescriptorTypeDef("NcNamePath", "NcName", true, "Name path")];
+                return [ new NcDatatypeDescriptorTypeDef("NcNamePath", "NcName", true, null, "Name path")];
             case 'NcId32': 
-                return [ new NcDatatypeDescriptorTypeDef("NcId32", "NcUint32", false, "Identity handler")];
+                return [ new NcDatatypeDescriptorTypeDef("NcId32", "NcUint32", false, null, "Identity handler")];
             case 'NcTimeInterval': 
-                return [ new NcDatatypeDescriptorTypeDef("NcTimeInterval", "NcFloat64", false, "Floating point seconds")];
+                return [ new NcDatatypeDescriptorTypeDef("NcTimeInterval", "NcFloat64", false, null, "Floating point seconds")];
             case 'NcDB': 
-                return [ new NcDatatypeDescriptorTypeDef("NcDB", "NcFloat32", false, "A ratio expressed in dB.")];
+                return [ new NcDatatypeDescriptorTypeDef("NcDB", "NcFloat32", false, null, "A ratio expressed in dB.")];
             case 'NcPropertyId': 
-                return [ new NcDatatypeDescriptorTypeDef("NcPropertyId", "NcElementId", false, "Class property id which contains the level and index")];
+                return [ new NcDatatypeDescriptorTypeDef("NcPropertyId", "NcElementId", false, null, "Class property id which contains the level and index")];
             case 'NcElementId': 
                 return [ NcElementId.GetTypeDescriptor() ];
             case 'NcLockState': 
@@ -208,7 +208,7 @@ export class NcClassManager extends NcManager
                     new NcEnumItemDescriptor("MoLock", 0, "Not locked"),
                     new NcEnumItemDescriptor("NockNoWrite", 1, "Locked for write operations"),
                     new NcEnumItemDescriptor("LockNoReadWrite", 2, "Locked for both read and write operations"),
-                ], "Lock state enum data type")];
+                ], null, "Lock state enum data type")];
             case 'NcMethodStatus': 
                 return [ new NcDatatypeDescriptorEnum("NcMethodStatus", [
                     new NcEnumItemDescriptor("Ok", 0, "Method call was successful"),
@@ -228,63 +228,63 @@ export class NcClassManager extends NcManager
                     new NcEnumItemDescriptor("Timeout", 14, "Method call did not finish within the allotted time"),
                     new NcEnumItemDescriptor("BufferOverflow", 15, "Something was too big"),
                     new NcEnumItemDescriptor("OmittedProperty", 16, "Command referenced an optional property that is not instantiated in the referenced object"),
-                ], "Method invokation status")];
+                ], null, "Method invokation status")];
             case 'NcMethodResult':
                 return [ new NcDatatypeDescriptorStruct("NcMethodResult", [
-                    new NcFieldDescriptor("status", "NcMethodStatus", false, false, "Status for the invoked method"),
-                    new NcFieldDescriptor("errorMessage", "NcString", true, false, "Optional error message")
-                ], null, "Result of the invoked method")];
+                    new NcFieldDescriptor("status", "NcMethodStatus", false, false, null, "Status for the invoked method"),
+                    new NcFieldDescriptor("errorMessage", "NcString", true, false, null, "Optional error message")
+                ], null, null, "Result of the invoked method")];
             case 'NcMethodResultPropertyValue':
                 return [ new NcDatatypeDescriptorStruct("NcMethodResultPropertyValue", [
-                    new NcFieldDescriptor("status", "NcMethodStatus", false, false, "Status for the invoked method"),
-                    new NcFieldDescriptor("errorMessage", "NcString", true, false, "Optional error message"),
-                    new NcFieldDescriptor("value", null, true, null, "Getter method value for the associated property")
-                ], "NcMethodResult", "Result when invoking the getter method associated with a property")];
+                    new NcFieldDescriptor("status", "NcMethodStatus", false, false, null, "Status for the invoked method"),
+                    new NcFieldDescriptor("errorMessage", "NcString", true, false, null, "Optional error message"),
+                    new NcFieldDescriptor("value", null, true, null, null, "Getter method value for the associated property")
+                ], "NcMethodResult", null, "Result when invoking the getter method associated with a property")];
             case 'NcMethodResultId32':
                 return [ new NcDatatypeDescriptorStruct("NcMethodResultId32", [
-                    new NcFieldDescriptor("status", "NcMethodStatus", false, false, "Status for the invoked method"),
-                    new NcFieldDescriptor("errorMessage", "NcString", true, false, "Optional error message"),
-                    new NcFieldDescriptor("value", "NcId32", false, false, "NcId32 method result value")
-                ], "NcMethodResult", "Method result containing an NcId32 value")];
+                    new NcFieldDescriptor("status", "NcMethodStatus", false, false, null, "Status for the invoked method"),
+                    new NcFieldDescriptor("errorMessage", "NcString", true, false, null, "Optional error message"),
+                    new NcFieldDescriptor("value", "NcId32", false, false, null, "NcId32 method result value")
+                ], "NcMethodResult", null, "Method result containing an NcId32 value")];
             case 'NcClassIdentity': 
                 return [ NcClassIdentity.GetTypeDescriptor() ];
             case 'NcBlockMemberDescriptor': 
                 return [ NcBlockMemberDescriptor.GetTypeDescriptor() ];
             case 'NcMethodResultBlockMemberDescriptors':
                 return [ new NcDatatypeDescriptorStruct("NcMethodResultBlockMemberDescriptors", [
-                    new NcFieldDescriptor("status", "NcMethodStatus", false, false, "Status for the invoked method"),
-                    new NcFieldDescriptor("errorMessage", "NcString", true, false, "Optional error message"),
-                    new NcFieldDescriptor("value", "NcBlockMemberDescriptor", false, true, "Block member descriptors method result value")
-                ], "NcMethodResult", "Method result containing block member descriptors as the value")];
+                    new NcFieldDescriptor("status", "NcMethodStatus", false, false, null, "Status for the invoked method"),
+                    new NcFieldDescriptor("errorMessage", "NcString", true, false, null, "Optional error message"),
+                    new NcFieldDescriptor("value", "NcBlockMemberDescriptor", false, true, null, "Block member descriptors method result value")
+                ], "NcMethodResult", null, "Method result containing block member descriptors as the value")];
             case 'NcReceiverStatus': 
                 return [ NcReceiverStatus.GetTypeDescriptor() ];
             case 'NcMethodResultReceiverStatus':
                 return [ new NcDatatypeDescriptorStruct("NcMethodResultReceiverStatus", [
-                    new NcFieldDescriptor("status", "NcMethodStatus", false, false, "Status for the invoked method"),
-                    new NcFieldDescriptor("errorMessage", "NcString", true, false, "Optional error message"),
-                    new NcFieldDescriptor("value", "NcReceiverStatus", false, false, "Receiver status method result value")
-                ], "NcMethodResult", "Method result containing receiver status information as the value")];
+                    new NcFieldDescriptor("status", "NcMethodStatus", false, false, null, "Status for the invoked method"),
+                    new NcFieldDescriptor("errorMessage", "NcString", true, false, null, "Optional error message"),
+                    new NcFieldDescriptor("value", "NcReceiverStatus", false, false, null, "Receiver status method result value")
+                ], "NcMethodResult", null, "Method result containing receiver status information as the value")];
             case 'NcIoDirection': 
                 return [ new NcDatatypeDescriptorEnum("ncIoDirection", [
                     new NcEnumItemDescriptor("Undefined", 0, "Not defined"),
                     new NcEnumItemDescriptor("Input", 1, "Input direction"),
                     new NcEnumItemDescriptor("Output", 2, "Output direction"),
                     new NcEnumItemDescriptor("Bidirectional", 3, "Bidirectional"),
-                ], "Input and/or output direction")];
+                ], null, "Input and/or output direction")];
             case 'NcConnectionStatus': 
                 return [ new NcDatatypeDescriptorEnum("NcConnectionStatus", [
                     new NcEnumItemDescriptor("Undefined", 0, "This is the value when there is no receiver"),
                     new NcEnumItemDescriptor("Connected", 1, "Connected to a stream"),
                     new NcEnumItemDescriptor("Disconnected", 2, "Not connected to a stream"),
                     new NcEnumItemDescriptor("ConnectionError", 3, "A connection error was encountered"),
-                ], "Connection status enum data type")];
+                ], null, "Connection status enum data type")];
             case 'NcPayloadStatus': 
                 return [ new NcDatatypeDescriptorEnum("NcPayloadStatus", [
                     new NcEnumItemDescriptor("Undefined", 0, "This is the value when there's no connection."),
                     new NcEnumItemDescriptor("PayloadOK", 1, "Payload is being received without errors and is the correct type"),
                     new NcEnumItemDescriptor("PayloadFormatUnsupported", 2, "Payload is being received but is of an unsupported type"),
                     new NcEnumItemDescriptor("PayloadError", 3, "A payload error was encountered"),
-                ], "Payload status enum data type")];
+                ], null, "Payload status enum data type")];
             case 'NcPort': 
                 return [ NcPort.GetTypeDescriptor() ];
             case 'NcPortReference': 
@@ -305,7 +305,7 @@ export class NcClassManager extends NcManager
                     new NcEnumItemDescriptor("Alpha", 1, "Alpha option"),
                     new NcEnumItemDescriptor("Beta", 2, "Beta option"),
                     new NcEnumItemDescriptor("Gamma", 3, "Gamma option"),
-                ], "Demonstration enum data type")];
+                ], null, "Demonstration enum data type")];
             default:
                 return new Array<NcDatatypeDescriptor>();
         }
