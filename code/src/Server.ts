@@ -68,6 +68,7 @@ try
         false,
         NcLockState.NoLock,
         null,
+        "The class manager offers access to control class and data type descriptors",
         sessionManager);
 
     const subscriptionManager = new NcSubscriptionManager(
@@ -79,6 +80,7 @@ try
         false,
         NcLockState.NoLock,
         null,
+        "The subscription manager offers the ability to subscribe to events on particular objects and properties",
         sessionManager);
 
     const receiverMonitorAgent = new NcReceiverMonitor(
@@ -90,6 +92,8 @@ try
         false,
         NcLockState.NoLock,
         [ new NcTouchpointNmos(`is-04`, [ new NcTouchpointResourceNmos('receiver', myVideoReceiver.id)]) ],
+        true,
+        "Receiver monitor worker",
         sessionManager);
 
     myVideoReceiver.AttachMonitoringAgent(receiverMonitorAgent);
@@ -104,11 +108,11 @@ try
         NcLockState.NoLock,
         [],
         true,
-        [],
-        null,
+        "Demo control class",
         sessionManager);
 
     const channelGainBlock = new NcBlock(
+        false,
         21,
         true,
         31,
@@ -128,11 +132,11 @@ try
             new NcGain(22, true, 21, "left-gain", "Left gain", false, NcLockState.NoLock, [], true, [
                 new NcPort('input_1', NcIoDirection.Input, null),
                 new NcPort('output_1', NcIoDirection.Output, null),
-            ], null, 0, sessionManager),
+            ], null, 0, "Left channel gain", sessionManager),
             new NcGain(23, true, 21, "right-gain", "Right gain", false, NcLockState.NoLock, [], true, [
                 new NcPort('input_1', NcIoDirection.Input, null),
                 new NcPort('output_1', NcIoDirection.Output, null),
-            ], null, 0, sessionManager)
+            ], null, 0, "Right channel gain", sessionManager)
         ],
         [ 
             new NcPort('stereo_gain_input_1', NcIoDirection.Input, null),
@@ -146,9 +150,11 @@ try
             new NcSignalPath('right_gain_input', 'Right gain input', new NcPortReference([], "stereo_gain_input_2"), new NcPortReference(['right-gain'], 'input_1')),
             new NcSignalPath('right_gain_output', 'Right gain output', new NcPortReference(['right-gain'], 'output_1'), new NcPortReference([], "stereo_gain_output_2")),
         ],
+        "Channel gain block",
         sessionManager);
 
         const stereoGainBlock = new NcBlock(
+            false,
             31,
             true,
             1,
@@ -171,7 +177,7 @@ try
                     new NcPort('input_2', NcIoDirection.Input, null),
                     new NcPort('output_1', NcIoDirection.Output, null),
                     new NcPort('output_2', NcIoDirection.Output, null),
-                ], null, 0, sessionManager)
+                ], null, 0, "Master gain", sessionManager)
             ],
             [ 
                 new NcPort('block_input_1', NcIoDirection.Input, null),
@@ -187,15 +193,16 @@ try
                 new NcSignalPath('right-gain-out-to-master-gain-in-2', 'Right gain output to master gain input 2', new NcPortReference(['stereo-gain'], 'stereo_gain_output_2'), new NcPortReference(['master-gain'], "input_2")),
                 new NcSignalPath('master-gain-out-2-to-block-out-2', 'Master gain output 2 to block output 2', new NcPortReference(['master-gain'], "output_2"), new NcPortReference([], 'block_output_2'))
             ],
+            "Stereo gain block",
             sessionManager);
 
     const rootBlock = new RootBlock(
         1,
         true,
         null,
+        'root',
         'Root',
-        'Root',
-        false,
+        true,
         NcLockState.NoLock,
         null,
         true,
@@ -208,6 +215,7 @@ try
         [ classManager, subscriptionManager, receiverMonitorAgent, stereoGainBlock, demoClass ],
         null,
         null,
+        "Root block",
         sessionManager);
 
     async function doAsync () {

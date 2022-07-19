@@ -1,18 +1,18 @@
 import { jsonIgnoreReplacer, jsonIgnore } from 'json-ignore';
-import { NcElementID, NcPropertyChangeType } from '../NCModel/Core';
+import { NcElementId, NcPropertyChangeType } from '../NCModel/Core';
 
 import { ProtocolWrapper } from './Core';
 
 export class NcEventData
 {
-    public propertyId: NcElementID;
+    public propertyId: NcElementId;
 
     public changeType: NcPropertyChangeType;
 
     public propertyValue: any | null;
 
     constructor(
-        propertyId: NcElementID,
+        propertyId: NcElementId,
         changeType: NcPropertyChangeType,
         propertyValue: any | null)
     {
@@ -28,13 +28,13 @@ export class NcNotification
 
     public oid: number;
 
-    public eventID: NcElementID;
+    public eventID: NcElementId;
 
     public eventData: NcEventData;
 
     constructor(
         oid: number,
-        eventID: NcElementID,
+        eventID: NcElementId,
         eventData: NcEventData)
     {
         this.oid = oid;
