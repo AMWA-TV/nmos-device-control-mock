@@ -1,26 +1,26 @@
 import { jsonIgnoreReplacer, jsonIgnore } from 'json-ignore';
 import { NcElementId, NcMethodStatus } from '../NCModel/Core';
 
-import { ProtocolWrapper, ProtoMsg } from './Core';
+import { MessageType, ProtocolWrapper, ProtoMsg } from './Core';
 
 export class CommandMsg extends ProtoMsg
 {
     public oid: number;
 
-    public methodID: NcElementId;
+    public methodId: NcElementId;
 
     public arguments: { [key: string]: any } | null;
 
     constructor(
         handle: number,
         oid: number,
-        methodID: NcElementId,
+        methodId: NcElementId,
         commandArguments: { [key: string]: any } | null)
     {
         super(handle);
 
         this.oid = oid;
-        this.methodID = methodID;
+        this.methodId = methodId;
         this.arguments = commandArguments;
     }
 }
@@ -60,14 +60,14 @@ export class EventSubscriptionData
 {
     public emitterOid: number;
 
-    public eventID: NcElementId;
+    public eventId: NcElementId;
 
     constructor(
         emitterOid: number,
-        eventID: NcElementId)
+        eventId: NcElementId)
     {
         this.emitterOid = emitterOid;
-        this.eventID = eventID;
+        this.eventId = eventId;
     }
 }
 
@@ -81,7 +81,7 @@ export class ProtoCommand extends ProtocolWrapper
         sessionId: number,
         messages: CommandMsg[])
     {
-        super('1.0.0', 'Command');
+        super('1.0.0', MessageType.Command);
 
         this.sessionId = sessionId;
         this.messages = messages;
@@ -103,7 +103,7 @@ export class ProtoCommandResponse extends ProtocolWrapper
         sessionId: number,
         messages: CommandResponseNoValue[])
     {
-        super('1.0.0', 'CommandResponse');
+        super('1.0.0', MessageType.CommandResponse);
 
         this.sessionId = sessionId;
         this.messages = messages;

@@ -1,7 +1,8 @@
+import exp from 'constants';
 import { jsonIgnoreReplacer, jsonIgnore } from 'json-ignore';
 import { NcElementId, NcPropertyChangeType } from '../NCModel/Core';
 
-import { ProtocolWrapper } from './Core';
+import { MessageType, ProtocolWrapper } from './Core';
 
 export class NcEventData
 {
@@ -22,23 +23,29 @@ export class NcEventData
     }
 }
 
+export enum NcNotificationType
+{
+    Event = 0,
+    SubscriptionEnd = 1
+}
+
 export class NcNotification
 {
-    public type: string = 'Event';
+    public type: NcNotificationType = NcNotificationType.Event;
 
     public oid: number;
 
-    public eventID: NcElementId;
+    public eventId: NcElementId;
 
     public eventData: NcEventData;
 
     constructor(
         oid: number,
-        eventID: NcElementId,
+        eventId: NcElementId,
         eventData: NcEventData)
     {
         this.oid = oid;
-        this.eventID = eventID;
+        this.eventId = eventId;
         this.eventData = eventData;
     }
 }
@@ -53,7 +60,7 @@ export class ProtoNotification extends ProtocolWrapper
         sessionId: number,
         messages: NcNotification[])
     {
-        super('1.0.0', 'Notification');
+        super('1.0.0', MessageType.Notification);
 
         this.sessionId = sessionId;
         this.messages = messages;

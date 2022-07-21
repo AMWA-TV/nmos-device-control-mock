@@ -1,6 +1,6 @@
 import { jsonIgnoreReplacer, jsonIgnore } from 'json-ignore';
 import { CommandMsg, CommandResponseNoValue, CommandResponseWithValue, ProtoCommand, ProtoCommandResponse } from '../NCProtocol/Commands';
-import { ProtocolWrapper } from '../NCProtocol/Core';
+import { MessageType, ProtocolWrapper } from '../NCProtocol/Core';
 import { CommandResponseHeartbeat, ProtoHeartbeat, ProtoHeartbeatResponse } from '../NCProtocol/Heartbeats';
 import { CreateSessionResponse, ProtoCreateSession, ProtoCreateSessionResponse } from '../NCProtocol/Sessions';
 import { WebSocketConnection } from '../Server';
@@ -166,11 +166,11 @@ export class NcBlock extends NcObject
         return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
     }
 
-    public override InvokeMethod(oid: number, methodID: NcElementId, args: { [key: string]: any; } | null, handle: number): CommandResponseNoValue 
+    public override InvokeMethod(oid: number, methodId: NcElementId, args: { [key: string]: any; } | null, handle: number): CommandResponseNoValue 
     {
         if(oid == this.oid)
         {
-            let key: string = `${methodID.level}m${methodID.index}`;
+            let key: string = `${methodId.level}m${methodId.index}`;
 
             switch(key)
             {
@@ -187,7 +187,7 @@ export class NcBlock extends NcObject
                     }
                     break;
                 default:
-                    return super.InvokeMethod(oid, methodID, args, handle);
+                    return super.InvokeMethod(oid, methodId, args, handle);
             }
         }
 
@@ -378,7 +378,7 @@ export class RootBlock extends NcBlock
 
         switch(message.messageType)
         {
-            case 'CreateSession':
+            case MessageType.CreateSession:
             {
                 let msgCreateSession = JSON.parse(msg) as ProtoCreateSession;
                 let outcome = this.notificationContext.CreateSession(socket, msgCreateSession.messages[0].arguments['heartBeatTime']);
@@ -397,13 +397,13 @@ export class RootBlock extends NcBlock
             }
             break;
 
-            case 'Command':
+            case MessageType.Command:
             {
                 let msgCommand = JSON.parse(msg) as ProtoCommand;
                 socket.send(this.ProcessCommand(msgCommand).ToJson());
             }
             break;
-            case 'Heartbeat':
+            case MessageType.Heartbeat:
             {
                 let msgHeartbeat = JSON.parse(msg) as ProtoHeartbeat;
                 socket.send(this.ProcessHeartbeat(msgHeartbeat).ToJson());
@@ -431,7 +431,7 @@ export class RootBlock extends NcBlock
 
     public ProcessCommandMessage(commandMsg: CommandMsg) : CommandResponseNoValue
     {
-        if (this.IsGenericGetter(commandMsg.methodID))
+        if (this.IsGenericGetter(commandMsg.methodId))
         {
             if(commandMsg.arguments != null && 'id' in commandMsg.arguments)
             {
@@ -451,7 +451,7 @@ export class RootBlock extends NcBlock
             else
                 return new CommandResponseNoValue(commandMsg.handle, NcMethodStatus.InvalidRequest, "OID could not be found");
         }
-        else if (this.IsGenericSetter(commandMsg.methodID))
+        else if (this.IsGenericSetter(commandMsg.methodId))
         {
             if(commandMsg.arguments != null && 'id' in commandMsg.arguments)
             {
@@ -475,12 +475,12 @@ export class RootBlock extends NcBlock
         else
         {
             if(commandMsg.oid == this.oid)
-                return this.InvokeMethod(commandMsg.oid, commandMsg.methodID, commandMsg.arguments, commandMsg.handle);
+                return this.InvokeMethod(commandMsg.oid, commandMsg.methodId, commandMsg.arguments, commandMsg.handle);
             else if(this.memberObjects != null)
             {
                 let member = this.FindNestedMember(commandMsg.oid);
                 if(member)
-                    return member.InvokeMethod(commandMsg.oid, commandMsg.methodID, commandMsg.arguments, commandMsg.handle);
+                    return member.InvokeMethod(commandMsg.oid, commandMsg.methodId, commandMsg.arguments, commandMsg.handle);
                 else
                     return new CommandResponseNoValue(commandMsg.handle, NcMethodStatus.InvalidRequest, "OID could not be found");
             }

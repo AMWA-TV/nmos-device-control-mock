@@ -1,7 +1,7 @@
 import { jsonIgnoreReplacer, jsonIgnore } from 'json-ignore';
 import { NcMethodStatus } from '../NCModel/Core';
 
-import { ProtocolWrapper, ProtoMsg } from './Core';
+import { MessageType, ProtocolWrapper, ProtoMsg } from './Core';
 
 export class CreateSessionMsg extends ProtoMsg
 {
@@ -46,7 +46,7 @@ export class ProtoCreateSession extends ProtocolWrapper
     public constructor(
         messages: CreateSessionMsg[])
     {
-        super('1.0.0', 'CreateSession');
+        super('1.0.0', MessageType.CreateSession);
 
         this.messages = messages;
     }
@@ -64,7 +64,7 @@ export class ProtoCreateSessionResponse extends ProtocolWrapper
     public constructor(
         messages: CreateSessionResponse[])
     {
-        super('1.0.0', 'CreateSessionResponse');
+        super('1.0.0', MessageType.CreateSessionResponse);
 
         this.messages = messages;
     }

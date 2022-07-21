@@ -6,7 +6,7 @@ import { NcEventData, NcNotification, ProtoNotification } from './NCProtocol/Not
 
 export interface INotificationContext
 {
-    NotifyPropertyChanged(oid: number, propertyID: NcElementId, value: any);
+    NotifyPropertyChanged(oid: number, propertyId: NcElementId, value: any);
     Subscribe(oid: number);
     CreateSession(socket: WebSocketConnection, heartBeatTime: number) : [number | null, string | null]
 }
@@ -27,16 +27,16 @@ export class SessionManager implements INotificationContext
         throw new Error('Method not implemented.');
     }
 
-    public NotifyPropertyChanged(oid: number, propertyID: NcElementId, value: any)
+    public NotifyPropertyChanged(oid: number, propertyId: NcElementId, value: any)
     {
-        console.log(`NotifyPropertyChanged oid: ${oid}, property: ${propertyID.level}p${propertyID.index}, value: ${JSON.stringify(value)}`);
+        console.log(`NotifyPropertyChanged oid: ${oid}, property: ${propertyId.level}p${propertyId.index}, value: ${JSON.stringify(value)}`);
 
         for (let key in this.sessions) {
             let session = this.sessions[key];
             session.socket.send(
                 new ProtoNotification(
                     session.sessionId,
-                    [ new NcNotification(oid, new NcElementId(1, 1), new NcEventData(propertyID, NcPropertyChangeType.CurrentChanged, value)) ]
+                    [ new NcNotification(oid, new NcElementId(1, 1), new NcEventData(propertyId, NcPropertyChangeType.CurrentChanged, value)) ]
                 ).ToJson());
         }
     }
