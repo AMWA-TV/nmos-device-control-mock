@@ -2,7 +2,7 @@ import { jsonIgnoreReplacer, jsonIgnore } from 'json-ignore';
 import { NcMethodStatus } from '../NCModel/Core';
 import { CommandResponseNoValue } from './Commands';
 
-import { ProtocolWrapper } from './Core';
+import { MessageType, ProtocolWrapper } from './Core';
 
 export class ProtoHeartbeat extends ProtocolWrapper
 {
@@ -11,7 +11,7 @@ export class ProtoHeartbeat extends ProtocolWrapper
     public constructor(
         sessionId: number)
     {
-        super('1.0.0', 'Heartbeat');
+        super('1.0.0', MessageType.Heartbeat);
 
         this.sessionId = sessionId;
     }
@@ -47,7 +47,7 @@ export class ProtoHeartbeatResponse extends ProtocolWrapper
         sessionId: number,
         messages: CommandResponseHeartbeat[])
     {
-        super('1.0.0', 'HeartbeatResponse');
+        super('1.0.0', MessageType.HeartbeatResponse);
 
         this.sessionId = sessionId;
         this.messages = messages;

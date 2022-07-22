@@ -143,7 +143,7 @@ export abstract class NcObject
         return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
     }
 
-    public InvokeMethod(oid: number, methodID: NcElementId, args: { [key: string]: any } | null, handle: number) : CommandResponseNoValue
+    public InvokeMethod(oid: number, methodId: NcElementId, args: { [key: string]: any } | null, handle: number) : CommandResponseNoValue
     {
         return new CommandResponseNoValue(handle, NcMethodStatus.BadMethodID, 'Method does not exist in object');
     }

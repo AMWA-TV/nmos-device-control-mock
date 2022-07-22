@@ -407,18 +407,18 @@ export class NcReceiverMonitor extends NcWorker
         return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
     }
 
-    public override InvokeMethod(oid: number, methodID: NcElementId, args: { [key: string]: any; } | null, handle: number): CommandResponseNoValue 
+    public override InvokeMethod(oid: number, methodId: NcElementId, args: { [key: string]: any; } | null, handle: number): CommandResponseNoValue 
     {
         if(oid == this.oid)
         {
-            let key: string = `${methodID.level}m${methodID.index}`;
+            let key: string = `${methodId.level}m${methodId.index}`;
 
             switch(key)
             {
                 case '3m1':
                     return new CommandResponseWithValue(handle, NcMethodStatus.OK, new NcReceiverStatus(this.connectionStatus, this.payloadStatus), null);
                 default:
-                    return super.InvokeMethod(oid, methodID, args, handle);
+                    return super.InvokeMethod(oid, methodId, args, handle);
             }
         }
 
@@ -558,16 +558,16 @@ export class NcDemo extends NcWorker
         return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
     }
 
-    public override InvokeMethod(oid: number, methodID: NcElementId, args: { [key: string]: any; } | null, handle: number): CommandResponseNoValue 
+    public override InvokeMethod(oid: number, methodId: NcElementId, args: { [key: string]: any; } | null, handle: number): CommandResponseNoValue 
     {
         if(oid == this.oid)
         {
-            let key: string = `${methodID.level}m${methodID.index}`;
+            let key: string = `${methodId.level}m${methodId.index}`;
 
             switch(key)
             {
                 default:
-                    return super.InvokeMethod(oid, methodID, args, handle);
+                    return super.InvokeMethod(oid, methodId, args, handle);
             }
         }
 
