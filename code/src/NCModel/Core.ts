@@ -176,31 +176,23 @@ export abstract class NcObject
                     new NcParameterDescriptor("id", "NcPropertyId", false, false, null, "Property id"),
                     new NcParameterDescriptor("value", null, true, null, null, "Property value")
                 ], "Set property value"),
-                new NcMethodDescriptor(new NcElementId(1, 3), "Clear", "NcMethodResult", [
-                    new NcParameterDescriptor("id", "NcPropertyId", false, false, null, "Property id")
-                ], "Sets property to initial value"),
-                new NcMethodDescriptor(new NcElementId(1, 4), "GetSequenceItem", "NcMethodResultPropertyValue", [
+                new NcMethodDescriptor(new NcElementId(1, 3), "GetSequenceItem", "NcMethodResultPropertyValue", [
                     new NcParameterDescriptor("id", "NcPropertyId", false, false, null, "Property id"),
                     new NcParameterDescriptor("index", "NcId32", false, false, null, "Index of item in the sequence")
                 ], "Get sequence item"),
-                new NcMethodDescriptor(new NcElementId(1, 5), "SetSequenceItem", "NcMethodResult", [
+                new NcMethodDescriptor(new NcElementId(1, 4), "SetSequenceItem", "NcMethodResult", [
                     new NcParameterDescriptor("id", "NcPropertyId", false, false, null, "Property id"),
                     new NcParameterDescriptor("index", "NcId32", false, false, null, "Index of item in the sequence"),
                     new NcParameterDescriptor("value", null, true, null, null, "Value")
                 ], "Set sequence item value"),
-                new NcMethodDescriptor(new NcElementId(1, 6), "AddSequenceItem", "NcMethodResultId32", [
+                new NcMethodDescriptor(new NcElementId(1, 5), "AddSequenceItem", "NcMethodResultId32", [
                     new NcParameterDescriptor("id", "NcPropertyId", false, false, null, "Property id"),
                     new NcParameterDescriptor("value", null, true, null, null, "Value")
                 ], "Add item to sequence"),
-                new NcMethodDescriptor(new NcElementId(1, 7), "RemoveSequenceItem", "NcMethodResult", [
+                new NcMethodDescriptor(new NcElementId(1, 6), "RemoveSequenceItem", "NcMethodResult", [
                     new NcParameterDescriptor("id", "NcPropertyId", false, false, null, "Property id"),
                     new NcParameterDescriptor("index", "NcId32", false, false, null, "Index of item in the sequence"),
-                ], "Delete sequence item"),
-                new NcMethodDescriptor(new NcElementId(1, 8), "LockWait", "NcMethodResult", [
-                    new NcParameterDescriptor("requestedLockStatus", "NcLockState", false, false, null, "Type of lock requested, or unlock"),
-                    new NcParameterDescriptor("timeout", "NcTimeInterval", false, false, null, "Method fails if wait exceeds this.  0=forever"),
-                ], "Lock method"),
-                new NcMethodDescriptor(new NcElementId(1, 9), "AbortLockWaits", "NcMethodResult", [], "Abort all this session's lock waits on this object"),
+                ], "Delete sequence item")
             ],
             [ new NcEventDescriptor(new NcElementId(1, 1), "PropertyChanged", "NcPropertyChangedEventData", "Property changed event") ]
         );

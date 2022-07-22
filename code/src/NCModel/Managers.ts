@@ -25,7 +25,7 @@ export abstract class NcManager extends NcObject
 
 export class NcClassManager extends NcManager
 {
-    public classID: number[] = [ 1, 3, 3 ];
+    public classID: number[] = [ 1, 3, 2 ];
     public classVersion: string = "1.0.0";
 
     public constructor(
@@ -134,9 +134,9 @@ export class NcClassManager extends NcManager
         {
             case '1.1': 
                 return [ NcBlock.GetClassDescriptor() ];
-            case '1.3.3': 
+            case '1.3.2': 
                 return [ NcClassManager.GetClassDescriptor() ];
-            case '1.3.5': 
+            case '1.3.4': 
                 return [ NcSubscriptionManager.GetClassDescriptor() ];
             case '1.2.0.1':
                 return [ NcDemo.GetClassDescriptor() ];
@@ -314,7 +314,7 @@ export class NcClassManager extends NcManager
 
 export class NcSubscriptionManager extends NcManager
 {
-    public classID: number[] = [ 1, 3, 5 ];
+    public classID: number[] = [ 1, 3, 4 ];
     public classVersion: string = "1.0.0";
 
     public constructor(
