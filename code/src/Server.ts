@@ -282,7 +282,7 @@ try
     server.on('upgrade', function upgrade(request, socket, head) {
         if(request.url)
         {
-            console.log(`Request url ${request.url})`);
+            console.log(`Request url ${request.url}`);
             if (request.url === '/x-nmos/ncp/v1.0/connect')
             {
                 webSocketServer.handleUpgrade(request, socket as Socket, head, function done(ws) {
