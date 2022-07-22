@@ -409,6 +409,11 @@ export class RootBlock extends NcBlock
                 socket.send(this.ProcessHeartbeat(msgHeartbeat).ToJson());
             }
             break;
+            default:
+            {
+                console.log(`Invalid message type received: ${message.messageType}`);
+            }
+            break;
         }
     }
 
