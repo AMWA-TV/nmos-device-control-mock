@@ -261,13 +261,7 @@ export class NcBlock extends NcObject
                     new NcParameterDescriptor("nameComparisonType", "NcStringComparisonType", false,  false, null, "type of string comparison to use"),
                     new NcParameterDescriptor("classId", "NcClassId", true,  false, null, "if non null, finds only members with this class ID"),
                     new NcParameterDescriptor("recurse", "NcBoolean", false,  false, null, "TRUE to search nested blocks"),
-                ], "finds members with given role name or fragment"),
-                new NcMethodDescriptor(new NcElementId(2, 4), "FindMembersByUserLabel", "NcMethodResultBlockMemberDescriptors", [
-                    new NcParameterDescriptor("userLabel", "NcString", false,  false, null, "label text to search for"),
-                    new NcParameterDescriptor("nameComparisonType", "NcStringComparisonType", false,  false, null, "type of string comparison to use"),
-                    new NcParameterDescriptor("classId", "NcClassId", true,  false, null, " if nonnull, finds only members with this class ID"),
-                    new NcParameterDescriptor("recurse", "NcBoolean", false,  false, null, "TRUE to search nested blocks"),
-                ], "finds members with given user label or fragment")
+                ], "finds members with given role name or fragment")
             ],
             []
         );
