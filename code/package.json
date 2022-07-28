@@ -6,11 +6,13 @@
   "scripts": {
     "clean": "rimraf dist",
     "copy-deps": "shx mkdir -p ./dist/node_modules && shx cp -r node_modules ./dist",
-    "copy-config": "shx mkdir -p ./dist/server && shx cp config/config.json ./dist/server",
+    "copy-config": "shx mkdir -p ./dist/server && shx cp -u config/config.json ./dist/server",
+    "build-and-start": "npm run build && npm run copy-config && node dist/server/Server.js",
     "start": "node dist/server/Server.js",
     "preserve": "npm run build",
     "s": "npm run serve",
-    "serve": "concurrently \"npm run build.w\" \"npm run copy-config\" \"nodemon --watch ./dist/server ./dist/server/Server.js\"",
+    "serve": "concurrently \"npm run build.w\" \"npm run copy-config\" \"npm run watch\"",
+    "watch": "wait-on ./dist/server/config.json && nodemon --watch ./dist/server ./dist/server/Server.js",
     "lint": "tslint \"src/**/*.ts\"",
     "prebuild": "npm install --no-optional",
     "b": "npm run build.w",
@@ -28,6 +30,7 @@
     "tai64": "^1.0.0",
     "timestamp-nano": "^1.0.0",
     "uuid": "^8.3.2",
+    "wait-on": "^6.0.1",
     "write-file-atomic": "^4.0.1",
     "ws": "^7.5.6"
   },

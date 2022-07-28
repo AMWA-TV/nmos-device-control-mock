@@ -5,7 +5,7 @@
 
 <!-- INTRO-START -->
 
-This is a mock NMOS device written in Typescript and running on the NodeJS stack. It has support for the NMOS Modeling architecture, control models and protocol.
+This is a mock NMOS device written in Typescript and running on the NodeJS stack. It has support for the NMOS Modeling suite (MS-05-02 and IS-12 in particular).
 
 It also has support for IS-04 and IS-05 with some limitations:
 
@@ -18,15 +18,34 @@ It also has support for IS-04 and IS-05 with some limitations:
 
 First install dependencies with
 
-`npm install`
+```bash
+npm install
+```
 
 Modify the config.json properties for your configuration.
 At the very least point `registry_address` and `registry_port` to the NMOS registry on your network.
 
-### Usage
+## Usage
 
-Run with
+Build and run with:
 
-`npm run serve`
+```bash
+npm run build-and-start
+```
+
+If you plan to make changes and want the app to recompile and run whenever you save run with:
+
+```bash
+npm run serve
+```
+
+## Specifications
+
+- [AMWA IS-04 NMOS Discovery and Registration](https://specs.amwa.tv/is-04)
+- [AMWA IS-05 NMOS Device Connection Management](https://specs.amwa.tv/is-05)
+- [AMWA IS-12 NMOS Control Protocol](https://specs.amwa.tv/is-12)
+- [MS-05-01 NMOS Control Architecture](https://specs.amwa.tv/ms-05-01)
+- [MS-05-02 NMOS Control Framework](https://specs.amwa.tv/ms-05-02)
+- [MS-05-03 NMOS Control Block Specifications](https://specs.amwa.tv/ms-05-03)
 
 <!-- INTRO-END -->
