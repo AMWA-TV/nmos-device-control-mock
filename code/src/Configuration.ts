@@ -1,6 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
 import { jsonIgnoreReplacer } from 'json-ignore';
 const fs = require("fs");
+const writeFileAtomic = require('write-file-atomic')
 
 export class Configuration implements IConfiguration
 {
@@ -68,15 +69,15 @@ export class Configuration implements IConfiguration
     public WriteConfig()
     {
         console.log('Configuration- Writing back config.json');
-
-        fs.writeFile('./dist/server/config.json', this.ToJson(), err => {
-            if (err) 
+        
+        writeFileAtomic('./dist/server/config.json', this.ToJson(), function (err) {
+            if (err)
             {
-                console.log('Error writing file', err)
+                console.log('Error writing file', err);
             }
             else
             {
-                console.log('Successfully wrote file')
+                console.log('Successfully wrote file');
             }
         });
     }

@@ -5,8 +5,8 @@
   "main": "index.js",
   "scripts": {
     "clean": "rimraf dist",
-    "copy-deps": "copy-newer --cwd node_modules ** ./dist/node_modules",
-    "copy-config": "copy-newer --cwd config ** ./dist/server",
+    "copy-deps": "shx mkdir -p ./dist/node_modules && shx cp -r node_modules ./dist",
+    "copy-config": "shx mkdir -p ./dist/server && shx cp config/config.json ./dist/server",
     "start": "node dist/server/Server.js",
     "preserve": "npm run build",
     "s": "npm run serve",
@@ -24,9 +24,11 @@
     "express": "^4.17.1",
     "json-ignore": "^0.4.0",
     "sdp-transform": "^2.14.1",
+    "shx": "^0.3.4",
     "tai64": "^1.0.0",
     "timestamp-nano": "^1.0.0",
     "uuid": "^8.3.2",
+    "write-file-atomic": "^4.0.1",
     "ws": "^7.5.6"
   },
   "devDependencies": {
@@ -36,7 +38,6 @@
     "@types/uuid": "^8.3.1",
     "@types/ws": "^7.4.7",
     "concurrently": "^6.4.0",
-    "copy-newer": "^2.1.2",
     "nodemon": "^2.0.15",
     "rimraf": "^3.0.2",
     "typescript": "^4.5.2"
