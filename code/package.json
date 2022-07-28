@@ -5,8 +5,8 @@
   "main": "index.js",
   "scripts": {
     "clean": "rimraf dist",
-    "copy-deps": "shx cp -r node_modules ./dist/node_modules",
-    "copy-config": "shx cp -r config/config.json ./dist/server",
+    "copy-deps": "shx mkdir -p ./dist/node_modules && shx cp -r node_modules ./dist",
+    "copy-config": "shx mkdir -p ./dist/server && shx cp config/config.json ./dist/server",
     "start": "node dist/server/Server.js",
     "preserve": "npm run build",
     "s": "npm run serve",
