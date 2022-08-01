@@ -1,7 +1,7 @@
 import { jsonIgnoreReplacer, jsonIgnore } from 'json-ignore';
 import { CommandResponseNoValue, CommandResponseWithValue } from '../NCProtocol/Commands';
 import { INotificationContext } from '../SessionManager';
-import { BaseType, myIdDecorator, NcClassDescriptor, NcDatatypeDescriptor, NcDatatypeDescriptorStruct, NcElementId, NcFieldDescriptor, NcLockState, NcMethodDescriptor, NcMethodStatus, NcObject, NcParameterConstraintNumber, NcParameterConstraintString, NcPort, NcPropertyDescriptor, NcTouchpoint } from './Core';
+import { BaseType, myIdDecorator, NcClassDescriptor, NcDatatypeDescriptor, NcDatatypeDescriptorStruct, NcElementId, NcFieldDescriptor, NcLockState, NcMethodDescriptor, NcMethodStatus, NcObject, NcParameterConstraintNumber, NcParameterConstraintString, NcParameterDescriptor, NcPort, NcPropertyDescriptor, NcTouchpoint } from './Core';
 
 export abstract class NcWorker extends NcObject
 {
@@ -459,6 +459,43 @@ enum NcDemoEnum
     Gamma = 3
 }
 
+export class DemoDataType extends BaseType
+{
+    public enumProperty: NcDemoEnum;
+    public stringProperty: string | null;
+    public numberProperty: number;
+    public booleanProperty: boolean;
+
+    constructor(
+        enumProperty: NcDemoEnum,
+        stringProperty: string | null,
+        numberProperty: number,
+        booleanProperty: boolean) 
+    {
+        super();
+
+        this.enumProperty = enumProperty;
+        this.stringProperty = stringProperty;
+        this.numberProperty = numberProperty;
+        this.booleanProperty = booleanProperty;
+    }
+
+    public static override GetTypeDescriptor(): NcDatatypeDescriptor
+    {
+        return new NcDatatypeDescriptorStruct("DemoDataType", [
+            new NcFieldDescriptor("enumProperty", "NcDemoEnum", false, false, null, "Enum property demo"),
+            new NcFieldDescriptor("stringProperty", "NcString", false, false, new NcParameterConstraintString(10, null), "String property demo"),
+            new NcFieldDescriptor("numberProperty", "NcUint64", false, false, new NcParameterConstraintNumber(1000, 0, 1), "Number property demo"),
+            new NcFieldDescriptor("booleanProperty", "NcBoolean", false, false, null, "Boolean property demo")
+        ], null, null, "Demo data type");
+    }
+
+    public ToJson()
+    {
+        return JSON.stringify(this, jsonIgnoreReplacer);
+    }
+}
+
 export class NcDemo extends NcWorker
 {
     @myIdDecorator('1p1')
@@ -479,6 +516,18 @@ export class NcDemo extends NcWorker
     @myIdDecorator('3p4')
     public booleanProperty: boolean;
 
+    @myIdDecorator('3p5')
+    public objectProperty: DemoDataType;
+
+    @myIdDecorator('3p6')
+    public methodNoArgsCount: number;
+
+    @myIdDecorator('3p7')
+    public methodSimpleArgsCount: number;
+
+    @myIdDecorator('3p8')
+    public methodObjectArgCount: number;
+
     public constructor(
         oid: number,
         constantOid: boolean,
@@ -498,6 +547,10 @@ export class NcDemo extends NcWorker
         this.stringProperty = "test";
         this.numberProperty = 3;
         this.booleanProperty = false;
+        this.objectProperty = new DemoDataType(NcDemoEnum.Undefined, "default", 5, false);
+        this.methodNoArgsCount = 0;
+        this.methodSimpleArgsCount = 0;
+        this.methodObjectArgCount = 0;
     }
 
     //'1m1'
@@ -517,6 +570,14 @@ export class NcDemo extends NcWorker
                     return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.numberProperty, null);
                 case '3p4':
                     return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.booleanProperty, null);
+                case '3p5':
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.objectProperty, null);
+                case '3p6':
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.methodNoArgsCount, null);
+                case '3p7':
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.methodSimpleArgsCount, null);
+                case '3p8':
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.methodObjectArgCount, null);
                 default:
                     return super.Get(oid, id, handle);
             }
@@ -550,6 +611,14 @@ export class NcDemo extends NcWorker
                     this.booleanProperty = value;
                     this.notificationContext.NotifyPropertyChanged(this.oid, id, this.booleanProperty);
                     return new CommandResponseNoValue(handle, NcMethodStatus.OK, null);
+                case '3p5':
+                    this.objectProperty = value;
+                    this.notificationContext.NotifyPropertyChanged(this.oid, id, this.objectProperty);
+                    return new CommandResponseNoValue(handle, NcMethodStatus.OK, null);
+                case '3p6':
+                case '3p7':
+                case '3p8':
+                        return new CommandResponseNoValue(handle, NcMethodStatus.Readonly, "Property is read only");
                 default:
                     return super.Set(oid, id, value, handle);
             }
@@ -566,6 +635,70 @@ export class NcDemo extends NcWorker
 
             switch(key)
             {
+                case '3m1':
+                    {
+                        this.methodNoArgsCount = this.methodNoArgsCount + 1;
+                        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 6), this.methodNoArgsCount);
+                        return new CommandResponseNoValue(handle, NcMethodStatus.OK, null);
+                    }
+                case '3m2':
+                    {
+                        if(args != null &&
+                            'enumArg' in args &&
+                            'stringArg' in args &&
+                            'numberArg' in args &&
+                            'booleanArg' in args)
+                        {
+                            let enumArg = args['enumArg'] as NcDemoEnum;
+                            let stringArg = args['stringArg'] as string;
+                            let numberArg = args['numberArg'] as number;
+                            let booleanArg = args['booleanArg'] as boolean;
+
+                            if(enumArg in NcDemoEnum)
+                            {
+                                if(stringArg)
+                                {
+                                    if(numberArg && numberArg > 0)
+                                    {
+                                        if(booleanArg)
+                                        {
+                                            this.methodSimpleArgsCount = this.methodSimpleArgsCount + 1;
+                                            this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 7), this.methodSimpleArgsCount);
+                                            return new CommandResponseNoValue(handle, NcMethodStatus.OK, null);
+                                        }
+                                        else
+                                            return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Invalid booleanArg argument provided');
+                                    }
+                                    else
+                                        return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Invalid numberArg argument provided');
+                                }
+                                else
+                                    return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Invalid stringArg argument provided');
+                            }
+                            else
+                                return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Invalid enumArg argument provided');
+                        }
+                        else
+                            return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Invalid arguments provided');
+                    }
+                case '3m3':
+                    {
+                        if(args != null &&
+                            'objArg' in args)
+                        {
+                            let objArg = args['objArg'] as DemoDataType;
+                            if(objArg)
+                            {
+                                this.methodObjectArgCount = this.methodObjectArgCount + 1;
+                                this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 8), this.methodObjectArgCount);
+                                return new CommandResponseNoValue(handle, NcMethodStatus.OK, null);
+                            }
+                            else
+                                return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Invalid objArg argument provided');
+                        }
+                        else
+                            return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Invalid arguments provided');
+                    }
                 default:
                     return super.InvokeMethod(oid, methodId, args, handle);
             }
@@ -586,9 +719,22 @@ export class NcDemo extends NcWorker
                     "Demo string property"),
                 new NcPropertyDescriptor(new NcElementId(3, 3), "numberProperty", "NcUint64", false, false, false, false, new NcParameterConstraintNumber(1000, 0, 1),
                     "Demo numeric property"),
-                new NcPropertyDescriptor(new NcElementId(3, 4), "booleanProperty", "NcBoolean", false, false, false, false, null, "Demo boolean property")
+                new NcPropertyDescriptor(new NcElementId(3, 4), "booleanProperty", "NcBoolean", false, false, false, false, null, "Demo boolean property"),
+                new NcPropertyDescriptor(new NcElementId(3, 5), "objectProperty", "DemoDataType", false, false, false, false, null, "Demo object property")
             ],
-            [],
+            [
+                new NcMethodDescriptor(new NcElementId(3, 1), "MethodNoArgs", "NcMethodResultClassDescriptors", [], "Demo method with no arguments"),
+                new NcMethodDescriptor(new NcElementId(3, 2), "MethodSimpleArgs", "NcMethodResultClassDescriptors", [
+                    new NcParameterDescriptor("enumArg", "NcDemoEnum", false, false, null, "Enum demo argument"),
+                    new NcParameterDescriptor("stringArg", "NcString", false, false, new NcParameterConstraintString(10, null), "String demo argument"),
+                    new NcParameterDescriptor("numberArg", "NcUint64", false, false, new NcParameterConstraintNumber(1000, 0, 1),
+                    "Number demo argument"),
+                    new NcParameterDescriptor("booleanArg", "NcBoolean", false, false, null, "Boolean demo argument")
+                ], "Demo method with simple arguments"),
+                new NcMethodDescriptor(new NcElementId(3, 3), "MethodObjectArg", "NcMethodResultClassDescriptors", [
+                    new NcParameterDescriptor("objArg", "DemoDataType", false, false, null, "Object demo argument")
+                ], "Demo method with object argument")
+            ],
             []
         );
 
