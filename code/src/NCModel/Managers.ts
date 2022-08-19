@@ -3,7 +3,7 @@ import { CommandResponseNoValue, CommandResponseWithValue } from '../NCProtocol/
 import { INotificationContext } from '../SessionManager';
 import { NcBlock } from './Blocks';
 import { NcBlockMemberDescriptor, NcClassDescriptor, NcClassIdentity, NcDatatypeDescriptor, NcDatatypeDescriptorEnum, NcDatatypeDescriptorPrimitive, NcDatatypeDescriptorStruct, NcDatatypeDescriptorTypeDef, NcDatatypeType, NcElementId, NcEnumItemDescriptor, NcFieldDescriptor, NcLockState, NcMethodDescriptor, NcMethodStatus, NcObject, NcParameterDescriptor, NcPort, NcPortReference, NcPropertyDescriptor, NcSignalPath, NcTouchpoint, NcTouchpointNmos, NcTouchpointResource, NcTouchpointResourceNmos } from './Core';
-import { NcDemo, NcGain, NcReceiverMonitor, NcReceiverStatus } from './Features';
+import { DemoDataType, NcDemo, NcGain, NcReceiverMonitor, NcReceiverStatus } from './Features';
 
 export abstract class NcManager extends NcObject
 {
@@ -66,19 +66,19 @@ export class NcClassManager extends NcManager
                             return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'No class identity has been provided');
                     }
                 case '3m2':
-                {
-                    if(args != null && 'name' in args)
                     {
-                        let name = args['name'] as string;
-                        let descriptors = this.GetTypeDescriptors(name);
-                        if(descriptors.length > 0)
-                            return new CommandResponseWithValue(handle, NcMethodStatus.OK, descriptors, null);
+                        if(args != null && 'name' in args)
+                        {
+                            let name = args['name'] as string;
+                            let descriptors = this.GetTypeDescriptors(name);
+                            if(descriptors.length > 0)
+                                return new CommandResponseWithValue(handle, NcMethodStatus.OK, descriptors, null);
+                            else
+                                return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Type name could not be found');
+                        }
                         else
-                            return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Type name could not be found');
+                            return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'No type name has been provided');
                     }
-                    else
-                        return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'No type name has been provided');
-                }
                 default:
                     return super.InvokeMethod(oid, methodId, args, handle);
             }
@@ -306,6 +306,8 @@ export class NcClassManager extends NcManager
                     new NcEnumItemDescriptor("Beta", 2, "Beta option"),
                     new NcEnumItemDescriptor("Gamma", 3, "Gamma option"),
                 ], null, "Demonstration enum data type")];
+            case 'DemoDataType': 
+                return [ DemoDataType.GetTypeDescriptor() ];
             default:
                 return new Array<NcDatatypeDescriptor>();
         }
