@@ -660,7 +660,7 @@ export class NcDemo extends NcWorker
                                 {
                                     if(numberArg && numberArg > 0)
                                     {
-                                        if(booleanArg)
+                                        if(booleanArg !== null)
                                         {
                                             this.methodSimpleArgsCount = this.methodSimpleArgsCount + 1;
                                             this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 7), this.methodSimpleArgsCount);
