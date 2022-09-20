@@ -57,7 +57,7 @@ try
 
     myDevice.AddReceiver(myVideoReceiver);
 
-    const sessionManager = new SessionManager();
+    const sessionManager = new SessionManager(config.notify_without_subscriptions);
 
     const classManager = new NcClassManager(
         3,
