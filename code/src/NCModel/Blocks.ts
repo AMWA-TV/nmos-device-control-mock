@@ -166,7 +166,7 @@ export class NcBlock extends NcObject
         return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
     }
 
-    public override InvokeMethod(oid: number, methodId: NcElementId, args: { [key: string]: any; } | null, handle: number): CommandResponseNoValue 
+    public override InvokeMethod(sessionId: number, oid: number, methodId: NcElementId, args: { [key: string]: any; } | null, handle: number): CommandResponseNoValue 
     {
         if(oid == this.oid)
         {
@@ -187,7 +187,7 @@ export class NcBlock extends NcObject
                     }
                     break;
                 default:
-                    return super.InvokeMethod(oid, methodId, args, handle);
+                    return super.InvokeMethod(sessionId, oid, methodId, args, handle);
             }
         }
 
@@ -422,13 +422,13 @@ export class RootBlock extends NcBlock
 
         for (var i = 0; i < command.messages.length; i++) {
             let msg = command.messages[i];
-            responses.AddCommandResponse(this.ProcessCommandMessage(msg));
+            responses.AddCommandResponse(this.ProcessCommandMessage(msg, command.sessionId));
         }
 
         return responses;
     }
 
-    public ProcessCommandMessage(commandMsg: CommandMsg) : CommandResponseNoValue
+    public ProcessCommandMessage(commandMsg: CommandMsg, sessionId: number) : CommandResponseNoValue
     {
         if (this.IsGenericGetter(commandMsg.methodId))
         {
@@ -474,12 +474,12 @@ export class RootBlock extends NcBlock
         else
         {
             if(commandMsg.oid == this.oid)
-                return this.InvokeMethod(commandMsg.oid, commandMsg.methodId, commandMsg.arguments, commandMsg.handle);
+                return this.InvokeMethod(sessionId, commandMsg.oid, commandMsg.methodId, commandMsg.arguments, commandMsg.handle);
             else if(this.memberObjects != null)
             {
                 let member = this.FindNestedMember(commandMsg.oid);
                 if(member)
-                    return member.InvokeMethod(commandMsg.oid, commandMsg.methodId, commandMsg.arguments, commandMsg.handle);
+                    return member.InvokeMethod(sessionId, commandMsg.oid, commandMsg.methodId, commandMsg.arguments, commandMsg.handle);
                 else
                     return new CommandResponseNoValue(commandMsg.handle, NcMethodStatus.InvalidRequest, "OID could not be found");
             }

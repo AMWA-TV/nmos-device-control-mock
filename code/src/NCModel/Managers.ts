@@ -1,8 +1,9 @@
 import { jsonIgnoreReplacer, jsonIgnore } from 'json-ignore';
 import { CommandResponseNoValue, CommandResponseWithValue } from '../NCProtocol/Commands';
+import { NcEventData } from '../NCProtocol/Notifications';
 import { INotificationContext } from '../SessionManager';
 import { NcBlock } from './Blocks';
-import { NcBlockMemberDescriptor, NcClassDescriptor, NcClassIdentity, NcDatatypeDescriptor, NcDatatypeDescriptorEnum, NcDatatypeDescriptorPrimitive, NcDatatypeDescriptorStruct, NcDatatypeDescriptorTypeDef, NcDatatypeType, NcElementId, NcEnumItemDescriptor, NcFieldDescriptor, NcLockState, NcMethodDescriptor, NcMethodStatus, NcObject, NcParameterDescriptor, NcPort, NcPortReference, NcPropertyDescriptor, NcSignalPath, NcTouchpoint, NcTouchpointNmos, NcTouchpointResource, NcTouchpointResourceNmos } from './Core';
+import { NcBlockMemberDescriptor, NcClassDescriptor, NcClassIdentity, NcDatatypeDescriptor, NcDatatypeDescriptorEnum, NcDatatypeDescriptorPrimitive, NcDatatypeDescriptorStruct, NcDatatypeDescriptorTypeDef, NcDatatypeType, NcElementId, NcEnumItemDescriptor, NcEvent, NcFieldDescriptor, NcLockState, NcMethodDescriptor, NcMethodStatus, NcObject, NcParameterDescriptor, NcPort, NcPortReference, NcPropertyDescriptor, NcSignalPath, NcTouchpoint, NcTouchpointNmos, NcTouchpointResource, NcTouchpointResourceNmos } from './Core';
 import { DemoDataType, NcDemo, NcGain, NcReceiverMonitor, NcReceiverStatus } from './Features';
 
 export abstract class NcManager extends NcObject
@@ -43,7 +44,7 @@ export class NcClassManager extends NcManager
         super(oid, constantOid, owner, role, userLabel, lockable, lockState, touchpoints, description, notificationContext);
     }
 
-    public override InvokeMethod(oid: number, methodId: NcElementId, args: { [key: string]: any; } | null, handle: number): CommandResponseNoValue 
+    public override InvokeMethod(sessionId: number, oid: number, methodId: NcElementId, args: { [key: string]: any; } | null, handle: number): CommandResponseNoValue 
     {
         if(oid == this.oid)
         {
@@ -80,7 +81,7 @@ export class NcClassManager extends NcManager
                             return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'No type name has been provided');
                     }
                 default:
-                    return super.InvokeMethod(oid, methodId, args, handle);
+                    return super.InvokeMethod(sessionId, oid, methodId, args, handle);
             }
         }
 
@@ -248,6 +249,8 @@ export class NcClassManager extends NcManager
                 ], "NcMethodResult", null, "Method result containing an NcId32 value")];
             case 'NcClassIdentity': 
                 return [ NcClassIdentity.GetTypeDescriptor() ];
+            case 'NcEvent': 
+                return [ NcEvent.GetTypeDescriptor() ];
             case 'NcBlockMemberDescriptor': 
                 return [ NcBlockMemberDescriptor.GetTypeDescriptor() ];
             case 'NcMethodResultBlockMemberDescriptors':
@@ -334,6 +337,54 @@ export class NcSubscriptionManager extends NcManager
         super(oid, constantOid, owner, role, userLabel, lockable, lockState, touchpoints, description, notificationContext);
     }
 
+    public override InvokeMethod(sessionId: number, oid: number, methodId: NcElementId, args: { [key: string]: any; } | null, handle: number): CommandResponseNoValue 
+    {
+        if(oid == this.oid)
+        {
+            let key: string = `${methodId.level}m${methodId.index}`;
+
+            switch(key)
+            {
+                case '3m1':
+                    {
+                        if(args != null && 'event' in args)
+                        {
+                            let eventIdentity = args['event'] as NcEvent;
+                            if(eventIdentity)
+                            {
+                                this.notificationContext.Subscribe(sessionId, eventIdentity.emitterOid);
+                                return new CommandResponseNoValue(handle, NcMethodStatus.OK, null);
+                            }
+                            else
+                                return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Event argument is invalid');
+                        }
+                        else
+                            return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'No event argument has been provided');
+                    }
+                case '3m2':
+                    {
+                        if(args != null && 'event' in args)
+                        {
+                            let eventIdentity = args['event'] as NcEvent;
+                            if(eventIdentity)
+                            {
+                                this.notificationContext.UnSubscribe(sessionId, eventIdentity.emitterOid);
+                                return new CommandResponseNoValue(handle, NcMethodStatus.OK, null);
+                            }
+                            else
+                                return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Event argument is invalid');
+                        }
+                        else
+                            return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'No event argument has been provided');
+                    }
+                default:
+                    return super.InvokeMethod(sessionId, oid, methodId, args, handle);
+            }
+        }
+
+        return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
+    }
+
     public static override GetClassDescriptor(): NcClassDescriptor 
     {
         let baseDescriptor = super.GetClassDescriptor();
@@ -342,18 +393,18 @@ export class NcSubscriptionManager extends NcManager
             [],
             [ 
                 new NcMethodDescriptor(new NcElementId(3, 1), "AddSubscription", "NcMethodResult", [
-                    new NcParameterDescriptor("event", "NcEvent", false,  false, null, "Event identifying information")
+                    new NcParameterDescriptor("event", "NcEvent", false, false, null, "Event identifying information")
                 ], "When used to subscribe to the property changed event it will subscribe to changes from all of the properties"),
                 new NcMethodDescriptor(new NcElementId(3, 2), "RemoveSubscription", "NcMethodResult", [
-                    new NcParameterDescriptor("event", "NcEvent", false, false,  null, "Event identifying information")
+                    new NcParameterDescriptor("event", "NcEvent", false, false, null, "Event identifying information")
                 ], "When used to unsubscribe to the property changed event it will unsubscribe to changes from all of the properties"),
                 new NcMethodDescriptor(new NcElementId(3, 3), "AddPropertyChangeSubscription", "NcMethodResult", [
-                    new NcParameterDescriptor("emitter", "NcOid", false, false,  null, "ID of object where property is"),
-                    new NcParameterDescriptor("property", "NcPropertyID", false,  false, null, "ID of the property")
+                    new NcParameterDescriptor("emitter", "NcOid", false, false, null, "ID of object where property is"),
+                    new NcParameterDescriptor("property", "NcPropertyID", false, false, null, "ID of the property")
                 ], "Subscribe to individual property on an object"),
                 new NcMethodDescriptor(new NcElementId(3, 4), "RemovePropertyChangeSubscription", "NcMethodResult", [
-                    new NcParameterDescriptor("emitter", "NcOid", false,  false, null, "ID of object where property is"),
-                    new NcParameterDescriptor("property", "NcPropertyID",  false, false, null, "ID of the property")
+                    new NcParameterDescriptor("emitter", "NcOid", false, false, null, "ID of object where property is"),
+                    new NcParameterDescriptor("property", "NcPropertyID", false, false, null, "ID of the property")
                 ], "Unsubscribe from individual property on an object")
             ],
             []

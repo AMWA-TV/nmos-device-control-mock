@@ -39,13 +39,15 @@ If you plan to make changes and want the app to recompile and run whenever you s
 npm run serve
 ```
 
+`Note`: The configuration file (config.json) holds a `notify_without_subscriptions` key. This is set to false by default, but it can be set to true if you would like to get all notifications on all sessions without subscribing (for debugging purposes only).
+
 ## Specifications
 
-- [AMWA IS-04 NMOS Discovery and Registration](https://specs.amwa.tv/is-04)
-- [AMWA IS-05 NMOS Device Connection Management](https://specs.amwa.tv/is-05)
-- [AMWA IS-12 NMOS Control Protocol](https://specs.amwa.tv/is-12)
-- [MS-05-01 NMOS Control Architecture](https://specs.amwa.tv/ms-05-01)
-- [MS-05-02 NMOS Control Framework](https://specs.amwa.tv/ms-05-02)
-- [MS-05-03 NMOS Control Block Specifications](https://specs.amwa.tv/ms-05-03)
+* [AMWA IS-04 NMOS Discovery and Registration](https://specs.amwa.tv/is-04)
+* [AMWA IS-05 NMOS Device Connection Management](https://specs.amwa.tv/is-05)
+* [AMWA IS-12 NMOS Control Protocol](https://specs.amwa.tv/is-12)
+* [MS-05-01 NMOS Control Architecture](https://specs.amwa.tv/ms-05-01)
+* [MS-05-02 NMOS Control Framework](https://specs.amwa.tv/ms-05-02)
+* [MS-05-03 NMOS Control Block Specifications](https://specs.amwa.tv/ms-05-03)
 
 <!-- INTRO-END -->

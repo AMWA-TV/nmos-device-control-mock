@@ -7,7 +7,8 @@ import { NcEventData, NcNotification, ProtoNotification } from './NCProtocol/Not
 export interface INotificationContext
 {
     NotifyPropertyChanged(oid: number, propertyId: NcElementId, value: any);
-    Subscribe(oid: number);
+    Subscribe(sessionId: number, oid: number);
+    UnSubscribe(sessionId: number, oid: number);
     CreateSession(socket: WebSocketConnection, heartBeatTime: number) : [number | null, string | null]
 }
 
@@ -17,14 +18,27 @@ export class SessionManager implements INotificationContext
 
     private lastSubId: number;
 
-    public constructor()
+    private notifyWithoutSubscriptions: boolean;
+
+    public constructor(notifyWithoutSubscriptions: boolean)
     {
+        this.notifyWithoutSubscriptions = notifyWithoutSubscriptions;
         this.lastSubId = 0;
         this.sessions = {};
     }
 
-    public Subscribe(oid: number) {
-        throw new Error('Method not implemented.');
+    public Subscribe(sessionId: number, oid: number)
+    {
+        let sub = this.sessions[sessionId];
+        if(sub)
+            sub.Subscribe(oid);
+    }
+
+    public UnSubscribe(sessionId: number, oid: number)
+    {
+        let sub = this.sessions[sessionId];
+        if(sub)
+            sub.UnSubscribe(oid);
     }
 
     public NotifyPropertyChanged(oid: number, propertyId: NcElementId, value: any)
@@ -33,11 +47,15 @@ export class SessionManager implements INotificationContext
 
         for (let key in this.sessions) {
             let session = this.sessions[key];
-            session.socket.send(
-                new ProtoNotification(
-                    session.sessionId,
-                    [ new NcNotification(oid, new NcElementId(1, 1), new NcEventData(propertyId, NcPropertyChangeType.CurrentChanged, value)) ]
-                ).ToJson());
+
+            if(this.notifyWithoutSubscriptions || session.ShouldNotify(oid))
+            {
+                session.socket.send(
+                    new ProtoNotification(
+                        session.sessionId,
+                        [ new NcNotification(oid, new NcElementId(1, 1), new NcEventData(propertyId, NcPropertyChangeType.CurrentChanged, value)) ]
+                    ).ToJson());
+            }
         }
     }
 
@@ -53,7 +71,7 @@ export class SessionManager implements INotificationContext
     {
         let connectionSubKey: string | null = null;
 
-        for (let key in this.sessions) 
+        for (let key in this.sessions)
         {
             let value = this.sessions[key];
             if (value.socket.connectionId == connectionId)
@@ -74,7 +92,7 @@ class Session
     public socket: WebSocketConnection;
     public heartBeatTime: number;
 
-    public subscribedOids: number[];
+    public subscribedOids: Set<number>;
 
     public constructor(
         socket: WebSocketConnection,
@@ -84,7 +102,32 @@ class Session
         this.socket = socket;
         this.sessionId = sessionId;
         this.heartBeatTime = heartBeatTime;
-        this.subscribedOids = [];
+        this.subscribedOids = new Set<number>();
+    }
+
+    public Subscribe(oid: number)
+    {
+        if(!this.subscribedOids.has(oid))
+            this.subscribedOids.add(oid);
+    }
+
+    public UnSubscribe(oid: number)
+    {
+        if(this.subscribedOids.has(oid))
+            this.subscribedOids.delete(oid);
+    }
+
+    public DropSession()
+    {
+        this.subscribedOids.clear();
+    }
+
+    public ShouldNotify(oid: number): boolean
+    {
+        if(this.subscribedOids.has(oid))
+            return true;
+        else
+            return false;
     }
 
     public ToJson()
