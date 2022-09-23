@@ -12,7 +12,7 @@ import { NmosReceiverVideo } from './NmosReceiverVideo';
 import { NmosReceiverActiveRtp } from './NmosReceiverActiveRtp';
 import { SessionManager } from './SessionManager';
 import { NcBlock, RootBlock } from './NCModel/Blocks';
-import { NcClassManager, NcSubscriptionManager } from './NCModel/Managers';
+import { NcClassManager, NcDeviceManager, NcSubscriptionManager } from './NCModel/Managers';
 import { NcIoDirection, NcLockState, NcPort, NcPortReference, NcSignalPath, NcTouchpointNmos, NcTouchpointResourceNmos } from './NCModel/Core';
 import { NcDemo, NcGain, NcReceiverMonitor } from './NCModel/Features';
 
@@ -58,6 +58,18 @@ try
     myDevice.AddReceiver(myVideoReceiver);
 
     const sessionManager = new SessionManager(config.notify_without_subscriptions);
+
+    const deviceManager = new NcDeviceManager(
+        2,
+        true,
+        1,
+        'DeviceManager',
+        'Device manager',
+        false,
+        NcLockState.NoLock,
+        null,
+        "The device manager offers information about the product this device is representing",
+        sessionManager);
 
     const classManager = new NcClassManager(
         3,
@@ -212,7 +224,7 @@ try
         null,
         null,
         false,
-        [ classManager, subscriptionManager, receiverMonitorAgent, stereoGainBlock, demoClass ],
+        [ deviceManager, classManager, subscriptionManager, receiverMonitorAgent, stereoGainBlock, demoClass ],
         null,
         null,
         "Root block",
