@@ -3,7 +3,7 @@ import { CommandResponseNoValue, CommandResponseWithValue } from '../NCProtocol/
 import { NcEventData } from '../NCProtocol/Notifications';
 import { INotificationContext } from '../SessionManager';
 import { NcBlock } from './Blocks';
-import { NcBlockMemberDescriptor, NcClassDescriptor, NcClassIdentity, NcDatatypeDescriptor, NcDatatypeDescriptorEnum, NcDatatypeDescriptorPrimitive, NcDatatypeDescriptorStruct, NcDatatypeDescriptorTypeDef, NcDatatypeType, NcElementId, NcEnumItemDescriptor, NcEvent, NcFieldDescriptor, NcLockState, NcMethodDescriptor, NcMethodStatus, NcObject, NcParameterDescriptor, NcPort, NcPortReference, NcPropertyDescriptor, NcSignalPath, NcTouchpoint, NcTouchpointNmos, NcTouchpointResource, NcTouchpointResourceNmos } from './Core';
+import { BaseType, myIdDecorator, NcBlockMemberDescriptor, NcClassDescriptor, NcClassIdentity, NcDatatypeDescriptor, NcDatatypeDescriptorEnum, NcDatatypeDescriptorPrimitive, NcDatatypeDescriptorStruct, NcDatatypeDescriptorTypeDef, NcDatatypeType, NcElementId, NcEnumItemDescriptor, NcEvent, NcFieldDescriptor, NcLockState, NcMethodDescriptor, NcMethodStatus, NcObject, NcParameterDescriptor, NcPort, NcPortReference, NcPropertyDescriptor, NcSignalPath, NcTouchpoint, NcTouchpointNmos, NcTouchpointResource, NcTouchpointResourceNmos } from './Core';
 import { DemoDataType, NcDemo, NcGain, NcReceiverMonitor, NcReceiverStatus } from './Features';
 
 export abstract class NcManager extends NcObject
@@ -21,6 +21,289 @@ export abstract class NcManager extends NcObject
         notificationContext: INotificationContext)
     {
         super(oid, constantOid, owner, role, userLabel, lockable, lockState, touchpoints, description, notificationContext);
+    }
+}
+
+export class NcManufacturer extends BaseType
+{
+    public name: string;
+    public organizationId: null;
+    public website: string;
+
+    constructor(
+        name: string,
+        website: string)
+    {
+        super();
+
+        this.name = name;
+        this.organizationId = null;
+        this.website = website;
+    }
+
+    public static override GetTypeDescriptor(): NcDatatypeDescriptor
+    {
+        return new NcDatatypeDescriptorStruct("NcManufacturer", [
+            new NcFieldDescriptor("name", "NcString", false, false, null, "Manufacturer's name"),
+            new NcFieldDescriptor("organizationId", "NcOrganizationId", true, false, null, "IEEE OUI or CID of manufacturer"),
+            new NcFieldDescriptor("website", "NcUri", true, false, null, "URL of the manufacturer's website")
+        ], null, null, "Manufacturer descriptor");
+    }
+
+    public ToJson()
+    {
+        return JSON.stringify(this, jsonIgnoreReplacer);
+    }
+}
+
+export class NcProduct extends BaseType
+{
+    public name: string;
+    public key: string;
+    public revisionLevel: string;
+    public brandName: string;
+    public uuid: string;
+    public description: string;
+
+    constructor(
+        name: string,
+        key: string,
+        revisionLevel: string,
+        brandName: string,
+        uuid: string,
+        description: string)
+    {
+        super();
+
+        this.name = name;
+        this.key = key;
+        this.revisionLevel = revisionLevel;
+        this.brandName = brandName;
+        this.uuid = uuid;
+        this.description = description;
+    }
+
+    public static override GetTypeDescriptor(): NcDatatypeDescriptor
+    {
+        return new NcDatatypeDescriptorStruct("NcProduct", [
+            new NcFieldDescriptor("name", "NcString", false, false, null, "Product name"),
+            new NcFieldDescriptor("key", "NcString", false, false, null, "Manufacturer's unique key to product - model number, SKU, etc"),
+            new NcFieldDescriptor("revisionLevel", "NcString", false, false, null, "Manufacturer's product revision level code"),
+            new NcFieldDescriptor("brandName", "NcString", true, false, null, "Brand name under which product is sold"),
+            new NcFieldDescriptor("uuid", "NcString", true, false, null, "Unique UUID of product (not product instance)"),
+            new NcFieldDescriptor("description", "NcString", true, false, null, "Text description of product"),
+        ], null, null, "Product descriptor");
+    }
+
+    public ToJson()
+    {
+        return JSON.stringify(this, jsonIgnoreReplacer);
+    }
+}
+
+export class NcDeviceOperationalState extends BaseType
+{
+    public generic: NcDeviceGenericState;
+    public deviceSpecificDetails: null;
+
+    constructor(
+        generic: NcDeviceGenericState)
+    {
+        super();
+
+        this.generic = generic;
+        this.deviceSpecificDetails = null;
+    }
+
+    public static override GetTypeDescriptor(): NcDatatypeDescriptor
+    {
+        return new NcDatatypeDescriptorStruct("NcDeviceOperationalState", [
+            new NcFieldDescriptor("generic", "NcDeviceGenericState", false, false, null, "Generic operational state"),
+            new NcFieldDescriptor("deviceSpecificDetails", "NcBlob", true, false, null, "Specific device details")
+        ], null, null, "Device operational state");
+    }
+
+    public ToJson()
+    {
+        return JSON.stringify(this, jsonIgnoreReplacer);
+    }
+}
+
+export enum NcDeviceGenericState
+{
+    NormalOperation = 0,
+    Initializing = 1,
+    Updating = 2
+}
+
+export enum NcResetCause
+{
+    PowerOn = 0,
+    InternalError = 1,
+    Upgrade = 2,
+    ControllerRequest = 3
+}
+
+export class NcDeviceManager extends NcManager
+{
+    public classID: number[] = [ 1, 3, 1 ];
+    public classVersion: string = "1.0.0";
+
+    @myIdDecorator('3p1')
+    public ncVersion: string = "1.0.0";
+
+    @myIdDecorator('3p2')
+    public manufacturer: NcManufacturer;
+
+    @myIdDecorator('3p3')
+    public product: NcProduct;
+
+    @myIdDecorator('3p4')
+    public serialNumber: string;
+
+    @myIdDecorator('3p5')
+    public userInventoryCode: string | null;
+
+    @myIdDecorator('3p6')
+    public deviceName: string | null;
+
+    @myIdDecorator('3p7')
+    public deviceRole: string | null;
+
+    @myIdDecorator('3p8')
+    public operationalState: NcDeviceOperationalState;
+
+    @myIdDecorator('3p9')
+    public resetCause: NcResetCause;
+
+    @myIdDecorator('3p10')
+    public message: string | null;
+
+    public constructor(
+        oid: number,
+        constantOid: boolean,
+        owner: number | null,
+        role: string,
+        userLabel: string,
+        lockable: boolean,
+        lockState: NcLockState,
+        touchpoints: NcTouchpoint[] | null,
+        description: string,
+        notificationContext: INotificationContext)
+    {
+        super(oid, constantOid, owner, role, userLabel, lockable, lockState, touchpoints, description, notificationContext);
+
+        this.manufacturer = new NcManufacturer("Mock manufacturer", "https://specs.amwa.tv/nmos/");
+        this.product = new NcProduct("Mock device", "mock-001", "1.0.0", "Mock brand", "2dcd15f6-aecc-4f01-bf66-b1044c677ef4", "Mock device for testing and prototyping");
+        this.serialNumber = "123-mock";
+        this.userInventoryCode = null;
+        this.deviceName = null;
+        this.deviceRole = null;
+        this.operationalState = new NcDeviceOperationalState(NcDeviceGenericState.NormalOperation);
+        this.resetCause = NcResetCause.PowerOn;
+        this.message = "Nothing to report";
+    }
+
+    //'1m1'
+    public override Get(oid: number, propertyId: NcElementId, handle: number) : CommandResponseNoValue
+    {
+        if(oid == this.oid)
+        {
+            let key: string = `${propertyId.level}p${propertyId.index}`;
+
+            switch(key)
+            {
+                case '3p1':
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.ncVersion, null);
+                case '3p2':
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.manufacturer, null);
+                case '3p3':
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.product, null);
+                case '3p4':
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.serialNumber, null);
+                case '3p5':
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.userInventoryCode, null);
+                case '3p6':
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.deviceName, null);
+                case '3p7':
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.deviceRole, null);
+                case '3p8':
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.operationalState, null);
+                case '3p9':
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.resetCause, null);
+                case '3p10':
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.message, null);
+                default:
+                    return super.Get(oid, propertyId, handle);
+            }
+        }
+
+        return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
+    }
+
+    //'1m2'
+    public override Set(oid: number, id: NcElementId, value: any, handle: number) : CommandResponseNoValue
+    {
+        if(oid == this.oid)
+        {
+            let key: string = `${id.level}p${id.index}`;
+
+            switch(key)
+            {
+                case '3p1':
+                case '3p2':
+                case '3p3':
+                case '3p4':
+                case '3p8':
+                case '3p9':
+                case '3p10':
+                    return new CommandResponseNoValue(handle, NcMethodStatus.ProcessingFailed, 'Property is readonly');
+                case '3p5':
+                    this.userInventoryCode = value;
+                    this.notificationContext.NotifyPropertyChanged(this.oid, id, this.userInventoryCode);
+                    return new CommandResponseNoValue(handle, NcMethodStatus.OK, null);
+                case '3p6':
+                    this.deviceName = value;
+                    this.notificationContext.NotifyPropertyChanged(this.oid, id, this.deviceName);
+                    return new CommandResponseNoValue(handle, NcMethodStatus.OK, null);
+                case '3p7':
+                    this.deviceRole = value;
+                    this.notificationContext.NotifyPropertyChanged(this.oid, id, this.deviceRole);
+                    return new CommandResponseNoValue(handle, NcMethodStatus.OK, null);
+                default:
+                    return super.Set(oid, id, value, handle);
+            }
+        }
+
+        return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
+    }
+
+    public static override GetClassDescriptor(): NcClassDescriptor
+    {
+        let baseDescriptor = super.GetClassDescriptor();
+
+        let currentClassDescriptor = new NcClassDescriptor("NcDeviceManager class descriptor",
+            [
+                new NcPropertyDescriptor(new NcElementId(3, 1), "ncVersion", "NcVersionCode", true, true, false, false, null, "Version of nc this dev uses"),
+                new NcPropertyDescriptor(new NcElementId(3, 2), "manufacturer", "NcManufacturer", true, true, false, false, null, "Manufacturer descriptor"),
+                new NcPropertyDescriptor(new NcElementId(3, 3), "product", "NcProduct", true, true, false, false, null, "Product descriptor"),
+                new NcPropertyDescriptor(new NcElementId(3, 4), "serialNumber", "NcString", true, true, false, false, null, "Serial number"),
+                new NcPropertyDescriptor(new NcElementId(3, 5), "userInventoryCode", "NcString", false, true, false, false, null, "Asset tracking identifier (user specified)"),
+                new NcPropertyDescriptor(new NcElementId(3, 6), "deviceName", "NcString", false, true, false, false, null, "Name of this device in the application. Instance name, not product name."),
+                new NcPropertyDescriptor(new NcElementId(3, 7), "deviceRole", "NcString", false, true, false, false, null, "Role of this device in the application."),
+                new NcPropertyDescriptor(new NcElementId(3, 8), "operationalState", "NcDeviceOperationalState", true, true, false, false, null, "Device operational state"),
+                new NcPropertyDescriptor(new NcElementId(3, 9), "resetCause", "NcResetCause", true, true, false, false, null, "Reason for most recent reset"),
+                new NcPropertyDescriptor(new NcElementId(3, 10), "message", "NcString", true, true, true, false, null, "Arbitrary message from dev to controller"),
+            ],
+            [],
+            []
+        );
+
+        currentClassDescriptor.properties = currentClassDescriptor.properties.concat(baseDescriptor.properties);
+        currentClassDescriptor.methods = currentClassDescriptor.methods.concat(baseDescriptor.methods);
+        currentClassDescriptor.events = currentClassDescriptor.events.concat(baseDescriptor.events);
+
+        return currentClassDescriptor;
     }
 }
 
@@ -135,6 +418,8 @@ export class NcClassManager extends NcManager
         {
             case '1.1': 
                 return [ NcBlock.GetClassDescriptor() ];
+            case '1.3.1': 
+                return [ NcDeviceManager.GetClassDescriptor() ];
             case '1.3.2': 
                 return [ NcClassManager.GetClassDescriptor() ];
             case '1.3.4': 
@@ -188,6 +473,29 @@ export class NcClassManager extends NcManager
                 return [ new NcDatatypeDescriptorTypeDef("NcClassIdField", "NcInt32", false, null, "Class ID field. Either a definition index or an authority key.")];
             case 'NcVersionCode': 
                 return [ new NcDatatypeDescriptorTypeDef("NcVersionCode", "NcString", false, null, "Version code in semantic versioning format")];
+            case 'NcUri': 
+                return [ new NcDatatypeDescriptorTypeDef("NcUri", "NcString", false, null, "Uniform resource identifier")];
+            case 'NcOrganizationId': 
+                return [ new NcDatatypeDescriptorTypeDef("NcOrganizationId", "NcBlobFixedLen", true, null, "Unique 24-bit organization ID")];
+            case 'NcManufacturer': 
+                return [ NcManufacturer.GetTypeDescriptor() ];
+            case 'NcProduct': 
+                return [ NcProduct.GetTypeDescriptor() ];
+            case 'NcDeviceGenericState': 
+                return [ new NcDatatypeDescriptorEnum("NcDeviceGenericState", [
+                    new NcEnumItemDescriptor("NormalOperation", 0, "Normal operation"),
+                    new NcEnumItemDescriptor("Initializing", 1, "Initializing"),
+                    new NcEnumItemDescriptor("Updating", 2, "Updating")
+                ], null, "Device generic operational state")];
+            case 'NcResetCause': 
+                return [ new NcDatatypeDescriptorEnum("NcResetCause", [
+                    new NcEnumItemDescriptor("PowerOn", 0, "Power on"),
+                    new NcEnumItemDescriptor("InternalError", 1, "Internal error"),
+                    new NcEnumItemDescriptor("Upgrade", 2, "Upgrade"),
+                    new NcEnumItemDescriptor("ControllerRequest", 3, "Controller request")
+                ], null, "Device generic operational state")];
+            case 'NcDeviceOperationalState': 
+                return [ NcDeviceOperationalState.GetTypeDescriptor() ];
             case 'NcOid': 
                 return [ new NcDatatypeDescriptorTypeDef("NcOid", "NcUint32", false, null, "Object id")];
             case 'NcName': 
@@ -268,7 +576,7 @@ export class NcClassManager extends NcManager
                     new NcFieldDescriptor("value", "NcReceiverStatus", false, false, null, "Receiver status method result value")
                 ], "NcMethodResult", null, "Method result containing receiver status information as the value")];
             case 'NcIoDirection': 
-                return [ new NcDatatypeDescriptorEnum("ncIoDirection", [
+                return [ new NcDatatypeDescriptorEnum("NcIoDirection", [
                     new NcEnumItemDescriptor("Undefined", 0, "Not defined"),
                     new NcEnumItemDescriptor("Input", 1, "Input direction"),
                     new NcEnumItemDescriptor("Output", 2, "Output direction"),
