@@ -381,7 +381,7 @@ export abstract class NcTouchpointResource extends BaseType
     public static override GetTypeDescriptor(): NcDatatypeDescriptor
     {
         return new NcDatatypeDescriptorStruct("NcTouchpointResource", [
-            new NcFieldDescriptor("resourceType", "ncString", false, false, null, "The type of the resource")
+            new NcFieldDescriptor("resourceType", "NcString", false, false, null, "The type of the resource")
         ], null, null, "Touchpoint resource class");
     }
 }
@@ -417,16 +417,16 @@ export abstract class NcTouchpoint extends BaseType
 {
     public contextNamespace: string;
 
-    public resource: NcTouchpointResource[];
+    public resource: NcTouchpointResource;
 
     constructor(
         contextNamespace: string,
-        resources: NcTouchpointResource[])
+        resource: NcTouchpointResource)
     {
         super();
 
         this.contextNamespace = contextNamespace;
-        this.resource = resources;
+        this.resource = resource;
     }
 
     public static override GetTypeDescriptor(): NcDatatypeDescriptor
@@ -441,7 +441,7 @@ export class NcTouchpointNmos extends NcTouchpoint
 {
     constructor(
         contextNamespace: string,
-        resource: NcTouchpointResourceNmos[])
+        resource: NcTouchpointResourceNmos)
     {
         super(contextNamespace, resource);
     }
