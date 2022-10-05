@@ -103,7 +103,7 @@ try
         'Receiver monitor 01',
         false,
         NcLockState.NoLock,
-        [ new NcTouchpointNmos(`is-04`, [ new NcTouchpointResourceNmos('receiver', myVideoReceiver.id)]) ],
+        [ new NcTouchpointNmos('x-nmos', new NcTouchpointResourceNmos('receiver', myVideoReceiver.id)) ],
         true,
         "Receiver monitor worker",
         sessionManager);
