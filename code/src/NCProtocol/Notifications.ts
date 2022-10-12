@@ -1,25 +1,46 @@
 import exp from 'constants';
 import { jsonIgnoreReplacer, jsonIgnore } from 'json-ignore';
-import { NcElementId, NcPropertyChangeType } from '../NCModel/Core';
+import { BaseType, NcDatatypeDescriptor, NcDatatypeDescriptorStruct, NcElementId, NcFieldDescriptor, NcPropertyChangeType } from '../NCModel/Core';
 
 import { MessageType, ProtocolWrapper } from './Core';
 
-export class NcEventData
+export class NcPropertyChangedEventData extends BaseType
 {
     public propertyId: NcElementId;
 
     public changeType: NcPropertyChangeType;
 
-    public propertyValue: any | null;
+    public value: any | null;
+
+    public sequenceItemIndex: number | null;
 
     constructor(
         propertyId: NcElementId,
         changeType: NcPropertyChangeType,
-        propertyValue: any | null)
+        value: any | null,
+        sequenceItemIndex: number | null)
     {
+        super();
+
         this.propertyId = propertyId;
         this.changeType = changeType;
-        this.propertyValue = propertyValue;
+        this.value = value;
+        this.sequenceItemIndex = sequenceItemIndex;
+    }
+
+    public static override GetTypeDescriptor(): NcDatatypeDescriptor
+    {
+        return new NcDatatypeDescriptorStruct("NcPropertyChangedEventData", [
+            new NcFieldDescriptor("propertyId", "NcElementId", false, false, null, "ID of changed property"),
+            new NcFieldDescriptor("changeType", "NcPropertyChangeType", false, false, null, "Information regarding the change type"),
+            new NcFieldDescriptor("value", null, true, false, null, "Property-type specific value"),
+            new NcFieldDescriptor("sequenceItemIndex", "NcId32", true, false, null, "Index of sequence item if the property is a sequence")
+        ], null, null, "Payload of property-changed event");
+    }
+
+    public ToJson()
+    {
+        return JSON.stringify(this, jsonIgnoreReplacer);
     }
 }
 
@@ -37,12 +58,12 @@ export class NcNotification
 
     public eventId: NcElementId;
 
-    public eventData: NcEventData;
+    public eventData: NcPropertyChangedEventData;
 
     constructor(
         oid: number,
         eventId: NcElementId,
-        eventData: NcEventData)
+        eventData: NcPropertyChangedEventData)
     {
         this.oid = oid;
         this.eventId = eventId;

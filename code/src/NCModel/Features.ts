@@ -1,7 +1,7 @@
 import { jsonIgnoreReplacer, jsonIgnore } from 'json-ignore';
 import { CommandResponseNoValue, CommandResponseWithValue } from '../NCProtocol/Commands';
 import { INotificationContext } from '../SessionManager';
-import { BaseType, myIdDecorator, NcClassDescriptor, NcDatatypeDescriptor, NcDatatypeDescriptorStruct, NcElementId, NcFieldDescriptor, NcLockState, NcMethodDescriptor, NcMethodStatus, NcObject, NcParameterConstraintNumber, NcParameterConstraintString, NcParameterDescriptor, NcPort, NcPropertyDescriptor, NcTouchpoint } from './Core';
+import { BaseType, myIdDecorator, NcClassDescriptor, NcDatatypeDescriptor, NcDatatypeDescriptorStruct, NcElementId, NcFieldDescriptor, NcLockState, NcMethodDescriptor, NcMethodStatus, NcObject, NcParameterConstraintNumber, NcParameterConstraintString, NcParameterDescriptor, NcPort, NcPropertyChangeType, NcPropertyDescriptor, NcTouchpoint } from './Core';
 
 export abstract class NcWorker extends NcObject
 {
@@ -216,7 +216,7 @@ export class NcGain extends NcActuator
             {
                 case '5p1':
                     this.setPoint = value;
-                    this.notificationContext.NotifyPropertyChanged(this.oid, id, this.setPoint);
+                    this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.setPoint, null);
                     return new CommandResponseNoValue(handle, NcMethodStatus.OK, null);
                 default:
                     return super.Set(oid, id, value, handle);
@@ -344,8 +344,8 @@ export class NcReceiverMonitor extends NcWorker
         this.connectionStatusMessage = null;
         this.payloadStatusMessage = null;
 
-        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 1), this.connectionStatus);
-        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 3), this.payloadStatus);
+        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 1), NcPropertyChangeType.ValueChanged, this.connectionStatus, null);
+        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 3), NcPropertyChangeType.ValueChanged, this.payloadStatus, null);
     }
 
     public Disconnected()
@@ -356,8 +356,8 @@ export class NcReceiverMonitor extends NcWorker
         this.connectionStatusMessage = null;
         this.payloadStatusMessage = null;
 
-        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 1), this.connectionStatus);
-        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 3), this.payloadStatus);
+        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 1), NcPropertyChangeType.ValueChanged, this.connectionStatus, null);
+        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 3), NcPropertyChangeType.ValueChanged, this.payloadStatus, null);
     }
 
     //'1m1'
@@ -528,6 +528,9 @@ export class NcDemo extends NcWorker
     @myIdDecorator('3p8')
     public methodObjectArgCount: number;
 
+    @myIdDecorator('3p9')
+    public stringSequence: string[];
+
     public constructor(
         oid: number,
         constantOid: boolean,
@@ -551,6 +554,7 @@ export class NcDemo extends NcWorker
         this.methodNoArgsCount = 0;
         this.methodSimpleArgsCount = 0;
         this.methodObjectArgCount = 0;
+        this.stringSequence = [ "red", "blue", "green" ];
     }
 
     //'1m1'
@@ -578,6 +582,8 @@ export class NcDemo extends NcWorker
                     return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.methodSimpleArgsCount, null);
                 case '3p8':
                     return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.methodObjectArgCount, null);
+                case '3p9':
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.stringSequence, null);
                 default:
                     return super.Get(oid, id, handle);
             }
@@ -597,28 +603,32 @@ export class NcDemo extends NcWorker
             {
                 case '3p1':
                     this.enumProperty = value;
-                    this.notificationContext.NotifyPropertyChanged(this.oid, id, this.enumProperty);
+                    this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.enumProperty, null);
                     return new CommandResponseNoValue(handle, NcMethodStatus.OK, null);
                 case '3p2':
                     this.stringProperty = value;
-                    this.notificationContext.NotifyPropertyChanged(this.oid, id, this.stringProperty);
+                    this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.stringProperty, null);
                     return new CommandResponseNoValue(handle, NcMethodStatus.OK, null);
                 case '3p3':
                     this.numberProperty = value;
-                    this.notificationContext.NotifyPropertyChanged(this.oid, id, this.numberProperty);
+                    this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.numberProperty, null);
                     return new CommandResponseNoValue(handle, NcMethodStatus.OK, null);
                 case '3p4':
                     this.booleanProperty = value;
-                    this.notificationContext.NotifyPropertyChanged(this.oid, id, this.booleanProperty);
+                    this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.booleanProperty, null);
                     return new CommandResponseNoValue(handle, NcMethodStatus.OK, null);
                 case '3p5':
                     this.objectProperty = value;
-                    this.notificationContext.NotifyPropertyChanged(this.oid, id, this.objectProperty);
+                    this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.objectProperty, null);
                     return new CommandResponseNoValue(handle, NcMethodStatus.OK, null);
                 case '3p6':
                 case '3p7':
                 case '3p8':
                         return new CommandResponseNoValue(handle, NcMethodStatus.Readonly, "Property is read only");
+                case '3p9':
+                    this.stringSequence = value;
+                    this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.stringSequence, null);
+                    return new CommandResponseNoValue(handle, NcMethodStatus.OK, null);
                 default:
                     return super.Set(oid, id, value, handle);
             }
@@ -635,10 +645,170 @@ export class NcDemo extends NcWorker
 
             switch(key)
             {
+                case '1m3': //GetSequenceItem
+                    {
+                        if(args != null &&
+                            'id' in args &&
+                            'index' in args)
+                        {
+                            let propertyId = args['id'] as NcElementId;
+                            let index = args['index'] as number;
+
+                            if(propertyId)
+                            {
+                                if(index >= 0)
+                                {
+                                    let propertyKey: string = `${propertyId.level}p${propertyId.index}`;
+
+                                    switch(propertyKey)
+                                    {
+                                        case '3p9':
+                                            {
+                                                let itemValue = this.stringSequence[index];
+                                                if(itemValue)
+                                                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, itemValue, null);
+                                                else
+                                                    return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Index could not be found');
+                                            }
+                                        default:
+                                            return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Property could not be found');
+                                    }
+                                }
+                                else
+                                    return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Invalid index argument provided');
+                            }
+                            else
+                                return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Invalid id argument provided');
+                        }
+                        else
+                            return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Invalid arguments provided');
+                    }
+                case '1m4': //SetSequenceItem
+                    {
+                        if(args != null &&
+                            'id' in args &&
+                            'index' in args &&
+                            'value' in args)
+                        {
+                            let propertyId = args['id'] as NcElementId;
+                            let index = args['index'] as number;
+                            let value = args['value'] as string;
+
+                            if(propertyId)
+                            {
+                                if(index >= 0)
+                                {
+                                    let propertyKey: string = `${propertyId.level}p${propertyId.index}`;
+
+                                    switch(propertyKey)
+                                    {
+                                        case '3p9':
+                                            {
+                                                if (this.stringSequence[index] !== undefined) 
+                                                {
+                                                    this.stringSequence[index] = value;
+                                                    this.notificationContext.NotifyPropertyChanged(this.oid, propertyId, NcPropertyChangeType.SequenceItemChanged, value, index);
+
+                                                    return new CommandResponseNoValue(handle, NcMethodStatus.OK, null);
+                                                }
+                                                else
+                                                    return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Index could not be found');
+                                            }
+                                        default:
+                                            return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Property could not be found');
+                                    }
+                                }
+                                else
+                                    return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Invalid index argument provided');
+                            }
+                            else
+                                return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Invalid id argument provided');
+                        }
+                        else
+                            return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Invalid arguments provided');
+                    }
+                case '1m5': //AddSequenceItem
+                    {
+                        if(args != null &&
+                            'id' in args &&
+                            'value' in args)
+                        {
+                            let propertyId = args['id'] as NcElementId;
+                            let value = args['value'] as string;
+
+                            if(propertyId)
+                            {
+                                let propertyKey: string = `${propertyId.level}p${propertyId.index}`;
+
+                                switch(propertyKey)
+                                {
+                                    case '3p9':
+                                        {
+                                            this.stringSequence.push(value);
+                                            let index = this.stringSequence.length - 1;
+
+                                            this.notificationContext.NotifyPropertyChanged(this.oid, propertyId, NcPropertyChangeType.SequenceItemAdded, value, index);
+
+                                            return new CommandResponseWithValue(handle, NcMethodStatus.OK, index, null);
+                                        }
+                                    default:
+                                        return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Property could not be found');
+                                }
+                            }
+                            else
+                                return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Invalid id argument provided');
+                        }
+                        else
+                            return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Invalid arguments provided');
+                    }
+                case '1m6': //RemoveSequenceItem
+                    {
+                        if(args != null &&
+                            'id' in args &&
+                            'index' in args)
+                        {
+                            let propertyId = args['id'] as NcElementId;
+                            let index = args['index'] as number;
+
+                            if(propertyId)
+                            {
+                                if(index >= 0)
+                                {
+                                    let propertyKey: string = `${propertyId.level}p${propertyId.index}`;
+
+                                    switch(propertyKey)
+                                    {
+                                        case '3p9':
+                                            {
+                                                if (this.stringSequence[index] !== undefined) 
+                                                {
+                                                    let oldValue = this.stringSequence[index];
+
+                                                    this.stringSequence.splice(index, 1);
+                                                    this.notificationContext.NotifyPropertyChanged(this.oid, propertyId, NcPropertyChangeType.SequenceItemRemoved, oldValue, index);
+
+                                                    return new CommandResponseNoValue(handle, NcMethodStatus.OK, null);
+                                                }
+                                                else
+                                                    return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Index could not be found');
+                                            }
+                                        default:
+                                            return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Property could not be found');
+                                    }
+                                }
+                                else
+                                    return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Invalid index argument provided');
+                            }
+                            else
+                                return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Invalid id argument provided');
+                        }
+                        else
+                            return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Invalid arguments provided');
+                    }
                 case '3m1':
                     {
                         this.methodNoArgsCount = this.methodNoArgsCount + 1;
-                        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 6), this.methodNoArgsCount);
+                        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 6), NcPropertyChangeType.ValueChanged, this.methodNoArgsCount, null);
                         return new CommandResponseNoValue(handle, NcMethodStatus.OK, null);
                     }
                 case '3m2':
@@ -663,7 +833,7 @@ export class NcDemo extends NcWorker
                                         if(booleanArg !== null)
                                         {
                                             this.methodSimpleArgsCount = this.methodSimpleArgsCount + 1;
-                                            this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 7), this.methodSimpleArgsCount);
+                                            this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 7), NcPropertyChangeType.ValueChanged, this.methodSimpleArgsCount, null);
                                             return new CommandResponseNoValue(handle, NcMethodStatus.OK, null);
                                         }
                                         else
@@ -690,7 +860,7 @@ export class NcDemo extends NcWorker
                             if(objArg)
                             {
                                 this.methodObjectArgCount = this.methodObjectArgCount + 1;
-                                this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 8), this.methodObjectArgCount);
+                                this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 8), NcPropertyChangeType.ValueChanged, this.methodObjectArgCount, null);
                                 return new CommandResponseNoValue(handle, NcMethodStatus.OK, null);
                             }
                             else
