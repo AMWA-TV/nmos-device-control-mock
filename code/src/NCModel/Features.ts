@@ -531,6 +531,18 @@ export class NcDemo extends NcWorker
     @myIdDecorator('3p9')
     public stringSequence: string[];
 
+    @myIdDecorator('3p10')
+    public booleanSequence: boolean[];
+
+    @myIdDecorator('3p11')
+    public enumSequence: NcDemoEnum[];
+
+    @myIdDecorator('3p12')
+    public numberSequence: number[];
+
+    @myIdDecorator('3p13')
+    public objectSequence: DemoDataType[];
+
     public constructor(
         oid: number,
         constantOid: boolean,
@@ -555,6 +567,10 @@ export class NcDemo extends NcWorker
         this.methodSimpleArgsCount = 0;
         this.methodObjectArgCount = 0;
         this.stringSequence = [ "red", "blue", "green" ];
+        this.booleanSequence = [ true, false];
+        this.enumSequence = [ NcDemoEnum.Alpha, NcDemoEnum.Gamma ];
+        this.numberSequence = [ 0, 50, 88];
+        this.objectSequence = [ new DemoDataType(NcDemoEnum.Alpha, "demo", 50, false), new DemoDataType(NcDemoEnum.Gamma, "different", 75, true) ];
     }
 
     //'1m1'
@@ -584,6 +600,14 @@ export class NcDemo extends NcWorker
                     return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.methodObjectArgCount, null);
                 case '3p9':
                     return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.stringSequence, null);
+                case '3p10':
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.booleanSequence, null);
+                case '3p11':
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.enumSequence, null);
+                case '3p12':
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.numberSequence, null);
+                case '3p13':
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.objectSequence, null);
                 default:
                     return super.Get(oid, id, handle);
             }
@@ -629,6 +653,22 @@ export class NcDemo extends NcWorker
                     this.stringSequence = value;
                     this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.stringSequence, null);
                     return new CommandResponseNoValue(handle, NcMethodStatus.OK, null);
+                case '3p10':
+                    this.booleanSequence = value;
+                    this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.booleanSequence, null);
+                    return new CommandResponseNoValue(handle, NcMethodStatus.OK, null);
+                case '3p11':
+                    this.enumSequence = value;
+                    this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.enumSequence, null);
+                    return new CommandResponseNoValue(handle, NcMethodStatus.OK, null);
+                case '3p12':
+                    this.numberSequence = value;
+                    this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.numberSequence, null);
+                    return new CommandResponseNoValue(handle, NcMethodStatus.OK, null);
+                case '3p13':
+                    this.objectSequence = value;
+                    this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.objectSequence, null);
+                    return new CommandResponseNoValue(handle, NcMethodStatus.OK, null);
                 default:
                     return super.Set(oid, id, value, handle);
             }
@@ -670,6 +710,38 @@ export class NcDemo extends NcWorker
                                                 else
                                                     return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Index could not be found');
                                             }
+                                        case '3p10':
+                                            {
+                                                let itemValue = this.booleanSequence[index];
+                                                if(itemValue)
+                                                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, itemValue, null);
+                                                else
+                                                    return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Index could not be found');
+                                            }
+                                        case '3p11':
+                                            {
+                                                let itemValue = this.enumSequence[index];
+                                                if(itemValue)
+                                                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, itemValue, null);
+                                                else
+                                                    return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Index could not be found');
+                                            }
+                                        case '3p12':
+                                            {
+                                                let itemValue = this.numberSequence[index];
+                                                if(itemValue !== undefined)
+                                                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, itemValue, null);
+                                                else
+                                                    return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Index could not be found');
+                                            }
+                                        case '3p13':
+                                            {
+                                                let itemValue = this.objectSequence[index];
+                                                if(itemValue)
+                                                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, itemValue, null);
+                                                else
+                                                    return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Index could not be found');
+                                            }
                                         default:
                                             return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Property could not be found');
                                     }
@@ -692,7 +764,6 @@ export class NcDemo extends NcWorker
                         {
                             let propertyId = args['id'] as NcElementId;
                             let index = args['index'] as number;
-                            let value = args['value'] as string;
 
                             if(propertyId)
                             {
@@ -706,10 +777,88 @@ export class NcDemo extends NcWorker
                                             {
                                                 if (this.stringSequence[index] !== undefined) 
                                                 {
-                                                    this.stringSequence[index] = value;
-                                                    this.notificationContext.NotifyPropertyChanged(this.oid, propertyId, NcPropertyChangeType.SequenceItemChanged, value, index);
+                                                    let value = args['value'] as string;
+                                                    if(value !== undefined)
+                                                    {
+                                                        this.stringSequence[index] = value;
+                                                        this.notificationContext.NotifyPropertyChanged(this.oid, propertyId, NcPropertyChangeType.SequenceItemChanged, value, index);
+    
+                                                        return new CommandResponseNoValue(handle, NcMethodStatus.OK, null);
+                                                    }
+                                                    else
+                                                        return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Invalid value argument provided');
+                                                }
+                                                else
+                                                    return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Index could not be found');
+                                            }
+                                        case '3p10':
+                                            {
+                                                if (this.booleanSequence[index] !== undefined) 
+                                                {
+                                                    let value = args['value'] as boolean;
+                                                    if(value !== undefined)
+                                                    {
+                                                        this.booleanSequence[index] = value;
+                                                        this.notificationContext.NotifyPropertyChanged(this.oid, propertyId, NcPropertyChangeType.SequenceItemChanged, value, index);
+    
+                                                        return new CommandResponseNoValue(handle, NcMethodStatus.OK, null);
+                                                    }
+                                                    else
+                                                        return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Invalid value argument provided');
+                                                }
+                                                else
+                                                    return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Index could not be found');
+                                            }
+                                        case '3p11':
+                                            {
+                                                if (this.enumSequence[index] !== undefined) 
+                                                {
+                                                    let value = args['value'] as NcDemoEnum;
+                                                    if(value !== undefined)
+                                                    {
+                                                        this.enumSequence[index] = value;
+                                                        this.notificationContext.NotifyPropertyChanged(this.oid, propertyId, NcPropertyChangeType.SequenceItemChanged, value, index);
+    
+                                                        return new CommandResponseNoValue(handle, NcMethodStatus.OK, null);
+                                                    }
+                                                    else
+                                                        return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Invalid value argument provided');
+                                                }
+                                                else
+                                                    return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Index could not be found');
+                                            }
+                                        case '3p12':
+                                            {
+                                                if (this.numberSequence[index] !== undefined) 
+                                                {
+                                                    let value = args['value'] as number;
+                                                    if(value !== undefined)
+                                                    {
+                                                        this.numberSequence[index] = value;
+                                                        this.notificationContext.NotifyPropertyChanged(this.oid, propertyId, NcPropertyChangeType.SequenceItemChanged, value, index);
+    
+                                                        return new CommandResponseNoValue(handle, NcMethodStatus.OK, null);
+                                                    }
+                                                    else
+                                                        return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Invalid value argument provided');
+                                                }
+                                                else
+                                                    return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Index could not be found');
+                                            }
+                                        case '3p13':
+                                            {
+                                                if (this.objectSequence[index] !== undefined) 
+                                                {
+                                                    let value = args['value'] as DemoDataType;
+                                                    if(value !== undefined)
+                                                    {
+                                                        this.objectSequence[index] = value;
+                                                        this.notificationContext.NotifyPropertyChanged(this.oid, propertyId, NcPropertyChangeType.SequenceItemChanged, value, index);
 
-                                                    return new CommandResponseNoValue(handle, NcMethodStatus.OK, null);
+                                                        return new CommandResponseNoValue(handle, NcMethodStatus.OK, null);
+                                                    }
+                                                    else
+                                                        return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Invalid value argument provided');
                                                 }
                                                 else
                                                     return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Index could not be found');
@@ -734,8 +883,7 @@ export class NcDemo extends NcWorker
                             'value' in args)
                         {
                             let propertyId = args['id'] as NcElementId;
-                            let value = args['value'] as string;
-
+                            
                             if(propertyId)
                             {
                                 let propertyKey: string = `${propertyId.level}p${propertyId.index}`;
@@ -744,12 +892,78 @@ export class NcDemo extends NcWorker
                                 {
                                     case '3p9':
                                         {
-                                            this.stringSequence.push(value);
-                                            let index = this.stringSequence.length - 1;
+                                            let value = args['value'] as string;
+                                            if(value !== undefined)
+                                            {
+                                                this.stringSequence.push(value);
+                                                let index = this.stringSequence.length - 1;
 
-                                            this.notificationContext.NotifyPropertyChanged(this.oid, propertyId, NcPropertyChangeType.SequenceItemAdded, value, index);
+                                                this.notificationContext.NotifyPropertyChanged(this.oid, propertyId, NcPropertyChangeType.SequenceItemAdded, value, index);
 
-                                            return new CommandResponseWithValue(handle, NcMethodStatus.OK, index, null);
+                                                return new CommandResponseWithValue(handle, NcMethodStatus.OK, index, null);
+                                            }
+                                            else
+                                                return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Invalid value argument provided');
+                                        }
+                                    case '3p10':
+                                        {
+                                            let value = args['value'] as boolean;
+                                            if(value !== undefined)
+                                            {
+                                                this.booleanSequence.push(value);
+                                                let index = this.booleanSequence.length - 1;
+
+                                                this.notificationContext.NotifyPropertyChanged(this.oid, propertyId, NcPropertyChangeType.SequenceItemAdded, value, index);
+
+                                                return new CommandResponseWithValue(handle, NcMethodStatus.OK, index, null);
+                                            }
+                                            else
+                                                return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Invalid value argument provided');
+                                        }
+                                    case '3p11':
+                                        {
+                                            let value = args['value'] as NcDemoEnum;
+                                            if(value !== undefined)
+                                            {
+                                                this.enumSequence.push(value);
+                                                let index = this.enumSequence.length - 1;
+
+                                                this.notificationContext.NotifyPropertyChanged(this.oid, propertyId, NcPropertyChangeType.SequenceItemAdded, value, index);
+
+                                                return new CommandResponseWithValue(handle, NcMethodStatus.OK, index, null);
+                                            }
+                                            else
+                                                return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Invalid value argument provided');
+                                        }
+                                    case '3p12':
+                                        {
+                                            let value = args['value'] as number;
+                                            if(value !== undefined)
+                                            {
+                                                this.numberSequence.push(value);
+                                                let index = this.numberSequence.length - 1;
+
+                                                this.notificationContext.NotifyPropertyChanged(this.oid, propertyId, NcPropertyChangeType.SequenceItemAdded, value, index);
+
+                                                return new CommandResponseWithValue(handle, NcMethodStatus.OK, index, null);
+                                            }
+                                            else
+                                                return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Invalid value argument provided');
+                                        }
+                                    case '3p13':
+                                        {
+                                            let value = args['value'] as DemoDataType;
+                                            if(value !== undefined)
+                                            {
+                                                this.objectSequence.push(value);
+                                                let index = this.objectSequence.length - 1;
+
+                                                this.notificationContext.NotifyPropertyChanged(this.oid, propertyId, NcPropertyChangeType.SequenceItemAdded, value, index);
+
+                                                return new CommandResponseWithValue(handle, NcMethodStatus.OK, index, null);
+                                            }
+                                            else
+                                                return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Invalid value argument provided');
                                         }
                                     default:
                                         return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Property could not be found');
@@ -785,6 +999,62 @@ export class NcDemo extends NcWorker
                                                     let oldValue = this.stringSequence[index];
 
                                                     this.stringSequence.splice(index, 1);
+                                                    this.notificationContext.NotifyPropertyChanged(this.oid, propertyId, NcPropertyChangeType.SequenceItemRemoved, oldValue, index);
+
+                                                    return new CommandResponseNoValue(handle, NcMethodStatus.OK, null);
+                                                }
+                                                else
+                                                    return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Index could not be found');
+                                            }
+                                        case '3p10':
+                                            {
+                                                if (this.booleanSequence[index] !== undefined) 
+                                                {
+                                                    let oldValue = this.booleanSequence[index];
+
+                                                    this.booleanSequence.splice(index, 1);
+                                                    this.notificationContext.NotifyPropertyChanged(this.oid, propertyId, NcPropertyChangeType.SequenceItemRemoved, oldValue, index);
+
+                                                    return new CommandResponseNoValue(handle, NcMethodStatus.OK, null);
+                                                }
+                                                else
+                                                    return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Index could not be found');
+                                            }
+                                        case '3p11':
+                                            {
+                                                if (this.enumSequence[index] !== undefined) 
+                                                {
+                                                    let oldValue = this.enumSequence[index];
+
+                                                    this.enumSequence.splice(index, 1);
+                                                    this.notificationContext.NotifyPropertyChanged(this.oid, propertyId, NcPropertyChangeType.SequenceItemRemoved, oldValue, index);
+
+                                                    return new CommandResponseNoValue(handle, NcMethodStatus.OK, null);
+                                                }
+                                                else
+                                                    return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Index could not be found');
+                                            }
+                                        case '3p12':
+                                            {
+                                                if (this.numberSequence[index] !== undefined) 
+                                                {
+                                                    let oldValue = this.numberSequence[index];
+
+                                                    this.numberSequence.splice(index, 1);
+                                                    this.notificationContext.NotifyPropertyChanged(this.oid, propertyId, NcPropertyChangeType.SequenceItemRemoved, oldValue, index);
+
+                                                    return new CommandResponseNoValue(handle, NcMethodStatus.OK, null);
+                                                }
+                                                else
+                                                    return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Index could not be found');
+                                            }
+                                        case '3p13':
+                                            {
+                                                if (this.objectSequence[index] !== undefined) 
+                                                {
+                                                    let oldValue = this.objectSequence[index];
+
+                                                    this.objectSequence.splice(index, 1);
                                                     this.notificationContext.NotifyPropertyChanged(this.oid, propertyId, NcPropertyChangeType.SequenceItemRemoved, oldValue, index);
 
                                                     return new CommandResponseNoValue(handle, NcMethodStatus.OK, null);
@@ -894,7 +1164,11 @@ export class NcDemo extends NcWorker
                 new NcPropertyDescriptor(new NcElementId(3, 6), "methodNoArgsCount", "NcUint64", true, false, false, false, null, "Method no args invoke counter"),
                 new NcPropertyDescriptor(new NcElementId(3, 7), "methodSimpleArgsCount", "NcUint64", true, false, false, false, null, "Method simple args invoke counter"),
                 new NcPropertyDescriptor(new NcElementId(3, 8), "methodObjectArgCount", "NcUint64", true, false, false, false, null, "Method obj arg invoke counter"),
-                new NcPropertyDescriptor(new NcElementId(3, 9), "stringSequence", "NcString", false, false, false, true, null, "Demo string sequence property")
+                new NcPropertyDescriptor(new NcElementId(3, 9), "stringSequence", "NcString", false, false, false, true, null, "Demo string sequence property"),
+                new NcPropertyDescriptor(new NcElementId(3, 10), "booleanSequence", "NcBoolean", false, false, false, true, null, "Demo boolean sequence property"),
+                new NcPropertyDescriptor(new NcElementId(3, 11), "enumSequence", "NcDemoEnum", false, false, false, true, null, "Demo enum sequence property"),
+                new NcPropertyDescriptor(new NcElementId(3, 12), "numberSequence", "NcUint64", false, false, false, true, null, "Demo number sequence property"),
+                new NcPropertyDescriptor(new NcElementId(3, 13), "objectSequence", "DemoDataType", false, false, false, true, null, "Demo object sequence property")
             ],
             [
                 new NcMethodDescriptor(new NcElementId(3, 1), "MethodNoArgs", "NcMethodResultClassDescriptors", [], "Demo method with no arguments"),
