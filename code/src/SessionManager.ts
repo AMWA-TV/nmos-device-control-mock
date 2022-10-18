@@ -2,11 +2,11 @@ import { jsonIgnoreReplacer, jsonIgnore } from 'json-ignore';
 
 import { WebSocketConnection } from './Server';
 import { NcElementId, NcMethodStatus, NcPropertyChangeType } from './NCModel/Core';
-import { NcEventData, NcNotification, ProtoNotification } from './NCProtocol/Notifications';
+import { NcPropertyChangedEventData, NcNotification, ProtoNotification } from './NCProtocol/Notifications';
 
 export interface INotificationContext
 {
-    NotifyPropertyChanged(oid: number, propertyId: NcElementId, value: any);
+    NotifyPropertyChanged(oid: number, propertyId: NcElementId, changeType: NcPropertyChangeType, value: any | null, sequenceItemIndex: number | null);
     Subscribe(sessionId: number, oid: number);
     UnSubscribe(sessionId: number, oid: number);
     CreateSession(socket: WebSocketConnection, heartBeatTime: number) : [number | null, string | null]
@@ -41,7 +41,7 @@ export class SessionManager implements INotificationContext
             sub.UnSubscribe(oid);
     }
 
-    public NotifyPropertyChanged(oid: number, propertyId: NcElementId, value: any)
+    public NotifyPropertyChanged(oid: number, propertyId: NcElementId, changeType: NcPropertyChangeType, value: any | null, sequenceItemIndex: number | null)
     {
         console.log(`NotifyPropertyChanged oid: ${oid}, property: ${propertyId.level}p${propertyId.index}, value: ${JSON.stringify(value)}`);
 
@@ -53,7 +53,7 @@ export class SessionManager implements INotificationContext
                 session.socket.send(
                     new ProtoNotification(
                         session.sessionId,
-                        [ new NcNotification(oid, new NcElementId(1, 1), new NcEventData(propertyId, NcPropertyChangeType.CurrentChanged, value)) ]
+                        [ new NcNotification(oid, new NcElementId(1, 1), new NcPropertyChangedEventData(propertyId, changeType, value, sequenceItemIndex)) ]
                     ).ToJson());
             }
         }

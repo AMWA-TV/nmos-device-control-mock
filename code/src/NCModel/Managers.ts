@@ -1,9 +1,9 @@
 import { jsonIgnoreReplacer, jsonIgnore } from 'json-ignore';
 import { CommandResponseNoValue, CommandResponseWithValue } from '../NCProtocol/Commands';
-import { NcEventData } from '../NCProtocol/Notifications';
+import { NcPropertyChangedEventData } from '../NCProtocol/Notifications';
 import { INotificationContext } from '../SessionManager';
 import { NcBlock } from './Blocks';
-import { BaseType, myIdDecorator, NcBlockMemberDescriptor, NcClassDescriptor, NcClassIdentity, NcDatatypeDescriptor, NcDatatypeDescriptorEnum, NcDatatypeDescriptorPrimitive, NcDatatypeDescriptorStruct, NcDatatypeDescriptorTypeDef, NcDatatypeType, NcElementId, NcEnumItemDescriptor, NcEvent, NcFieldDescriptor, NcLockState, NcMethodDescriptor, NcMethodStatus, NcObject, NcParameterDescriptor, NcPort, NcPortReference, NcPropertyDescriptor, NcSignalPath, NcTouchpoint, NcTouchpointNmos, NcTouchpointResource, NcTouchpointResourceNmos } from './Core';
+import { BaseType, myIdDecorator, NcBlockMemberDescriptor, NcClassDescriptor, NcClassIdentity, NcDatatypeDescriptor, NcDatatypeDescriptorEnum, NcDatatypeDescriptorPrimitive, NcDatatypeDescriptorStruct, NcDatatypeDescriptorTypeDef, NcDatatypeType, NcElementId, NcEnumItemDescriptor, NcEvent, NcFieldDescriptor, NcLockState, NcMethodDescriptor, NcMethodStatus, NcObject, NcParameterDescriptor, NcPort, NcPortReference, NcPropertyChangeType, NcPropertyDescriptor, NcSignalPath, NcTouchpoint, NcTouchpointNmos, NcTouchpointResource, NcTouchpointResourceNmos } from './Core';
 import { DemoDataType, NcDemo, NcGain, NcReceiverMonitor, NcReceiverStatus } from './Features';
 
 export abstract class NcManager extends NcObject
@@ -260,15 +260,15 @@ export class NcDeviceManager extends NcManager
                     return new CommandResponseNoValue(handle, NcMethodStatus.ProcessingFailed, 'Property is readonly');
                 case '3p5':
                     this.userInventoryCode = value;
-                    this.notificationContext.NotifyPropertyChanged(this.oid, id, this.userInventoryCode);
+                    this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.userInventoryCode, null);
                     return new CommandResponseNoValue(handle, NcMethodStatus.OK, null);
                 case '3p6':
                     this.deviceName = value;
-                    this.notificationContext.NotifyPropertyChanged(this.oid, id, this.deviceName);
+                    this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.deviceName, null);
                     return new CommandResponseNoValue(handle, NcMethodStatus.OK, null);
                 case '3p7':
                     this.deviceRole = value;
-                    this.notificationContext.NotifyPropertyChanged(this.oid, id, this.deviceRole);
+                    this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.deviceRole, null);
                     return new CommandResponseNoValue(handle, NcMethodStatus.OK, null);
                 default:
                     return super.Set(oid, id, value, handle);
@@ -512,11 +512,20 @@ export class NcClassManager extends NcManager
                 return [ new NcDatatypeDescriptorTypeDef("NcPropertyId", "NcElementId", false, null, "Class property id which contains the level and index")];
             case 'NcElementId': 
                 return [ NcElementId.GetTypeDescriptor() ];
+            case 'NcPropertyChangeType': 
+                return [ new NcDatatypeDescriptorEnum("NcPropertyChangeType", [
+                    new NcEnumItemDescriptor("ValueChanged", 0, "Current value changed"),
+                    new NcEnumItemDescriptor("SequenceItemAdded", 1, "Sequence item added"),
+                    new NcEnumItemDescriptor("SequenceItemChanged", 2, "Sequence item changed"),
+                    new NcEnumItemDescriptor("SequenceItemRemoved", 3, "Sequence item removed")
+                ], null, "Type of property change")];
+            case 'NcPropertyChangedEventData': 
+                return [ NcPropertyChangedEventData.GetTypeDescriptor() ];
             case 'NcLockState': 
                 return [ new NcDatatypeDescriptorEnum("NcLockState", [
                     new NcEnumItemDescriptor("MoLock", 0, "Not locked"),
                     new NcEnumItemDescriptor("NockNoWrite", 1, "Locked for write operations"),
-                    new NcEnumItemDescriptor("LockNoReadWrite", 2, "Locked for both read and write operations"),
+                    new NcEnumItemDescriptor("LockNoReadWrite", 2, "Locked for both read and write operations")
                 ], null, "Lock state enum data type")];
             case 'NcMethodStatus': 
                 return [ new NcDatatypeDescriptorEnum("NcMethodStatus", [
@@ -536,7 +545,7 @@ export class NcClassManager extends NcManager
                     new NcEnumItemDescriptor("PartiallySucceeded", 13, "Addressed method began executing but stopped before completing"),
                     new NcEnumItemDescriptor("Timeout", 14, "Method call did not finish within the allotted time"),
                     new NcEnumItemDescriptor("BufferOverflow", 15, "Something was too big"),
-                    new NcEnumItemDescriptor("OmittedProperty", 16, "Command referenced an optional property that is not instantiated in the referenced object"),
+                    new NcEnumItemDescriptor("OmittedProperty", 16, "Command referenced an optional property that is not instantiated in the referenced object")
                 ], null, "Method invokation status")];
             case 'NcMethodResult':
                 return [ new NcDatatypeDescriptorStruct("NcMethodResult", [
@@ -580,21 +589,21 @@ export class NcClassManager extends NcManager
                     new NcEnumItemDescriptor("Undefined", 0, "Not defined"),
                     new NcEnumItemDescriptor("Input", 1, "Input direction"),
                     new NcEnumItemDescriptor("Output", 2, "Output direction"),
-                    new NcEnumItemDescriptor("Bidirectional", 3, "Bidirectional"),
+                    new NcEnumItemDescriptor("Bidirectional", 3, "Bidirectional")
                 ], null, "Input and/or output direction")];
             case 'NcConnectionStatus': 
                 return [ new NcDatatypeDescriptorEnum("NcConnectionStatus", [
                     new NcEnumItemDescriptor("Undefined", 0, "This is the value when there is no receiver"),
                     new NcEnumItemDescriptor("Connected", 1, "Connected to a stream"),
                     new NcEnumItemDescriptor("Disconnected", 2, "Not connected to a stream"),
-                    new NcEnumItemDescriptor("ConnectionError", 3, "A connection error was encountered"),
+                    new NcEnumItemDescriptor("ConnectionError", 3, "A connection error was encountered")
                 ], null, "Connection status enum data type")];
             case 'NcPayloadStatus': 
                 return [ new NcDatatypeDescriptorEnum("NcPayloadStatus", [
                     new NcEnumItemDescriptor("Undefined", 0, "This is the value when there's no connection."),
                     new NcEnumItemDescriptor("PayloadOK", 1, "Payload is being received without errors and is the correct type"),
                     new NcEnumItemDescriptor("PayloadFormatUnsupported", 2, "Payload is being received but is of an unsupported type"),
-                    new NcEnumItemDescriptor("PayloadError", 3, "A payload error was encountered"),
+                    new NcEnumItemDescriptor("PayloadError", 3, "A payload error was encountered")
                 ], null, "Payload status enum data type")];
             case 'NcPort': 
                 return [ NcPort.GetTypeDescriptor() ];
@@ -615,7 +624,7 @@ export class NcClassManager extends NcManager
                     new NcEnumItemDescriptor("Undefined", 0, "Not defined option"),
                     new NcEnumItemDescriptor("Alpha", 1, "Alpha option"),
                     new NcEnumItemDescriptor("Beta", 2, "Beta option"),
-                    new NcEnumItemDescriptor("Gamma", 3, "Gamma option"),
+                    new NcEnumItemDescriptor("Gamma", 3, "Gamma option")
                 ], null, "Demonstration enum data type")];
             case 'DemoDataType': 
                 return [ DemoDataType.GetTypeDescriptor() ];

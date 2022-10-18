@@ -129,7 +129,7 @@ export abstract class NcObject
                     return new CommandResponseNoValue(handle, NcMethodStatus.ProcessingFailed, 'Property is readonly');
                 case '1p7':
                     this.userLabel = value;
-                    this.notificationContext.NotifyPropertyChanged(this.oid, id, this.userLabel);
+                    this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.userLabel, null);
                     return new CommandResponseNoValue(handle, NcMethodStatus.OK, null);
                 case '1p8':
                 case '1p9':
@@ -251,12 +251,10 @@ export enum NcMethodStatus
 
 export enum NcPropertyChangeType
 {
-    CurrentChanged = 0,
-    MinChanged = 1,
-    MaxChanged = 2,
-    ItemAdded = 3,
-    ItemChanged = 4,
-    ItemDeleted = 5
+    ValueChanged = 0,
+    SequenceItemAdded = 1,
+    SequenceItemChanged = 2,
+    SequenceItemRemoved = 3
 }
 
 export enum NcLockState
