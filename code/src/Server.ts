@@ -274,6 +274,8 @@ try
             console.warn(`Client disconnected with error - reason: ${err}, connection id: ${extWs.connectionId}`);
             sessionManager.ConnectionClosed(extWs.connectionId);
         })
+
+        sessionManager.CreateSession(extWs);
     });
 
     setInterval(() => {

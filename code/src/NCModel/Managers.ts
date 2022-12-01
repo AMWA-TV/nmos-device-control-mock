@@ -1,9 +1,38 @@
 import { jsonIgnoreReplacer, jsonIgnore } from 'json-ignore';
 import { CommandResponseNoValue, CommandResponseWithValue } from '../NCProtocol/Commands';
 import { NcPropertyChangedEventData } from '../NCProtocol/Notifications';
+import { WebSocketConnection } from '../Server';
 import { INotificationContext } from '../SessionManager';
 import { NcBlock } from './Blocks';
-import { BaseType, myIdDecorator, NcBlockMemberDescriptor, NcClassDescriptor, NcClassIdentity, NcDatatypeDescriptor, NcDatatypeDescriptorEnum, NcDatatypeDescriptorPrimitive, NcDatatypeDescriptorStruct, NcDatatypeDescriptorTypeDef, NcDatatypeType, NcElementId, NcEnumItemDescriptor, NcEvent, NcFieldDescriptor, NcLockState, NcMethodDescriptor, NcMethodStatus, NcObject, NcParameterDescriptor, NcPort, NcPortReference, NcPropertyChangeType, NcPropertyDescriptor, NcSignalPath, NcTouchpoint, NcTouchpointNmos, NcTouchpointResource, NcTouchpointResourceNmos } from './Core';
+import {
+    BaseType,
+    myIdDecorator,
+    NcBlockMemberDescriptor,
+    NcClassDescriptor,
+    NcClassIdentity,
+    NcDatatypeDescriptor,
+    NcDatatypeDescriptorEnum,
+    NcDatatypeDescriptorPrimitive,
+    NcDatatypeDescriptorStruct,
+    NcDatatypeDescriptorTypeDef,
+    NcElementId,
+    NcEnumItemDescriptor,
+    NcEvent,
+    NcFieldDescriptor,
+    NcLockState,
+    NcMethodDescriptor,
+    NcMethodStatus,
+    NcObject,
+    NcParameterDescriptor,
+    NcPort,
+    NcPortReference,
+    NcPropertyChangeType,
+    NcPropertyDescriptor,
+    NcSignalPath,
+    NcTouchpoint,
+    NcTouchpointNmos,
+    NcTouchpointResource,
+    NcTouchpointResourceNmos } from './Core';
 import { DemoDataType, NcDemo, NcGain, NcReceiverMonitor, NcReceiverStatus } from './Features';
 
 export abstract class NcManager extends NcObject
@@ -327,7 +356,7 @@ export class NcClassManager extends NcManager
         super(oid, constantOid, owner, role, userLabel, lockable, lockState, touchpoints, description, notificationContext);
     }
 
-    public override InvokeMethod(sessionId: number, oid: number, methodId: NcElementId, args: { [key: string]: any; } | null, handle: number): CommandResponseNoValue 
+    public override InvokeMethod(socket: WebSocketConnection, oid: number, methodId: NcElementId, args: { [key: string]: any; } | null, handle: number): CommandResponseNoValue 
     {
         if(oid == this.oid)
         {
@@ -364,7 +393,7 @@ export class NcClassManager extends NcManager
                             return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'No type name has been provided');
                     }
                 default:
-                    return super.InvokeMethod(sessionId, oid, methodId, args, handle);
+                    return super.InvokeMethod(socket, oid, methodId, args, handle);
             }
         }
 
@@ -654,7 +683,7 @@ export class NcSubscriptionManager extends NcManager
         super(oid, constantOid, owner, role, userLabel, lockable, lockState, touchpoints, description, notificationContext);
     }
 
-    public override InvokeMethod(sessionId: number, oid: number, methodId: NcElementId, args: { [key: string]: any; } | null, handle: number): CommandResponseNoValue 
+    public override InvokeMethod(socket: WebSocketConnection, oid: number, methodId: NcElementId, args: { [key: string]: any; } | null, handle: number): CommandResponseNoValue 
     {
         if(oid == this.oid)
         {
@@ -669,7 +698,7 @@ export class NcSubscriptionManager extends NcManager
                             let eventIdentity = args['event'] as NcEvent;
                             if(eventIdentity)
                             {
-                                this.notificationContext.Subscribe(sessionId, eventIdentity.emitterOid);
+                                this.notificationContext.Subscribe(socket, eventIdentity.emitterOid);
                                 return new CommandResponseNoValue(handle, NcMethodStatus.OK, null);
                             }
                             else
@@ -685,7 +714,7 @@ export class NcSubscriptionManager extends NcManager
                             let eventIdentity = args['event'] as NcEvent;
                             if(eventIdentity)
                             {
-                                this.notificationContext.UnSubscribe(sessionId, eventIdentity.emitterOid);
+                                this.notificationContext.UnSubscribe(socket, eventIdentity.emitterOid);
                                 return new CommandResponseNoValue(handle, NcMethodStatus.OK, null);
                             }
                             else
@@ -695,7 +724,7 @@ export class NcSubscriptionManager extends NcManager
                             return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'No event argument has been provided');
                     }
                 default:
-                    return super.InvokeMethod(sessionId, oid, methodId, args, handle);
+                    return super.InvokeMethod(socket, oid, methodId, args, handle);
             }
         }
 

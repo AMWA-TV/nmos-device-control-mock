@@ -1,5 +1,6 @@
 import { jsonIgnoreReplacer, jsonIgnore } from 'json-ignore';
 import { CommandResponseNoValue, CommandResponseWithValue } from '../NCProtocol/Commands';
+import { WebSocketConnection } from '../Server';
 import { INotificationContext } from '../SessionManager';
 
 export function myIdDecorator(identity: string) {
@@ -143,7 +144,7 @@ export abstract class NcObject
         return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
     }
 
-    public InvokeMethod(sessionId: number, oid: number, methodId: NcElementId, args: { [key: string]: any } | null, handle: number) : CommandResponseNoValue
+    public InvokeMethod(socket: WebSocketConnection, oid: number, methodId: NcElementId, args: { [key: string]: any } | null, handle: number) : CommandResponseNoValue
     {
         return new CommandResponseNoValue(handle, NcMethodStatus.BadMethodID, 'Method does not exist in object');
     }
