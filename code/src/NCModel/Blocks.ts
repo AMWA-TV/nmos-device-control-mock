@@ -1,11 +1,23 @@
 import { jsonIgnoreReplacer, jsonIgnore } from 'json-ignore';
 import { CommandMsg, CommandResponseNoValue, CommandResponseWithValue, ProtoCommand, ProtoCommandResponse } from '../NCProtocol/Commands';
 import { MessageType, ProtocolWrapper } from '../NCProtocol/Core';
-import { CommandResponseHeartbeat, ProtoHeartbeat, ProtoHeartbeatResponse } from '../NCProtocol/Heartbeats';
-import { CreateSessionResponse, ProtoCreateSession, ProtoCreateSessionResponse } from '../NCProtocol/Sessions';
 import { WebSocketConnection } from '../Server';
 import { INotificationContext } from '../SessionManager';
-import { myIdDecorator, NcBlockDescriptor, NcBlockMemberDescriptor, NcClassDescriptor, NcClassIdentity, NcElementId, NcEventDescriptor, NcLockState, NcMethodDescriptor, NcMethodStatus, NcObject, NcParameterDescriptor, NcPort, NcPropertyDescriptor, NcSignalPath, NcTouchpoint } from './Core';
+import {
+    myIdDecorator,
+    NcBlockDescriptor,
+    NcBlockMemberDescriptor,
+    NcClassDescriptor,
+    NcClassIdentity,
+    NcElementId, NcLockState,
+    NcMethodDescriptor,
+    NcMethodStatus,
+    NcObject,
+    NcParameterDescriptor,
+    NcPort,
+    NcPropertyDescriptor,
+    NcSignalPath,
+    NcTouchpoint } from './Core';
 
 export class NcBlock extends NcObject
 {
@@ -166,7 +178,7 @@ export class NcBlock extends NcObject
         return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
     }
 
-    public override InvokeMethod(sessionId: number, oid: number, methodId: NcElementId, args: { [key: string]: any; } | null, handle: number): CommandResponseNoValue 
+    public override InvokeMethod(socket: WebSocketConnection, oid: number, methodId: NcElementId, args: { [key: string]: any; } | null, handle: number): CommandResponseNoValue 
     {
         if(oid == this.oid)
         {
@@ -187,7 +199,7 @@ export class NcBlock extends NcObject
                     }
                     break;
                 default:
-                    return super.InvokeMethod(sessionId, oid, methodId, args, handle);
+                    return super.InvokeMethod(socket, oid, methodId, args, handle);
             }
         }
 
@@ -372,35 +384,10 @@ export class RootBlock extends NcBlock
 
         switch(message.messageType)
         {
-            case MessageType.CreateSession:
-            {
-                let msgCreateSession = JSON.parse(msg) as ProtoCreateSession;
-                let outcome = this.notificationContext.CreateSession(socket, msgCreateSession.messages[0].arguments['heartBeatTime']);
-                if(outcome[0] != 0)
-                {
-                    socket.send(new ProtoCreateSessionResponse([
-                        new CreateSessionResponse(msgCreateSession.messages[0].handle, NcMethodStatus.OK, outcome[0], null)
-                    ]).ToJson());
-                }
-                else
-                {
-                    socket.send(new ProtoCreateSessionResponse([
-                        new CreateSessionResponse(msgCreateSession.messages[0].handle, NcMethodStatus.OK, null, outcome[1])
-                    ]).ToJson());
-                }
-            }
-            break;
-
             case MessageType.Command:
             {
                 let msgCommand = JSON.parse(msg) as ProtoCommand;
-                socket.send(this.ProcessCommand(msgCommand).ToJson());
-            }
-            break;
-            case MessageType.Heartbeat:
-            {
-                let msgHeartbeat = JSON.parse(msg) as ProtoHeartbeat;
-                socket.send(this.ProcessHeartbeat(msgHeartbeat).ToJson());
+                socket.send(this.ProcessCommand(msgCommand, socket).ToJson());
             }
             break;
             default:
@@ -411,24 +398,19 @@ export class RootBlock extends NcBlock
         }
     }
 
-    public ProcessHeartbeat(command: ProtoHeartbeat) : ProtoHeartbeatResponse
+    public ProcessCommand(command: ProtoCommand, socket: WebSocketConnection) : ProtoCommandResponse
     {
-        return new ProtoHeartbeatResponse(command.sessionId, [ new CommandResponseHeartbeat(NcMethodStatus.OK, null) ]);
-    }
-
-    public ProcessCommand(command: ProtoCommand) : ProtoCommandResponse
-    {
-        let responses = new ProtoCommandResponse(command.sessionId, []);
+        let responses = new ProtoCommandResponse([]);
 
         for (var i = 0; i < command.messages.length; i++) {
             let msg = command.messages[i];
-            responses.AddCommandResponse(this.ProcessCommandMessage(msg, command.sessionId));
+            responses.AddCommandResponse(this.ProcessCommandMessage(msg, socket));
         }
 
         return responses;
     }
 
-    public ProcessCommandMessage(commandMsg: CommandMsg, sessionId: number) : CommandResponseNoValue
+    public ProcessCommandMessage(commandMsg: CommandMsg, socket: WebSocketConnection) : CommandResponseNoValue
     {
         if (this.IsGenericGetter(commandMsg.methodId))
         {
@@ -474,12 +456,12 @@ export class RootBlock extends NcBlock
         else
         {
             if(commandMsg.oid == this.oid)
-                return this.InvokeMethod(sessionId, commandMsg.oid, commandMsg.methodId, commandMsg.arguments, commandMsg.handle);
+                return this.InvokeMethod(socket, commandMsg.oid, commandMsg.methodId, commandMsg.arguments, commandMsg.handle);
             else if(this.memberObjects != null)
             {
                 let member = this.FindNestedMember(commandMsg.oid);
                 if(member)
-                    return member.InvokeMethod(sessionId, commandMsg.oid, commandMsg.methodId, commandMsg.arguments, commandMsg.handle);
+                    return member.InvokeMethod(socket, commandMsg.oid, commandMsg.methodId, commandMsg.arguments, commandMsg.handle);
                 else
                     return new CommandResponseNoValue(commandMsg.handle, NcMethodStatus.InvalidRequest, "OID could not be found");
             }

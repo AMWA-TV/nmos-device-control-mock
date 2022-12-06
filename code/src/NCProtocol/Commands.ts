@@ -1,6 +1,5 @@
 import { jsonIgnoreReplacer, jsonIgnore } from 'json-ignore';
 import { NcElementId, NcMethodStatus } from '../NCModel/Core';
-
 import { MessageType, ProtocolWrapper, ProtoMsg } from './Core';
 
 export class CommandMsg extends ProtoMsg
@@ -75,15 +74,11 @@ export class ProtoCommand extends ProtocolWrapper
 {
     public messages: CommandMsg[];
 
-    public sessionId: number;
-
     public constructor(
-        sessionId: number,
         messages: CommandMsg[])
     {
         super('1.0.0', MessageType.Command);
 
-        this.sessionId = sessionId;
         this.messages = messages;
     }
 
@@ -97,15 +92,11 @@ export class ProtoCommandResponse extends ProtocolWrapper
 {
     public messages: CommandResponseNoValue[];
 
-    public sessionId: number;
-
     public constructor(
-        sessionId: number,
         messages: CommandResponseNoValue[])
     {
         super('1.0.0', MessageType.CommandResponse);
 
-        this.sessionId = sessionId;
         this.messages = messages;
     }
 

@@ -1,7 +1,6 @@
 import exp from 'constants';
 import { jsonIgnoreReplacer, jsonIgnore } from 'json-ignore';
 import { BaseType, NcDatatypeDescriptor, NcDatatypeDescriptorStruct, NcElementId, NcFieldDescriptor, NcPropertyChangeType } from '../NCModel/Core';
-
 import { MessageType, ProtocolWrapper } from './Core';
 
 export class NcPropertyChangedEventData extends BaseType
@@ -73,17 +72,13 @@ export class NcNotification
 
 export class ProtoNotification extends ProtocolWrapper
 {
-    public sessionId: number;
-
     public messages: NcNotification[];
 
     public constructor(
-        sessionId: number,
         messages: NcNotification[])
     {
         super('1.0.0', MessageType.Notification);
 
-        this.sessionId = sessionId;
         this.messages = messages;
     }
 

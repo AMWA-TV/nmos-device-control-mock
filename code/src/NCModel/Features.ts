@@ -1,7 +1,26 @@
 import { jsonIgnoreReplacer, jsonIgnore } from 'json-ignore';
 import { CommandResponseNoValue, CommandResponseWithValue } from '../NCProtocol/Commands';
+import { WebSocketConnection } from '../Server';
 import { INotificationContext } from '../SessionManager';
-import { BaseType, myIdDecorator, NcClassDescriptor, NcDatatypeDescriptor, NcDatatypeDescriptorStruct, NcElementId, NcFieldDescriptor, NcLockState, NcMethodDescriptor, NcMethodStatus, NcObject, NcParameterConstraintNumber, NcParameterConstraintString, NcParameterDescriptor, NcPort, NcPropertyChangeType, NcPropertyDescriptor, NcTouchpoint } from './Core';
+import {
+    BaseType,
+    myIdDecorator,
+    NcClassDescriptor,
+    NcDatatypeDescriptor,
+    NcDatatypeDescriptorStruct,
+    NcElementId,
+    NcFieldDescriptor,
+    NcLockState,
+    NcMethodDescriptor,
+    NcMethodStatus,
+    NcObject,
+    NcParameterConstraintNumber,
+    NcParameterConstraintString,
+    NcParameterDescriptor,
+    NcPort,
+    NcPropertyChangeType,
+    NcPropertyDescriptor,
+    NcTouchpoint } from './Core';
 
 export abstract class NcWorker extends NcObject
 {
@@ -407,7 +426,7 @@ export class NcReceiverMonitor extends NcWorker
         return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
     }
 
-    public override InvokeMethod(sessionId: number, oid: number, methodId: NcElementId, args: { [key: string]: any; } | null, handle: number): CommandResponseNoValue 
+    public override InvokeMethod(socket: WebSocketConnection, oid: number, methodId: NcElementId, args: { [key: string]: any; } | null, handle: number): CommandResponseNoValue 
     {
         if(oid == this.oid)
         {
@@ -418,7 +437,7 @@ export class NcReceiverMonitor extends NcWorker
                 case '3m1':
                     return new CommandResponseWithValue(handle, NcMethodStatus.OK, new NcReceiverStatus(this.connectionStatus, this.payloadStatus), null);
                 default:
-                    return super.InvokeMethod(sessionId, oid, methodId, args, handle);
+                    return super.InvokeMethod(socket, oid, methodId, args, handle);
             }
         }
 
@@ -677,7 +696,7 @@ export class NcDemo extends NcWorker
         return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
     }
 
-    public override InvokeMethod(sessionId: number, oid: number, methodId: NcElementId, args: { [key: string]: any; } | null, handle: number): CommandResponseNoValue 
+    public override InvokeMethod(socket: WebSocketConnection, oid: number, methodId: NcElementId, args: { [key: string]: any; } | null, handle: number): CommandResponseNoValue 
     {
         if(oid == this.oid)
         {
@@ -1140,7 +1159,7 @@ export class NcDemo extends NcWorker
                             return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Invalid arguments provided');
                     }
                 default:
-                    return super.InvokeMethod(sessionId, oid, methodId, args, handle);
+                    return super.InvokeMethod(socket, oid, methodId, args, handle);
             }
         }
 

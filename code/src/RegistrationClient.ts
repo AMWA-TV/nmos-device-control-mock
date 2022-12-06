@@ -1,9 +1,8 @@
 import { TAI64 } from "tai64";
 
 import { jsonIgnoreReplacer, jsonIgnore } from 'json-ignore';
-
 import { Axios, AxiosResponse } from 'axios';
-import { NmosNode } from './NmosNode';
+
 const axios = require('axios').default as Axios;
 
 export class RegistrationClient

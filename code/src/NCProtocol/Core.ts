@@ -1,13 +1,9 @@
 import { jsonIgnoreReplacer, jsonIgnore } from 'json-ignore';
 
 export enum MessageType {
-    CreateSession = 0,
-    CreateSessionResponse = 1,
-    Command = 2,
-    CommandResponse = 3,
-    Heartbeat = 4,
-    HeartbeatResponse = 5,
-    Notification = 6,
+    Command = 0,
+    CommandResponse = 1,
+    Notification = 2,
 }
 
 export abstract class ProtocolWrapper
