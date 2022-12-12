@@ -41,12 +41,6 @@ export abstract class NcObject
     public userLabel: string;
 
     @myIdDecorator('1p8')
-    public lockable: boolean;
-
-    @myIdDecorator('1p9')
-    public lockState: NcLockState;
-
-    @myIdDecorator('1p10')
     public touchpoints: NcTouchpoint[] | null;
 
     public description: string;
@@ -57,8 +51,6 @@ export abstract class NcObject
         owner: number | null,
         role: string,
         userLabel: string,
-        lockable: boolean,
-        lockState: NcLockState,
         touchpoints: NcTouchpoint[] | null,
         description: string,
         notificationContext: INotificationContext)
@@ -68,8 +60,6 @@ export abstract class NcObject
         this.owner = owner;
         this.role = role;
         this.userLabel = userLabel;
-        this.lockable = lockable;
-        this.lockState = lockState;
         this.touchpoints = touchpoints;
         this.description = description;
         this.notificationContext = notificationContext;
@@ -99,13 +89,9 @@ export abstract class NcObject
                 case '1p7':
                     return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.userLabel, null);
                 case '1p8':
-                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.lockable, null);
-                case '1p9':
-                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.lockState, null);
-                case '1p10':
                     return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.touchpoints, null);
                 default:
-                    return new CommandResponseNoValue(handle, NcMethodStatus.ProcessingFailed, 'Property does not exist in object');
+                    return new CommandResponseNoValue(handle, NcMethodStatus.PropertyNotImplemented, 'Property does not exist in object');
             }
         }
 
@@ -127,17 +113,15 @@ export abstract class NcObject
                 case '1p4':
                 case '1p5':
                 case '1p6':
-                    return new CommandResponseNoValue(handle, NcMethodStatus.ProcessingFailed, 'Property is readonly');
+                    return new CommandResponseNoValue(handle, NcMethodStatus.Readonly, 'Property is readonly');
                 case '1p7':
                     this.userLabel = value;
                     this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.userLabel, null);
                     return new CommandResponseNoValue(handle, NcMethodStatus.OK, null);
                 case '1p8':
-                case '1p9':
-                case '1p10':
-                    return new CommandResponseNoValue(handle, NcMethodStatus.ProcessingFailed, 'Property is readonly');
+                    return new CommandResponseNoValue(handle, NcMethodStatus.Readonly, 'Property is readonly');
                 default:
-                    return new CommandResponseNoValue(handle, NcMethodStatus.ProcessingFailed, 'Property does not exist in object');
+                    return new CommandResponseNoValue(handle, NcMethodStatus.PropertyNotImplemented, 'Property does not exist in object');
             }
         }
 
@@ -146,7 +130,7 @@ export abstract class NcObject
 
     public InvokeMethod(socket: WebSocketConnection, oid: number, methodId: NcElementId, args: { [key: string]: any } | null, handle: number) : CommandResponseNoValue
     {
-        return new CommandResponseNoValue(handle, NcMethodStatus.BadMethodID, 'Method does not exist in object');
+        return new CommandResponseNoValue(handle, NcMethodStatus.MethodNotImplemented, 'Method does not exist in object');
     }
 
     public GenerateMemberDescriptor() : NcBlockMemberDescriptor
@@ -165,9 +149,7 @@ export abstract class NcObject
                 new NcPropertyDescriptor(new NcElementId(1, 5), "owner", "NcOid", true, true, true, false, null, "OID of containing block. Can only ever be null for the root block" ),
                 new NcPropertyDescriptor(new NcElementId(1, 6), "role", "NcName", true, true, false, false, null, "role of obj in containing block"),
                 new NcPropertyDescriptor(new NcElementId(1, 7), "userLabel", "NcString", false, true, false, false, null, "Scribble strip"),
-                new NcPropertyDescriptor(new NcElementId(1, 8), "lockable", "NcBoolean", true, true, false, false, null, "Flag signalling if the object can be locked"),
-                new NcPropertyDescriptor(new NcElementId(1, 9), "lockState", "NcLockState", false, false, false, false, null, "Enum property exposing the lock state"),
-                new NcPropertyDescriptor(new NcElementId(1, 10), "touchpoints", "NcTouchpoint", true, true, true, true, null, "Touchpoints to other contexts"),
+                new NcPropertyDescriptor(new NcElementId(1, 8), "touchpoints", "NcTouchpoint", true, true, true, true, null, "Touchpoints to other contexts"),
             ],
             [ 
                 new NcMethodDescriptor(new NcElementId(1, 1), "Get", "NcMethodResultPropertyValue", [
@@ -231,23 +213,22 @@ export class NcElementId extends BaseType
 
 export enum NcMethodStatus
 {
-    OK = 0,
-    ProtocolVersionError = 1,
-    DeviceError = 2,
-    Readonly = 3,
-    Locked = 4,
-    BadCommandFormat = 5,
-    BadOid = 6,
-    ParameterError = 7,
-    ParameterOutOfRange = 8,
-    NotImplemented = 9,
-    InvalidRequest = 10,
-    ProcessingFailed = 11,
-    BadMethodID = 12,
-    PartiallySucceeded = 13,
-    Timeout = 14,
-    BufferOverflow = 15,
-    OmittedProperty = 16
+    OK = 200,
+    BadCommandFormat = 400,
+    Unauthorized = 401,
+    BadOid = 404,
+    Readonly = 405,
+    InvalidRequest = 406,
+    Conflict = 409,
+    BufferOverflow = 413,
+    ParameterError = 417,
+    Locked = 423,
+    DeviceError = 500,
+    MethodNotImplemented = 501,
+    PropertyNotImplemented = 502,
+    NotReady = 503,
+    Timeout = 504,
+    ProtocolVersionError = 505
 }
 
 export enum NcPropertyChangeType
@@ -256,13 +237,6 @@ export enum NcPropertyChangeType
     SequenceItemAdded = 1,
     SequenceItemChanged = 2,
     SequenceItemRemoved = 3
-}
-
-export enum NcLockState
-{
-    NoLock = 0,
-    LockNoWrite = 1,
-    LockNoReadWrite = 2
 }
 
 export enum NcIoDirection

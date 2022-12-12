@@ -19,7 +19,6 @@ import {
     NcEnumItemDescriptor,
     NcEvent,
     NcFieldDescriptor,
-    NcLockState,
     NcMethodDescriptor,
     NcMethodStatus,
     NcObject,
@@ -43,13 +42,11 @@ export abstract class NcManager extends NcObject
         owner: number | null,
         role: string,
         userLabel: string,
-        lockable: boolean,
-        lockState: NcLockState,
         touchpoints: NcTouchpoint[] | null,
         description: string,
         notificationContext: INotificationContext)
     {
-        super(oid, constantOid, owner, role, userLabel, lockable, lockState, touchpoints, description, notificationContext);
+        super(oid, constantOid, owner, role, userLabel, touchpoints, description, notificationContext);
     }
 }
 
@@ -214,13 +211,11 @@ export class NcDeviceManager extends NcManager
         owner: number | null,
         role: string,
         userLabel: string,
-        lockable: boolean,
-        lockState: NcLockState,
         touchpoints: NcTouchpoint[] | null,
         description: string,
         notificationContext: INotificationContext)
     {
-        super(oid, constantOid, owner, role, userLabel, lockable, lockState, touchpoints, description, notificationContext);
+        super(oid, constantOid, owner, role, userLabel, touchpoints, description, notificationContext);
 
         this.manufacturer = new NcManufacturer("Mock manufacturer", "https://specs.amwa.tv/nmos/");
         this.product = new NcProduct("Mock device", "mock-001", "1.0.0", "Mock brand", "2dcd15f6-aecc-4f01-bf66-b1044c677ef4", "Mock device for testing and prototyping");
@@ -286,7 +281,7 @@ export class NcDeviceManager extends NcManager
                 case '3p8':
                 case '3p9':
                 case '3p10':
-                    return new CommandResponseNoValue(handle, NcMethodStatus.ProcessingFailed, 'Property is readonly');
+                    return new CommandResponseNoValue(handle, NcMethodStatus.Readonly, 'Property is readonly');
                 case '3p5':
                     this.userInventoryCode = value;
                     this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.userInventoryCode, null);
@@ -347,13 +342,11 @@ export class NcClassManager extends NcManager
         owner: number | null,
         role: string,
         userLabel: string,
-        lockable: boolean,
-        lockState: NcLockState,
         touchpoints: NcTouchpoint[] | null,
         description: string,
         notificationContext: INotificationContext)
     {
-        super(oid, constantOid, owner, role, userLabel, lockable, lockState, touchpoints, description, notificationContext);
+        super(oid, constantOid, owner, role, userLabel, touchpoints, description, notificationContext);
     }
 
     public override InvokeMethod(socket: WebSocketConnection, oid: number, methodId: NcElementId, args: { [key: string]: any; } | null, handle: number): CommandResponseNoValue 
@@ -674,13 +667,11 @@ export class NcSubscriptionManager extends NcManager
         owner: number | null,
         role: string,
         userLabel: string,
-        lockable: boolean,
-        lockState: NcLockState,
         touchpoints: NcTouchpoint[] | null,
         description: string,
         notificationContext: INotificationContext)
     {
-        super(oid, constantOid, owner, role, userLabel, lockable, lockState, touchpoints, description, notificationContext);
+        super(oid, constantOid, owner, role, userLabel, touchpoints, description, notificationContext);
     }
 
     public override InvokeMethod(socket: WebSocketConnection, oid: number, methodId: NcElementId, args: { [key: string]: any; } | null, handle: number): CommandResponseNoValue 

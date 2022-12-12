@@ -10,7 +10,6 @@ import {
     NcDatatypeDescriptorStruct,
     NcElementId,
     NcFieldDescriptor,
-    NcLockState,
     NcMethodDescriptor,
     NcMethodStatus,
     NcObject,
@@ -33,14 +32,12 @@ export abstract class NcWorker extends NcObject
         owner: number | null,
         role: string,
         userLabel: string,
-        lockable: boolean,
-        lockState: NcLockState,
         touchpoints: NcTouchpoint[],
         enabled: boolean,
         description: string,
         notificationContext: INotificationContext)
     {
-        super(oid, constantOid, owner, role, userLabel, lockable, lockState, touchpoints, description, notificationContext);
+        super(oid, constantOid, owner, role, userLabel, touchpoints, description, notificationContext);
 
         this.enabled = enabled;
     }
@@ -74,7 +71,7 @@ export abstract class NcWorker extends NcObject
             switch(key)
             {
                 case '2p1':
-                    return new CommandResponseNoValue(handle, NcMethodStatus.ProcessingFailed, 'Property is readonly');
+                    return new CommandResponseNoValue(handle, NcMethodStatus.Readonly, 'Property is readonly');
                 default:
                     return super.Set(oid, id, value, handle);
             }
@@ -98,8 +95,6 @@ export abstract class NcSignalWorker extends NcWorker
         owner: number | null,
         role: string,
         userLabel: string,
-        lockable: boolean,
-        lockState: NcLockState,
         touchpoints: NcTouchpoint[],
         enabled: boolean,
         ports: NcPort[] | null,
@@ -107,7 +102,7 @@ export abstract class NcSignalWorker extends NcWorker
         description: string,
         notificationContext: INotificationContext)
     {
-        super(oid, constantOid, owner, role, userLabel, lockable, lockState, touchpoints, enabled, description, notificationContext);
+        super(oid, constantOid, owner, role, userLabel, touchpoints, enabled, description, notificationContext);
 
         this.ports = ports;
         this.latency = latency;
@@ -145,7 +140,7 @@ export abstract class NcSignalWorker extends NcWorker
             {
                 case '3p1':
                 case '3p2':
-                    return new CommandResponseNoValue(handle, NcMethodStatus.ProcessingFailed, 'Property is readonly');
+                    return new CommandResponseNoValue(handle, NcMethodStatus.Readonly, 'Property is readonly');
                 default:
                     return super.Set(oid, id, value, handle);
             }
@@ -163,8 +158,6 @@ export abstract class NcActuator extends NcSignalWorker
         owner: number | null,
         role: string,
         userLabel: string,
-        lockable: boolean,
-        lockState: NcLockState,
         touchpoints: NcTouchpoint[],
         enabled: boolean,
         ports: NcPort[] | null,
@@ -172,7 +165,7 @@ export abstract class NcActuator extends NcSignalWorker
         description: string,
         notificationContext: INotificationContext)
     {
-        super(oid, constantOid, owner, role, userLabel, lockable, lockState, touchpoints, enabled, ports, latency, description, notificationContext);
+        super(oid, constantOid, owner, role, userLabel, touchpoints, enabled, ports, latency, description, notificationContext);
     }
 }
 
@@ -190,8 +183,6 @@ export class NcGain extends NcActuator
         owner: number | null,
         role: string,
         userLabel: string,
-        lockable: boolean,
-        lockState: NcLockState,
         touchpoints: NcTouchpoint[],
         enabled: boolean,
         ports: NcPort[] | null,
@@ -200,7 +191,7 @@ export class NcGain extends NcActuator
         description: string,
         notificationContext: INotificationContext)
     {
-        super(oid, constantOid, owner, role, userLabel, lockable, lockState, touchpoints, enabled, ports, latency, description, notificationContext);
+        super(oid, constantOid, owner, role, userLabel, touchpoints, enabled, ports, latency, description, notificationContext);
 
         this.setPoint = setPoint;
     }
@@ -339,14 +330,12 @@ export class NcReceiverMonitor extends NcWorker
         owner: number | null,
         role: string,
         userLabel: string,
-        lockable: boolean,
-        lockState: NcLockState,
         touchpoints: NcTouchpoint[],
         enabled: boolean,
         description: string,
         notificationContext: INotificationContext)
     {
-        super(oid, constantOid, owner, role, userLabel, lockable, lockState, touchpoints, enabled, description, notificationContext);
+        super(oid, constantOid, owner, role, userLabel, touchpoints, enabled, description, notificationContext);
 
         this.connectionStatus = NcConnectionStatus.Undefined;
         this.connectionStatusMessage = null;
@@ -417,7 +406,7 @@ export class NcReceiverMonitor extends NcWorker
                 case '3p2':
                 case '3p3':
                 case '3p4':
-                    return new CommandResponseNoValue(handle, NcMethodStatus.ProcessingFailed, 'Property is readonly');
+                    return new CommandResponseNoValue(handle, NcMethodStatus.Readonly, 'Property is readonly');
                 default:
                     return super.Set(oid, id, value, handle);
             }
@@ -568,14 +557,12 @@ export class NcDemo extends NcWorker
         owner: number | null,
         role: string,
         userLabel: string,
-        lockable: boolean,
-        lockState: NcLockState,
         touchpoints: NcTouchpoint[],
         enabled: boolean,
         description: string,
         notificationContext: INotificationContext)
     {
-        super(oid, constantOid, owner, role, userLabel, lockable, lockState, touchpoints, enabled, description, notificationContext);
+        super(oid, constantOid, owner, role, userLabel, touchpoints, enabled, description, notificationContext);
 
         this.enumProperty = NcDemoEnum.Undefined;
         this.stringProperty = "test";

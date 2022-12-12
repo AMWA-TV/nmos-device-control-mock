@@ -13,7 +13,7 @@ import { NmosReceiverActiveRtp } from './NmosReceiverActiveRtp';
 import { SessionManager } from './SessionManager';
 import { NcBlock, RootBlock } from './NCModel/Blocks';
 import { NcClassManager, NcDeviceManager, NcSubscriptionManager } from './NCModel/Managers';
-import { NcIoDirection, NcLockState, NcPort, NcPortReference, NcSignalPath, NcTouchpointNmos, NcTouchpointResourceNmos } from './NCModel/Core';
+import { NcIoDirection, NcPort, NcPortReference, NcSignalPath, NcTouchpointNmos, NcTouchpointResourceNmos } from './NCModel/Core';
 import { NcDemo, NcGain, NcReceiverMonitor } from './NCModel/Features';
 
 export interface WebSocketConnection extends WebSocket {
@@ -65,8 +65,6 @@ try
         1,
         'DeviceManager',
         'Device manager',
-        false,
-        NcLockState.NoLock,
         null,
         "The device manager offers information about the product this device is representing",
         sessionManager);
@@ -77,8 +75,6 @@ try
         1,
         'ClassManager',
         'Class manager',
-        false,
-        NcLockState.NoLock,
         null,
         "The class manager offers access to control class and data type descriptors",
         sessionManager);
@@ -89,8 +85,6 @@ try
         1,
         'SubscriptionManager',
         'Subscription manager',
-        false,
-        NcLockState.NoLock,
         null,
         "The subscription manager offers the ability to subscribe to events on particular objects and properties",
         sessionManager);
@@ -101,8 +95,6 @@ try
         1,
         'ReceiverMonitor_01',
         'Receiver monitor 01',
-        false,
-        NcLockState.NoLock,
         [ new NcTouchpointNmos('x-nmos', new NcTouchpointResourceNmos('receiver', myVideoReceiver.id)) ],
         true,
         "Receiver monitor worker",
@@ -116,8 +108,6 @@ try
         1,
         'DemoClass',
         'Demo class',
-        false,
-        NcLockState.NoLock,
         [],
         true,
         "Demo control class",
@@ -130,8 +120,6 @@ try
         31,
         'channel-gain',
         'Channel gain',
-        false,
-        NcLockState.NoLock,
         null,
         true,
         null,
@@ -141,11 +129,11 @@ try
         null,
         false,
         [
-            new NcGain(22, true, 21, "left-gain", "Left gain", false, NcLockState.NoLock, [], true, [
+            new NcGain(22, true, 21, "left-gain", "Left gain", [], true, [
                 new NcPort('input_1', NcIoDirection.Input, null),
                 new NcPort('output_1', NcIoDirection.Output, null),
             ], null, 0, "Left channel gain", sessionManager),
-            new NcGain(23, true, 21, "right-gain", "Right gain", false, NcLockState.NoLock, [], true, [
+            new NcGain(23, true, 21, "right-gain", "Right gain", [], true, [
                 new NcPort('input_1', NcIoDirection.Input, null),
                 new NcPort('output_1', NcIoDirection.Output, null),
             ], null, 0, "Right channel gain", sessionManager)
@@ -172,8 +160,6 @@ try
             1,
             'stereo-gain',
             'Stereo gain',
-            false,
-            NcLockState.NoLock,
             null,
             true,
             null,
@@ -184,7 +170,7 @@ try
             false,
             [
                 channelGainBlock,
-                new NcGain(24, true, 31, "master-gain", "Master gain", false, NcLockState.NoLock, [], true, [
+                new NcGain(24, true, 31, "master-gain", "Master gain", [], true, [
                     new NcPort('input_1', NcIoDirection.Input, null),
                     new NcPort('input_2', NcIoDirection.Input, null),
                     new NcPort('output_1', NcIoDirection.Output, null),
@@ -214,8 +200,6 @@ try
         null,
         'root',
         'Root',
-        true,
-        NcLockState.NoLock,
         null,
         true,
         "base-root",
