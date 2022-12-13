@@ -9,7 +9,7 @@ import {
     NcBlockMemberDescriptor,
     NcClassDescriptor,
     NcClassIdentity,
-    NcElementId, NcLockState,
+    NcElementId,
     NcMethodDescriptor,
     NcMethodStatus,
     NcObject,
@@ -72,8 +72,6 @@ export class NcBlock extends NcObject
         owner: number | null,
         role: string,
         userLabel: string,
-        lockable: boolean,
-        lockState: NcLockState,
         touchpoints: NcTouchpoint[] | null,
         enabled: boolean,
         specId: string | null,
@@ -88,7 +86,7 @@ export class NcBlock extends NcObject
         description: string,
         notificationContext: INotificationContext)
     {
-        super(oid, constantOid, owner, role, userLabel, lockable, lockState, touchpoints, description, notificationContext);
+        super(oid, constantOid, owner, role, userLabel, touchpoints, description, notificationContext);
 
         this.isRoot = isRoot;
         this.enabled = enabled;
@@ -169,7 +167,7 @@ export class NcBlock extends NcObject
                 case '2p10':
                 case '2p11':
                 case '2p12':
-                    return new CommandResponseNoValue(handle, NcMethodStatus.ProcessingFailed, 'Property is readonly');
+                    return new CommandResponseNoValue(handle, NcMethodStatus.Readonly, 'Property is readonly');
                 default:
                     return super.Set(oid, id, value, handle);
             }
@@ -338,8 +336,6 @@ export class RootBlock extends NcBlock
         owner: number | null,
         role: string,
         userLabel: string,
-        lockable: boolean,
-        lockState: NcLockState,
         touchpoints: NcTouchpoint[] | null,
         enabled: boolean,
         specId: string | null,
@@ -361,8 +357,6 @@ export class RootBlock extends NcBlock
             owner,
             role,
             userLabel,
-            lockable,
-            lockState,
             touchpoints,
             enabled,
             specId,
