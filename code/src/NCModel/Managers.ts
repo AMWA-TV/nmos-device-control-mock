@@ -620,7 +620,7 @@ export class NcClassManager extends NcManager
 
     private GetTypeDescriptor(name: string) : NcDatatypeDescriptor
     {
-        return this.GenerateTypeDescriptors[name];
+        return this.dataTypesRegister[name];
     }
 }
 
