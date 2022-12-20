@@ -1177,15 +1177,15 @@ export class NcDemo extends NcWorker
                 new NcPropertyDescriptor(new NcElementId(3, 13), "objectSequence", "DemoDataType", false, false, false, true, null, "Demo object sequence property")
             ],
             [
-                new NcMethodDescriptor(new NcElementId(3, 1), "MethodNoArgs", "NcMethodResultClassDescriptors", [], "Demo method with no arguments"),
-                new NcMethodDescriptor(new NcElementId(3, 2), "MethodSimpleArgs", "NcMethodResultClassDescriptors", [
+                new NcMethodDescriptor(new NcElementId(3, 1), "MethodNoArgs", "NcMethodResult", [], "Demo method with no arguments"),
+                new NcMethodDescriptor(new NcElementId(3, 2), "MethodSimpleArgs", "NcMethodResult", [
                     new NcParameterDescriptor("enumArg", "NcDemoEnum", false, false, null, "Enum demo argument"),
                     new NcParameterDescriptor("stringArg", "NcString", false, false, new NcParameterConstraintString(10, null), "String demo argument"),
                     new NcParameterDescriptor("numberArg", "NcUint64", false, false, new NcParameterConstraintNumber(1000, 0, 1),
                     "Number demo argument"),
                     new NcParameterDescriptor("booleanArg", "NcBoolean", false, false, null, "Boolean demo argument")
                 ], "Demo method with simple arguments"),
-                new NcMethodDescriptor(new NcElementId(3, 3), "MethodObjectArg", "NcMethodResultClassDescriptors", [
+                new NcMethodDescriptor(new NcElementId(3, 3), "MethodObjectArg", "NcMethodResult", [
                     new NcParameterDescriptor("objArg", "DemoDataType", false, false, null, "Object demo argument")
                 ], "Demo method with object argument")
             ],
