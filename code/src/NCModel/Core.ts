@@ -462,35 +462,6 @@ export class NcClassIdentity extends BaseType
     }
 }
 
-export class NcEvent extends BaseType
-{
-    public emitterOid: number;
-    public eventId: NcElementId;
-
-    constructor(
-        emitterOid: number,
-        eventId: NcElementId) 
-    {
-        super();
-
-        this.emitterOid = emitterOid;
-        this.eventId = eventId;
-    }
-
-    public static override GetTypeDescriptor(): NcDatatypeDescriptor
-    {
-        return new NcDatatypeDescriptorStruct("NcEvent", [
-            new NcFieldDescriptor("emitterOid", "NcOid", false, false, null, "Emitter object id"),
-            new NcFieldDescriptor("eventId", "NcElementId", false, false, null, "Event id")
-        ], null, null, "Event identity information");
-    }
-
-    public ToJson()
-    {
-        return JSON.stringify(this, jsonIgnoreReplacer);
-    }
-}
-
 export abstract class NcDescriptor
 {
     public description: string;

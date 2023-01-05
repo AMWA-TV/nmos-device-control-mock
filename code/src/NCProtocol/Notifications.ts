@@ -43,29 +43,17 @@ export class NcPropertyChangedEventData extends BaseType
     }
 }
 
-export enum NcNotificationType
-{
-    Event = 0,
-    SubscriptionEnd = 1
-}
-
 export class NcNotification
 {
-    public type: NcNotificationType = NcNotificationType.Event;
-
     public oid: number;
-
-    public eventId: NcElementId;
 
     public eventData: NcPropertyChangedEventData;
 
     constructor(
         oid: number,
-        eventId: NcElementId,
         eventData: NcPropertyChangedEventData)
     {
         this.oid = oid;
-        this.eventId = eventId;
         this.eventData = eventData;
     }
 }

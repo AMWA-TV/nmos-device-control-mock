@@ -17,7 +17,6 @@ import {
     NcDatatypeDescriptorTypeDef,
     NcElementId,
     NcEnumItemDescriptor,
-    NcEvent,
     NcFieldDescriptor,
     NcMethodDescriptor,
     NcMethodStatus,
@@ -130,7 +129,7 @@ export class NcProduct extends BaseType
 export class NcDeviceOperationalState extends BaseType
 {
     public generic: NcDeviceGenericState;
-    public deviceSpecificDetails: null;
+    public deviceSpecificDetails: string | null;
 
     constructor(
         generic: NcDeviceGenericState)
@@ -145,7 +144,7 @@ export class NcDeviceOperationalState extends BaseType
     {
         return new NcDatatypeDescriptorStruct("NcDeviceOperationalState", [
             new NcFieldDescriptor("generic", "NcDeviceGenericState", false, false, null, "Generic operational state"),
-            new NcFieldDescriptor("deviceSpecificDetails", "NcBlob", true, false, null, "Specific device details")
+            new NcFieldDescriptor("deviceSpecificDetails", "NcString", true, false, null, "Specific device details")
         ], null, null, "Device operational state");
     }
 
@@ -475,24 +474,20 @@ export class NcClassManager extends NcManager
     {
         let register = {
             'NcBoolean': new NcDatatypeDescriptorPrimitive("NcBoolean", null, "Boolean primitive type"),
-            'NcInt8': new NcDatatypeDescriptorPrimitive("NcInt8", null, "byte"),
             'NcInt16': new NcDatatypeDescriptorPrimitive("NcInt16", null, "short"),
             'NcInt32': new NcDatatypeDescriptorPrimitive("NcInt32", null, "long"),
             'NcInt64': new NcDatatypeDescriptorPrimitive("NcInt64", null, "longlong"),
-            'NcUint8': new NcDatatypeDescriptorPrimitive("NcUint8", null, "octet"),
             'NcUint16': new NcDatatypeDescriptorPrimitive("NcUint16", null, "unsignedshort"),
             'NcUint32': new NcDatatypeDescriptorPrimitive("NcUint32", null, "unsignedlong"),
             'NcUint64': new NcDatatypeDescriptorPrimitive("NcUint64", null, "unsignedlonglong"),
             'NcFloat32': new NcDatatypeDescriptorPrimitive("NcFloat32", null, "unrestrictedfloat"),
             'NcFloat64': new NcDatatypeDescriptorPrimitive("NcFloat64", null, "unrestricteddouble"),
             'NcString': new NcDatatypeDescriptorPrimitive("NcString", null, "UTF-8 string"),
-            'NcBlob': new NcDatatypeDescriptorPrimitive("NcBlob", null, "blob"),
-            'NcBlobFixedLen': new NcDatatypeDescriptorPrimitive("NcBlobFixedLen", null, "fixed length blob"),
             'NcClassId': new NcDatatypeDescriptorTypeDef("NcClassId", "NcClassIdField", true, null, "Sequence of class ID fields."),
             'NcClassIdField': new NcDatatypeDescriptorTypeDef("NcClassIdField", "NcInt32", false, null, "Class ID field. Either a definition index or an authority key."),
             'NcVersionCode': new NcDatatypeDescriptorTypeDef("NcVersionCode", "NcString", false, null, "Version code in semantic versioning format"),
             'NcUri': new NcDatatypeDescriptorTypeDef("NcUri", "NcString", false, null, "Uniform resource identifier"),
-            'NcOrganizationId': new NcDatatypeDescriptorTypeDef("NcOrganizationId", "NcBlobFixedLen", true, null, "Unique 24-bit organization ID"),
+            'NcOrganizationId': new NcDatatypeDescriptorTypeDef("NcOrganizationId", "NcInt32", true, null, "Unique 24-bit organization ID"),
             'NcManufacturer': NcManufacturer.GetTypeDescriptor(),
             'NcProduct': NcProduct.GetTypeDescriptor(),
             'NcDeviceGenericState': new NcDatatypeDescriptorEnum("NcDeviceGenericState", [
@@ -560,7 +555,6 @@ export class NcClassManager extends NcManager
                 new NcFieldDescriptor("value", "NcId32", false, false, null, "NcId32 method result value")
             ], "NcMethodResult", null, "Method result containing an NcId32 value"),
             'NcClassIdentity': NcClassIdentity.GetTypeDescriptor(),
-            'NcEvent': NcEvent.GetTypeDescriptor(),
             'NcBlockMemberDescriptor': NcBlockMemberDescriptor.GetTypeDescriptor(),
             'NcMethodResultBlockMemberDescriptors': new NcDatatypeDescriptorStruct("NcMethodResultBlockMemberDescriptors", [
                 new NcFieldDescriptor("status", "NcMethodStatus", false, false, null, "Status for the invoked method"),
@@ -651,35 +645,35 @@ export class NcSubscriptionManager extends NcManager
             {
                 case '3m1':
                     {
-                        if(args != null && 'event' in args)
+                        if(args != null && 'oid' in args)
                         {
-                            let eventIdentity = args['event'] as NcEvent;
-                            if(eventIdentity)
+                            let emitterOid = args['oid'] as number;
+                            if(emitterOid)
                             {
-                                this.notificationContext.Subscribe(socket, eventIdentity.emitterOid);
+                                this.notificationContext.Subscribe(socket, emitterOid);
                                 return new CommandResponseNoValue(handle, NcMethodStatus.OK, null);
                             }
                             else
-                                return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Event argument is invalid');
+                                return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Oid argument is invalid');
                         }
                         else
-                            return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'No event argument has been provided');
+                            return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'No oid argument has been provided');
                     }
                 case '3m2':
                     {
-                        if(args != null && 'event' in args)
+                        if(args != null && 'oid' in args)
                         {
-                            let eventIdentity = args['event'] as NcEvent;
-                            if(eventIdentity)
+                            let emitterOid = args['oid'] as number;
+                            if(emitterOid)
                             {
-                                this.notificationContext.UnSubscribe(socket, eventIdentity.emitterOid);
+                                this.notificationContext.UnSubscribe(socket, emitterOid);
                                 return new CommandResponseNoValue(handle, NcMethodStatus.OK, null);
                             }
                             else
-                                return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Event argument is invalid');
+                                return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Oid argument is invalid');
                         }
                         else
-                            return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'No event argument has been provided');
+                            return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'No oid argument has been provided');
                     }
                 default:
                     return super.InvokeMethod(socket, oid, methodId, args, handle);
@@ -697,11 +691,11 @@ export class NcSubscriptionManager extends NcManager
             [],
             [ 
                 new NcMethodDescriptor(new NcElementId(3, 1), "AddSubscription", "NcMethodResult", [
-                    new NcParameterDescriptor("event", "NcEvent", false, false, null, "Event identifying information")
-                ], "When used to subscribe to the property changed event it will subscribe to changes from all of the properties"),
+                    new NcParameterDescriptor("oid", "NcOid", false, false, null, "Emitter oid")
+                ], "Will subscribe to changes from all of the properties on the specified oid"),
                 new NcMethodDescriptor(new NcElementId(3, 2), "RemoveSubscription", "NcMethodResult", [
-                    new NcParameterDescriptor("event", "NcEvent", false, false, null, "Event identifying information")
-                ], "When used to unsubscribe to the property changed event it will unsubscribe to changes from all of the properties")
+                    new NcParameterDescriptor("oid", "NcOid", false, false, null, "Emitter oid")
+                ], "Will unsubscribe to changes from all of the properties on the specified oid")
             ],
             []
         );
