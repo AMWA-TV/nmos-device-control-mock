@@ -517,11 +517,6 @@ export class NcClassManager extends NcManager
                 new NcEnumItemDescriptor("SequenceItemRemoved", 3, "Sequence item removed")
             ], null, "Type of property change"),
             'NcPropertyChangedEventData': NcPropertyChangedEventData.GetTypeDescriptor(),
-            'NcLockState': new NcDatatypeDescriptorEnum("NcLockState", [
-                new NcEnumItemDescriptor("MoLock", 0, "Not locked"),
-                new NcEnumItemDescriptor("NockNoWrite", 1, "Locked for write operations"),
-                new NcEnumItemDescriptor("LockNoReadWrite", 2, "Locked for both read and write operations")
-            ], null, "Lock state enum data type"),
             'NcMethodStatus': new NcDatatypeDescriptorEnum("NcMethodStatus", [
                 new NcEnumItemDescriptor("Ok", 200, "Method call was successful"),
                 new NcEnumItemDescriptor("BadCommandFormat", 400, "Badly-formed command"),
