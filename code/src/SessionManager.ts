@@ -48,7 +48,7 @@ export class SessionManager implements INotificationContext
             {
                 session.socket.send(
                     new ProtoNotification(
-                        [ new NcNotification(oid, new NcElementId(1, 1), new NcPropertyChangedEventData(propertyId, changeType, value, sequenceItemIndex)) ]
+                        [ new NcNotification(oid, new NcPropertyChangedEventData(propertyId, changeType, value, sequenceItemIndex)) ]
                     ).ToJson());
             }
         }
