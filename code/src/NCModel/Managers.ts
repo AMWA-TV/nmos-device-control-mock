@@ -31,7 +31,7 @@ import {
     NcTouchpointNmos,
     NcTouchpointResource,
     NcTouchpointResourceNmos } from './Core';
-import { DemoDataType, NcDemo, NcGain, NcReceiverMonitor, NcReceiverStatus } from './Features';
+import { DemoDataType, NcActuator, NcDemo, NcGain, NcIdentBeacon, NcReceiverMonitor, NcReceiverStatus, NcSignalWorker, NcWorker } from './Features';
 
 export abstract class NcManager extends NcObject
 {
@@ -46,6 +46,19 @@ export abstract class NcManager extends NcObject
         notificationContext: INotificationContext)
     {
         super(oid, constantOid, owner, role, userLabel, touchpoints, description, notificationContext);
+    }
+
+    public static override GetClassDescriptor(): NcClassDescriptor
+    {
+        let baseDescriptor = super.GetClassDescriptor();
+
+        let currentClassDescriptor = new NcClassDescriptor("NcManager class descriptor", [], [], []);
+
+        currentClassDescriptor.properties = currentClassDescriptor.properties.concat(baseDescriptor.properties);
+        currentClassDescriptor.methods = currentClassDescriptor.methods.concat(baseDescriptor.methods);
+        currentClassDescriptor.events = currentClassDescriptor.events.concat(baseDescriptor.events);
+
+        return currentClassDescriptor;
     }
 }
 
@@ -458,12 +471,18 @@ export class NcClassManager extends NcManager
     private GenerateClassDescriptors() : { [key: string]: NcClassDescriptor }
     {
         let register = {
+            '1': NcObject.GetClassDescriptor(),
             '1.1': NcBlock.GetClassDescriptor(),
+            '1.2': NcWorker.GetClassDescriptor(),
+            '1.2.1': NcSignalWorker.GetClassDescriptor(),
+            '1.2.1.1': NcActuator.GetClassDescriptor(),
+            '1.3': NcManager.GetClassDescriptor(),
             '1.3.1': NcDeviceManager.GetClassDescriptor(),
             '1.3.2': NcClassManager.GetClassDescriptor(),
             '1.3.4': NcSubscriptionManager.GetClassDescriptor(),
             '1.2.0.1': NcDemo.GetClassDescriptor(),
-            '1.2.2': NcReceiverMonitor.GetClassDescriptor(),
+            '1.2.2': NcIdentBeacon.GetClassDescriptor(),
+            '1.2.3': NcReceiverMonitor.GetClassDescriptor(),
             '1.2.1.1.1': NcGain.GetClassDescriptor()
         };
 
