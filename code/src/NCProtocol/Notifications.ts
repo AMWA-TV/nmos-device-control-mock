@@ -60,14 +60,14 @@ export class NcNotification
 
 export class ProtoNotification extends ProtocolWrapper
 {
-    public messages: NcNotification[];
+    public notifications: NcNotification[];
 
     public constructor(
-        messages: NcNotification[])
+        notifications: NcNotification[])
     {
         super('1.0.0', MessageType.Notification);
 
-        this.messages = messages;
+        this.notifications = notifications;
     }
 
     public ToJson()
