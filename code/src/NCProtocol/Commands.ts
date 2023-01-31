@@ -72,14 +72,14 @@ export class EventSubscriptionData
 
 export class ProtoCommand extends ProtocolWrapper
 {
-    public messages: CommandMsg[];
+    public commands: CommandMsg[];
 
     public constructor(
-        messages: CommandMsg[])
+        commands: CommandMsg[])
     {
         super('1.0.0', MessageType.Command);
 
-        this.messages = messages;
+        this.commands = commands;
     }
 
     public ToJson()
@@ -90,19 +90,19 @@ export class ProtoCommand extends ProtocolWrapper
 
 export class ProtoCommandResponse extends ProtocolWrapper
 {
-    public messages: CommandResponseNoValue[];
+    public responses: CommandResponseNoValue[];
 
     public constructor(
-        messages: CommandResponseNoValue[])
+        responses: CommandResponseNoValue[])
     {
         super('1.0.0', MessageType.CommandResponse);
 
-        this.messages = messages;
+        this.responses = responses;
     }
 
     public AddCommandResponse(response: CommandResponseNoValue)
     {
-        this.messages.push(response);
+        this.responses.push(response);
     }
 
     public ToJson()

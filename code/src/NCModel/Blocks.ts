@@ -396,8 +396,8 @@ export class RootBlock extends NcBlock
     {
         let responses = new ProtoCommandResponse([]);
 
-        for (var i = 0; i < command.messages.length; i++) {
-            let msg = command.messages[i];
+        for (var i = 0; i < command.commands.length; i++) {
+            let msg = command.commands[i];
             responses.AddCommandResponse(this.ProcessCommandMessage(msg, socket));
         }
 
