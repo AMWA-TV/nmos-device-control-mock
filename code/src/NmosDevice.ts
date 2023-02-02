@@ -15,6 +15,18 @@ export class NmosDevice extends NmosResource
     public type: string;
 
     @jsonIgnore()
+    private manufacturer: string;
+
+    @jsonIgnore()
+    private product: string;
+
+    @jsonIgnore()
+    private serialNumber: string;
+
+    @jsonIgnore()
+    private application: string;
+
+    @jsonIgnore()
     public receiverObjects: NmosReceiverCore[];
 
     public constructor(
@@ -23,11 +35,27 @@ export class NmosDevice extends NmosResource
         base_label: string,
         address: string,
         port: number,
+        manufacturer: string,
+        product: string,
+        application: string,
+        serialNumber: string,
         registrationClient: RegistrationClient)
     {
         super(id, `${base_label} device`, registrationClient);
 
         this.node_id = node_id;
+
+        this.manufacturer = manufacturer;
+        this.product = product;
+        this.serialNumber = serialNumber;
+        this.application = application;
+
+        this.tags = {
+            "urn:x-nmos:tag:asset:facts:manufacturer/v1.0": [ this.manufacturer ],
+            "urn:x-nmos:tag:asset:facts:product/v1.0": [ this.product ],
+            "urn:x-nmos:tag:asset:facts:serial-number/v1.0": [ this.serialNumber ],
+            "urn:x-nmos:tag:asset:facts:application/v1.0": [ this.application ]
+        };
 
         this.receiverObjects = [];
 

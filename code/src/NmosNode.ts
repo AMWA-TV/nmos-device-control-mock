@@ -15,17 +15,39 @@ export class NmosNode extends NmosResource
     public api: NmosApi;
     public interfaces: NmosInterface[]
 
+    @jsonIgnore()
+    private manufacturer: string;
+
+    @jsonIgnore()
+    private product: string;
+
+    @jsonIgnore()
+    private serialNumber: string;
+
     public constructor(
         id: string,
         base_label: string,
         address: string,
         port: number,
+        manufacturer: string,
+        product: string,
+        serialNumber: string,
         registrationClient: RegistrationClient)
     {
         super(id, `${base_label} node`, registrationClient);
 
         this.href = `http://${address}:${port}`;
         
+        this.manufacturer = manufacturer;
+        this.product = product;
+        this.serialNumber = serialNumber;
+
+        this.tags = {
+            "urn:x-nmos:tag:asset:facts:manufacturer/v1.0": [ this.manufacturer ],
+            "urn:x-nmos:tag:asset:facts:product/v1.0": [ this.product ],
+            "urn:x-nmos:tag:asset:facts:serial-number/v1.0": [ this.serialNumber ]
+        };
+
         this.hostname = os.hostname();
 
         this.clocks = [ new NmosClock('clk0', 'internal') ];
