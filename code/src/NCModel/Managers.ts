@@ -1,5 +1,5 @@
 import { jsonIgnoreReplacer, jsonIgnore } from 'json-ignore';
-import { CommandResponseNoValue, CommandResponseWithValue } from '../NCProtocol/Commands';
+import { CommandResponseError, CommandResponseNoValue, CommandResponseWithValue } from '../NCProtocol/Commands';
 import { NcPropertyChangedEventData } from '../NCProtocol/Notifications';
 import { WebSocketConnection } from '../Server';
 import { INotificationContext } from '../SessionManager';
@@ -169,17 +169,22 @@ export class NcDeviceOperationalState extends BaseType
 
 export enum NcDeviceGenericState
 {
-    NormalOperation = 0,
-    Initializing = 1,
-    Updating = 2
+    Unknown = 0,
+    NormalOperation = 1,
+    Initializing = 2,
+    Updating = 3,
+    LicensingError = 4,
+    InternalError = 5
 }
 
 export enum NcResetCause
 {
-    PowerOn = 0,
-    InternalError = 1,
-    Upgrade = 2,
-    ControllerRequest = 3
+    Unknown = 0,
+    PowerOn = 1,
+    InternalError = 2,
+    Upgrade = 3,
+    ControllerRequest = 4,
+    ManualReset = 5
 }
 
 export class NcDeviceManager extends NcManager
@@ -236,7 +241,7 @@ export class NcDeviceManager extends NcManager
         this.deviceName = null;
         this.deviceRole = null;
         this.operationalState = new NcDeviceOperationalState(NcDeviceGenericState.NormalOperation);
-        this.resetCause = NcResetCause.PowerOn;
+        this.resetCause = NcResetCause.Unknown;
         this.message = "Nothing to report";
     }
 
@@ -250,31 +255,31 @@ export class NcDeviceManager extends NcManager
             switch(key)
             {
                 case '3p1':
-                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.ncVersion, null);
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.ncVersion);
                 case '3p2':
-                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.manufacturer, null);
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.manufacturer);
                 case '3p3':
-                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.product, null);
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.product);
                 case '3p4':
-                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.serialNumber, null);
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.serialNumber);
                 case '3p5':
-                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.userInventoryCode, null);
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.userInventoryCode);
                 case '3p6':
-                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.deviceName, null);
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.deviceName);
                 case '3p7':
-                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.deviceRole, null);
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.deviceRole);
                 case '3p8':
-                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.operationalState, null);
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.operationalState);
                 case '3p9':
-                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.resetCause, null);
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.resetCause);
                 case '3p10':
-                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.message, null);
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.message);
                 default:
                     return super.Get(oid, propertyId, handle);
             }
         }
 
-        return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
+        return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
     }
 
     //'1m2'
@@ -293,25 +298,25 @@ export class NcDeviceManager extends NcManager
                 case '3p8':
                 case '3p9':
                 case '3p10':
-                    return new CommandResponseNoValue(handle, NcMethodStatus.Readonly, 'Property is readonly');
+                    return new CommandResponseError(handle, NcMethodStatus.Readonly, 'Property is readonly');
                 case '3p5':
                     this.userInventoryCode = value;
                     this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.userInventoryCode, null);
-                    return new CommandResponseNoValue(handle, NcMethodStatus.OK, null);
+                    return new CommandResponseNoValue(handle, NcMethodStatus.OK);
                 case '3p6':
                     this.deviceName = value;
                     this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.deviceName, null);
-                    return new CommandResponseNoValue(handle, NcMethodStatus.OK, null);
+                    return new CommandResponseNoValue(handle, NcMethodStatus.OK);
                 case '3p7':
                     this.deviceRole = value;
                     this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.deviceRole, null);
-                    return new CommandResponseNoValue(handle, NcMethodStatus.OK, null);
+                    return new CommandResponseNoValue(handle, NcMethodStatus.OK);
                 default:
                     return super.Set(oid, id, value, handle);
             }
         }
 
-        return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
+        return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
     }
 
     public static override GetClassDescriptor(): NcClassDescriptor
@@ -324,9 +329,9 @@ export class NcDeviceManager extends NcManager
                 new NcPropertyDescriptor(new NcElementId(3, 2), "manufacturer", "NcManufacturer", true, true, false, false, null, "Manufacturer descriptor"),
                 new NcPropertyDescriptor(new NcElementId(3, 3), "product", "NcProduct", true, true, false, false, null, "Product descriptor"),
                 new NcPropertyDescriptor(new NcElementId(3, 4), "serialNumber", "NcString", true, true, false, false, null, "Serial number"),
-                new NcPropertyDescriptor(new NcElementId(3, 5), "userInventoryCode", "NcString", false, true, false, false, null, "Asset tracking identifier (user specified)"),
-                new NcPropertyDescriptor(new NcElementId(3, 6), "deviceName", "NcString", false, true, false, false, null, "Name of this device in the application. Instance name, not product name."),
-                new NcPropertyDescriptor(new NcElementId(3, 7), "deviceRole", "NcString", false, true, false, false, null, "Role of this device in the application."),
+                new NcPropertyDescriptor(new NcElementId(3, 5), "userInventoryCode", "NcString", false, true, true, false, null, "Asset tracking identifier (user specified)"),
+                new NcPropertyDescriptor(new NcElementId(3, 6), "deviceName", "NcString", false, true, true, false, null, "Name of this device in the application. Instance name, not product name."),
+                new NcPropertyDescriptor(new NcElementId(3, 7), "deviceRole", "NcString", false, true, true, false, null, "Role of this device in the application."),
                 new NcPropertyDescriptor(new NcElementId(3, 8), "operationalState", "NcDeviceOperationalState", true, true, false, false, null, "Device operational state"),
                 new NcPropertyDescriptor(new NcElementId(3, 9), "resetCause", "NcResetCause", true, true, false, false, null, "Reason for most recent reset"),
                 new NcPropertyDescriptor(new NcElementId(3, 10), "message", "NcString", true, true, true, false, null, "Arbitrary message from dev to controller"),
@@ -386,15 +391,15 @@ export class NcClassManager extends NcManager
             switch(key)
             {
                 case '3p1':
-                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.controlClasses, null);
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.controlClasses);
                 case '3p2':
-                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.dataTypes, null);
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.dataTypes);
                 default:
                     return super.Get(oid, propertyId, handle);
             }
         }
 
-        return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
+        return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
     }
 
     public override InvokeMethod(socket: WebSocketConnection, oid: number, methodId: NcElementId, args: { [key: string]: any; } | null, handle: number): CommandResponseNoValue 
@@ -412,12 +417,12 @@ export class NcClassManager extends NcManager
                             let identity = args['identity'] as NcClassIdentity;
                             let descriptor = this.GetClassDescriptor(identity);
                             if(descriptor)
-                                return new CommandResponseWithValue(handle, NcMethodStatus.OK, descriptor, null);
+                                return new CommandResponseWithValue(handle, NcMethodStatus.OK, descriptor);
                             else
-                                return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Class identity could not be found');
+                                return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Class identity could not be found');
                         }
                         else
-                            return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'No class identity has been provided');
+                            return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'No class identity has been provided');
                     }
                 case '3m2':
                     {
@@ -426,19 +431,19 @@ export class NcClassManager extends NcManager
                             let name = args['name'] as string;
                             let descriptor = this.GetTypeDescriptor(name);
                             if(descriptor)
-                                return new CommandResponseWithValue(handle, NcMethodStatus.OK, descriptor, null);
+                                return new CommandResponseWithValue(handle, NcMethodStatus.OK, descriptor);
                             else
-                                return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Type name could not be found');
+                                return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Type name could not be found');
                         }
                         else
-                            return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'No type name has been provided');
+                            return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'No type name has been provided');
                     }
                 default:
                     return super.InvokeMethod(socket, oid, methodId, args, handle);
             }
         }
 
-        return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
+        return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
     }
 
     public static override GetClassDescriptor(): NcClassDescriptor 
@@ -510,20 +515,25 @@ export class NcClassManager extends NcManager
             'NcManufacturer': NcManufacturer.GetTypeDescriptor(),
             'NcProduct': NcProduct.GetTypeDescriptor(),
             'NcDeviceGenericState': new NcDatatypeDescriptorEnum("NcDeviceGenericState", [
-                new NcEnumItemDescriptor("NormalOperation", 0, "Normal operation"),
-                new NcEnumItemDescriptor("Initializing", 1, "Initializing"),
-                new NcEnumItemDescriptor("Updating", 2, "Updating")
+                new NcEnumItemDescriptor("Unknown", 0, "Unknown"),
+                new NcEnumItemDescriptor("NormalOperation", 1, "Normal operation"),
+                new NcEnumItemDescriptor("Initializing", 2, "Device is initializing"),
+                new NcEnumItemDescriptor("Updating", 3, "Device is performing a software or firmware update"),
+                new NcEnumItemDescriptor("LicensingError", 4, "Device is experiencing a licensing error"),
+                new NcEnumItemDescriptor("InternalError", 5, "Device is experiencing an internal error")
             ], null, "Device generic operational state"),
             'NcResetCause': new NcDatatypeDescriptorEnum("NcResetCause", [
-                new NcEnumItemDescriptor("PowerOn", 0, "Power on"),
-                new NcEnumItemDescriptor("InternalError", 1, "Internal error"),
-                new NcEnumItemDescriptor("Upgrade", 2, "Upgrade"),
-                new NcEnumItemDescriptor("ControllerRequest", 3, "Controller request")
+                new NcEnumItemDescriptor("Unknown", 0, "Unknown"),
+                new NcEnumItemDescriptor("PowerOn", 1, "Power on"),
+                new NcEnumItemDescriptor("InternalError", 2, "Internal error"),
+                new NcEnumItemDescriptor("Upgrade", 3, "Upgrade"),
+                new NcEnumItemDescriptor("ControllerRequest", 4, "Controller request"),
+                new NcEnumItemDescriptor("ManualReset", 5, "Manual request from the front panel")
             ], null, "Device generic operational state"),
             'NcDeviceOperationalState': NcDeviceOperationalState.GetTypeDescriptor(),
             'NcOid': new NcDatatypeDescriptorTypeDef("NcOid", "NcUint32", false, null, "Object id"),
             'NcName': new NcDatatypeDescriptorTypeDef("NcName", "NcString", false, null, "Programmatically significant name, alphanumerics + underscore, no spaces"),
-            'NcNamePath': new NcDatatypeDescriptorTypeDef("NcNamePath", "NcName", true, null, "Name path"),
+            'NcRolePath': new NcDatatypeDescriptorTypeDef("NcRolePath", "NcString", true, null, "Role path"),
             'NcId32': new NcDatatypeDescriptorTypeDef("NcId32", "NcUint32", false, null, "Identity handler"),
             'NcTimeInterval': new NcDatatypeDescriptorTypeDef("NcTimeInterval", "NcFloat64", false, null, "Floating point seconds"),
             'NcDB': new NcDatatypeDescriptorTypeDef("NcDB", "NcFloat32", false, null, "A ratio expressed in dB."),
@@ -665,13 +675,13 @@ export class NcSubscriptionManager extends NcManager
                             if(emitterOid)
                             {
                                 this.notificationContext.Subscribe(socket, emitterOid);
-                                return new CommandResponseNoValue(handle, NcMethodStatus.OK, null);
+                                return new CommandResponseNoValue(handle, NcMethodStatus.OK);
                             }
                             else
-                                return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Oid argument is invalid');
+                                return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Oid argument is invalid');
                         }
                         else
-                            return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'No oid argument has been provided');
+                            return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'No oid argument has been provided');
                     }
                 case '3m2':
                     {
@@ -681,20 +691,20 @@ export class NcSubscriptionManager extends NcManager
                             if(emitterOid)
                             {
                                 this.notificationContext.UnSubscribe(socket, emitterOid);
-                                return new CommandResponseNoValue(handle, NcMethodStatus.OK, null);
+                                return new CommandResponseNoValue(handle, NcMethodStatus.OK);
                             }
                             else
-                                return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Oid argument is invalid');
+                                return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Oid argument is invalid');
                         }
                         else
-                            return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'No oid argument has been provided');
+                            return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'No oid argument has been provided');
                     }
                 default:
                     return super.InvokeMethod(socket, oid, methodId, args, handle);
             }
         }
 
-        return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
+        return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
     }
 
     public static override GetClassDescriptor(): NcClassDescriptor 

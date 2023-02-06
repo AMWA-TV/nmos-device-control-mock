@@ -1,5 +1,5 @@
 import { jsonIgnoreReplacer, jsonIgnore } from 'json-ignore';
-import { CommandResponseNoValue, CommandResponseWithValue } from '../NCProtocol/Commands';
+import { CommandResponseError, CommandResponseNoValue, CommandResponseWithValue } from '../NCProtocol/Commands';
 import { WebSocketConnection } from '../Server';
 import { INotificationContext } from '../SessionManager';
 
@@ -38,7 +38,7 @@ export abstract class NcObject
     public role: string;
 
     @myIdDecorator('1p7')
-    public userLabel: string;
+    public userLabel: string | null;
 
     @myIdDecorator('1p8')
     public touchpoints: NcTouchpoint[] | null;
@@ -50,7 +50,7 @@ export abstract class NcObject
         constantOid: boolean,
         owner: number | null,
         role: string,
-        userLabel: string,
+        userLabel: string | null,
         touchpoints: NcTouchpoint[] | null,
         description: string,
         notificationContext: INotificationContext)
@@ -75,27 +75,27 @@ export abstract class NcObject
             switch(key)
             {
                 case '1p1':
-                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.classID, null);
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.classID);
                 case '1p2':
-                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.classVersion, null);
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.classVersion);
                 case '1p3':
-                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.oid, null);
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.oid);
                 case '1p4':
-                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.constantOid, null);
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.constantOid);
                 case '1p5':
-                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.owner, null);
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.owner);
                 case '1p6':
-                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.role, null);
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.role);
                 case '1p7':
-                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.userLabel, null);
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.userLabel);
                 case '1p8':
-                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.touchpoints, null);
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.touchpoints);
                 default:
-                    return new CommandResponseNoValue(handle, NcMethodStatus.PropertyNotImplemented, 'Property does not exist in object');
+                    return new CommandResponseError(handle, NcMethodStatus.PropertyNotImplemented, 'Property does not exist in object');
             }
         }
 
-        return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
+        return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
     }
 
     //'1m2'
@@ -113,24 +113,24 @@ export abstract class NcObject
                 case '1p4':
                 case '1p5':
                 case '1p6':
-                    return new CommandResponseNoValue(handle, NcMethodStatus.Readonly, 'Property is readonly');
+                    return new CommandResponseError(handle, NcMethodStatus.Readonly, 'Property is readonly');
                 case '1p7':
                     this.userLabel = value;
                     this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.userLabel, null);
-                    return new CommandResponseNoValue(handle, NcMethodStatus.OK, null);
+                    return new CommandResponseNoValue(handle, NcMethodStatus.OK);
                 case '1p8':
-                    return new CommandResponseNoValue(handle, NcMethodStatus.Readonly, 'Property is readonly');
+                    return new CommandResponseError(handle, NcMethodStatus.Readonly, 'Property is readonly');
                 default:
-                    return new CommandResponseNoValue(handle, NcMethodStatus.PropertyNotImplemented, 'Property does not exist in object');
+                    return new CommandResponseError(handle, NcMethodStatus.PropertyNotImplemented, 'Property does not exist in object');
             }
         }
 
-        return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
+        return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
     }
 
     public InvokeMethod(socket: WebSocketConnection, oid: number, methodId: NcElementId, args: { [key: string]: any } | null, handle: number) : CommandResponseNoValue
     {
-        return new CommandResponseNoValue(handle, NcMethodStatus.MethodNotImplemented, 'Method does not exist in object');
+        return new CommandResponseError(handle, NcMethodStatus.MethodNotImplemented, 'Method does not exist in object');
     }
 
     public GenerateMemberDescriptor() : NcBlockMemberDescriptor
@@ -147,8 +147,8 @@ export abstract class NcObject
                 new NcPropertyDescriptor(new NcElementId(1, 3), "oid", "NcOid", true, true, false, false, null, "Object identifier"),
                 new NcPropertyDescriptor(new NcElementId(1, 4), "constantOid", "NcBoolean", true, true, false, false, null, "TRUE iff OID is hardwired into device"),
                 new NcPropertyDescriptor(new NcElementId(1, 5), "owner", "NcOid", true, true, true, false, null, "OID of containing block. Can only ever be null for the root block" ),
-                new NcPropertyDescriptor(new NcElementId(1, 6), "role", "NcName", true, true, false, false, null, "role of obj in containing block"),
-                new NcPropertyDescriptor(new NcElementId(1, 7), "userLabel", "NcString", false, true, false, false, null, "Scribble strip"),
+                new NcPropertyDescriptor(new NcElementId(1, 6), "role", "NcString", true, true, false, false, null, "role of obj in containing block"),
+                new NcPropertyDescriptor(new NcElementId(1, 7), "userLabel", "NcString", false, true, true, false, null, "Scribble strip"),
                 new NcPropertyDescriptor(new NcElementId(1, 8), "touchpoints", "NcTouchpoint", true, true, true, true, null, "Touchpoints to other contexts"),
             ],
             [ 
@@ -270,9 +270,9 @@ export class NcPort extends BaseType
     public static override GetTypeDescriptor(): NcDatatypeDescriptor
     {
         return new NcDatatypeDescriptorStruct("NcPort", [
-            new NcFieldDescriptor("role", "NcName", false, false, null, "Unique within owning object"),
+            new NcFieldDescriptor("role", "NcString", false, false, null, "Unique within owning object"),
             new NcFieldDescriptor("direction", "NcIoDirection", false, false, null, "Input (sink) or output (source) port"),
-            new NcFieldDescriptor("clockPath", "NcNamePath", true, false, null, "Rolepath of this port's sample clock or null if none")
+            new NcFieldDescriptor("clockPath", "NcRolePath", true, false, null, "Role path of this port's sample clock or null if none")
         ], null, null, "Port class");
     }
 }
@@ -296,8 +296,8 @@ export class NcPortReference extends BaseType
     public static override GetTypeDescriptor(): NcDatatypeDescriptor
     {
         return new NcDatatypeDescriptorStruct("NcPortReference", [
-            new NcFieldDescriptor("owner", "NcNamePath", false, true, null, "Rolepath of owning object"),
-            new NcFieldDescriptor("role", "NcName", false, false, null, "Unique identifier of this port within the owning object")
+            new NcFieldDescriptor("owner", "NcRolePath", false, true, null, "Role path of owning object"),
+            new NcFieldDescriptor("role", "NcString", false, false, null, "Unique identifier of this port within the owning object")
         ], null, null, "Device-unique port identifier");
     }
 }
@@ -328,8 +328,8 @@ export class NcSignalPath extends BaseType
 
     public static override GetTypeDescriptor(): NcDatatypeDescriptor
     {
-        return new NcDatatypeDescriptorStruct("ncSignalPath", [
-            new NcFieldDescriptor("role", "NcName", false, false, null, "Unique identifier of this signal path in this block"),
+        return new NcDatatypeDescriptorStruct("NcSignalPath", [
+            new NcFieldDescriptor("role", "NcString", false, false, null, "Unique identifier of this signal path in this block"),
             new NcFieldDescriptor("label", "NcString", true, false, null, "Optional label"),
             new NcFieldDescriptor("source", "NcPortReference", false, false, null, "Source reference"),
             new NcFieldDescriptor("sink", "NcPortReference", false, false, null, "Sink reference")
@@ -479,7 +479,7 @@ export class NcBlockMemberDescriptor extends BaseType
     public oid: number;
     public constantOid: boolean;
     public identity: NcClassIdentity;
-    public userLabel: string;
+    public userLabel: string | null;
     public owner: number | null;
     public description: string;
     public constraints: NcPropertyConstraint | null;
@@ -489,7 +489,7 @@ export class NcBlockMemberDescriptor extends BaseType
         oid: number,
         constantOid: boolean,
         identity: NcClassIdentity,
-        userLabel: string,
+        userLabel: string | null,
         owner: number | null,
         description: string,
         constraints: NcPropertyConstraint | null)
@@ -509,11 +509,11 @@ export class NcBlockMemberDescriptor extends BaseType
     public static override GetTypeDescriptor(): NcDatatypeDescriptor
     {
         return new NcDatatypeDescriptorStruct("NcBlockMemberDescriptor", [
-            new NcFieldDescriptor("role", "NcName", false, false, null, "Role of member in its containing block"),
+            new NcFieldDescriptor("role", "NcString", false, false, null, "Role of member in its containing block"),
             new NcFieldDescriptor("oid", "NcOid", false, false, null, "OID of member"),
             new NcFieldDescriptor("constantOid", "NcBoolean", false, false, null, "TRUE iff member's OID is hardwired into device"),
             new NcFieldDescriptor("identity", "NcClassIdentity", false, false, null, "Class ID & version of member"),
-            new NcFieldDescriptor("userLabel", "NcString", false, false, null, "User label"),
+            new NcFieldDescriptor("userLabel", "NcString", true, false, null, "User label"),
             new NcFieldDescriptor("owner", "NcOid", false, false, null, "Containing block's OID")
         ], null, null, "Descriptor which is specific to a block member which is not a block");
     }
@@ -534,7 +534,7 @@ export class NcBlockDescriptor extends NcBlockMemberDescriptor
         oid: number,
         constantOid: boolean,
         identity: NcClassIdentity,
-        userLabel: string,
+        userLabel: string | null,
         owner: number | null,
         description: string,
         constraints: NcPropertyConstraint | null)
@@ -553,11 +553,11 @@ export class NcBlockDescriptor extends NcBlockMemberDescriptor
     public static override GetTypeDescriptor(): NcDatatypeDescriptor
     {
         return new NcDatatypeDescriptorStruct("NcBlockDescriptor", [
-            new NcFieldDescriptor("role", "NcName", false, false, null, "Role of member in its containing block"),
+            new NcFieldDescriptor("role", "NcString", false, false, null, "Role of member in its containing block"),
             new NcFieldDescriptor("oid", "NcOid", false, false, null, "OID of member"),
             new NcFieldDescriptor("constantOid", "NcBoolean", false, false, null, "TRUE iff member's OID is hardwired into device"),
             new NcFieldDescriptor("identity", "NcClassIdentity", false, false, null, "Class ID & version of member"),
-            new NcFieldDescriptor("userLabel", "NcString", false, false, null, "User label"),
+            new NcFieldDescriptor("userLabel", "NcString", true, false, null, "User label"),
             new NcFieldDescriptor("owner", "NcOid", false, false, null, "Containing block's OID"),
             new NcFieldDescriptor("blockSpecId", "NcString", false, false, null, "ID of BlockSpec this block implements")
         ], "NcBlockMemberDescriptor", null, "Descriptor which is specific to a block");

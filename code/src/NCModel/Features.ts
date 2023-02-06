@@ -1,5 +1,5 @@
 import { jsonIgnoreReplacer, jsonIgnore } from 'json-ignore';
-import { CommandResponseNoValue, CommandResponseWithValue } from '../NCProtocol/Commands';
+import { CommandResponseError, CommandResponseNoValue, CommandResponseWithValue } from '../NCProtocol/Commands';
 import { WebSocketConnection } from '../Server';
 import { INotificationContext } from '../SessionManager';
 import {
@@ -52,13 +52,13 @@ export abstract class NcWorker extends NcObject
             switch(key)
             {
                 case '2p1':
-                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.enabled, null);
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.enabled);
                 default:
                     return super.Get(oid, propertyId, handle);
             }
         }
 
-        return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
+        return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
     }
 
     //'1m2'
@@ -71,13 +71,13 @@ export abstract class NcWorker extends NcObject
             switch(key)
             {
                 case '2p1':
-                    return new CommandResponseNoValue(handle, NcMethodStatus.Readonly, 'Property is readonly');
+                    return new CommandResponseError(handle, NcMethodStatus.Readonly, 'Property is readonly');
                 default:
                     return super.Set(oid, id, value, handle);
             }
         }
 
-        return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
+        return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
     }
 
     public static override GetClassDescriptor(): NcClassDescriptor 
@@ -137,15 +137,15 @@ export abstract class NcSignalWorker extends NcWorker
             switch(key)
             {
                 case '3p1':
-                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.ports, null);
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.ports);
                 case '3p2':
-                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.latency, null);
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.latency);
                 default:
                     return super.Get(oid, propertyId, handle);
             }
         }
 
-        return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
+        return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
     }
 
     //'1m2'
@@ -159,13 +159,13 @@ export abstract class NcSignalWorker extends NcWorker
             {
                 case '3p1':
                 case '3p2':
-                    return new CommandResponseNoValue(handle, NcMethodStatus.Readonly, 'Property is readonly');
+                    return new CommandResponseError(handle, NcMethodStatus.Readonly, 'Property is readonly');
                 default:
                     return super.Set(oid, id, value, handle);
             }
         }
 
-        return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
+        return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
     }
 
     public static override GetClassDescriptor(): NcClassDescriptor 
@@ -258,13 +258,13 @@ export class NcGain extends NcActuator
             switch(key)
             {
                 case '5p1':
-                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.gainValue, null);
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.gainValue);
                 default:
                     return super.Get(oid, propertyId, handle);
             }
         }
 
-        return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
+        return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
     }
 
     //'1m2'
@@ -279,13 +279,13 @@ export class NcGain extends NcActuator
                 case '5p1':
                     this.gainValue = value;
                     this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.gainValue, null);
-                    return new CommandResponseNoValue(handle, NcMethodStatus.OK, null);
+                    return new CommandResponseNoValue(handle, NcMethodStatus.OK);
                 default:
                     return super.Set(oid, id, value, handle);
             }
         }
 
-        return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
+        return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
     }
 
     public static override GetClassDescriptor(): NcClassDescriptor 
@@ -343,13 +343,13 @@ export class NcIdentBeacon extends NcWorker
             switch(key)
             {
                 case '3p1':
-                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.active, null);
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.active);
                 default:
                     return super.Get(oid, propertyId, handle);
             }
         }
 
-        return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
+        return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
     }
 
     //'1m2'
@@ -364,13 +364,13 @@ export class NcIdentBeacon extends NcWorker
                 case '3p1':
                     this.active = value;
                     this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.active, null);
-                    return new CommandResponseNoValue(handle, NcMethodStatus.OK, null);
+                    return new CommandResponseNoValue(handle, NcMethodStatus.OK);
                 default:
                     return super.Set(oid, id, value, handle);
             }
         }
 
-        return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
+        return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
     }
 
     public static override GetClassDescriptor(): NcClassDescriptor 
@@ -512,19 +512,19 @@ export class NcReceiverMonitor extends NcWorker
             switch(key)
             {
                 case '3p1':
-                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.connectionStatus, null);
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.connectionStatus);
                 case '3p2':
-                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.connectionStatusMessage, null);
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.connectionStatusMessage);
                 case '3p3':
-                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.payloadStatus, null);
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.payloadStatus);
                 case '3p4':
-                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.payloadStatusMessage, null);
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.payloadStatusMessage);
                 default:
                     return super.Get(oid, id, handle);
             }
         }
 
-        return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
+        return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
     }
 
     //'1m2'
@@ -540,13 +540,13 @@ export class NcReceiverMonitor extends NcWorker
                 case '3p2':
                 case '3p3':
                 case '3p4':
-                    return new CommandResponseNoValue(handle, NcMethodStatus.Readonly, 'Property is readonly');
+                    return new CommandResponseError(handle, NcMethodStatus.Readonly, 'Property is readonly');
                 default:
                     return super.Set(oid, id, value, handle);
             }
         }
 
-        return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
+        return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
     }
 
     public override InvokeMethod(socket: WebSocketConnection, oid: number, methodId: NcElementId, args: { [key: string]: any; } | null, handle: number): CommandResponseNoValue 
@@ -558,13 +558,13 @@ export class NcReceiverMonitor extends NcWorker
             switch(key)
             {
                 case '3m1':
-                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, new NcReceiverStatus(this.connectionStatus, this.payloadStatus), null);
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, new NcReceiverStatus(this.connectionStatus, this.payloadStatus));
                 default:
                     return super.InvokeMethod(socket, oid, methodId, args, handle);
             }
         }
 
-        return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
+        return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
     }
 
     public static override GetClassDescriptor(): NcClassDescriptor 
@@ -722,37 +722,37 @@ export class NcDemo extends NcWorker
             switch(key)
             {
                 case '3p1':
-                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.enumProperty, null);
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.enumProperty);
                 case '3p2':
-                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.stringProperty, null);
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.stringProperty);
                 case '3p3':
-                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.numberProperty, null);
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.numberProperty);
                 case '3p4':
-                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.booleanProperty, null);
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.booleanProperty);
                 case '3p5':
-                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.objectProperty, null);
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.objectProperty);
                 case '3p6':
-                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.methodNoArgsCount, null);
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.methodNoArgsCount);
                 case '3p7':
-                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.methodSimpleArgsCount, null);
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.methodSimpleArgsCount);
                 case '3p8':
-                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.methodObjectArgCount, null);
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.methodObjectArgCount);
                 case '3p9':
-                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.stringSequence, null);
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.stringSequence);
                 case '3p10':
-                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.booleanSequence, null);
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.booleanSequence);
                 case '3p11':
-                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.enumSequence, null);
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.enumSequence);
                 case '3p12':
-                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.numberSequence, null);
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.numberSequence);
                 case '3p13':
-                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.objectSequence, null);
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.objectSequence);
                 default:
                     return super.Get(oid, id, handle);
             }
         }
 
-        return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
+        return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
     }
 
     //'1m2'
@@ -767,53 +767,53 @@ export class NcDemo extends NcWorker
                 case '3p1':
                     this.enumProperty = value;
                     this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.enumProperty, null);
-                    return new CommandResponseNoValue(handle, NcMethodStatus.OK, null);
+                    return new CommandResponseNoValue(handle, NcMethodStatus.OK);
                 case '3p2':
                     this.stringProperty = value;
                     this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.stringProperty, null);
-                    return new CommandResponseNoValue(handle, NcMethodStatus.OK, null);
+                    return new CommandResponseNoValue(handle, NcMethodStatus.OK);
                 case '3p3':
                     this.numberProperty = value;
                     this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.numberProperty, null);
-                    return new CommandResponseNoValue(handle, NcMethodStatus.OK, null);
+                    return new CommandResponseNoValue(handle, NcMethodStatus.OK);
                 case '3p4':
                     this.booleanProperty = value;
                     this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.booleanProperty, null);
-                    return new CommandResponseNoValue(handle, NcMethodStatus.OK, null);
+                    return new CommandResponseNoValue(handle, NcMethodStatus.OK);
                 case '3p5':
                     this.objectProperty = value;
                     this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.objectProperty, null);
-                    return new CommandResponseNoValue(handle, NcMethodStatus.OK, null);
+                    return new CommandResponseNoValue(handle, NcMethodStatus.OK);
                 case '3p6':
                 case '3p7':
                 case '3p8':
-                        return new CommandResponseNoValue(handle, NcMethodStatus.Readonly, "Property is read only");
+                        return new CommandResponseError(handle, NcMethodStatus.Readonly, "Property is read only");
                 case '3p9':
                     this.stringSequence = value;
                     this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.stringSequence, null);
-                    return new CommandResponseNoValue(handle, NcMethodStatus.OK, null);
+                    return new CommandResponseNoValue(handle, NcMethodStatus.OK);
                 case '3p10':
                     this.booleanSequence = value;
                     this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.booleanSequence, null);
-                    return new CommandResponseNoValue(handle, NcMethodStatus.OK, null);
+                    return new CommandResponseNoValue(handle, NcMethodStatus.OK);
                 case '3p11':
                     this.enumSequence = value;
                     this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.enumSequence, null);
-                    return new CommandResponseNoValue(handle, NcMethodStatus.OK, null);
+                    return new CommandResponseNoValue(handle, NcMethodStatus.OK);
                 case '3p12':
                     this.numberSequence = value;
                     this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.numberSequence, null);
-                    return new CommandResponseNoValue(handle, NcMethodStatus.OK, null);
+                    return new CommandResponseNoValue(handle, NcMethodStatus.OK);
                 case '3p13':
                     this.objectSequence = value;
                     this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.objectSequence, null);
-                    return new CommandResponseNoValue(handle, NcMethodStatus.OK, null);
+                    return new CommandResponseNoValue(handle, NcMethodStatus.OK);
                 default:
                     return super.Set(oid, id, value, handle);
             }
         }
 
-        return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
+        return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
     }
 
     public override InvokeMethod(socket: WebSocketConnection, oid: number, methodId: NcElementId, args: { [key: string]: any; } | null, handle: number): CommandResponseNoValue 
@@ -845,54 +845,54 @@ export class NcDemo extends NcWorker
                                             {
                                                 let itemValue = this.stringSequence[index];
                                                 if(itemValue)
-                                                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, itemValue, null);
+                                                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, itemValue);
                                                 else
-                                                    return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Index could not be found');
+                                                    return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Index could not be found');
                                             }
                                         case '3p10':
                                             {
                                                 let itemValue = this.booleanSequence[index];
                                                 if(itemValue)
-                                                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, itemValue, null);
+                                                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, itemValue);
                                                 else
-                                                    return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Index could not be found');
+                                                    return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Index could not be found');
                                             }
                                         case '3p11':
                                             {
                                                 let itemValue = this.enumSequence[index];
                                                 if(itemValue)
-                                                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, itemValue, null);
+                                                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, itemValue);
                                                 else
-                                                    return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Index could not be found');
+                                                    return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Index could not be found');
                                             }
                                         case '3p12':
                                             {
                                                 let itemValue = this.numberSequence[index];
                                                 if(itemValue !== undefined)
-                                                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, itemValue, null);
+                                                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, itemValue);
                                                 else
-                                                    return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Index could not be found');
+                                                    return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Index could not be found');
                                             }
                                         case '3p13':
                                             {
                                                 let itemValue = this.objectSequence[index];
                                                 if(itemValue)
-                                                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, itemValue, null);
+                                                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, itemValue);
                                                 else
-                                                    return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Index could not be found');
+                                                    return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Index could not be found');
                                             }
                                         default:
-                                            return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Property could not be found');
+                                            return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Property could not be found');
                                     }
                                 }
                                 else
-                                    return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Invalid index argument provided');
+                                    return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid index argument provided');
                             }
                             else
-                                return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Invalid id argument provided');
+                                return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid id argument provided');
                         }
                         else
-                            return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Invalid arguments provided');
+                            return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid arguments provided');
                     }
                 case '1m4': //SetSequenceItem
                     {
@@ -922,13 +922,13 @@ export class NcDemo extends NcWorker
                                                         this.stringSequence[index] = value;
                                                         this.notificationContext.NotifyPropertyChanged(this.oid, propertyId, NcPropertyChangeType.SequenceItemChanged, value, index);
     
-                                                        return new CommandResponseNoValue(handle, NcMethodStatus.OK, null);
+                                                        return new CommandResponseNoValue(handle, NcMethodStatus.OK);
                                                     }
                                                     else
-                                                        return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Invalid value argument provided');
+                                                        return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid value argument provided');
                                                 }
                                                 else
-                                                    return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Index could not be found');
+                                                    return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Index could not be found');
                                             }
                                         case '3p10':
                                             {
@@ -940,13 +940,13 @@ export class NcDemo extends NcWorker
                                                         this.booleanSequence[index] = value;
                                                         this.notificationContext.NotifyPropertyChanged(this.oid, propertyId, NcPropertyChangeType.SequenceItemChanged, value, index);
     
-                                                        return new CommandResponseNoValue(handle, NcMethodStatus.OK, null);
+                                                        return new CommandResponseNoValue(handle, NcMethodStatus.OK);
                                                     }
                                                     else
-                                                        return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Invalid value argument provided');
+                                                        return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid value argument provided');
                                                 }
                                                 else
-                                                    return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Index could not be found');
+                                                    return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Index could not be found');
                                             }
                                         case '3p11':
                                             {
@@ -958,13 +958,13 @@ export class NcDemo extends NcWorker
                                                         this.enumSequence[index] = value;
                                                         this.notificationContext.NotifyPropertyChanged(this.oid, propertyId, NcPropertyChangeType.SequenceItemChanged, value, index);
     
-                                                        return new CommandResponseNoValue(handle, NcMethodStatus.OK, null);
+                                                        return new CommandResponseNoValue(handle, NcMethodStatus.OK);
                                                     }
                                                     else
-                                                        return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Invalid value argument provided');
+                                                        return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid value argument provided');
                                                 }
                                                 else
-                                                    return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Index could not be found');
+                                                    return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Index could not be found');
                                             }
                                         case '3p12':
                                             {
@@ -976,13 +976,13 @@ export class NcDemo extends NcWorker
                                                         this.numberSequence[index] = value;
                                                         this.notificationContext.NotifyPropertyChanged(this.oid, propertyId, NcPropertyChangeType.SequenceItemChanged, value, index);
     
-                                                        return new CommandResponseNoValue(handle, NcMethodStatus.OK, null);
+                                                        return new CommandResponseNoValue(handle, NcMethodStatus.OK);
                                                     }
                                                     else
-                                                        return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Invalid value argument provided');
+                                                        return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid value argument provided');
                                                 }
                                                 else
-                                                    return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Index could not be found');
+                                                    return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Index could not be found');
                                             }
                                         case '3p13':
                                             {
@@ -994,26 +994,26 @@ export class NcDemo extends NcWorker
                                                         this.objectSequence[index] = value;
                                                         this.notificationContext.NotifyPropertyChanged(this.oid, propertyId, NcPropertyChangeType.SequenceItemChanged, value, index);
 
-                                                        return new CommandResponseNoValue(handle, NcMethodStatus.OK, null);
+                                                        return new CommandResponseNoValue(handle, NcMethodStatus.OK);
                                                     }
                                                     else
-                                                        return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Invalid value argument provided');
+                                                        return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid value argument provided');
                                                 }
                                                 else
-                                                    return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Index could not be found');
+                                                    return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Index could not be found');
                                             }
                                         default:
-                                            return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Property could not be found');
+                                            return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Property could not be found');
                                     }
                                 }
                                 else
-                                    return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Invalid index argument provided');
+                                    return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid index argument provided');
                             }
                             else
-                                return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Invalid id argument provided');
+                                return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid id argument provided');
                         }
                         else
-                            return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Invalid arguments provided');
+                            return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid arguments provided');
                     }
                 case '1m5': //AddSequenceItem
                     {
@@ -1039,10 +1039,10 @@ export class NcDemo extends NcWorker
 
                                                 this.notificationContext.NotifyPropertyChanged(this.oid, propertyId, NcPropertyChangeType.SequenceItemAdded, value, index);
 
-                                                return new CommandResponseWithValue(handle, NcMethodStatus.OK, index, null);
+                                                return new CommandResponseWithValue(handle, NcMethodStatus.OK, index);
                                             }
                                             else
-                                                return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Invalid value argument provided');
+                                                return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid value argument provided');
                                         }
                                     case '3p10':
                                         {
@@ -1054,10 +1054,10 @@ export class NcDemo extends NcWorker
 
                                                 this.notificationContext.NotifyPropertyChanged(this.oid, propertyId, NcPropertyChangeType.SequenceItemAdded, value, index);
 
-                                                return new CommandResponseWithValue(handle, NcMethodStatus.OK, index, null);
+                                                return new CommandResponseWithValue(handle, NcMethodStatus.OK, index);
                                             }
                                             else
-                                                return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Invalid value argument provided');
+                                                return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid value argument provided');
                                         }
                                     case '3p11':
                                         {
@@ -1069,10 +1069,10 @@ export class NcDemo extends NcWorker
 
                                                 this.notificationContext.NotifyPropertyChanged(this.oid, propertyId, NcPropertyChangeType.SequenceItemAdded, value, index);
 
-                                                return new CommandResponseWithValue(handle, NcMethodStatus.OK, index, null);
+                                                return new CommandResponseWithValue(handle, NcMethodStatus.OK, index);
                                             }
                                             else
-                                                return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Invalid value argument provided');
+                                                return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid value argument provided');
                                         }
                                     case '3p12':
                                         {
@@ -1084,10 +1084,10 @@ export class NcDemo extends NcWorker
 
                                                 this.notificationContext.NotifyPropertyChanged(this.oid, propertyId, NcPropertyChangeType.SequenceItemAdded, value, index);
 
-                                                return new CommandResponseWithValue(handle, NcMethodStatus.OK, index, null);
+                                                return new CommandResponseWithValue(handle, NcMethodStatus.OK, index);
                                             }
                                             else
-                                                return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Invalid value argument provided');
+                                                return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid value argument provided');
                                         }
                                     case '3p13':
                                         {
@@ -1099,20 +1099,20 @@ export class NcDemo extends NcWorker
 
                                                 this.notificationContext.NotifyPropertyChanged(this.oid, propertyId, NcPropertyChangeType.SequenceItemAdded, value, index);
 
-                                                return new CommandResponseWithValue(handle, NcMethodStatus.OK, index, null);
+                                                return new CommandResponseWithValue(handle, NcMethodStatus.OK, index);
                                             }
                                             else
-                                                return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Invalid value argument provided');
+                                                return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid value argument provided');
                                         }
                                     default:
-                                        return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Property could not be found');
+                                        return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Property could not be found');
                                 }
                             }
                             else
-                                return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Invalid id argument provided');
+                                return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid id argument provided');
                         }
                         else
-                            return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Invalid arguments provided');
+                            return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid arguments provided');
                     }
                 case '1m6': //RemoveSequenceItem
                     {
@@ -1140,10 +1140,10 @@ export class NcDemo extends NcWorker
                                                     this.stringSequence.splice(index, 1);
                                                     this.notificationContext.NotifyPropertyChanged(this.oid, propertyId, NcPropertyChangeType.SequenceItemRemoved, oldValue, index);
 
-                                                    return new CommandResponseNoValue(handle, NcMethodStatus.OK, null);
+                                                    return new CommandResponseNoValue(handle, NcMethodStatus.OK);
                                                 }
                                                 else
-                                                    return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Index could not be found');
+                                                    return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Index could not be found');
                                             }
                                         case '3p10':
                                             {
@@ -1154,10 +1154,10 @@ export class NcDemo extends NcWorker
                                                     this.booleanSequence.splice(index, 1);
                                                     this.notificationContext.NotifyPropertyChanged(this.oid, propertyId, NcPropertyChangeType.SequenceItemRemoved, oldValue, index);
 
-                                                    return new CommandResponseNoValue(handle, NcMethodStatus.OK, null);
+                                                    return new CommandResponseNoValue(handle, NcMethodStatus.OK);
                                                 }
                                                 else
-                                                    return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Index could not be found');
+                                                    return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Index could not be found');
                                             }
                                         case '3p11':
                                             {
@@ -1168,10 +1168,10 @@ export class NcDemo extends NcWorker
                                                     this.enumSequence.splice(index, 1);
                                                     this.notificationContext.NotifyPropertyChanged(this.oid, propertyId, NcPropertyChangeType.SequenceItemRemoved, oldValue, index);
 
-                                                    return new CommandResponseNoValue(handle, NcMethodStatus.OK, null);
+                                                    return new CommandResponseNoValue(handle, NcMethodStatus.OK);
                                                 }
                                                 else
-                                                    return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Index could not be found');
+                                                    return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Index could not be found');
                                             }
                                         case '3p12':
                                             {
@@ -1182,10 +1182,10 @@ export class NcDemo extends NcWorker
                                                     this.numberSequence.splice(index, 1);
                                                     this.notificationContext.NotifyPropertyChanged(this.oid, propertyId, NcPropertyChangeType.SequenceItemRemoved, oldValue, index);
 
-                                                    return new CommandResponseNoValue(handle, NcMethodStatus.OK, null);
+                                                    return new CommandResponseNoValue(handle, NcMethodStatus.OK);
                                                 }
                                                 else
-                                                    return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Index could not be found');
+                                                    return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Index could not be found');
                                             }
                                         case '3p13':
                                             {
@@ -1196,29 +1196,29 @@ export class NcDemo extends NcWorker
                                                     this.objectSequence.splice(index, 1);
                                                     this.notificationContext.NotifyPropertyChanged(this.oid, propertyId, NcPropertyChangeType.SequenceItemRemoved, oldValue, index);
 
-                                                    return new CommandResponseNoValue(handle, NcMethodStatus.OK, null);
+                                                    return new CommandResponseNoValue(handle, NcMethodStatus.OK);
                                                 }
                                                 else
-                                                    return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Index could not be found');
+                                                    return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Index could not be found');
                                             }
                                         default:
-                                            return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Property could not be found');
+                                            return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Property could not be found');
                                     }
                                 }
                                 else
-                                    return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Invalid index argument provided');
+                                    return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid index argument provided');
                             }
                             else
-                                return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Invalid id argument provided');
+                                return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid id argument provided');
                         }
                         else
-                            return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Invalid arguments provided');
+                            return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid arguments provided');
                     }
                 case '3m1':
                     {
                         this.methodNoArgsCount = this.methodNoArgsCount + 1;
                         this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 6), NcPropertyChangeType.ValueChanged, this.methodNoArgsCount, null);
-                        return new CommandResponseNoValue(handle, NcMethodStatus.OK, null);
+                        return new CommandResponseNoValue(handle, NcMethodStatus.OK);
                     }
                 case '3m2':
                     {
@@ -1243,22 +1243,22 @@ export class NcDemo extends NcWorker
                                         {
                                             this.methodSimpleArgsCount = this.methodSimpleArgsCount + 1;
                                             this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 7), NcPropertyChangeType.ValueChanged, this.methodSimpleArgsCount, null);
-                                            return new CommandResponseNoValue(handle, NcMethodStatus.OK, null);
+                                            return new CommandResponseNoValue(handle, NcMethodStatus.OK);
                                         }
                                         else
-                                            return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Invalid booleanArg argument provided');
+                                            return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid booleanArg argument provided');
                                     }
                                     else
-                                        return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Invalid numberArg argument provided');
+                                        return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid numberArg argument provided');
                                 }
                                 else
-                                    return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Invalid stringArg argument provided');
+                                    return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid stringArg argument provided');
                             }
                             else
-                                return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Invalid enumArg argument provided');
+                                return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid enumArg argument provided');
                         }
                         else
-                            return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Invalid arguments provided');
+                            return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid arguments provided');
                     }
                 case '3m3':
                     {
@@ -1270,20 +1270,20 @@ export class NcDemo extends NcWorker
                             {
                                 this.methodObjectArgCount = this.methodObjectArgCount + 1;
                                 this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 8), NcPropertyChangeType.ValueChanged, this.methodObjectArgCount, null);
-                                return new CommandResponseNoValue(handle, NcMethodStatus.OK, null);
+                                return new CommandResponseNoValue(handle, NcMethodStatus.OK);
                             }
                             else
-                                return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Invalid objArg argument provided');
+                                return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid objArg argument provided');
                         }
                         else
-                            return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Invalid arguments provided');
+                            return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid arguments provided');
                     }
                 default:
                     return super.InvokeMethod(socket, oid, methodId, args, handle);
             }
         }
 
-        return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
+        return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
     }
 
     public static override GetClassDescriptor(): NcClassDescriptor 
