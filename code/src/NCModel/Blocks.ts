@@ -1,5 +1,5 @@
 import { jsonIgnoreReplacer, jsonIgnore } from 'json-ignore';
-import { CommandMsg, CommandResponseNoValue, CommandResponseWithValue, ProtoCommand, ProtoCommandResponse } from '../NCProtocol/Commands';
+import { CommandMsg, CommandResponseError, CommandResponseNoValue, CommandResponseWithValue, ProtoCommand, ProtoCommandResponse } from '../NCProtocol/Commands';
 import { MessageType, ProtocolWrapper } from '../NCProtocol/Core';
 import { WebSocketConnection } from '../Server';
 import { INotificationContext } from '../SessionManager';
@@ -115,35 +115,35 @@ export class NcBlock extends NcObject
             switch(key)
             {
                 case '2p1':
-                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.isRoot, null);
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.isRoot);
                 case '2p2':
-                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.specId, null);
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.specId);
                 case '2p3':
-                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.specVersion, null);
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.specVersion);
                 case '2p4':
-                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.specDescription, null);
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.specDescription);
                 case '2p5':
-                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.parentSpecId, null);
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.parentSpecId);
                 case '2p6':
-                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.parentSpecVersion, null);
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.parentSpecVersion);
                 case '2p7':
-                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.isDynamic, null);
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.isDynamic);
                 case '2p8':
-                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.isModified, null);
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.isModified);
                 case '2p9':
-                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.enabled, null);
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.enabled);
                 case '2p10':
-                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.members, null);
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.members);
                 case '2p11':
-                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.ports, null);
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.ports);
                 case '2p12':
-                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.signalPaths, null);
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.signalPaths);
                 default:
                     return super.Get(oid, propertyId, handle);
             }
         }
 
-        return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
+        return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
     }
 
     //'1m2'
@@ -167,13 +167,13 @@ export class NcBlock extends NcObject
                 case '2p10':
                 case '2p11':
                 case '2p12':
-                    return new CommandResponseNoValue(handle, NcMethodStatus.Readonly, 'Property is readonly');
+                    return new CommandResponseError(handle, NcMethodStatus.Readonly, 'Property is readonly');
                 default:
                     return super.Set(oid, id, value, handle);
             }
         }
 
-        return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
+        return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
     }
 
     public override InvokeMethod(socket: WebSocketConnection, oid: number, methodId: NcElementId, args: { [key: string]: any; } | null, handle: number): CommandResponseNoValue 
@@ -185,14 +185,14 @@ export class NcBlock extends NcObject
             switch(key)
             {
                 case '2m1':
-                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.GenerateMemberDescriptors(), null);
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.GenerateMemberDescriptors());
                 case '2m2':
                     {
                         if(args != null)
                         {
                             let rolePath = args['path'] as string[];
 
-                            return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.GenerateMemberDescriptorsForRolePath(rolePath), null);
+                            return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.GenerateMemberDescriptorsForRolePath(rolePath));
                         }
                     }
                     break;
@@ -201,7 +201,7 @@ export class NcBlock extends NcObject
             }
         }
 
-        return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
+        return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
     }
 
     public override GenerateMemberDescriptor() : NcBlockMemberDescriptor
@@ -264,11 +264,11 @@ export class NcBlock extends NcObject
                 new NcMethodDescriptor(new NcElementId(2, 1), "GetMemberDescriptors", "NcMethodResultBlockMemberDescriptors",
                     [new NcParameterDescriptor("recurse", "NcBoolean", false, false, null, "If recurse is set to true, nested members can be retrieved")], "gets descriptors of members of the block"),
                 new NcMethodDescriptor(new NcElementId(2, 2), "FindMembersByPath", "NcMethodResultBlockMemberDescriptors", [
-                    new NcParameterDescriptor("path", "NcNamePath", false, false, null, "path to search for")
+                    new NcParameterDescriptor("path", "NcRolePath", false, false, null, "path to search for")
                 ], "finds member(s) by path"),
                 new NcMethodDescriptor(new NcElementId(2, 3), "FindMembersByRole", "NcMethodResultBlockMemberDescriptors", [
-                    new NcParameterDescriptor("role", "NcName", false, false, null, "role text to search for"),
-                    new NcParameterDescriptor("nameComparisonType", "NcStringComparisonType", false,  false, null, "type of string comparison to use"),
+                    new NcParameterDescriptor("role", "NcString", false, false, null, "role text to search for"),
+                    new NcParameterDescriptor("roleComparisonType", "NcStringComparisonType", false,  false, null, "type of string comparison to use"),
                     new NcParameterDescriptor("classId", "NcClassId", true,  false, null, "if non null, finds only members with this class ID"),
                     new NcParameterDescriptor("recurse", "NcBoolean", false,  false, null, "TRUE to search nested blocks"),
                 ], "finds members with given role name or fragment")
@@ -420,11 +420,11 @@ export class RootBlock extends NcBlock
                     if(member)
                         return member.Get(commandMsg.oid, propertyId, commandMsg.handle);
                     else
-                        return new CommandResponseNoValue(commandMsg.handle, NcMethodStatus.InvalidRequest, "OID could not be found");
+                        return new CommandResponseError(commandMsg.handle, NcMethodStatus.InvalidRequest, "OID could not be found");
                 }
             }
             else
-                return new CommandResponseNoValue(commandMsg.handle, NcMethodStatus.InvalidRequest, "OID could not be found");
+                return new CommandResponseError(commandMsg.handle, NcMethodStatus.InvalidRequest, "OID could not be found");
         }
         else if (this.IsGenericSetter(commandMsg.methodId))
         {
@@ -441,11 +441,11 @@ export class RootBlock extends NcBlock
                     if(member)
                         return member.Set(commandMsg.oid, propertyId, propertyValue, commandMsg.handle);
                     else
-                        return new CommandResponseNoValue(commandMsg.handle, NcMethodStatus.InvalidRequest, "OID could not be found");
+                        return new CommandResponseError(commandMsg.handle, NcMethodStatus.InvalidRequest, "OID could not be found");
                 }
             }
             else
-                return new CommandResponseNoValue(commandMsg.handle, NcMethodStatus.InvalidRequest, "OID could not be found");
+                return new CommandResponseError(commandMsg.handle, NcMethodStatus.InvalidRequest, "OID could not be found");
         }
         else
         {
@@ -457,11 +457,11 @@ export class RootBlock extends NcBlock
                 if(member)
                     return member.InvokeMethod(socket, commandMsg.oid, commandMsg.methodId, commandMsg.arguments, commandMsg.handle);
                 else
-                    return new CommandResponseNoValue(commandMsg.handle, NcMethodStatus.InvalidRequest, "OID could not be found");
+                    return new CommandResponseError(commandMsg.handle, NcMethodStatus.InvalidRequest, "OID could not be found");
             }
         }
 
-        return new CommandResponseNoValue(commandMsg.handle, NcMethodStatus.InvalidRequest, "OID could not be found");
+        return new CommandResponseError(commandMsg.handle, NcMethodStatus.InvalidRequest, "OID could not be found");
     }
 
     public IsGenericGetter(propertyId: NcElementId) : boolean
