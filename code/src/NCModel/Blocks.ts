@@ -268,7 +268,7 @@ export class NcBlock extends NcObject
                 ], "finds member(s) by path"),
                 new NcMethodDescriptor(new NcElementId(2, 3), "FindMembersByRole", "NcMethodResultBlockMemberDescriptors", [
                     new NcParameterDescriptor("role", "NcString", false, false, null, "role text to search for"),
-                    new NcParameterDescriptor("nameComparisonType", "NcStringComparisonType", false,  false, null, "type of string comparison to use"),
+                    new NcParameterDescriptor("roleComparisonType", "NcStringComparisonType", false,  false, null, "type of string comparison to use"),
                     new NcParameterDescriptor("classId", "NcClassId", true,  false, null, "if non null, finds only members with this class ID"),
                     new NcParameterDescriptor("recurse", "NcBoolean", false,  false, null, "TRUE to search nested blocks"),
                 ], "finds members with given role name or fragment")
