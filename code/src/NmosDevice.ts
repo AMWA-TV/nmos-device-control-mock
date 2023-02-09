@@ -21,7 +21,7 @@ export class NmosDevice extends NmosResource
     private product: string;
 
     @jsonIgnore()
-    private serialNumber: string;
+    private instance: string;
 
     @jsonIgnore()
     private application: string;
@@ -38,7 +38,7 @@ export class NmosDevice extends NmosResource
         manufacturer: string,
         product: string,
         application: string,
-        serialNumber: string,
+        instance: string,
         registrationClient: RegistrationClient)
     {
         super(id, `${base_label} device`, registrationClient);
@@ -47,13 +47,13 @@ export class NmosDevice extends NmosResource
 
         this.manufacturer = manufacturer;
         this.product = product;
-        this.serialNumber = serialNumber;
+        this.instance = instance;
         this.application = application;
 
         this.tags = {
             "urn:x-nmos:tag:asset:facts:manufacturer/v1.0": [ this.manufacturer ],
             "urn:x-nmos:tag:asset:facts:product/v1.0": [ this.product ],
-            "urn:x-nmos:tag:asset:facts:serial-number/v1.0": [ this.serialNumber ],
+            "urn:x-nmos:tag:asset:facts:instance/v1.0": [ this.instance ],
             "urn:x-nmos:tag:asset:facts:application/v1.0": [ this.application ]
         };
 

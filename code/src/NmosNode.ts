@@ -22,7 +22,7 @@ export class NmosNode extends NmosResource
     private product: string;
 
     @jsonIgnore()
-    private serialNumber: string;
+    private instance: string;
 
     public constructor(
         id: string,
@@ -31,7 +31,7 @@ export class NmosNode extends NmosResource
         port: number,
         manufacturer: string,
         product: string,
-        serialNumber: string,
+        instance: string,
         registrationClient: RegistrationClient)
     {
         super(id, `${base_label} node`, registrationClient);
@@ -40,12 +40,12 @@ export class NmosNode extends NmosResource
         
         this.manufacturer = manufacturer;
         this.product = product;
-        this.serialNumber = serialNumber;
+        this.instance = instance;
 
         this.tags = {
             "urn:x-nmos:tag:asset:facts:manufacturer/v1.0": [ this.manufacturer ],
             "urn:x-nmos:tag:asset:facts:product/v1.0": [ this.product ],
-            "urn:x-nmos:tag:asset:facts:serial-number/v1.0": [ this.serialNumber ]
+            "urn:x-nmos:tag:asset:facts:instance/v1.0": [ this.instance ]
         };
 
         this.hostname = os.hostname();
