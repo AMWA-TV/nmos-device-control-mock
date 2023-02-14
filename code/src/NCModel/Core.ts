@@ -9,7 +9,7 @@ export function myIdDecorator(identity: string) {
 
 export abstract class BaseType
 {
-    public static GetTypeDescriptor() : NcDatatypeDescriptor
+    public static GetTypeDescriptor(includeInherited: boolean) : NcDatatypeDescriptor
     {
         return new NcDatatypeDescriptor("NotDefined", NcDatatypeType.Struct, null, "Base");
     }
@@ -19,11 +19,14 @@ export abstract class NcObject
 {
     public notificationContext: INotificationContext;
 
+    public static staticClassID: number[] = [ 1 ];
+    public static staticClassVersion: string = "1.0.0";
+
     @myIdDecorator('1p1')
-    public abstract classID: number[];
+    public classID: number[] = NcObject.staticClassID;
 
     @myIdDecorator('1p2')
-    public abstract classVersion: string;
+    public classVersion: string = NcObject.staticClassVersion;
 
     @myIdDecorator('1p3')
     public oid: number;
@@ -138,9 +141,10 @@ export abstract class NcObject
         return new NcBlockMemberDescriptor(this.role, this.oid, this.constantOid, new NcClassIdentity(this.classID, this.classVersion), this.userLabel, this.owner, this.description, null);
     }
 
-    public static GetClassDescriptor() : NcClassDescriptor
+    public static GetClassDescriptor(includeInherited: boolean) : NcClassDescriptor
     {
-        return new NcClassDescriptor("NcObject class descriptor",
+        return new NcClassDescriptor(`${NcObject.name} class descriptor`,
+            new NcClassIdentity(NcObject.staticClassID, NcObject.staticClassVersion), NcObject.name, null,
             [ 
                 new NcPropertyDescriptor(new NcElementId(1, 1), "classId", "NcClassId", true, true, false, false, null, "Class identity"),
                 new NcPropertyDescriptor(new NcElementId(1, 2), "classVersion", "NcVersionCode", true, true, false, false, null, "Class version"),
@@ -157,7 +161,7 @@ export abstract class NcObject
                 ], "Get property value"),
                 new NcMethodDescriptor(new NcElementId(1, 2), "Set", "NcMethodResult", [
                     new NcParameterDescriptor("id", "NcPropertyId", false, false, null, "Property id"),
-                    new NcParameterDescriptor("value", null, true, null, null, "Property value")
+                    new NcParameterDescriptor("value", null, true, false, null, "Property value")
                 ], "Set property value"),
                 new NcMethodDescriptor(new NcElementId(1, 3), "GetSequenceItem", "NcMethodResultPropertyValue", [
                     new NcParameterDescriptor("id", "NcPropertyId", false, false, null, "Property id"),
@@ -166,11 +170,11 @@ export abstract class NcObject
                 new NcMethodDescriptor(new NcElementId(1, 4), "SetSequenceItem", "NcMethodResult", [
                     new NcParameterDescriptor("id", "NcPropertyId", false, false, null, "Property id"),
                     new NcParameterDescriptor("index", "NcId32", false, false, null, "Index of item in the sequence"),
-                    new NcParameterDescriptor("value", null, true, null, null, "Value")
+                    new NcParameterDescriptor("value", null, true, false, null, "Value")
                 ], "Set sequence item value"),
                 new NcMethodDescriptor(new NcElementId(1, 5), "AddSequenceItem", "NcMethodResultId32", [
                     new NcParameterDescriptor("id", "NcPropertyId", false, false, null, "Property id"),
-                    new NcParameterDescriptor("value", null, true, null, null, "Value")
+                    new NcParameterDescriptor("value", null, true, false, null, "Value")
                 ], "Add item to sequence"),
                 new NcMethodDescriptor(new NcElementId(1, 6), "RemoveSequenceItem", "NcMethodResult", [
                     new NcParameterDescriptor("id", "NcPropertyId", false, false, null, "Property id"),
@@ -197,7 +201,7 @@ export class NcElementId extends BaseType
         this.index = index;
     }
 
-    public static override GetTypeDescriptor(): NcDatatypeDescriptor
+    public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor
     {
         return new NcDatatypeDescriptorStruct("NcElementId", [
             new NcFieldDescriptor("level", "NcUint16", false, false, null, "Level of the element"),
@@ -267,7 +271,7 @@ export class NcPort extends BaseType
         this.clockPath = clockPath;
     }
 
-    public static override GetTypeDescriptor(): NcDatatypeDescriptor
+    public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor
     {
         return new NcDatatypeDescriptorStruct("NcPort", [
             new NcFieldDescriptor("role", "NcString", false, false, null, "Unique within owning object"),
@@ -293,7 +297,7 @@ export class NcPortReference extends BaseType
         this.role = role;
     }
 
-    public static override GetTypeDescriptor(): NcDatatypeDescriptor
+    public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor
     {
         return new NcDatatypeDescriptorStruct("NcPortReference", [
             new NcFieldDescriptor("owner", "NcRolePath", false, true, null, "Role path of owning object"),
@@ -326,7 +330,7 @@ export class NcSignalPath extends BaseType
         this.sink = sink;
     }
 
-    public static override GetTypeDescriptor(): NcDatatypeDescriptor
+    public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor
     {
         return new NcDatatypeDescriptorStruct("NcSignalPath", [
             new NcFieldDescriptor("role", "NcString", false, false, null, "Unique identifier of this signal path in this block"),
@@ -351,7 +355,7 @@ export abstract class NcTouchpointResource extends BaseType
         this.resourceType = resourceType;
     }
 
-    public static override GetTypeDescriptor(): NcDatatypeDescriptor
+    public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor
     {
         return new NcDatatypeDescriptorStruct("NcTouchpointResource", [
             new NcFieldDescriptor("resourceType", "NcString", false, false, null, "The type of the resource")
@@ -372,15 +376,20 @@ export class NcTouchpointResourceNmos extends NcTouchpointResource
         this.id = id;
     }
 
-    public static override GetTypeDescriptor(): NcDatatypeDescriptor
+    public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor
     {
-        let baseDescriptor = super.GetTypeDescriptor();
-
         let currentClassDescriptor = new NcDatatypeDescriptorStruct("NcTouchpointResourceNmos", [
             new NcFieldDescriptor("id", "NcUUID", false, false, null, "NMOS resource UUID")
         ], "NcTouchpointResource", null, "Touchpoint resource class for NMOS resources");
 
-        currentClassDescriptor.content = currentClassDescriptor.content.concat(baseDescriptor.content);
+        if(includeInherited)
+        {
+            let baseDescriptor = super.GetTypeDescriptor(includeInherited);
+
+            let baseDescriptorStruct = baseDescriptor as NcDatatypeDescriptorStruct;
+            if(baseDescriptorStruct)
+                currentClassDescriptor.fields = currentClassDescriptor.fields.concat(baseDescriptorStruct.fields);
+        }
 
         return currentClassDescriptor;
     }
@@ -402,7 +411,7 @@ export abstract class NcTouchpoint extends BaseType
         this.resource = resource;
     }
 
-    public static override GetTypeDescriptor(): NcDatatypeDescriptor
+    public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor
     {
         return new NcDatatypeDescriptorStruct("NcTouchpoint", [
             new NcFieldDescriptor("contextNamespace", "NcString", false, false, null, "Context namespace")
@@ -419,15 +428,20 @@ export class NcTouchpointNmos extends NcTouchpoint
         super(contextNamespace, resource);
     }
 
-    public static override GetTypeDescriptor(): NcDatatypeDescriptor
+    public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor
     {
-        let baseDescriptor = super.GetTypeDescriptor();
-
         let currentClassDescriptor = new NcDatatypeDescriptorStruct("NcTouchpointNmos", [
             new NcFieldDescriptor("resource", "NcTouchpointResourceNmos", false, false, null, "Context resource linked"),
         ], "NcTouchpoint", null, "Touchpoint class for NMOS resources");
 
-        currentClassDescriptor.content = currentClassDescriptor.content.concat(baseDescriptor.content);
+        if(includeInherited)
+        {
+            let baseDescriptor = super.GetTypeDescriptor(includeInherited);
+
+            let baseDescriptorStruct = baseDescriptor as NcDatatypeDescriptorStruct;
+            if(baseDescriptorStruct)
+                currentClassDescriptor.fields = currentClassDescriptor.fields.concat(baseDescriptorStruct.fields);
+        }
 
         return currentClassDescriptor;
     }
@@ -448,7 +462,7 @@ export class NcClassIdentity extends BaseType
         this.version = version;
     }
 
-    public static override GetTypeDescriptor(): NcDatatypeDescriptor
+    public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor
     {
         return new NcDatatypeDescriptorStruct("NcClassIdentity", [
             new NcFieldDescriptor("id", "NcClassId", false, false, null, "Class identity"),
@@ -482,7 +496,7 @@ export class NcBlockMemberDescriptor extends BaseType
     public userLabel: string | null;
     public owner: number | null;
     public description: string;
-    public constraints: NcPropertyConstraint | null;
+    public constraints: NcPropertyConstraints | null;
 
     constructor(
         role: string,
@@ -492,7 +506,7 @@ export class NcBlockMemberDescriptor extends BaseType
         userLabel: string | null,
         owner: number | null,
         description: string,
-        constraints: NcPropertyConstraint | null)
+        constraints: NcPropertyConstraints | null)
     {
         super();
 
@@ -506,7 +520,7 @@ export class NcBlockMemberDescriptor extends BaseType
         this.constraints = constraints;
     }
 
-    public static override GetTypeDescriptor(): NcDatatypeDescriptor
+    public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor
     {
         return new NcDatatypeDescriptorStruct("NcBlockMemberDescriptor", [
             new NcFieldDescriptor("role", "NcString", false, false, null, "Role of member in its containing block"),
@@ -537,7 +551,7 @@ export class NcBlockDescriptor extends NcBlockMemberDescriptor
         userLabel: string | null,
         owner: number | null,
         description: string,
-        constraints: NcPropertyConstraint | null)
+        constraints: NcPropertyConstraints | null)
     {
         super(role, oid, constantOid, identity, userLabel, owner, description, constraints);
 
@@ -550,7 +564,7 @@ export class NcBlockDescriptor extends NcBlockMemberDescriptor
         this.description = description;
     }
 
-    public static override GetTypeDescriptor(): NcDatatypeDescriptor
+    public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor
     {
         return new NcDatatypeDescriptorStruct("NcBlockDescriptor", [
             new NcFieldDescriptor("role", "NcString", false, false, null, "Role of member in its containing block"),
@@ -574,21 +588,21 @@ export class NcPropertyDescriptor extends NcDescriptor
     public id: NcElementId;
     public name: string;
     public typeName: string | null;
-    public readOnly: boolean;
-    public persistent: boolean;
+    public isReadOnly: boolean;
+    public isPersistent: boolean;
     public isNullable: boolean;
     public isSequence: boolean;
-    public constraints: NcParameterConstraint | null;
+    public constraints: NcParameterConstraints | null;
 
     constructor(
         id: NcElementId,
         name: string,
         typeName: string | null,
-        readOnly: boolean,
-        persistent: boolean,
+        isReadOnly: boolean,
+        isPersistent: boolean,
         isNullable: boolean,
         isSequence: boolean,
-        constraints: NcParameterConstraint | null,
+        constraints: NcParameterConstraints | null,
         description: string)
     {
         super(description);
@@ -596,8 +610,8 @@ export class NcPropertyDescriptor extends NcDescriptor
         this.id = id;
         this.name = name;
         this.typeName = typeName;
-        this.readOnly = readOnly;
-        this.persistent = persistent;
+        this.isReadOnly = isReadOnly;
+        this.isPersistent = isPersistent;
         this.isNullable = isNullable;
         this.isSequence = isSequence;
         this.constraints = constraints;
@@ -609,7 +623,7 @@ export class NcPropertyDescriptor extends NcDescriptor
     }
 }
 
-export class NcPropertyConstraint
+export class NcPropertyConstraints
 {
     public path: string[] | null;
     public propertyId: NcElementId;
@@ -631,7 +645,7 @@ export class NcPropertyConstraint
     }
 }
 
-export class NcPropertyConstraintNumber extends NcPropertyConstraint
+export class NcPropertyConstraintsNumber extends NcPropertyConstraints
 {
     public maximum: number;
     public minimum: number;
@@ -658,7 +672,7 @@ export class NcPropertyConstraintNumber extends NcPropertyConstraint
     }
 }
 
-export class NcPropertyConstraintString extends NcPropertyConstraint
+export class NcPropertyConstraintsString extends NcPropertyConstraints
 {
     public maxCharacters: number;
     public pattern: string;
@@ -682,7 +696,7 @@ export class NcPropertyConstraintString extends NcPropertyConstraint
     }
 }
 
-export abstract class NcParameterConstraint
+export abstract class NcParameterConstraints
 {
     public ToJson()
     {
@@ -690,7 +704,7 @@ export abstract class NcParameterConstraint
     }
 }
 
-export class NcParameterConstraintNumber extends NcParameterConstraint
+export class NcParameterConstraintsNumber extends NcParameterConstraints
 {
     public maximum: number;
     public minimum: number;
@@ -714,7 +728,7 @@ export class NcParameterConstraintNumber extends NcParameterConstraint
     }
 }
 
-export class NcParameterConstraintString extends NcParameterConstraint
+export class NcParameterConstraintsString extends NcParameterConstraints
 {
     public maxCharacters: number | null;
     public pattern: string | null;
@@ -740,15 +754,15 @@ export class NcParameterDescriptor extends NcDescriptor
     public name: string;
     public typeName: string | null;
     public isNullable: boolean;
-    public isSequence: boolean | null;
-    public constraints: NcParameterConstraint | null;
+    public isSequence: boolean;
+    public constraints: NcParameterConstraints | null;
 
     constructor(
         name: string,
         typeName: string | null,
         isNullable: boolean,
-        isSequence: boolean | null,
-        constraints: NcParameterConstraint | null,
+        isSequence: boolean,
+        constraints: NcParameterConstraints | null,
         description: string)
     {
         super(description);
@@ -821,18 +835,27 @@ export class NcEventDescriptor extends NcDescriptor
 
 export class NcClassDescriptor extends NcDescriptor
 {
+    public identity: NcClassIdentity;
+    public name: string;
+    public fixedRole: string | null;
     public properties: NcPropertyDescriptor[];
     public methods: NcMethodDescriptor[];
     public events: NcEventDescriptor[];
 
     constructor(
         description: string,
+        identity: NcClassIdentity,
+        name: string,
+        fixedRole: string | null,
         properties: NcPropertyDescriptor[],
         methods: NcMethodDescriptor[],
         events: NcEventDescriptor[])
     {
         super(description);
 
+        this.identity = identity;
+        this.name = name;
+        this.fixedRole = fixedRole;
         this.properties = properties;
         this.methods = methods;
         this.events = events;
@@ -857,15 +880,15 @@ export class NcFieldDescriptor extends NcDescriptor
     public name: string;
     public typeName: string | null;
     public isNullable: boolean;
-    public isSequence: boolean | null;
-    public constraints: NcParameterConstraint | null;
+    public isSequence: boolean;
+    public constraints: NcParameterConstraints | null;
 
     constructor(
         name: string,
         typeName: string | null,
         isNullable: boolean,
-        isSequence: boolean | null,
-        constraints: NcParameterConstraint | null,
+        isSequence: boolean,
+        constraints: NcParameterConstraints | null,
         description: string)
     {
         super(description);
@@ -886,17 +909,17 @@ export class NcFieldDescriptor extends NcDescriptor
 export class NcEnumItemDescriptor extends NcDescriptor
 {
     public name: string;
-    public index: number;
+    public value: number;
 
     constructor(
         name: string,
-        index: number,
+        value: number,
         description: string)
     {
         super(description);
 
         this.name = name;
-        this.index = index;
+        this.value = value;
     }
 
     public ToJson()
@@ -909,13 +932,12 @@ export class NcDatatypeDescriptor extends NcDescriptor
 {
     public name: string;
     public type: NcDatatypeType;
-    public content: any | null;
-    public constraints: NcParameterConstraint | null;
+    public constraints: NcParameterConstraints | null;
 
     constructor(
         name: string,
         type: NcDatatypeType,
-        constraints: NcParameterConstraint | null,
+        constraints: NcParameterConstraints | null,
         description: string)
     {
         super(description);
@@ -923,7 +945,6 @@ export class NcDatatypeDescriptor extends NcDescriptor
         this.name = name;
         this.type = type;
         this.constraints = constraints;
-        this.content = null;
     }
 
     public ToJson()
@@ -936,7 +957,7 @@ export class NcDatatypeDescriptorPrimitive extends NcDatatypeDescriptor
 {
     constructor(
         name: string,
-        constraints: NcParameterConstraint | null,
+        constraints: NcParameterConstraints | null,
         description: string)
     {
         super(name, NcDatatypeType.Primitive, constraints, description);
@@ -950,19 +971,19 @@ export class NcDatatypeDescriptorPrimitive extends NcDatatypeDescriptor
 
 export class NcDatatypeDescriptorTypeDef extends NcDatatypeDescriptor
 {
-    public override content: string;
+    public parentType: string;
     public isSequence: boolean;
 
     constructor(
         name: string,
-        content: string,
+        parentType: string,
         isSequence: boolean,
-        constraints: NcParameterConstraint | null,
+        constraints: NcParameterConstraints | null,
         description: string)
     {
         super(name, NcDatatypeType.Typedef, constraints, description);
 
-        this.content = content;
+        this.parentType = parentType;
         this.isSequence = isSequence;
     }
 
@@ -974,20 +995,20 @@ export class NcDatatypeDescriptorTypeDef extends NcDatatypeDescriptor
 
 export class NcDatatypeDescriptorStruct extends NcDatatypeDescriptor
 {
-    public override content: NcFieldDescriptor[];
+    public fields: NcFieldDescriptor[];
 
     public parentType: string | null;
 
     constructor(
         name: string,
-        content: NcFieldDescriptor[],
+        fields: NcFieldDescriptor[],
         parentType: string | null,
-        constraints: NcParameterConstraint | null,
+        constraints: NcParameterConstraints | null,
         description: string)
     {
         super(name, NcDatatypeType.Struct, constraints, description);
 
-        this.content = content;
+        this.fields = fields;
         this.parentType = parentType;
     }
 
@@ -999,17 +1020,17 @@ export class NcDatatypeDescriptorStruct extends NcDatatypeDescriptor
 
 export class NcDatatypeDescriptorEnum extends NcDatatypeDescriptor
 {
-    public override content: NcEnumItemDescriptor[];
+    public items: NcEnumItemDescriptor[];
 
     constructor(
         name: string,
-        content: NcEnumItemDescriptor[],
-        constraints: NcParameterConstraint | null,
+        items: NcEnumItemDescriptor[],
+        constraints: NcParameterConstraints | null,
         description: string)
     {
         super(name, NcDatatypeType.Enum, constraints, description);
 
-        this.content = content;
+        this.items = items;
     }
 
     public ToJson()

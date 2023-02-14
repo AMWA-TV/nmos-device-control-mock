@@ -21,11 +21,14 @@ import {
 
 export class NcBlock extends NcObject
 {
+    public static staticClassID: number[] = [ 1, 1 ];
+    public static staticClassVersion: string = "1.0.0";
+
     @myIdDecorator('1p1')
-    public classID: number[] = [ 1, 1 ];
+    public override classID: number[] = NcBlock.staticClassID;
 
     @myIdDecorator('1p2')
-    public classVersion: string = "1.0.0";
+    public override classVersion: string = NcBlock.staticClassVersion;
 
     @myIdDecorator('2p1')
     public isRoot: boolean;
@@ -185,7 +188,19 @@ export class NcBlock extends NcObject
             switch(key)
             {
                 case '2m1':
-                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.GenerateMemberDescriptors());
+                    {
+                        if(args != null)
+                        {
+                            let recurse = args['recurse'] as boolean;
+
+                            if(recurse)
+                                return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.GenerateMemberDescriptors(true));
+                            else
+                                return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.GenerateMemberDescriptors(false));
+                        }
+                        else
+                            return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid arguments provided');
+                    }
                 case '2m2':
                     {
                         if(args != null)
@@ -194,8 +209,67 @@ export class NcBlock extends NcObject
 
                             return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.GenerateMemberDescriptorsForRolePath(rolePath));
                         }
+                        else
+                            return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid arguments provided');
                     }
-                    break;
+                case '2m3':
+                    {
+                        if(args != null)
+                        {
+                            if('role' in args)
+                            {
+                                if('caseSensitive' in args)
+                                {
+                                    if('matchWholeString' in args)
+                                    {
+                                        let role = args['role'] as string;
+                                        let caseSensitive = args['caseSensitive'] as boolean;
+                                        let matchWholeString = args['matchWholeString'] as boolean;
+                                        let recurse = args['recurse'] as boolean;
+
+                                        if(recurse)
+                                            return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.GenerateMemberDescriptorsByRole(role, caseSensitive, matchWholeString, true));
+                                        else
+                                            return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.GenerateMemberDescriptorsByRole(role, caseSensitive, matchWholeString, false));
+                                    }
+                                    else
+                                        return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'No matchWholeString argument provided');
+                                }
+                                else
+                                    return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'No caseSensitive argument provided');
+                            }
+                            else
+                                return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'No role argument provided');
+                        }
+                        else
+                            return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid arguments provided');
+                    }
+                case '2m4':
+                    {
+                        if(args != null)
+                        {
+                            if('id' in args)
+                            {
+                                if('includeDerived' in args)
+                                {
+                                    let id = args['id'] as number[];
+                                    let includeDerived = args['includeDerived'] as boolean;
+                                    let recurse = args['recurse'] as boolean;
+
+                                    if(recurse)
+                                        return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.GenerateMemberDescriptorsByClassId(id, includeDerived, true));
+                                    else
+                                        return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.GenerateMemberDescriptorsByClassId(id, includeDerived, false));
+                                }
+                                else
+                                    return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'No includeDerived argument provided');
+                            }
+                            else
+                                return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'No id argument provided');
+                        }
+                        else
+                            return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid arguments provided');
+                    }
                 default:
                     return super.InvokeMethod(socket, oid, methodId, args, handle);
             }
@@ -241,12 +315,11 @@ export class NcBlock extends NcObject
         return memberToReturn;
     }
 
-    public static override GetClassDescriptor(): NcClassDescriptor 
+    public static override GetClassDescriptor(includeInherited: boolean): NcClassDescriptor 
     {
-        let baseDescriptor = super.GetClassDescriptor();
-
-        let currentClassDescriptor = new NcClassDescriptor("NcBlock class descriptor",
-            [ 
+        let currentClassDescriptor = new NcClassDescriptor(`${NcBlock.name} class descriptor`,
+            new NcClassIdentity(NcBlock.staticClassID, NcBlock.staticClassVersion), NcBlock.name, null,
+            [
                 new NcPropertyDescriptor(new NcElementId(2, 1), "isRoot", "NcBoolean", true, true, false, false, null, "TRUE if block is the root block"),
                 new NcPropertyDescriptor(new NcElementId(2, 2), "specId", "NcString", true, true, true, false, null, "Global ID of blockSpec that defines this block"),
                 new NcPropertyDescriptor(new NcElementId(2, 3), "specVersion", "NcVersionCode", true, true, true, false, null, "Version code of blockSpec that defines this block"),
@@ -268,25 +341,45 @@ export class NcBlock extends NcObject
                 ], "finds member(s) by path"),
                 new NcMethodDescriptor(new NcElementId(2, 3), "FindMembersByRole", "NcMethodResultBlockMemberDescriptors", [
                     new NcParameterDescriptor("role", "NcString", false, false, null, "role text to search for"),
-                    new NcParameterDescriptor("roleComparisonType", "NcStringComparisonType", false,  false, null, "type of string comparison to use"),
-                    new NcParameterDescriptor("classId", "NcClassId", true,  false, null, "if non null, finds only members with this class ID"),
-                    new NcParameterDescriptor("recurse", "NcBoolean", false,  false, null, "TRUE to search nested blocks"),
-                ], "finds members with given role name or fragment")
+                    new NcParameterDescriptor("caseSensitive", "NcBoolean", false,  false, null, "signals if the comparison should be case sensitive"),
+                    new NcParameterDescriptor("matchWholeString", "NcBoolean", false,  false, null, "TRUE to only return exact matches"),
+                    new NcParameterDescriptor("recurse", "NcBoolean", false,  false, null, "TRUE to search nested blocks")
+                ], "finds members with given role name or fragment"),
+                new NcMethodDescriptor(new NcElementId(2, 4), "FindMembersByClassId", "NcMethodResultBlockMemberDescriptors", [
+                    new NcParameterDescriptor("id", "NcClassId", false, false, null, "class id to search for"),
+                    new NcParameterDescriptor("includeDerived", "NcBoolean", false,  false, null, "If TRUE it will also include derived class descriptors"),
+                    new NcParameterDescriptor("recurse", "NcBoolean", false,  false, null, "TRUE to search nested blocks")
+                ], "finds members with given class id")
             ],
             []
         );
 
-        currentClassDescriptor.properties = currentClassDescriptor.properties.concat(baseDescriptor.properties);
-        currentClassDescriptor.methods = currentClassDescriptor.methods.concat(baseDescriptor.methods);
-        currentClassDescriptor.events = currentClassDescriptor.events.concat(baseDescriptor.events);
+        if(includeInherited)
+        {
+            let baseDescriptor = super.GetClassDescriptor(includeInherited);
+
+            currentClassDescriptor.properties = currentClassDescriptor.properties.concat(baseDescriptor.properties);
+            currentClassDescriptor.methods = currentClassDescriptor.methods.concat(baseDescriptor.methods);
+            currentClassDescriptor.events = currentClassDescriptor.events.concat(baseDescriptor.events);
+        }
 
         return currentClassDescriptor;
     }
 
-    private GenerateMemberDescriptors() : NcBlockMemberDescriptor[]
+    public GenerateMemberDescriptors(recurse: boolean) : NcBlockMemberDescriptor[]
     {
         if(this.memberObjects != null)
-            return this.memberObjects.map(x => x.GenerateMemberDescriptor());
+        {
+            let descriptors = new Array<NcBlockMemberDescriptor>();
+
+            this.memberObjects.forEach(member => {
+                descriptors.push(member.GenerateMemberDescriptor());
+                if(recurse && member instanceof NcBlock)
+                    descriptors = descriptors.concat(member.GenerateMemberDescriptors(recurse));
+            });
+
+            return descriptors;
+        }
         else
             return new Array<NcBlockMemberDescriptor>()
     }
@@ -312,7 +405,7 @@ export class NcBlock extends NcObject
                     else if(member instanceof NcBlock)
                     {
                         let furtherPath = rolePath.splice(1);
-                            return member.GenerateMemberDescriptorsForRolePath(furtherPath);
+                        return member.GenerateMemberDescriptorsForRolePath(furtherPath);
                     }
                     else
                         return new Array<NcBlockMemberDescriptor>()
@@ -322,6 +415,72 @@ export class NcBlock extends NcObject
             }
             else
                 return new Array<NcBlockMemberDescriptor>()
+        }
+        else
+            return new Array<NcBlockMemberDescriptor>()
+    }
+
+    public GenerateMemberDescriptorsByRole(role: string, caseSensitive: boolean, matchWholeString: boolean, recurse: boolean) : NcBlockMemberDescriptor[]
+    {
+        if(this.memberObjects != null)
+        {
+            let descriptors = new Array<NcBlockMemberDescriptor>();
+
+            this.memberObjects.forEach(member => {
+                if(caseSensitive && matchWholeString)
+                {
+                    if(member.role === role)
+                        descriptors.push(member.GenerateMemberDescriptor());
+                }
+                else if(caseSensitive && matchWholeString == false)
+                {
+                    if(member.role.includes(role))
+                        descriptors.push(member.GenerateMemberDescriptor());
+                }
+                else if(caseSensitive == false && matchWholeString)
+                {
+                    if(member.role.toUpperCase() === role.toUpperCase())
+                        descriptors.push(member.GenerateMemberDescriptor());
+                }
+                else if(caseSensitive == false && matchWholeString == false)
+                {
+                    if(member.role.toUpperCase().includes(role.toUpperCase()))
+                        descriptors.push(member.GenerateMemberDescriptor());
+                }
+
+                if(recurse && member instanceof NcBlock)
+                    descriptors = descriptors.concat(member.GenerateMemberDescriptorsByRole(role, caseSensitive, matchWholeString, recurse));
+            });
+
+            return descriptors;
+        }
+        else
+            return new Array<NcBlockMemberDescriptor>()
+    }
+
+    public GenerateMemberDescriptorsByClassId(classId: number[], includeDerived: boolean, recurse: boolean) : NcBlockMemberDescriptor[]
+    {
+        if(this.memberObjects != null)
+        {
+            let descriptors = new Array<NcBlockMemberDescriptor>();
+
+            this.memberObjects.forEach(member => {
+                if(includeDerived)
+                {
+                    if(member.classID.join().includes(classId.join()))
+                        descriptors.push(member.GenerateMemberDescriptor());
+                }
+                else
+                {
+                    if(member.classID.join() === classId.join())
+                        descriptors.push(member.GenerateMemberDescriptor());
+                }
+
+                if(recurse && member instanceof NcBlock)
+                    descriptors = descriptors.concat(member.GenerateMemberDescriptorsByClassId(classId, includeDerived, recurse));
+            });
+
+            return descriptors;
         }
         else
             return new Array<NcBlockMemberDescriptor>()
