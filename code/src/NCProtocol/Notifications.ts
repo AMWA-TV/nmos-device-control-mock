@@ -33,7 +33,7 @@ export class NcPropertyChangedEventData extends BaseType
             new NcFieldDescriptor("propertyId", "NcElementId", false, false, null, "ID of changed property"),
             new NcFieldDescriptor("changeType", "NcPropertyChangeType", false, false, null, "Information regarding the change type"),
             new NcFieldDescriptor("value", null, true, false, null, "Property-type specific value"),
-            new NcFieldDescriptor("sequenceItemIndex", "NcId32", true, false, null, "Index of sequence item if the property is a sequence")
+            new NcFieldDescriptor("sequenceItemIndex", "NcId", true, false, null, "Index of sequence item if the property is a sequence")
         ], null, null, "Payload of property-changed event");
     }
 
@@ -47,13 +47,17 @@ export class NcNotification
 {
     public oid: number;
 
+    public eventId: NcElementId;
+
     public eventData: NcPropertyChangedEventData;
 
     constructor(
         oid: number,
+        eventId: NcElementId,
         eventData: NcPropertyChangedEventData)
     {
         this.oid = oid;
+        this.eventId = eventId;
         this.eventData = eventData;
     }
 }

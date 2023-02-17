@@ -69,21 +69,6 @@ export class CommandResponseWithValue extends CommandResponseNoValue
     }
 }
 
-export class EventSubscriptionData
-{
-    public emitterOid: number;
-
-    public eventId: NcElementId;
-
-    constructor(
-        emitterOid: number,
-        eventId: NcElementId)
-    {
-        this.emitterOid = emitterOid;
-        this.eventId = eventId;
-    }
-}
-
 export class ProtoCommand extends ProtocolWrapper
 {
     public commands: CommandMsg[];
@@ -117,6 +102,64 @@ export class ProtoCommandResponse extends ProtocolWrapper
     public AddCommandResponse(response: CommandResponseNoValue)
     {
         this.responses.push(response);
+    }
+
+    public ToJson()
+    {
+        return JSON.stringify(this, jsonIgnoreReplacer);
+    }
+}
+
+export class ProtoSubscription extends ProtocolWrapper
+{
+    public subscriptions: number[];
+
+    public constructor(
+        subscriptions: number[])
+    {
+        super('1.0.0', MessageType.Subscription);
+
+        this.subscriptions = subscriptions;
+    }
+
+    public ToJson()
+    {
+        return JSON.stringify(this, jsonIgnoreReplacer);
+    }
+}
+
+export class ProtoSubscriptionResponse extends ProtocolWrapper
+{
+    public subscriptions: number[];
+
+    public constructor(
+        subscriptions: number[])
+    {
+        super('1.0.0', MessageType.SubscriptionResponse);
+
+        this.subscriptions = subscriptions;
+    }
+
+    public ToJson()
+    {
+        return JSON.stringify(this, jsonIgnoreReplacer);
+    }
+}
+
+export class ProtoError extends ProtocolWrapper
+{
+    public status: NcMethodStatus;
+
+    public errorMessage: string;
+
+    public constructor(
+        status: NcMethodStatus,
+        errorMessage: string)
+    {
+        super('1.0.0', MessageType.Error);
+
+        this.status = status;
+        this.errorMessage = errorMessage;
     }
 
     public ToJson()

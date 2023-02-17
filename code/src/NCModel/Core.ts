@@ -165,20 +165,20 @@ export abstract class NcObject
                 ], "Set property value"),
                 new NcMethodDescriptor(new NcElementId(1, 3), "GetSequenceItem", "NcMethodResultPropertyValue", [
                     new NcParameterDescriptor("id", "NcPropertyId", false, false, null, "Property id"),
-                    new NcParameterDescriptor("index", "NcId32", false, false, null, "Index of item in the sequence")
+                    new NcParameterDescriptor("index", "NcId", false, false, null, "Index of item in the sequence")
                 ], "Get sequence item"),
                 new NcMethodDescriptor(new NcElementId(1, 4), "SetSequenceItem", "NcMethodResult", [
                     new NcParameterDescriptor("id", "NcPropertyId", false, false, null, "Property id"),
-                    new NcParameterDescriptor("index", "NcId32", false, false, null, "Index of item in the sequence"),
+                    new NcParameterDescriptor("index", "NcId", false, false, null, "Index of item in the sequence"),
                     new NcParameterDescriptor("value", null, true, false, null, "Value")
                 ], "Set sequence item value"),
-                new NcMethodDescriptor(new NcElementId(1, 5), "AddSequenceItem", "NcMethodResultId32", [
+                new NcMethodDescriptor(new NcElementId(1, 5), "AddSequenceItem", "NcMethodResultId", [
                     new NcParameterDescriptor("id", "NcPropertyId", false, false, null, "Property id"),
                     new NcParameterDescriptor("value", null, true, false, null, "Value")
                 ], "Add item to sequence"),
                 new NcMethodDescriptor(new NcElementId(1, 6), "RemoveSequenceItem", "NcMethodResult", [
                     new NcParameterDescriptor("id", "NcPropertyId", false, false, null, "Property id"),
-                    new NcParameterDescriptor("index", "NcId32", false, false, null, "Index of item in the sequence"),
+                    new NcParameterDescriptor("index", "NcId", false, false, null, "Index of item in the sequence"),
                 ], "Delete sequence item")
             ],
             [ new NcEventDescriptor(new NcElementId(1, 1), "PropertyChanged", "NcPropertyChangedEventData", "Property changed event") ]
