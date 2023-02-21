@@ -1,5 +1,5 @@
 import { jsonIgnoreReplacer, jsonIgnore } from 'json-ignore';
-import { CommandMsg, CommandResponseError, CommandResponseNoValue, CommandResponseWithValue, ProtoCommand, ProtoCommandResponse } from '../NCProtocol/Commands';
+import { CommandMsg, CommandResponseError, CommandResponseNoValue, CommandResponseWithValue, ProtoCommand, ProtoCommandResponse, ProtoError } from '../NCProtocol/Commands';
 import { MessageType, ProtocolWrapper } from '../NCProtocol/Core';
 import { WebSocketConnection } from '../Server';
 import { INotificationContext } from '../SessionManager';
@@ -533,21 +533,43 @@ export class RootBlock extends NcBlock
 
     public ProcessMessage(msg: string, socket: WebSocketConnection)
     {
-        let message = JSON.parse(msg) as ProtocolWrapper;
+        let isMessageValid = false;
+        let errorMessage = ``;
+        let status: NcMethodStatus = NcMethodStatus.BadCommandFormat;
 
-        switch(message.messageType)
+        try
         {
-            case MessageType.Command:
+            let message = JSON.parse(msg) as ProtocolWrapper;
+
+            switch(message.messageType)
             {
-                let msgCommand = JSON.parse(msg) as ProtoCommand;
-                socket.send(this.ProcessCommand(msgCommand, socket).ToJson());
+                case MessageType.Command:
+                {
+                    let msgCommand = JSON.parse(msg) as ProtoCommand;
+                    socket.send(this.ProcessCommand(msgCommand, socket).ToJson());
+                    isMessageValid = true;
+                }
+                break;
+                default:
+                {
+                    isMessageValid = false;
+                    errorMessage = `Invalid message type received: ${message.messageType}`;
+                }
+                break;
             }
-            break;
-            default:
-            {
-                console.log(`Invalid message type received: ${message.messageType}`);
-            }
-            break;
+        }
+        catch (err)
+        {
+            console.log(err);
+            isMessageValid = false;
+            errorMessage = `Could not parse JSON message: ${msg}`;
+        }
+
+        if(isMessageValid == false)
+        {
+            console.log(errorMessage);
+            let error = new ProtoError(status, errorMessage);
+            socket.send(error.ToJson());
         }
     }
 

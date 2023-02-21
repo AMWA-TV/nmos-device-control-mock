@@ -12,9 +12,11 @@ import { NmosReceiverVideo } from './NmosReceiverVideo';
 import { NmosReceiverActiveRtp } from './NmosReceiverActiveRtp';
 import { SessionManager } from './SessionManager';
 import { NcBlock, RootBlock } from './NCModel/Blocks';
-import { NcClassManager, NcDeviceManager, NcSubscriptionManager } from './NCModel/Managers';
-import { NcIoDirection, NcPort, NcPortReference, NcSignalPath, NcTouchpointNmos, NcTouchpointResourceNmos } from './NCModel/Core';
+import { NcClassManager, NcDeviceManager } from './NCModel/Managers';
+import { NcIoDirection, NcMethodStatus, NcPort, NcPortReference, NcSignalPath, NcTouchpointNmos, NcTouchpointResourceNmos } from './NCModel/Core';
 import { NcDemo, NcGain, NcIdentBeacon, NcReceiverMonitor } from './NCModel/Features';
+import { ProtoError, ProtoSubscription } from './NCProtocol/Commands';
+import { MessageType, ProtocolWrapper } from './NCProtocol/Core';
 
 export interface WebSocketConnection extends WebSocket {
     isAlive: boolean;
@@ -75,15 +77,6 @@ try
         'Class manager',
         null,
         "The class manager offers access to control class and data type descriptors",
-        sessionManager);
-
-    const subscriptionManager = new NcSubscriptionManager(
-        5,
-        true,
-        1,
-        'Subscription manager',
-        null,
-        "The subscription manager offers the ability to subscribe to events on particular objects and properties",
         sessionManager);
 
     const receiverMonitorAgent = new NcReceiverMonitor(
@@ -207,7 +200,7 @@ try
         null,
         "Blockspec for root block of minimum compliant device",
         false,
-        [ deviceManager, classManager, subscriptionManager, receiverMonitorAgent, stereoGainBlock, demoClass, identBeacon ],
+        [ deviceManager, classManager, receiverMonitorAgent, stereoGainBlock, demoClass, identBeacon ],
         null,
         null,
         "Root block",
@@ -250,7 +243,68 @@ try
         //subscribe to messages
         ws.on('message', (msg: string) => {
             console.log(`WS msg received - connection id: ${extWs.connectionId}, msg: ${msg}`);
-            rootBlock.ProcessMessage(msg, extWs);
+            
+            let isMessageValid = false;
+            let errorMessage = ``;
+            let status: NcMethodStatus = NcMethodStatus.BadCommandFormat;
+
+            try
+            {
+                let message = JSON.parse(msg) as ProtocolWrapper;
+
+                if(message)
+                {
+                    if(message.protocolVersion == "1.0.0")
+                    {
+                        switch(message.messageType)
+                        {
+                            case MessageType.Command:
+                            {
+                                rootBlock.ProcessMessage(msg, extWs);
+                                isMessageValid = true;
+                            }
+                            break;
+                            case MessageType.Subscription:
+                            {
+                                let message = JSON.parse(msg) as ProtoSubscription;
+                                sessionManager.ModifySubscription(extWs, message);
+                                isMessageValid = true;
+                            }
+                            break;
+                            default:
+                            {
+                                isMessageValid = false;
+                                errorMessage = `Invalid message type received: ${message.messageType}`;
+                            }
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        isMessageValid = false;
+                        errorMessage = `Unsupported protocol version`;
+                        status = NcMethodStatus.ProtocolVersionError;
+                    }
+                }
+                else
+                {
+                    isMessageValid = false;
+                    errorMessage = `Could not parse JSON message: ${msg}`;
+                }
+            }
+            catch (err)
+            {
+                console.log(err);
+                isMessageValid = false;
+                errorMessage = `Could not parse JSON message: ${msg}`;
+            }
+
+            if(isMessageValid == false)
+            {
+                console.log(errorMessage);
+                let error = new ProtoError(status, errorMessage);
+                extWs.send(error.ToJson());
+            }
         });
     
         ws.on('error', (err) => {

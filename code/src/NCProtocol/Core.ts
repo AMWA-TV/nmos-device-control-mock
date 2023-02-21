@@ -4,6 +4,9 @@ export enum MessageType {
     Command = 0,
     CommandResponse = 1,
     Notification = 2,
+    Subscription = 3,
+    SubscriptionResponse = 4,
+    Error = 5
 }
 
 export abstract class ProtocolWrapper

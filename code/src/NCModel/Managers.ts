@@ -556,7 +556,6 @@ export class NcClassManager extends NcManager
             '1.3': NcManager.GetClassDescriptor(false),
             '1.3.1': NcDeviceManager.GetClassDescriptor(false),
             '1.3.2': NcClassManager.GetClassDescriptor(false),
-            '1.3.4': NcSubscriptionManager.GetClassDescriptor(false),
             '1.2.0.1': NcDemo.GetClassDescriptor(false),
             '1.2.2': NcIdentBeacon.GetClassDescriptor(false),
             '1.2.3': NcReceiverMonitor.GetClassDescriptor(false),
@@ -580,7 +579,6 @@ export class NcClassManager extends NcManager
             case '1.3': return NcManager.GetClassDescriptor(true);
             case '1.3.1': return NcDeviceManager.GetClassDescriptor(true);
             case '1.3.2': return NcClassManager.GetClassDescriptor(true);
-            case '1.3.4': return NcSubscriptionManager.GetClassDescriptor(true);
             case '1.2.0.1': return NcDemo.GetClassDescriptor(true);
             case '1.2.2': return NcIdentBeacon.GetClassDescriptor(true);
             case '1.2.3': return NcReceiverMonitor.GetClassDescriptor(true);
@@ -629,7 +627,7 @@ export class NcClassManager extends NcManager
             'NcOid': new NcDatatypeDescriptorTypeDef("NcOid", "NcUint32", false, null, "Object id"),
             'NcName': new NcDatatypeDescriptorTypeDef("NcName", "NcString", false, null, "Programmatically significant name, alphanumerics + underscore, no spaces"),
             'NcRolePath': new NcDatatypeDescriptorTypeDef("NcRolePath", "NcString", true, null, "Role path"),
-            'NcId32': new NcDatatypeDescriptorTypeDef("NcId32", "NcUint32", false, null, "Identity handler"),
+            'NcId': new NcDatatypeDescriptorTypeDef("NcId", "NcUint32", false, null, "Identity handler"),
             'NcTimeInterval': new NcDatatypeDescriptorTypeDef("NcTimeInterval", "NcInt64", false, null, "Time interval described in nanoseconds"),
             'NcDB': new NcDatatypeDescriptorTypeDef("NcDB", "NcFloat32", false, null, "A ratio expressed in dB."),
             'NcPropertyId': new NcDatatypeDescriptorTypeDef("NcPropertyId", "NcElementId", false, null, "Class property id which contains the level and index"),
@@ -668,11 +666,11 @@ export class NcClassManager extends NcManager
                 new NcFieldDescriptor("errorMessage", "NcString", true, false, null, "Optional error message"),
                 new NcFieldDescriptor("value", null, true, false, null, "Getter method value for the associated property")
             ], "NcMethodResult", null, "Result when invoking the getter method associated with a property"),
-            'NcMethodResultId32': new NcDatatypeDescriptorStruct("NcMethodResultId32", [
+            'NcMethodResultId': new NcDatatypeDescriptorStruct("NcMethodResultId", [
                 new NcFieldDescriptor("status", "NcMethodStatus", false, false, null, "Status for the invoked method"),
                 new NcFieldDescriptor("errorMessage", "NcString", true, false, null, "Optional error message"),
-                new NcFieldDescriptor("value", "NcId32", false, false, null, "NcId32 method result value")
-            ], "NcMethodResult", null, "Method result containing an NcId32 value"),
+                new NcFieldDescriptor("value", "NcId", false, false, null, "NcId method result value")
+            ], "NcMethodResult", null, "Method result containing an NcId value"),
             'NcClassIdentity': NcClassIdentity.GetTypeDescriptor(false),
             'NcBlockMemberDescriptor': NcBlockMemberDescriptor.GetTypeDescriptor(false),
             'NcMethodResultBlockMemberDescriptors': new NcDatatypeDescriptorStruct("NcMethodResultBlockMemberDescriptors", [
@@ -765,107 +763,5 @@ export class NcClassManager extends NcManager
             return this.GenerateTypeDescriptorWithInheritedElements(name);
         else
             return this.dataTypesRegister[name];
-    }
-}
-
-export class NcSubscriptionManager extends NcManager
-{
-    public static staticClassID: number[] = [ 1, 3, 4 ];
-    public static staticClassVersion: string = "1.0.0";
-
-    @myIdDecorator('1p1')
-    public override classID: number[] = NcSubscriptionManager.staticClassID;
-
-    @myIdDecorator('1p2')
-    public override classVersion: string = NcSubscriptionManager.staticClassVersion;
-
-    public static staticRole: string = "SubscriptionManager";
-
-    public constructor(
-        oid: number,
-        constantOid: boolean,
-        owner: number | null,
-        userLabel: string,
-        touchpoints: NcTouchpoint[] | null,
-        description: string,
-        notificationContext: INotificationContext)
-    {
-        super(oid, constantOid, owner, NcSubscriptionManager.staticRole, userLabel, touchpoints, description, notificationContext);
-    }
-
-    public override InvokeMethod(socket: WebSocketConnection, oid: number, methodId: NcElementId, args: { [key: string]: any; } | null, handle: number): CommandResponseNoValue 
-    {
-        if(oid == this.oid)
-        {
-            let key: string = `${methodId.level}m${methodId.index}`;
-
-            switch(key)
-            {
-                case '3m1':
-                    {
-                        if(args != null && 'oid' in args)
-                        {
-                            let emitterOid = args['oid'] as number;
-                            if(emitterOid)
-                            {
-                                this.notificationContext.Subscribe(socket, emitterOid);
-                                return new CommandResponseNoValue(handle, NcMethodStatus.OK);
-                            }
-                            else
-                                return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Oid argument is invalid');
-                        }
-                        else
-                            return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'No oid argument has been provided');
-                    }
-                case '3m2':
-                    {
-                        if(args != null && 'oid' in args)
-                        {
-                            let emitterOid = args['oid'] as number;
-                            if(emitterOid)
-                            {
-                                this.notificationContext.UnSubscribe(socket, emitterOid);
-                                return new CommandResponseNoValue(handle, NcMethodStatus.OK);
-                            }
-                            else
-                                return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Oid argument is invalid');
-                        }
-                        else
-                            return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'No oid argument has been provided');
-                    }
-                default:
-                    return super.InvokeMethod(socket, oid, methodId, args, handle);
-            }
-        }
-
-        return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
-    }
-
-    public static override GetClassDescriptor(includeInherited: boolean): NcClassDescriptor 
-    {
-        let currentClassDescriptor = new NcClassDescriptor(`${NcSubscriptionManager.name} class descriptor`,
-            new NcClassIdentity(NcSubscriptionManager.staticClassID, NcSubscriptionManager.staticClassVersion), NcSubscriptionManager.name, NcSubscriptionManager.staticRole,
-            [],
-            [ 
-                new NcMethodDescriptor(new NcElementId(3, 1), "AddSubscription", "NcMethodResult", [
-                    new NcParameterDescriptor("oid", "NcOid", false, false, null, "Emitter oid")
-                ], "Will subscribe to changes from all of the properties on the specified oid"),
-                new NcMethodDescriptor(new NcElementId(3, 2), "RemoveSubscription", "NcMethodResult", [
-                    new NcParameterDescriptor("oid", "NcOid", false, false, null, "Emitter oid")
-                ], "Will unsubscribe to changes from all of the properties on the specified oid")
-            ],
-            []
-        );
-
-        if(includeInherited)
-        {
-            let baseDescriptor = super.GetClassDescriptor(includeInherited);
-
-            currentClassDescriptor.properties = currentClassDescriptor.properties.concat(baseDescriptor.properties);
-            currentClassDescriptor.methods = currentClassDescriptor.methods.concat(baseDescriptor.methods);
-            currentClassDescriptor.events = currentClassDescriptor.events.concat(baseDescriptor.events);
-        }
-
-        return currentClassDescriptor;
     }
 }
