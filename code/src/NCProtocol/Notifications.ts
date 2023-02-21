@@ -62,7 +62,7 @@ export class NcNotification
     }
 }
 
-export class ProtoNotification extends ProtocolWrapper
+export class ProtocolNotification extends ProtocolWrapper
 {
     public notifications: NcNotification[];
 

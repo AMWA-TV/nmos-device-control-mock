@@ -15,7 +15,7 @@ import { NcBlock, RootBlock } from './NCModel/Blocks';
 import { NcClassManager, NcDeviceManager } from './NCModel/Managers';
 import { NcIoDirection, NcMethodStatus, NcPort, NcPortReference, NcSignalPath, NcTouchpointNmos, NcTouchpointResourceNmos } from './NCModel/Core';
 import { NcDemo, NcGain, NcIdentBeacon, NcReceiverMonitor } from './NCModel/Features';
-import { ProtoError, ProtoSubscription } from './NCProtocol/Commands';
+import { ProtocolError, ProtocolSubscription } from './NCProtocol/Commands';
 import { MessageType, ProtocolWrapper } from './NCProtocol/Core';
 
 export interface WebSocketConnection extends WebSocket {
@@ -266,7 +266,7 @@ try
                             break;
                             case MessageType.Subscription:
                             {
-                                let message = JSON.parse(msg) as ProtoSubscription;
+                                let message = JSON.parse(msg) as ProtocolSubscription;
                                 sessionManager.ModifySubscription(extWs, message);
                                 isMessageValid = true;
                             }
@@ -302,7 +302,7 @@ try
             if(isMessageValid == false)
             {
                 console.log(errorMessage);
-                let error = new ProtoError(status, errorMessage);
+                let error = new ProtocolError(status, errorMessage);
                 extWs.send(error.ToJson());
             }
         });

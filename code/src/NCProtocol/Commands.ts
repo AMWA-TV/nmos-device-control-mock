@@ -69,7 +69,7 @@ export class CommandResponseWithValue extends CommandResponseNoValue
     }
 }
 
-export class ProtoCommand extends ProtocolWrapper
+export class ProtocolCommand extends ProtocolWrapper
 {
     public commands: CommandMsg[];
 
@@ -87,7 +87,7 @@ export class ProtoCommand extends ProtocolWrapper
     }
 }
 
-export class ProtoCommandResponse extends ProtocolWrapper
+export class ProtocolCommandResponse extends ProtocolWrapper
 {
     public responses: CommandResponseNoValue[];
 
@@ -110,7 +110,7 @@ export class ProtoCommandResponse extends ProtocolWrapper
     }
 }
 
-export class ProtoSubscription extends ProtocolWrapper
+export class ProtocolSubscription extends ProtocolWrapper
 {
     public subscriptions: number[];
 
@@ -128,7 +128,7 @@ export class ProtoSubscription extends ProtocolWrapper
     }
 }
 
-export class ProtoSubscriptionResponse extends ProtocolWrapper
+export class ProtocolSubscriptionResponse extends ProtocolWrapper
 {
     public subscriptions: number[];
 
@@ -146,7 +146,7 @@ export class ProtoSubscriptionResponse extends ProtocolWrapper
     }
 }
 
-export class ProtoError extends ProtocolWrapper
+export class ProtocolError extends ProtocolWrapper
 {
     public status: NcMethodStatus;
 

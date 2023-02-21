@@ -1,5 +1,5 @@
 import { jsonIgnoreReplacer, jsonIgnore } from 'json-ignore';
-import { CommandMsg, CommandResponseError, CommandResponseNoValue, CommandResponseWithValue, ProtoCommand, ProtoCommandResponse, ProtoError } from '../NCProtocol/Commands';
+import { CommandMsg, CommandResponseError, CommandResponseNoValue, CommandResponseWithValue, ProtocolCommand, ProtocolCommandResponse, ProtocolError } from '../NCProtocol/Commands';
 import { MessageType, ProtocolWrapper } from '../NCProtocol/Core';
 import { WebSocketConnection } from '../Server';
 import { INotificationContext } from '../SessionManager';
@@ -545,7 +545,7 @@ export class RootBlock extends NcBlock
             {
                 case MessageType.Command:
                 {
-                    let msgCommand = JSON.parse(msg) as ProtoCommand;
+                    let msgCommand = JSON.parse(msg) as ProtocolCommand;
                     socket.send(this.ProcessCommand(msgCommand, socket).ToJson());
                     isMessageValid = true;
                 }
@@ -568,14 +568,14 @@ export class RootBlock extends NcBlock
         if(isMessageValid == false)
         {
             console.log(errorMessage);
-            let error = new ProtoError(status, errorMessage);
+            let error = new ProtocolError(status, errorMessage);
             socket.send(error.ToJson());
         }
     }
 
-    public ProcessCommand(command: ProtoCommand, socket: WebSocketConnection) : ProtoCommandResponse
+    public ProcessCommand(command: ProtocolCommand, socket: WebSocketConnection) : ProtocolCommandResponse
     {
-        let responses = new ProtoCommandResponse([]);
+        let responses = new ProtocolCommandResponse([]);
 
         for (var i = 0; i < command.commands.length; i++) {
             let msg = command.commands[i];
