@@ -33,7 +33,7 @@ try
     console.log('App started');
     const config = new Configuration();
 
-    const registrationClient = new RegistrationClient(config.registry_address, config.registry_port);
+    const registrationClient = new RegistrationClient(config.registry_address, config.registry_port, config.work_without_registry);
 
     const myNode = new NmosNode(
         config.node_id,

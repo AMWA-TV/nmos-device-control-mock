@@ -11,18 +11,26 @@ export class RegistrationClient
     public registry_port: string;
     public node_id: string | null;
 
+    public work_without_registry: boolean;
+
     public constructor(
         registry_address: string,
-        registry_port: string)
+        registry_port: string,
+        work_without_registry: boolean)
     {
         this.registry_address = registry_address;
         this.registry_port = registry_port;
         this.node_id = null;
+
+        this.work_without_registry = work_without_registry;
     }
 
     StartHeatbeats(node_id: string)
     {
         this.node_id = node_id;
+
+        if(this.work_without_registry)
+            return;
 
         this.SendHeartbeat(this.node_id);
 
@@ -35,6 +43,9 @@ export class RegistrationClient
     {
         try 
         {
+            if(this.work_without_registry)
+                return null;
+
             console.log(`RegistrationClient - RegisterOrUpdateResource(resourceType:${resourceType})`);
 
             let payload = new RegisterResourceMsg(resourceType, resource);

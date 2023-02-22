@@ -39,7 +39,12 @@ If you plan to make changes and want the app to recompile and run whenever you s
 npm run serve
 ```
 
-`Note`: The configuration file (config.json) holds a `notify_without_subscriptions` key. This is set to false by default, but it can be set to true if you would like to get all notifications on all sessions without subscribing (for debugging purposes only).
+## Configuration
+
+These are the configuration keys which can be specified in the configuration file (config.json):
+
+* notify_without_subscriptions - boolean flag which is set to false by default, but it can be set to true if you would like to get all notifications on all sessions without subscribing (for debugging purposes only).
+* work_without_registry - boolean flag which is set to false by default, but it can be set to true if you would like the mock device not to attempt to register with an NMOS registry.
 
 ## Specifications
 

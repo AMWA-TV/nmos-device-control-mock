@@ -14,6 +14,7 @@ export class Configuration implements IConfiguration
     public registry_address: string;
     public registry_port: string;
     public notify_without_subscriptions: boolean;
+    public work_without_registry: boolean;
 
     public constructor()
     {
@@ -31,6 +32,7 @@ export class Configuration implements IConfiguration
         this.registry_address = config.registry_address;
         this.registry_port = config.registry_port;
         this.notify_without_subscriptions = config.notify_without_subscriptions;
+        this.work_without_registry = config.work_without_registry;
 
         this.CheckIdentifiers();
     }
@@ -96,4 +98,5 @@ export interface IConfiguration
     registry_address: string;
     registry_port: string;
     notify_without_subscriptions: boolean;
+    work_without_registry: boolean;
 }

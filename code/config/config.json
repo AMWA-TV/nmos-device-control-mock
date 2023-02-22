@@ -4,5 +4,6 @@
     "base_label": "NC-01",
     "registry_address": "127.0.0.1",
     "registry_port": 80,
-    "notify_without_subscriptions": false
+    "notify_without_subscriptions": false,
+    "work_without_registry": false
 }
