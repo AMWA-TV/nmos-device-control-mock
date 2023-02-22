@@ -25,6 +25,8 @@ import {
     NcPortReference,
     NcPropertyChangeType,
     NcPropertyConstraints,
+    NcPropertyConstraintsNumber,
+    NcPropertyConstraintsString,
     NcPropertyDescriptor,
     NcSignalPath,
     NcTouchpoint,
@@ -706,7 +708,11 @@ export class NcClassManager extends NcManager
                 new NcEnumItemDescriptor("Beta", 2, "Beta option"),
                 new NcEnumItemDescriptor("Gamma", 3, "Gamma option")
             ], null, "Demonstration enum data type"),
-            'DemoDataType': DemoDataType.GetTypeDescriptor(false)
+            'DemoDataType': DemoDataType.GetTypeDescriptor(false),
+            'NcRegex': new NcDatatypeDescriptorTypeDef("NcRegex", "NcString", false, null, "Regex pattern"),
+            'NcPropertyConstraints': NcPropertyConstraints.GetTypeDescriptor(false),
+            'NcPropertyConstraintsNumber': NcPropertyConstraintsNumber.GetTypeDescriptor(false),
+            'NcPropertyConstraintsString': NcPropertyConstraintsString.GetTypeDescriptor(false),
         };
 
         return register;
@@ -731,6 +737,9 @@ export class NcClassManager extends NcManager
             case 'NcTouchpointNmos': return NcTouchpointNmos.GetTypeDescriptor(true);
             case 'NcTouchpointResourceNmos': return NcTouchpointResourceNmos.GetTypeDescriptor(true);
             case 'DemoDataType': return DemoDataType.GetTypeDescriptor(true);
+            case 'NcPropertyConstraints': return NcPropertyConstraints.GetTypeDescriptor(true);
+            case 'NcPropertyConstraintsNumber': return NcPropertyConstraintsNumber.GetTypeDescriptor(true);
+            case 'NcPropertyConstraintsString': return NcPropertyConstraintsString.GetTypeDescriptor(true);
             default: return this.dataTypesRegister[name];
         }
     }

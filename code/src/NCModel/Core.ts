@@ -599,7 +599,7 @@ export class NcPropertyDescriptor extends NcDescriptor
     }
 }
 
-export class NcPropertyConstraints
+export class NcPropertyConstraints extends BaseType
 {
     public path: string[] | null;
     public propertyId: NcElementId;
@@ -610,9 +610,20 @@ export class NcPropertyConstraints
         propertyId: NcElementId,
         value: any | null)
     {
+        super();
+
         this.path = path;
         this.propertyId = propertyId;
         this.value = value;
+    }
+
+    public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor
+    {
+        return new NcDatatypeDescriptorStruct("NcPropertyConstraints", [
+            new NcFieldDescriptor("path", "NcRolePath", true, false, null, "relative path to member (null means current member)"),
+            new NcFieldDescriptor("propertyId", "NcPropertyId", false, false, null, "ID of property being constrained"),
+            new NcFieldDescriptor("defaultValue", null, true, false, null, "optional default value")
+        ], null, null, "Property constraints class");
     }
 
     public ToJson()
@@ -642,6 +653,26 @@ export class NcPropertyConstraintsNumber extends NcPropertyConstraints
         this.step = step;
     }
 
+    public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor
+    {
+        let currentClassDescriptor = new NcDatatypeDescriptorStruct("NcPropertyConstraintsNumber", [
+            new NcFieldDescriptor("maximum", null, true, false, null, "optional maximum"),
+            new NcFieldDescriptor("minimum", null, true, false, null, "optional minimum"),
+            new NcFieldDescriptor("step", null, true, false, null, "optional step"),
+        ], null, null, "Number property constraints class");
+
+        if(includeInherited)
+        {
+            let baseDescriptor = super.GetTypeDescriptor(includeInherited);
+
+            let baseDescriptorStruct = baseDescriptor as NcDatatypeDescriptorStruct;
+            if(baseDescriptorStruct)
+                currentClassDescriptor.fields = currentClassDescriptor.fields.concat(baseDescriptorStruct.fields);
+        }
+
+        return currentClassDescriptor;
+    }
+
     public ToJson()
     {
         return JSON.stringify(this, jsonIgnoreReplacer);
@@ -664,6 +695,25 @@ export class NcPropertyConstraintsString extends NcPropertyConstraints
         
         this.maxCharacters = maxCharacters;
         this.pattern = pattern;
+    }
+
+    public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor
+    {
+        let currentClassDescriptor = new NcDatatypeDescriptorStruct("NcPropertyConstraintsString", [
+            new NcFieldDescriptor("maxCharacters", "NcUint32", true, false, null, "maximum characters allowed"),
+            new NcFieldDescriptor("pattern", "NcRegex", true, false, null, "regex pattern")
+        ], null, null, "String property constraints class");
+
+        if(includeInherited)
+        {
+            let baseDescriptor = super.GetTypeDescriptor(includeInherited);
+
+            let baseDescriptorStruct = baseDescriptor as NcDatatypeDescriptorStruct;
+            if(baseDescriptorStruct)
+                currentClassDescriptor.fields = currentClassDescriptor.fields.concat(baseDescriptorStruct.fields);
+        }
+
+        return currentClassDescriptor;
     }
 
     public ToJson()
