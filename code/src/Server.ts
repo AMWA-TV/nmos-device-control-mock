@@ -67,6 +67,7 @@ try
         1,
         'Device manager',
         null,
+        null,
         "The device manager offers information about the product this device is representing",
         sessionManager);
 
@@ -75,6 +76,7 @@ try
         true,
         1,
         'Class manager',
+        null,
         null,
         "The class manager offers access to control class and data type descriptors",
         sessionManager);
@@ -86,6 +88,7 @@ try
         'ReceiverMonitor_01',
         'Receiver monitor 01',
         [ new NcTouchpointNmos('x-nmos', new NcTouchpointResourceNmos('receiver', myVideoReceiver.id)) ],
+        null,
         true,
         "Receiver monitor worker",
         sessionManager);
@@ -99,6 +102,7 @@ try
         'DemoClass',
         'Demo class',
         [],
+        null,
         true,
         "Demo control class",
         sessionManager);
@@ -111,6 +115,7 @@ try
         'channel-gain',
         'Channel gain',
         null,
+        null,
         true,
         null,
         null,
@@ -119,11 +124,11 @@ try
         null,
         false,
         [
-            new NcGain(22, true, 21, "left-gain", "Left gain", [], true, [
+            new NcGain(22, true, 21, "left-gain", "Left gain", [], null, true, [
                 new NcPort('input_1', NcIoDirection.Input, null),
                 new NcPort('output_1', NcIoDirection.Output, null),
             ], null, 0, "Left channel gain", sessionManager),
-            new NcGain(23, true, 21, "right-gain", "Right gain", [], true, [
+            new NcGain(23, true, 21, "right-gain", "Right gain", [], null, true, [
                 new NcPort('input_1', NcIoDirection.Input, null),
                 new NcPort('output_1', NcIoDirection.Output, null),
             ], null, 0, "Right channel gain", sessionManager)
@@ -151,6 +156,7 @@ try
             'stereo-gain',
             'Stereo gain',
             null,
+            null,
             true,
             null,
             null,
@@ -160,7 +166,7 @@ try
             false,
             [
                 channelGainBlock,
-                new NcGain(24, true, 31, "master-gain", "Master gain", [], true, [
+                new NcGain(24, true, 31, "master-gain", "Master gain", [], null, true, [
                     new NcPort('input_1', NcIoDirection.Input, null),
                     new NcPort('input_2', NcIoDirection.Input, null),
                     new NcPort('output_1', NcIoDirection.Output, null),
@@ -184,7 +190,7 @@ try
             "Stereo gain block",
             sessionManager);
 
-    const identBeacon = new NcIdentBeacon(51, true, 1, "IdentBeacon", "Identification beacon", [], true, false, "Identification beacon", sessionManager);
+    const identBeacon = new NcIdentBeacon(51, true, 1, "IdentBeacon", "Identification beacon", [], null, true, false, "Identification beacon", sessionManager);
 
     const rootBlock = new RootBlock(
         1,
@@ -192,6 +198,7 @@ try
         null,
         'root',
         'Root',
+        null,
         null,
         true,
         "base-root",

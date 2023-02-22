@@ -20,31 +20,30 @@ export abstract class NcObject
     public notificationContext: INotificationContext;
 
     public static staticClassID: number[] = [ 1 ];
-    public static staticClassVersion: string = "1.0.0";
 
     @myIdDecorator('1p1')
     public classID: number[] = NcObject.staticClassID;
 
     @myIdDecorator('1p2')
-    public classVersion: string = NcObject.staticClassVersion;
-
-    @myIdDecorator('1p3')
     public oid: number;
 
-    @myIdDecorator('1p4')
+    @myIdDecorator('1p3')
     public constantOid: boolean;
 
-    @myIdDecorator('1p5')
+    @myIdDecorator('1p4')
     public owner: number | null
 
-    @myIdDecorator('1p6')
+    @myIdDecorator('1p5')
     public role: string;
 
-    @myIdDecorator('1p7')
+    @myIdDecorator('1p6')
     public userLabel: string | null;
 
-    @myIdDecorator('1p8')
+    @myIdDecorator('1p7')
     public touchpoints: NcTouchpoint[] | null;
+
+    @myIdDecorator('1p8')
+    public runtimePropertyConstraints: NcPropertyConstraints[] | null;
 
     public description: string;
 
@@ -55,6 +54,7 @@ export abstract class NcObject
         role: string,
         userLabel: string | null,
         touchpoints: NcTouchpoint[] | null,
+        runtimePropertyConstraints: NcPropertyConstraints[] | null,
         description: string,
         notificationContext: INotificationContext)
     {
@@ -64,6 +64,7 @@ export abstract class NcObject
         this.role = role;
         this.userLabel = userLabel;
         this.touchpoints = touchpoints;
+        this.runtimePropertyConstraints = runtimePropertyConstraints;
         this.description = description;
         this.notificationContext = notificationContext;
     }
@@ -80,19 +81,19 @@ export abstract class NcObject
                 case '1p1':
                     return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.classID);
                 case '1p2':
-                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.classVersion);
-                case '1p3':
                     return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.oid);
-                case '1p4':
+                case '1p3':
                     return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.constantOid);
-                case '1p5':
+                case '1p4':
                     return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.owner);
-                case '1p6':
+                case '1p5':
                     return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.role);
-                case '1p7':
+                case '1p6':
                     return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.userLabel);
-                case '1p8':
+                case '1p7':
                     return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.touchpoints);
+                case '1p8':
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.runtimePropertyConstraints);
                 default:
                     return new CommandResponseError(handle, NcMethodStatus.PropertyNotImplemented, 'Property does not exist in object');
             }
@@ -115,12 +116,12 @@ export abstract class NcObject
                 case '1p3':
                 case '1p4':
                 case '1p5':
-                case '1p6':
                     return new CommandResponseError(handle, NcMethodStatus.Readonly, 'Property is readonly');
-                case '1p7':
+                case '1p6':
                     this.userLabel = value;
                     this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.userLabel, null);
                     return new CommandResponseNoValue(handle, NcMethodStatus.OK);
+                case '1p7':
                 case '1p8':
                     return new CommandResponseError(handle, NcMethodStatus.Readonly, 'Property is readonly');
                 default:
@@ -138,22 +139,22 @@ export abstract class NcObject
 
     public GenerateMemberDescriptor() : NcBlockMemberDescriptor
     {
-        return new NcBlockMemberDescriptor(this.role, this.oid, this.constantOid, new NcClassIdentity(this.classID, this.classVersion), this.userLabel, this.owner, this.description, null);
+        return new NcBlockMemberDescriptor(this.role, this.oid, this.constantOid, this.classID, this.userLabel, this.owner, this.description, null);
     }
 
     public static GetClassDescriptor(includeInherited: boolean) : NcClassDescriptor
     {
         return new NcClassDescriptor(`${NcObject.name} class descriptor`,
-            new NcClassIdentity(NcObject.staticClassID, NcObject.staticClassVersion), NcObject.name, null,
+            NcObject.staticClassID, NcObject.name, null,
             [ 
                 new NcPropertyDescriptor(new NcElementId(1, 1), "classId", "NcClassId", true, true, false, false, null, "Class identity"),
-                new NcPropertyDescriptor(new NcElementId(1, 2), "classVersion", "NcVersionCode", true, true, false, false, null, "Class version"),
-                new NcPropertyDescriptor(new NcElementId(1, 3), "oid", "NcOid", true, true, false, false, null, "Object identifier"),
-                new NcPropertyDescriptor(new NcElementId(1, 4), "constantOid", "NcBoolean", true, true, false, false, null, "TRUE iff OID is hardwired into device"),
-                new NcPropertyDescriptor(new NcElementId(1, 5), "owner", "NcOid", true, true, true, false, null, "OID of containing block. Can only ever be null for the root block" ),
-                new NcPropertyDescriptor(new NcElementId(1, 6), "role", "NcString", true, true, false, false, null, "role of obj in containing block"),
-                new NcPropertyDescriptor(new NcElementId(1, 7), "userLabel", "NcString", false, true, true, false, null, "Scribble strip"),
-                new NcPropertyDescriptor(new NcElementId(1, 8), "touchpoints", "NcTouchpoint", true, true, true, true, null, "Touchpoints to other contexts"),
+                new NcPropertyDescriptor(new NcElementId(1, 2), "oid", "NcOid", true, true, false, false, null, "Object identifier"),
+                new NcPropertyDescriptor(new NcElementId(1, 3), "constantOid", "NcBoolean", true, true, false, false, null, "TRUE iff OID is hardwired into device"),
+                new NcPropertyDescriptor(new NcElementId(1, 4), "owner", "NcOid", true, true, true, false, null, "OID of containing block. Can only ever be null for the root block" ),
+                new NcPropertyDescriptor(new NcElementId(1, 5), "role", "NcString", true, true, false, false, null, "role of obj in containing block"),
+                new NcPropertyDescriptor(new NcElementId(1, 6), "userLabel", "NcString", false, true, true, false, null, "Scribble strip"),
+                new NcPropertyDescriptor(new NcElementId(1, 7), "touchpoints", "NcTouchpoint", true, true, true, true, null, "Touchpoints to other contexts"),
+                new NcPropertyDescriptor(new NcElementId(1, 8), "runtimePropertyConstraints", "NcPropertyConstraints", true, true, true, true, null, "Runtime property constraints"),
             ],
             [ 
                 new NcMethodDescriptor(new NcElementId(1, 1), "Get", "NcMethodResultPropertyValue", [
@@ -218,6 +219,8 @@ export class NcElementId extends BaseType
 export enum NcMethodStatus
 {
     OK = 200,
+    PropertyDeprecated = 298,
+    MethodDeprecated = 299,
     BadCommandFormat = 400,
     Unauthorized = 401,
     BadOid = 404,
@@ -447,35 +450,6 @@ export class NcTouchpointNmos extends NcTouchpoint
     }
 }
 
-export class NcClassIdentity extends BaseType
-{
-    public id: number[];
-    public version: string;
-
-    constructor(
-        id: number[],
-        version: string) 
-    {
-        super();
-
-        this.id = id;
-        this.version = version;
-    }
-
-    public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor
-    {
-        return new NcDatatypeDescriptorStruct("NcClassIdentity", [
-            new NcFieldDescriptor("id", "NcClassId", false, false, null, "Class identity"),
-            new NcFieldDescriptor("version", "NcVersionCode", false, false, null, "Class version in semantic versioning format")
-        ], null, null, "Class identity and version");
-    }
-
-    public ToJson()
-    {
-        return JSON.stringify(this, jsonIgnoreReplacer);
-    }
-}
-
 export abstract class NcDescriptor
 {
     public description: string;
@@ -492,7 +466,7 @@ export class NcBlockMemberDescriptor extends BaseType
     public role: string;
     public oid: number;
     public constantOid: boolean;
-    public identity: NcClassIdentity;
+    public classId: number[];
     public userLabel: string | null;
     public owner: number | null;
     public description: string;
@@ -502,7 +476,7 @@ export class NcBlockMemberDescriptor extends BaseType
         role: string,
         oid: number,
         constantOid: boolean,
-        identity: NcClassIdentity,
+        classId: number[],
         userLabel: string | null,
         owner: number | null,
         description: string,
@@ -513,7 +487,7 @@ export class NcBlockMemberDescriptor extends BaseType
         this.role = role;
         this.oid = oid;
         this.constantOid = constantOid;
-        this.identity = identity;
+        this.classId = classId;
         this.userLabel = userLabel;
         this.owner = owner;
         this.description = description;
@@ -526,7 +500,7 @@ export class NcBlockMemberDescriptor extends BaseType
             new NcFieldDescriptor("role", "NcString", false, false, null, "Role of member in its containing block"),
             new NcFieldDescriptor("oid", "NcOid", false, false, null, "OID of member"),
             new NcFieldDescriptor("constantOid", "NcBoolean", false, false, null, "TRUE iff member's OID is hardwired into device"),
-            new NcFieldDescriptor("identity", "NcClassIdentity", false, false, null, "Class ID & version of member"),
+            new NcFieldDescriptor("classId", "NcClassId", false, false, null, "Class ID"),
             new NcFieldDescriptor("userLabel", "NcString", true, false, null, "User label"),
             new NcFieldDescriptor("owner", "NcOid", false, false, null, "Containing block's OID")
         ], null, null, "Descriptor which is specific to a block member which is not a block");
@@ -547,34 +521,33 @@ export class NcBlockDescriptor extends NcBlockMemberDescriptor
         role: string,
         oid: number,
         constantOid: boolean,
-        identity: NcClassIdentity,
+        classId: number[],
         userLabel: string | null,
         owner: number | null,
         description: string,
         constraints: NcPropertyConstraints | null)
     {
-        super(role, oid, constantOid, identity, userLabel, owner, description, constraints);
+        super(role, oid, constantOid, classId, userLabel, owner, description, constraints);
 
         this.blockSpecId = blockSpecId;
-        this.oid = oid;
-        this.constantOid = constantOid;
-        this.identity = identity;
-        this.userLabel = userLabel;
-        this.owner = owner;
-        this.description = description;
     }
 
     public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor
     {
-        return new NcDatatypeDescriptorStruct("NcBlockDescriptor", [
-            new NcFieldDescriptor("role", "NcString", false, false, null, "Role of member in its containing block"),
-            new NcFieldDescriptor("oid", "NcOid", false, false, null, "OID of member"),
-            new NcFieldDescriptor("constantOid", "NcBoolean", false, false, null, "TRUE iff member's OID is hardwired into device"),
-            new NcFieldDescriptor("identity", "NcClassIdentity", false, false, null, "Class ID & version of member"),
-            new NcFieldDescriptor("userLabel", "NcString", true, false, null, "User label"),
-            new NcFieldDescriptor("owner", "NcOid", false, false, null, "Containing block's OID"),
+        let currentClassDescriptor = new NcDatatypeDescriptorStruct("NcBlockDescriptor", [
             new NcFieldDescriptor("blockSpecId", "NcString", false, false, null, "ID of BlockSpec this block implements")
         ], "NcBlockMemberDescriptor", null, "Descriptor which is specific to a block");
+
+        if(includeInherited)
+        {
+            let baseDescriptor = super.GetTypeDescriptor(includeInherited);
+
+            let baseDescriptorStruct = baseDescriptor as NcDatatypeDescriptorStruct;
+            if(baseDescriptorStruct)
+                currentClassDescriptor.fields = currentClassDescriptor.fields.concat(baseDescriptorStruct.fields);
+        }
+
+        return currentClassDescriptor;
     }
 
     public ToJson()
@@ -592,6 +565,7 @@ export class NcPropertyDescriptor extends NcDescriptor
     public isPersistent: boolean;
     public isNullable: boolean;
     public isSequence: boolean;
+    public isDeprecated: boolean;
     public constraints: NcParameterConstraints | null;
 
     constructor(
@@ -603,7 +577,8 @@ export class NcPropertyDescriptor extends NcDescriptor
         isNullable: boolean,
         isSequence: boolean,
         constraints: NcParameterConstraints | null,
-        description: string)
+        description: string,
+        isDeprecated: boolean = false)
     {
         super(description);
 
@@ -615,6 +590,7 @@ export class NcPropertyDescriptor extends NcDescriptor
         this.isNullable = isNullable;
         this.isSequence = isSequence;
         this.constraints = constraints;
+        this.isDeprecated = isDeprecated
     }
 
     public ToJson()
@@ -786,13 +762,15 @@ export class NcMethodDescriptor extends NcDescriptor
     public name: string;
     public resultDatatype: string;
     public parameters: NcParameterDescriptor[];
+    public isDeprecated: boolean;
 
     constructor(
         id: NcElementId,
         name: string,
         resultDatatype: string,
         parameters: NcParameterDescriptor[],
-        description: string)
+        description: string,
+        isDeprecated: boolean = false)
     {
         super(description);
 
@@ -800,6 +778,7 @@ export class NcMethodDescriptor extends NcDescriptor
         this.name = name;
         this.resultDatatype = resultDatatype;
         this.parameters = parameters;
+        this.isDeprecated = isDeprecated;
     }
 
     public ToJson()
@@ -813,18 +792,21 @@ export class NcEventDescriptor extends NcDescriptor
     public id: NcElementId;
     public name: string;
     public eventDatatype: string;
+    public isDeprecated: boolean;
 
     constructor(
         id: NcElementId,
         name: string,
         eventDatatype: string,
-        description: string)
+        description: string,
+        isDeprecated: boolean = false)
     {
         super(description);
 
         this.id = id;
         this.name = name;
         this.eventDatatype = eventDatatype;
+        this.isDeprecated = isDeprecated;
     }
 
     public ToJson()
@@ -835,7 +817,7 @@ export class NcEventDescriptor extends NcDescriptor
 
 export class NcClassDescriptor extends NcDescriptor
 {
-    public identity: NcClassIdentity;
+    public identity: number[];
     public name: string;
     public fixedRole: string | null;
     public properties: NcPropertyDescriptor[];
@@ -844,7 +826,7 @@ export class NcClassDescriptor extends NcDescriptor
 
     constructor(
         description: string,
-        identity: NcClassIdentity,
+        identity: number[],
         name: string,
         fixedRole: string | null,
         properties: NcPropertyDescriptor[],

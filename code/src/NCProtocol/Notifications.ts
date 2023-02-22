@@ -1,4 +1,3 @@
-import exp from 'constants';
 import { jsonIgnoreReplacer, jsonIgnore } from 'json-ignore';
 import { BaseType, NcDatatypeDescriptor, NcDatatypeDescriptorStruct, NcElementId, NcFieldDescriptor, NcPropertyChangeType } from '../NCModel/Core';
 import { MessageType, ProtocolWrapper } from './Core';
