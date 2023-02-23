@@ -34,6 +34,7 @@ import {
     NcTouchpointResource,
     NcTouchpointResourceNmos } from './Core';
 import { DemoDataType, NcActuator, NcDemo, NcGain, NcIdentBeacon, NcReceiverMonitor, NcReceiverStatus, NcSignalWorker, NcWorker } from './Features';
+import { MultiviewerLayoutElement, NcMultiviewerDisplay, NcMultiviewerLayout, NcMultiviewerTile, NcUMD, UMDTally } from './FeaturesMultiviewers';
 
 export abstract class NcManager extends NcObject
 {
@@ -552,7 +553,11 @@ export class NcClassManager extends NcManager
             '1.2.0.1': NcDemo.GetClassDescriptor(false),
             '1.2.2': NcIdentBeacon.GetClassDescriptor(false),
             '1.2.3': NcReceiverMonitor.GetClassDescriptor(false),
-            '1.2.1.1.1': NcGain.GetClassDescriptor(false)
+            '1.2.1.1.1': NcGain.GetClassDescriptor(false),
+            '1.2.0.11': NcUMD.GetClassDescriptor(false),
+            '1.2.0.12': NcMultiviewerTile.GetClassDescriptor(false),
+            '1.2.0.13': NcMultiviewerLayout.GetClassDescriptor(false),
+            '1.2.0.14': NcMultiviewerDisplay.GetClassDescriptor(false),
         };
 
         return register;
@@ -576,6 +581,10 @@ export class NcClassManager extends NcManager
             case '1.2.2': return NcIdentBeacon.GetClassDescriptor(true);
             case '1.2.3': return NcReceiverMonitor.GetClassDescriptor(true);
             case '1.2.1.1.1': return NcGain.GetClassDescriptor(true);
+            case '1.2.0.11': return NcUMD.GetClassDescriptor(true);
+            case '1.2.0.12': return NcMultiviewerTile.GetClassDescriptor(true);
+            case '1.2.0.13': return NcMultiviewerLayout.GetClassDescriptor(true);
+            case '1.2.0.14': return NcMultiviewerDisplay.GetClassDescriptor(true);
             default: return null;
         }
     }
@@ -713,6 +722,8 @@ export class NcClassManager extends NcManager
             'NcPropertyConstraints': NcPropertyConstraints.GetTypeDescriptor(false),
             'NcPropertyConstraintsNumber': NcPropertyConstraintsNumber.GetTypeDescriptor(false),
             'NcPropertyConstraintsString': NcPropertyConstraintsString.GetTypeDescriptor(false),
+            'UMDTally': UMDTally.GetTypeDescriptor(false),
+            'MultiviewerLayoutElement': MultiviewerLayoutElement.GetTypeDescriptor(false),
         };
 
         return register;
@@ -740,6 +751,8 @@ export class NcClassManager extends NcManager
             case 'NcPropertyConstraints': return NcPropertyConstraints.GetTypeDescriptor(true);
             case 'NcPropertyConstraintsNumber': return NcPropertyConstraintsNumber.GetTypeDescriptor(true);
             case 'NcPropertyConstraintsString': return NcPropertyConstraintsString.GetTypeDescriptor(true);
+            case 'UMDTally': return UMDTally.GetTypeDescriptor(true);
+            case 'MultiviewerLayoutElement': return MultiviewerLayoutElement.GetTypeDescriptor(true);
             default: return this.dataTypesRegister[name];
         }
     }

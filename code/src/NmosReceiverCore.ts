@@ -28,9 +28,10 @@ export abstract class NmosReceiverCore extends NmosResource
         device_id: string,
         base_label: string,
         transport: string,
+        suffix: string,
         registrationClient: RegistrationClient)
     {
-        super(id, `${base_label} receiver`, registrationClient);
+        super(id, `${base_label} receiver ${suffix}`, registrationClient);
 
         this.device_id = device_id;
         this.transport = transport;

@@ -17,6 +17,7 @@ import { NcIoDirection, NcMethodStatus, NcPort, NcPortReference, NcSignalPath, N
 import { NcDemo, NcGain, NcIdentBeacon, NcReceiverMonitor } from './NCModel/Features';
 import { ProtocolError, ProtocolSubscription } from './NCProtocol/Commands';
 import { MessageType, ProtocolWrapper } from './NCProtocol/Core';
+import { MultiviewerLayoutElement, NcMultiviewerDisplay, NcMultiviewerLayout, NcMultiviewerTile, NcUMD } from './NCModel/FeaturesMultiviewers';
 
 export interface WebSocketConnection extends WebSocket {
     isAlive: boolean;
@@ -50,14 +51,39 @@ try
         config.port,
         registrationClient);
 
-    const myVideoReceiver = new NmosReceiverVideo(
-        config.receiver_id,
+    const myVideoReceiver_01 = new NmosReceiverVideo(
+        config.mwvr_receiver_01_id,
         config.device_id,
         config.base_label,
         'urn:x-nmos:transport:rtp.mcast',
+        '01',
         registrationClient)
 
-    myDevice.AddReceiver(myVideoReceiver);
+    const myVideoReceiver_02 = new NmosReceiverVideo(
+        config.mwvr_receiver_02_id,
+        config.device_id,
+        config.base_label,
+        'urn:x-nmos:transport:rtp.mcast',
+        '02',
+        registrationClient)
+
+    const myVideoReceiver_03 = new NmosReceiverVideo(
+        config.mwvr_receiver_03_id,
+        config.device_id,
+        config.base_label,
+        'urn:x-nmos:transport:rtp.mcast',
+        '03',
+        registrationClient)
+
+    const myVideoReceiver_04 = new NmosReceiverVideo(
+        config.mwvr_receiver_04_id,
+        config.device_id,
+        config.base_label,
+        'urn:x-nmos:transport:rtp.mcast',
+        '04',
+        registrationClient)
+
+    myDevice.AddReceiver(myVideoReceiver_01);
 
     const sessionManager = new SessionManager(config.notify_without_subscriptions);
 
@@ -81,19 +107,87 @@ try
         "The class manager offers access to control class and data type descriptors",
         sessionManager);
 
-    const receiverMonitorAgent = new NcReceiverMonitor(
+    const receiverMonitorAgent_01 = new NcReceiverMonitor(
         11,
         true,
         1,
         'ReceiverMonitor_01',
         'Receiver monitor 01',
-        [ new NcTouchpointNmos('x-nmos', new NcTouchpointResourceNmos('receiver', myVideoReceiver.id)) ],
+        [ new NcTouchpointNmos('x-nmos', new NcTouchpointResourceNmos('receiver', myVideoReceiver_01.id)) ],
         null,
         true,
         "Receiver monitor worker",
         sessionManager);
 
-    myVideoReceiver.AttachMonitoringAgent(receiverMonitorAgent);
+    myVideoReceiver_01.AttachMonitoringAgent(receiverMonitorAgent_01);
+
+    const receiverMonitorAgent_02 = new NcReceiverMonitor(
+        12,
+        true,
+        1,
+        'ReceiverMonitor_02',
+        'Receiver monitor 02',
+        [ new NcTouchpointNmos('x-nmos', new NcTouchpointResourceNmos('receiver', myVideoReceiver_02.id)) ],
+        null,
+        true,
+        "Receiver monitor worker",
+        sessionManager);
+
+    myVideoReceiver_02.AttachMonitoringAgent(receiverMonitorAgent_02);
+
+    const receiverMonitorAgent_03 = new NcReceiverMonitor(
+        13,
+        true,
+        1,
+        'ReceiverMonitor_03',
+        'Receiver monitor 03',
+        [ new NcTouchpointNmos('x-nmos', new NcTouchpointResourceNmos('receiver', myVideoReceiver_03.id)) ],
+        null,
+        true,
+        "Receiver monitor worker",
+        sessionManager);
+
+    myVideoReceiver_03.AttachMonitoringAgent(receiverMonitorAgent_03);
+
+    const receiverMonitorAgent_04 = new NcReceiverMonitor(
+        14,
+        true,
+        1,
+        'ReceiverMonitor_04',
+        'Receiver monitor 04',
+        [ new NcTouchpointNmos('x-nmos', new NcTouchpointResourceNmos('receiver', myVideoReceiver_04.id)) ],
+        null,
+        true,
+        "Receiver monitor worker",
+        sessionManager);
+
+    myVideoReceiver_04.AttachMonitoringAgent(receiverMonitorAgent_04);
+
+    const receiver_monitors_block = new NcBlock(
+        false,
+        10,
+        true,
+        1,
+        'receiver_monitors',
+        'Receiver monitors block',
+        null,
+        null,
+        true,
+        null,
+        null,
+        null,
+        null,
+        null,
+        false,
+        [
+            receiverMonitorAgent_01,
+            receiverMonitorAgent_02,
+            receiverMonitorAgent_03,
+            receiverMonitorAgent_04,
+        ],
+        [], [],
+        "UMDs block",
+        sessionManager);
 
     const demoClass = new NcDemo(
         111,
@@ -192,6 +286,112 @@ try
 
     const identBeacon = new NcIdentBeacon(51, true, 1, "IdentBeacon", "Identification beacon", [], null, true, false, "Identification beacon", sessionManager);
 
+    const umds_block = new NcBlock(
+        false,
+        200,
+        true,
+        1,
+        'umds',
+        'UMDs block',
+        null,
+        null,
+        true,
+        null,
+        null,
+        null,
+        null,
+        null,
+        false,
+        [
+            new NcUMD(211, true, 200, 'umd_01', 'UMD 01', [], null, true, "UMD control class", sessionManager),
+            new NcUMD(212, true, 200, 'umd_02', 'UMD 02', [], null, true, "UMD control class", sessionManager),
+            new NcUMD(213, true, 200, 'umd_03', 'UMD 03', [], null, true, "UMD control class", sessionManager),
+            new NcUMD(214, true, 200, 'umd_04', 'UMD 04', [], null, true, "UMD control class", sessionManager),
+        ],
+        [], [],
+        "UMDs block",
+        sessionManager);
+
+    const tiles_block = new NcBlock(
+        false,
+        300,
+        true,
+        1,
+        'tiles',
+        'Tiles block',
+        null,
+        null,
+        true,
+        null,
+        null,
+        null,
+        null,
+        null,
+        false,
+        [
+            new NcMultiviewerTile(311, true, 300, 'tile_01', 'Tile 01', [], null, true, "Tile control class", receiver_monitors_block.memberObjects[0].oid, umds_block.memberObjects[0].oid, sessionManager),
+            new NcMultiviewerTile(312, true, 300, 'tile_02', 'Tile 02', [], null, true, "Tile control class", receiver_monitors_block.memberObjects[1].oid, umds_block.memberObjects[1].oid, sessionManager),
+            new NcMultiviewerTile(313, true, 300, 'tile_03', 'Tile 03', [], null, true, "Tile control class", receiver_monitors_block.memberObjects[2].oid, umds_block.memberObjects[2].oid, sessionManager),
+            new NcMultiviewerTile(314, true, 300, 'tile_04', 'Tile 04', [], null, true, "Tile control class", receiver_monitors_block.memberObjects[3].oid, umds_block.memberObjects[3].oid, sessionManager),
+        ],
+        [], [],
+        "Tiles block",
+        sessionManager);
+
+    const layouts_block = new NcBlock(
+        false,
+        400,
+        true,
+        1,
+        'Layouts',
+        'Layouts block',
+        null,
+        null,
+        true,
+        null,
+        null,
+        null,
+        null,
+        null,
+        false,
+        [
+            new NcMultiviewerLayout(411, true, 400, 'layout_01', 'Layout ABC', [], null, true, "Layout control class",
+            1920, 1080,
+            [
+                new MultiviewerLayoutElement(180, 110, 710, 430, tiles_block.memberObjects[0].oid),
+                new MultiviewerLayoutElement(1030, 110, 710, 430, tiles_block.memberObjects[1].oid),
+                new MultiviewerLayoutElement(180, 640, 710, 430, tiles_block.memberObjects[2].oid),
+                new MultiviewerLayoutElement(1030, 640, 710, 430, tiles_block.memberObjects[3].oid)
+            ], sessionManager),
+        ],
+        [], [],
+        "Layouts block",
+        sessionManager);
+
+    const displays_block = new NcBlock(
+        false,
+        500,
+        true,
+        1,
+        'Displays',
+        'Displays block',
+        null,
+        null,
+        true,
+        null,
+        null,
+        null,
+        null,
+        null,
+        false,
+        [
+            new NcMultiviewerDisplay(511, true, 500, 'display_01', 'Display 01', [], null, true, "Display control class",
+                layouts_block.memberObjects[0].oid, sessionManager),
+        ],
+        [], [],
+        "Displays block",
+        sessionManager);
+    
     const rootBlock = new RootBlock(
         1,
         true,
@@ -207,7 +407,7 @@ try
         null,
         "Blockspec for root block of minimum compliant device",
         false,
-        [ deviceManager, classManager, receiverMonitorAgent, stereoGainBlock, demoClass, identBeacon ],
+        [ deviceManager, classManager, receiver_monitors_block, umds_block, tiles_block, layouts_block, displays_block, stereoGainBlock, demoClass, identBeacon ],
         null,
         null,
         "Root block",
@@ -217,7 +417,10 @@ try
         await registrationClient.RegisterOrUpdateResource('node', myNode);
         registrationClient.StartHeatbeats(myNode.id);
         await registrationClient.RegisterOrUpdateResource('device', myDevice);
-        await registrationClient.RegisterOrUpdateResource('receiver', myVideoReceiver);
+        await registrationClient.RegisterOrUpdateResource('receiver', myVideoReceiver_01);
+        await registrationClient.RegisterOrUpdateResource('receiver', myVideoReceiver_02);
+        await registrationClient.RegisterOrUpdateResource('receiver', myVideoReceiver_03);
+        await registrationClient.RegisterOrUpdateResource('receiver', myVideoReceiver_04);
     };
 
     doAsync();

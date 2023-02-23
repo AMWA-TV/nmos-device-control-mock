@@ -8,6 +8,10 @@ export class Configuration implements IConfiguration
     public node_id: string;
     public device_id: string;
     public receiver_id: string;
+    public mwvr_receiver_01_id: string;
+    public mwvr_receiver_02_id: string;
+    public mwvr_receiver_03_id: string;
+    public mwvr_receiver_04_id: string;
     public address: string;
     public port: number;
     public base_label: string;
@@ -26,6 +30,10 @@ export class Configuration implements IConfiguration
         this.node_id = config.node_id;
         this.device_id = config.device_id;
         this.receiver_id = config.receiver_id;
+        this.mwvr_receiver_01_id = config.mwvr_receiver_01_id;
+        this.mwvr_receiver_02_id = config.mwvr_receiver_02_id;
+        this.mwvr_receiver_03_id = config.mwvr_receiver_03_id;
+        this.mwvr_receiver_04_id = config.mwvr_receiver_04_id;
         this.base_label = config.base_label;
         this.address = config.address;
         this.port = config.port;
@@ -61,6 +69,30 @@ export class Configuration implements IConfiguration
             shouldWriteConfig = true;
         }
 
+        if(this.mwvr_receiver_01_id == null)
+        {
+            this.mwvr_receiver_01_id = uuidv4().toString();
+            shouldWriteConfig = true;
+        }
+
+        if(this.mwvr_receiver_02_id == null)
+        {
+            this.mwvr_receiver_02_id = uuidv4().toString();
+            shouldWriteConfig = true;
+        }
+
+        if(this.mwvr_receiver_03_id == null)
+        {
+            this.mwvr_receiver_03_id = uuidv4().toString();
+            shouldWriteConfig = true;
+        }
+
+        if(this.mwvr_receiver_04_id == null)
+        {
+            this.mwvr_receiver_04_id = uuidv4().toString();
+            shouldWriteConfig = true;
+        }
+
         if(shouldWriteConfig)
             this.WriteConfig();
     }
@@ -92,6 +124,10 @@ export interface IConfiguration
     node_id: string;
     device_id: string;
     receiver_id: string;
+    mwvr_receiver_01_id: string;
+    mwvr_receiver_02_id: string;
+    mwvr_receiver_03_id: string;
+    mwvr_receiver_04_id: string;
     address: string;
     port: number;
     base_label: string;

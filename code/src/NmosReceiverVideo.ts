@@ -15,9 +15,10 @@ export class NmosReceiverVideo extends NmosReceiverCore
         device_id: string,
         base_label: string,
         transport: string,
+        suffix: string,
         registrationClient: RegistrationClient)
     {
-        super(id, device_id, base_label, transport, registrationClient);
+        super(id, device_id, base_label, transport, suffix, registrationClient);
 
         this.caps = { 'media_types': ['video/raw'] };
         this.format = 'urn:x-nmos:format:video';
