@@ -36,7 +36,8 @@ export class NmosDevice extends NmosResource
         this.controls = [
             new NmosControl(`http://${address}:${port}/x-nmos/connection/v1.1/`, 'urn:x-nmos:control:sr-ctrl/v1.1'),
             new NmosControl(`http://${address}:${port}/x-nmos/connection/v1.0/`, 'urn:x-nmos:control:sr-ctrl/v1.0'),
-            new NmosControl(`ws://${address}:${port}/x-nmos/ncp/v1.0/connect`, 'urn:x-nmos:control:ncp/v1.0')
+            new NmosControl(`ws://${address}:${port}/x-nmos/ncp/v1.0/connect`, 'urn:x-nmos:control:ncp/v1.0'),
+            new NmosControl(`http://${address}:${port}/x-nmos/config/v1.0/`, 'urn:x-nmos:control:config/v1.0'),
         ];
 
         this.type = 'urn:x-nmos:device:generic';

@@ -167,3 +167,22 @@ export class ProtocolError extends ProtocolWrapper
         return JSON.stringify(this, jsonIgnoreReplacer);
     }
 }
+
+export class ConfigApiCommand
+{
+    public handle: number;
+
+    public methodId: NcElementId;
+
+    public arguments: { [key: string]: any } | null;
+
+    constructor(
+        handle: number,
+        methodId: NcElementId,
+        commandArguments: { [key: string]: any } | null)
+    {
+        this.handle = handle;
+        this.methodId = methodId;
+        this.arguments = commandArguments;
+    }
+}

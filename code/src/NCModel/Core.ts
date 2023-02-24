@@ -47,10 +47,12 @@ export abstract class NcObject
 
     public description: string;
 
+    public ownerObject: NcObject | null;
+
     public constructor(
         oid: number,
         constantOid: boolean,
-        owner: number | null,
+        ownerObject: NcObject | null,
         role: string,
         userLabel: string | null,
         touchpoints: NcTouchpoint[] | null,
@@ -60,7 +62,8 @@ export abstract class NcObject
     {
         this.oid = oid;
         this.constantOid = constantOid;
-        this.owner = owner;
+        this.ownerObject = ownerObject;
+        this.owner = ownerObject?.oid ?? null;
         this.role = role;
         this.userLabel = userLabel;
         this.touchpoints = touchpoints;
@@ -184,6 +187,34 @@ export abstract class NcObject
             ],
             [ new NcEventDescriptor(new NcElementId(1, 1), "PropertyChanged", "NcPropertyChangedEventData", "Property changed event") ]
         );
+    }
+
+    public GetAllProperties() : NcObjectPropertiesHolder[]
+    {
+        return [
+            new NcObjectPropertiesHolder(this.GetRolePath(), [
+                new NcPropertyValueHolder(new NcElementId(1, 1), "classId", this.classID),
+                new NcPropertyValueHolder(new NcElementId(1, 2), "oid", this.oid),
+                new NcPropertyValueHolder(new NcElementId(1, 3), "constantOid", this.constantOid),
+                new NcPropertyValueHolder(new NcElementId(1, 4), "owner", this.owner),
+                new NcPropertyValueHolder(new NcElementId(1, 5), "role", this.role),
+                new NcPropertyValueHolder(new NcElementId(1, 6), "userLabel", this.userLabel),
+                new NcPropertyValueHolder(new NcElementId(1, 7), "touchpoints", this.touchpoints),
+                new NcPropertyValueHolder(new NcElementId(1, 8), "runtimePropertyConstraints", this.runtimePropertyConstraints),
+            ])
+        ];
+    }
+
+    public GetRolePath(): string[]
+    {
+        let rolePath: string[] = [];
+
+        if(this.ownerObject != null)
+            rolePath = rolePath.concat(this.ownerObject.GetRolePath())
+
+        rolePath = rolePath.concat([ this.role ]);
+
+        return rolePath;
     }
 }
 
@@ -1068,5 +1099,57 @@ export class NcDatatypeDescriptorEnum extends NcDatatypeDescriptor
     public ToJson()
     {
         return JSON.stringify(this, jsonIgnoreReplacer);
+    }
+}
+
+export class NcPropertyValueHolder extends BaseType
+{
+    public propertyId: NcElementId;
+    public propertyName: string;
+    public value: any;
+
+    public constructor(
+        propertyId: NcElementId,
+        propertyName: string,
+        value: any)
+    {
+        super();
+
+        this.propertyId = propertyId;
+        this.propertyName = propertyName;
+        this.value = value;
+    }
+
+    public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor
+    {
+        return new NcDatatypeDescriptorStruct("NcPropertyValueHolder", [
+            new NcFieldDescriptor("propertyId", "NcPropertyId", false, false, null, "Property id"),
+            new NcFieldDescriptor("propertyName", "NcName", false, false, null, "Property name"),
+            new NcFieldDescriptor("value", null, true, false, null, "Value"),
+        ], null, null, "Property value holder descriptor");
+    }
+}
+
+export class NcObjectPropertiesHolder extends BaseType
+{
+    public rolePath: string[];
+    public propertiesValues: NcPropertyValueHolder[];
+
+    public constructor(
+        rolePath: string[],
+        propertiesValues: NcPropertyValueHolder[])
+    {
+        super();
+
+        this.rolePath = rolePath;
+        this.propertiesValues = propertiesValues;
+    }
+
+    public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor
+    {
+        return new NcDatatypeDescriptorStruct("NcObjectPropertiesHolder", [
+            new NcFieldDescriptor("rolePath", "NcRolePath", false, false, null, "Object role path"),
+            new NcFieldDescriptor("propertiesValues", "NcPropertyValueHolder", false, true, null, "Object properties values"),
+        ], null, null, "Object properties holder descriptor");
     }
 }

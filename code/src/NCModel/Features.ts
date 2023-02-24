@@ -13,6 +13,7 @@ import {
     NcMethodDescriptor,
     NcMethodStatus,
     NcObject,
+    NcObjectPropertiesHolder,
     NcParameterConstraintsNumber,
     NcParameterConstraintsString,
     NcParameterDescriptor,
@@ -20,6 +21,7 @@ import {
     NcPropertyChangeType,
     NcPropertyConstraints,
     NcPropertyDescriptor,
+    NcPropertyValueHolder,
     NcTouchpoint } from './Core';
 
 export abstract class NcWorker extends NcObject
@@ -35,7 +37,7 @@ export abstract class NcWorker extends NcObject
     public constructor(
         oid: number,
         constantOid: boolean,
-        owner: number | null,
+        owner: NcObject | null,
         role: string,
         userLabel: string,
         touchpoints: NcTouchpoint[],
@@ -127,7 +129,7 @@ export abstract class NcSignalWorker extends NcWorker
     public constructor(
         oid: number,
         constantOid: boolean,
-        owner: number | null,
+        owner: NcObject | null,
         role: string,
         userLabel: string,
         touchpoints: NcTouchpoint[],
@@ -220,7 +222,7 @@ export abstract class NcActuator extends NcSignalWorker
     public constructor(
         oid: number,
         constantOid: boolean,
-        owner: number | null,
+        owner: NcObject | null,
         role: string,
         userLabel: string,
         touchpoints: NcTouchpoint[],
@@ -266,7 +268,7 @@ export class NcGain extends NcActuator
     public constructor(
         oid: number,
         constantOid: boolean,
-        owner: number | null,
+        owner: NcObject | null,
         role: string,
         userLabel: string,
         touchpoints: NcTouchpoint[],
@@ -345,6 +347,19 @@ export class NcGain extends NcActuator
 
         return currentClassDescriptor;
     }
+
+    public override GetAllProperties() : NcObjectPropertiesHolder[]
+    {
+        let properties = [
+            new NcObjectPropertiesHolder(this.GetRolePath(), [
+                new NcPropertyValueHolder(new NcElementId(5, 1), "gainValue", this.gainValue)
+            ])
+        ];
+
+        properties = properties.concat(super.GetAllProperties());
+
+        return properties;
+    }
 }
 
 export class NcIdentBeacon extends NcWorker
@@ -360,7 +375,7 @@ export class NcIdentBeacon extends NcWorker
     public constructor(
         oid: number,
         constantOid: boolean,
-        owner: number | null,
+        owner: NcObject | null,
         role: string,
         userLabel: string,
         touchpoints: NcTouchpoint[],
@@ -506,7 +521,7 @@ export class NcReceiverMonitor extends NcWorker
     public constructor(
         oid: number,
         constantOid: boolean,
-        owner: number | null,
+        owner: NcObject | null,
         role: string,
         userLabel: string,
         touchpoints: NcTouchpoint[],
@@ -736,7 +751,7 @@ export class NcDemo extends NcWorker
     public constructor(
         oid: number,
         constantOid: boolean,
-        owner: number | null,
+        owner: NcObject | null,
         role: string,
         userLabel: string,
         touchpoints: NcTouchpoint[],
@@ -1383,5 +1398,30 @@ export class NcDemo extends NcWorker
         }
 
         return currentClassDescriptor;
+    }
+
+    public override GetAllProperties() : NcObjectPropertiesHolder[]
+    {
+        let properties = [
+            new NcObjectPropertiesHolder(this.GetRolePath(), [
+                new NcPropertyValueHolder(new NcElementId(3, 1), "enumProperty", this.enumProperty),
+                new NcPropertyValueHolder(new NcElementId(3, 2), "stringProperty", this.stringProperty),
+                new NcPropertyValueHolder(new NcElementId(3, 3), "numberProperty", this.numberProperty),
+                new NcPropertyValueHolder(new NcElementId(3, 4), "booleanProperty", this.booleanProperty),
+                new NcPropertyValueHolder(new NcElementId(3, 5), "objectProperty", this.objectProperty),
+                new NcPropertyValueHolder(new NcElementId(3, 6), "methodNoArgsCount", this.methodNoArgsCount),
+                new NcPropertyValueHolder(new NcElementId(3, 7), "methodSimpleArgsCount", this.methodSimpleArgsCount),
+                new NcPropertyValueHolder(new NcElementId(3, 8), "methodObjectArgCount", this.methodObjectArgCount),
+                new NcPropertyValueHolder(new NcElementId(3, 9), "stringSequence", this.stringSequence),
+                new NcPropertyValueHolder(new NcElementId(3, 10), "booleanSequence", this.booleanSequence),
+                new NcPropertyValueHolder(new NcElementId(3, 11), "enumSequence", this.enumSequence),
+                new NcPropertyValueHolder(new NcElementId(3, 12), "numberSequence", this.numberSequence),
+                new NcPropertyValueHolder(new NcElementId(3, 13), "objectSequence", this.objectSequence),
+            ])
+        ];
+
+        properties = properties.concat(super.GetAllProperties());
+
+        return properties;
     }
 }

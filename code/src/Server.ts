@@ -13,10 +13,13 @@ import { NmosReceiverActiveRtp } from './NmosReceiverActiveRtp';
 import { SessionManager } from './SessionManager';
 import { NcBlock, RootBlock } from './NCModel/Blocks';
 import { NcClassManager, NcDeviceManager } from './NCModel/Managers';
-import { NcIoDirection, NcMethodStatus, NcPort, NcPortReference, NcSignalPath, NcTouchpointNmos, NcTouchpointResourceNmos } from './NCModel/Core';
+import { NcElementId, NcIoDirection, NcMethodStatus, NcPort, NcPortReference, NcSignalPath, NcTouchpointNmos, NcTouchpointResourceNmos } from './NCModel/Core';
 import { NcDemo, NcGain, NcIdentBeacon, NcReceiverMonitor } from './NCModel/Features';
-import { ProtocolError, ProtocolSubscription } from './NCProtocol/Commands';
+import { CommandResponseWithValue, ConfigApiCommand, ProtocolError, ProtocolSubscription } from './NCProtocol/Commands';
 import { MessageType, ProtocolWrapper } from './NCProtocol/Core';
+
+import { jsonIgnoreReplacer, jsonIgnore } from 'json-ignore';
+import { parse } from 'path';
 
 export interface WebSocketConnection extends WebSocket {
     isAlive: boolean;
@@ -61,137 +64,6 @@ try
 
     const sessionManager = new SessionManager(config.notify_without_subscriptions);
 
-    const deviceManager = new NcDeviceManager(
-        2,
-        true,
-        1,
-        'Device manager',
-        null,
-        null,
-        "The device manager offers information about the product this device is representing",
-        sessionManager);
-
-    const classManager = new NcClassManager(
-        3,
-        true,
-        1,
-        'Class manager',
-        null,
-        null,
-        "The class manager offers access to control class and data type descriptors",
-        sessionManager);
-
-    const receiverMonitorAgent = new NcReceiverMonitor(
-        11,
-        true,
-        1,
-        'ReceiverMonitor_01',
-        'Receiver monitor 01',
-        [ new NcTouchpointNmos('x-nmos', new NcTouchpointResourceNmos('receiver', myVideoReceiver.id)) ],
-        null,
-        true,
-        "Receiver monitor worker",
-        sessionManager);
-
-    myVideoReceiver.AttachMonitoringAgent(receiverMonitorAgent);
-
-    const demoClass = new NcDemo(
-        111,
-        true,
-        1,
-        'DemoClass',
-        'Demo class',
-        [],
-        null,
-        true,
-        "Demo control class",
-        sessionManager);
-
-    const channelGainBlock = new NcBlock(
-        false,
-        21,
-        true,
-        31,
-        'channel-gain',
-        'Channel gain',
-        null,
-        null,
-        true,
-        null,
-        null,
-        null,
-        null,
-        null,
-        false,
-        [
-            new NcGain(22, true, 21, "left-gain", "Left gain", [], null, true, [
-                new NcPort('input_1', NcIoDirection.Input, null),
-                new NcPort('output_1', NcIoDirection.Output, null),
-            ], null, 0, "Left channel gain", sessionManager),
-            new NcGain(23, true, 21, "right-gain", "Right gain", [], null, true, [
-                new NcPort('input_1', NcIoDirection.Input, null),
-                new NcPort('output_1', NcIoDirection.Output, null),
-            ], null, 0, "Right channel gain", sessionManager)
-        ],
-        [ 
-            new NcPort('stereo_gain_input_1', NcIoDirection.Input, null),
-            new NcPort('stereo_gain_input_2', NcIoDirection.Input, null),
-            new NcPort('stereo_gain_output_1', NcIoDirection.Output, null),
-            new NcPort('stereo_gain_output_2', NcIoDirection.Output, null)
-        ],
-        [
-            new NcSignalPath('left_gain_input', 'Left gain input', new NcPortReference([], "stereo_gain_input_1"), new NcPortReference(['left-gain'], 'input_1')),
-            new NcSignalPath('left_gain_output', 'Left gain output', new NcPortReference(['left-gain'], 'output_1'), new NcPortReference([], "stereo_gain_output_1")),
-            new NcSignalPath('right_gain_input', 'Right gain input', new NcPortReference([], "stereo_gain_input_2"), new NcPortReference(['right-gain'], 'input_1')),
-            new NcSignalPath('right_gain_output', 'Right gain output', new NcPortReference(['right-gain'], 'output_1'), new NcPortReference([], "stereo_gain_output_2")),
-        ],
-        "Channel gain block",
-        sessionManager);
-
-        const stereoGainBlock = new NcBlock(
-            false,
-            31,
-            true,
-            1,
-            'stereo-gain',
-            'Stereo gain',
-            null,
-            null,
-            true,
-            null,
-            null,
-            null,
-            null,
-            null,
-            false,
-            [
-                channelGainBlock,
-                new NcGain(24, true, 31, "master-gain", "Master gain", [], null, true, [
-                    new NcPort('input_1', NcIoDirection.Input, null),
-                    new NcPort('input_2', NcIoDirection.Input, null),
-                    new NcPort('output_1', NcIoDirection.Output, null),
-                    new NcPort('output_2', NcIoDirection.Output, null),
-                ], null, 0, "Master gain", sessionManager)
-            ],
-            [ 
-                new NcPort('block_input_1', NcIoDirection.Input, null),
-                new NcPort('block_input_2', NcIoDirection.Input, null),
-                new NcPort('block_output_1', NcIoDirection.Output, null),
-                new NcPort('block_output_2', NcIoDirection.Output, null)
-            ],
-            [
-                new NcSignalPath('block-in-1-to-left-gain-in', 'Block input 1 to left gain input', new NcPortReference([], "block_input_1"), new NcPortReference(['stereo-gain'], 'stereo_gain_input_1')),
-                new NcSignalPath('left-gain-out-to-master-gain-in-1', 'Left gain output to master gain input 1', new NcPortReference(['stereo-gain'], 'stereo_gain_output_1'), new NcPortReference(['master-gain'], "input_1")),
-                new NcSignalPath('master-gain-out-1-to-block-out-1', 'Master gain output 1 to block output 1', new NcPortReference(['master-gain'], "output_1"), new NcPortReference([], 'block_output_1')),
-                new NcSignalPath('block-in-2-to-right-gain-in', 'Block input 2 to right gain input', new NcPortReference([], "block_input_2"), new NcPortReference(['stereo-gain'], 'stereo_gain_input_2')),
-                new NcSignalPath('right-gain-out-to-master-gain-in-2', 'Right gain output to master gain input 2', new NcPortReference(['stereo-gain'], 'stereo_gain_output_2'), new NcPortReference(['master-gain'], "input_2")),
-                new NcSignalPath('master-gain-out-2-to-block-out-2', 'Master gain output 2 to block output 2', new NcPortReference(['master-gain'], "output_2"), new NcPortReference([], 'block_output_2'))
-            ],
-            "Stereo gain block",
-            sessionManager);
-
-    const identBeacon = new NcIdentBeacon(51, true, 1, "IdentBeacon", "Identification beacon", [], null, true, false, "Identification beacon", sessionManager);
-
     const rootBlock = new RootBlock(
         1,
         true,
@@ -207,7 +79,7 @@ try
         null,
         "Blockspec for root block of minimum compliant device",
         false,
-        [ deviceManager, classManager, receiverMonitorAgent, stereoGainBlock, demoClass, identBeacon ],
+        [],
         null,
         null,
         "Root block",
@@ -219,6 +91,143 @@ try
         await registrationClient.RegisterOrUpdateResource('device', myDevice);
         await registrationClient.RegisterOrUpdateResource('receiver', myVideoReceiver);
     };
+
+    const deviceManager = new NcDeviceManager(
+        2,
+        true,
+        rootBlock,
+        'Device manager',
+        null,
+        null,
+        "The device manager offers information about the product this device is representing",
+        sessionManager);
+
+    const classManager = new NcClassManager(
+        3,
+        true,
+        rootBlock,
+        'Class manager',
+        null,
+        null,
+        "The class manager offers access to control class and data type descriptors",
+        sessionManager);
+
+    const receiverMonitorAgent = new NcReceiverMonitor(
+        11,
+        true,
+        rootBlock,
+        'ReceiverMonitor_01',
+        'Receiver monitor 01',
+        [ new NcTouchpointNmos('x-nmos', new NcTouchpointResourceNmos('receiver', myVideoReceiver.id)) ],
+        null,
+        true,
+        "Receiver monitor worker",
+        sessionManager);
+
+    myVideoReceiver.AttachMonitoringAgent(receiverMonitorAgent);
+
+    const demoClass = new NcDemo(
+        111,
+        true,
+        rootBlock,
+        'DemoClass',
+        'Demo class',
+        [],
+        null,
+        true,
+        "Demo control class",
+        sessionManager);
+
+    const stereoGainBlock = new NcBlock(
+        false,
+        31,
+        true,
+        rootBlock,
+        'stereo-gain',
+        'Stereo gain',
+        null,
+        null,
+        true,
+        null,
+        null,
+        null,
+        null,
+        null,
+        false,
+        [],
+        [ 
+            new NcPort('block_input_1', NcIoDirection.Input, null),
+            new NcPort('block_input_2', NcIoDirection.Input, null),
+            new NcPort('block_output_1', NcIoDirection.Output, null),
+            new NcPort('block_output_2', NcIoDirection.Output, null)
+        ],
+        [
+            new NcSignalPath('block-in-1-to-left-gain-in', 'Block input 1 to left gain input', new NcPortReference([], "block_input_1"), new NcPortReference(['stereo-gain'], 'stereo_gain_input_1')),
+            new NcSignalPath('left-gain-out-to-master-gain-in-1', 'Left gain output to master gain input 1', new NcPortReference(['stereo-gain'], 'stereo_gain_output_1'), new NcPortReference(['master-gain'], "input_1")),
+            new NcSignalPath('master-gain-out-1-to-block-out-1', 'Master gain output 1 to block output 1', new NcPortReference(['master-gain'], "output_1"), new NcPortReference([], 'block_output_1')),
+            new NcSignalPath('block-in-2-to-right-gain-in', 'Block input 2 to right gain input', new NcPortReference([], "block_input_2"), new NcPortReference(['stereo-gain'], 'stereo_gain_input_2')),
+            new NcSignalPath('right-gain-out-to-master-gain-in-2', 'Right gain output to master gain input 2', new NcPortReference(['stereo-gain'], 'stereo_gain_output_2'), new NcPortReference(['master-gain'], "input_2")),
+            new NcSignalPath('master-gain-out-2-to-block-out-2', 'Master gain output 2 to block output 2', new NcPortReference(['master-gain'], "output_2"), new NcPortReference([], 'block_output_2'))
+        ],
+        "Stereo gain block",
+        sessionManager);
+
+    const channelGainBlock = new NcBlock(
+        false,
+        21,
+        true,
+        stereoGainBlock,
+        'channel-gain',
+        'Channel gain',
+        null,
+        null,
+        true,
+        null,
+        null,
+        null,
+        null,
+        null,
+        false,
+        [],
+        [ 
+            new NcPort('stereo_gain_input_1', NcIoDirection.Input, null),
+            new NcPort('stereo_gain_input_2', NcIoDirection.Input, null),
+            new NcPort('stereo_gain_output_1', NcIoDirection.Output, null),
+            new NcPort('stereo_gain_output_2', NcIoDirection.Output, null)
+        ],
+        [
+            new NcSignalPath('left_gain_input', 'Left gain input', new NcPortReference([], "stereo_gain_input_1"), new NcPortReference(['left-gain'], 'input_1')),
+            new NcSignalPath('left_gain_output', 'Left gain output', new NcPortReference(['left-gain'], 'output_1'), new NcPortReference([], "stereo_gain_output_1")),
+            new NcSignalPath('right_gain_input', 'Right gain input', new NcPortReference([], "stereo_gain_input_2"), new NcPortReference(['right-gain'], 'input_1')),
+            new NcSignalPath('right_gain_output', 'Right gain output', new NcPortReference(['right-gain'], 'output_1'), new NcPortReference([], "stereo_gain_output_2")),
+        ],
+        "Channel gain block",
+        sessionManager);
+
+    let leftGain = new NcGain(22, true, channelGainBlock, "left-gain", "Left gain", [], null, true, [
+        new NcPort('input_1', NcIoDirection.Input, null),
+        new NcPort('output_1', NcIoDirection.Output, null),
+    ], null, 0, "Left channel gain", sessionManager);
+
+    let rightGain = new NcGain(23, true, channelGainBlock, "right-gain", "Right gain", [], null, true, [
+        new NcPort('input_1', NcIoDirection.Input, null),
+        new NcPort('output_1', NcIoDirection.Output, null),
+    ], null, 0, "Right channel gain", sessionManager);
+
+    channelGainBlock.memberObjects = [ leftGain, rightGain ];
+
+    let masterGain = new NcGain(24, true, stereoGainBlock, "master-gain", "Master gain", [], null, true, [
+        new NcPort('input_1', NcIoDirection.Input, null),
+        new NcPort('input_2', NcIoDirection.Input, null),
+        new NcPort('output_1', NcIoDirection.Output, null),
+        new NcPort('output_2', NcIoDirection.Output, null),
+    ], null, 0, "Master gain", sessionManager);
+
+    stereoGainBlock.memberObjects = [ channelGainBlock, masterGain ];
+
+    const identBeacon = new NcIdentBeacon(51, true, rootBlock, "IdentBeacon", "Identification beacon", [], null, true, false, "Identification beacon", sessionManager);
+
+    rootBlock.memberObjects = [ deviceManager, classManager, receiverMonitorAgent, stereoGainBlock, demoClass, identBeacon ];
 
     doAsync();
 
@@ -534,6 +543,82 @@ try
         else
             res.sendStatus(404);
     })
+
+    app.get('/x-nmos/config/:version/root*', function (req, res) {
+        res.setHeader('Content-Type', 'application/json');
+
+        console.log(`Config API GET ${req.url}, level: ${req.query.level}, index: ${req.query.index}`);
+
+        let urlPath: string = req.path;
+
+        let propertyLevel;
+        let propertyIndex
+
+        if(req.query.level)
+            propertyLevel = parseInt(req.query.level.toString());
+
+        if(req.query.index)
+            propertyIndex = parseInt(req.query.index.toString());
+
+        urlPath = urlPath.replace('/x-nmos/config/v1.0/', '');
+        let rolePath = urlPath.split('/');
+
+        let member = rootBlock.FindMemberByRolePath(rolePath);
+        if(member)
+        {
+            if(member instanceof NcBlock)
+            {
+                res.send(JSON.stringify(member.members, jsonIgnoreReplacer));
+            }
+            else
+            {
+                if(propertyLevel && propertyIndex)
+                {
+                    let commandResponse = member.Get(member.oid, new NcElementId(propertyLevel, propertyIndex), 1);
+                    if(commandResponse instanceof CommandResponseWithValue)
+                    {
+                        let payload: { [key: string]: any } = {};
+                        payload['value'] = commandResponse.result['value'];
+                        res.send(JSON.stringify(payload, jsonIgnoreReplacer));
+                    }
+                    else
+                        res.sendStatus(404);
+                }
+                else
+                    res.send(JSON.stringify(classManager.GetClassDescriptor(member.classID, true), jsonIgnoreReplacer));
+            }
+        }
+        else
+            res.sendStatus(404);
+    });
+
+    app.patch('/x-nmos/config/:version/root*', function (req, res) {
+        res.setHeader('Content-Type', 'application/json');
+
+        let apiCommand = req.body as ConfigApiCommand;
+
+        console.log(`Config API PATCH ${req.url}`);
+
+        let urlPath: string = req.path;
+
+        urlPath = urlPath.replace('/x-nmos/config/v1.0/', '');
+        let rolePath = urlPath.split('/');
+
+        let member = rootBlock.FindMemberByRolePath(rolePath);
+        if(member)
+        {
+            if(apiCommand.methodId.level == 2 && apiCommand.methodId.index == 5)
+                res.send(JSON.stringify(new CommandResponseWithValue(apiCommand.handle, NcMethodStatus.OK, member.GetAllProperties()), jsonIgnoreReplacer));
+            else if(apiCommand.methodId.level == 2 && apiCommand.methodId.index == 6)
+            {
+                //TODO set properties
+            }
+            else
+                res.sendStatus(404);
+        }
+        else
+            res.sendStatus(404);
+    });
     
     //start our server
     server.listen(config.port, () => {

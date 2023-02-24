@@ -45,7 +45,7 @@ export abstract class NcManager extends NcObject
     public constructor(
         oid: number,
         constantOid: boolean,
-        owner: number | null,
+        owner: NcObject | null,
         role: string,
         userLabel: string,
         touchpoints: NcTouchpoint[] | null,
@@ -242,7 +242,7 @@ export class NcDeviceManager extends NcManager
     public constructor(
         oid: number,
         constantOid: boolean,
-        owner: number | null,
+        owner: NcObject | null,
         userLabel: string,
         touchpoints: NcTouchpoint[] | null,
         runtimePropertyConstraints: NcPropertyConstraints[] | null,
@@ -390,7 +390,7 @@ export class NcClassManager extends NcManager
     public constructor(
         oid: number,
         constantOid: boolean,
-        owner: number | null,
+        owner: NcObject | null,
         userLabel: string,
         touchpoints: NcTouchpoint[] | null,
         runtimePropertyConstraints: NcPropertyConstraints[] | null,
@@ -744,7 +744,7 @@ export class NcClassManager extends NcManager
         }
     }
 
-    private GetClassDescriptor(identity: number[], includeInherited: boolean) : NcClassDescriptor | null
+    public GetClassDescriptor(identity: number[], includeInherited: boolean) : NcClassDescriptor | null
     {
         if(includeInherited)
             return this.GenerateClassDescriptorWithInheritedElements(identity);
@@ -756,7 +756,7 @@ export class NcClassManager extends NcManager
         }
     }
 
-    private GetTypeDescriptor(name: string, includeInherited: boolean) : NcDatatypeDescriptor | null
+    public GetTypeDescriptor(name: string, includeInherited: boolean) : NcDatatypeDescriptor | null
     {
         if(includeInherited)
             return this.GenerateTypeDescriptorWithInheritedElements(name);

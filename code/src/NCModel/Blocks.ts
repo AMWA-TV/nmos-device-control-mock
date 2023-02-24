@@ -12,6 +12,7 @@ import {
     NcMethodDescriptor,
     NcMethodStatus,
     NcObject,
+    NcObjectPropertiesHolder,
     NcParameterDescriptor,
     NcPort,
     NcPropertyConstraints,
@@ -68,7 +69,7 @@ export class NcBlock extends NcObject
         isRoot: boolean,
         oid: number,
         constantOid: boolean,
-        owner: number | null,
+        owner: NcObject | null,
         role: string,
         userLabel: string,
         touchpoints: NcTouchpoint[] | null,
@@ -417,6 +418,53 @@ export class NcBlock extends NcObject
             return new Array<NcBlockMemberDescriptor>()
     }
 
+    public FindMemberByRolePath(rolePath: string[]) : NcObject | null
+    {
+        if(rolePath.length == 1 && rolePath[0] == this.role)
+        {
+            return this;
+        }
+        else if(rolePath.length > 1 && rolePath[0] == this.role)
+        {
+            let childRole = rolePath[1];
+            if(this.memberObjects != null)
+            {
+                let member = this.memberObjects.find(e => e.role === childRole);
+                if(member)
+                {
+                    if(rolePath.length == 2)
+                    {
+                        return member;
+                    }
+                    else if(member instanceof NcBlock)
+                    {
+                        let furtherPath = rolePath.splice(1);
+                        return member.FindMemberByRolePath(furtherPath);
+                    }
+                    else
+                        return null;
+                }
+                else
+                return null;
+            }
+            else
+                return null;
+        }
+        else
+            return null;
+    }
+
+    public override GetAllProperties() : NcObjectPropertiesHolder[]
+    {
+        let holders = new Array<NcObjectPropertiesHolder>();
+
+        this.memberObjects.forEach(member => {
+            holders = holders.concat(member.GetAllProperties());
+        });
+
+        return holders
+    }
+
     public GenerateMemberDescriptorsByRole(role: string, caseSensitive: boolean, matchWholeString: boolean, recurse: boolean) : NcBlockMemberDescriptor[]
     {
         if(this.memberObjects != null)
@@ -489,7 +537,7 @@ export class RootBlock extends NcBlock
     public constructor(
         oid: number,
         constantOid: boolean,
-        owner: number | null,
+        owner: NcObject | null,
         role: string,
         userLabel: string,
         touchpoints: NcTouchpoint[] | null,
