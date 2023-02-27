@@ -15,7 +15,7 @@ import { NcBlock, RootBlock } from './NCModel/Blocks';
 import { NcClassManager, NcDeviceManager } from './NCModel/Managers';
 import { NcElementId, NcIoDirection, NcMethodStatus, NcPort, NcPortReference, NcSignalPath, NcTouchpointNmos, NcTouchpointResourceNmos } from './NCModel/Core';
 import { NcDemo, NcGain, NcIdentBeacon, NcReceiverMonitor } from './NCModel/Features';
-import { CommandResponseWithValue, ConfigApiCommand, ProtocolError, ProtocolSubscription } from './NCProtocol/Commands';
+import { CommandResponseWithValue, ConfigApiCommand, ConfigApiValue, ProtocolError, ProtocolSubscription } from './NCProtocol/Commands';
 import { MessageType, ProtocolWrapper } from './NCProtocol/Core';
 
 import { jsonIgnoreReplacer, jsonIgnore } from 'json-ignore';
@@ -214,7 +214,7 @@ try
         new NcPort('output_1', NcIoDirection.Output, null),
     ], null, 0, "Right channel gain", sessionManager);
 
-    channelGainBlock.memberObjects = [ leftGain, rightGain ];
+    channelGainBlock.UpdateMembers([ leftGain, rightGain ]);
 
     let masterGain = new NcGain(24, true, stereoGainBlock, "master-gain", "Master gain", [], null, true, [
         new NcPort('input_1', NcIoDirection.Input, null),
@@ -223,11 +223,11 @@ try
         new NcPort('output_2', NcIoDirection.Output, null),
     ], null, 0, "Master gain", sessionManager);
 
-    stereoGainBlock.memberObjects = [ channelGainBlock, masterGain ];
+    stereoGainBlock.UpdateMembers([ channelGainBlock, masterGain ]);
 
     const identBeacon = new NcIdentBeacon(51, true, rootBlock, "IdentBeacon", "Identification beacon", [], null, true, false, "Identification beacon", sessionManager);
 
-    rootBlock.memberObjects = [ deviceManager, classManager, receiverMonitorAgent, stereoGainBlock, demoClass, identBeacon ];
+    rootBlock.UpdateMembers([ deviceManager, classManager, receiverMonitorAgent, stereoGainBlock, demoClass, identBeacon ]);
 
     doAsync();
 
@@ -595,7 +595,7 @@ try
     app.patch('/x-nmos/config/:version/root*', function (req, res) {
         res.setHeader('Content-Type', 'application/json');
 
-        let apiCommand = req.body as ConfigApiCommand;
+        let apiCommands = req.body as ConfigApiCommand[];
 
         console.log(`Config API PATCH ${req.url}`);
 
@@ -607,14 +607,45 @@ try
         let member = rootBlock.FindMemberByRolePath(rolePath);
         if(member)
         {
-            if(apiCommand.methodId.level == 2 && apiCommand.methodId.index == 5)
-                res.send(JSON.stringify(new CommandResponseWithValue(apiCommand.handle, NcMethodStatus.OK, member.GetAllProperties()), jsonIgnoreReplacer));
-            else if(apiCommand.methodId.level == 2 && apiCommand.methodId.index == 6)
+            apiCommands.forEach(command => 
             {
-                //TODO set properties
-            }
-            else
-                res.sendStatus(404);
+                if(member)
+                {
+                    let response = member.InvokeMethod(member.oid, command.methodId, command.arguments, command.handle);
+                    res.send(JSON.stringify(response));
+                }
+            });
+        }
+        else
+            res.sendStatus(404);
+    });
+
+    app.put('/x-nmos/config/:version/root*', function (req, res) {
+        res.setHeader('Content-Type', 'application/json');
+
+        let propertyValue = req.body as ConfigApiValue;
+
+        console.log(`Config API PUT ${req.url}`);
+
+        let propertyLevel;
+        let propertyIndex
+
+        if(req.query.level)
+            propertyLevel = parseInt(req.query.level.toString());
+
+        if(req.query.index)
+            propertyIndex = parseInt(req.query.index.toString());
+
+        let urlPath: string = req.path;
+
+        urlPath = urlPath.replace('/x-nmos/config/v1.0/', '');
+        let rolePath = urlPath.split('/');
+
+        let member = rootBlock.FindMemberByRolePath(rolePath);
+        if(member)
+        {
+            let response = member.Set(member.oid, new NcElementId(propertyLevel, propertyIndex), propertyValue.value, 1);
+            res.sendStatus(response.result['status']);
         }
         else
             res.sendStatus(404);

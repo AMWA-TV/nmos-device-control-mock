@@ -111,6 +111,19 @@ export abstract class NcWorker extends NcObject
 
         return currentClassDescriptor;
     }
+
+    public override GetAllProperties(recurse: boolean) : NcObjectPropertiesHolder[]
+    {
+        let properties = [
+            new NcObjectPropertiesHolder(this.GetRolePath(), [
+                new NcPropertyValueHolder(new NcElementId(2, 1), "enabled", this.enabled)
+            ])
+        ];
+
+        properties[0].propertiesValues = properties[0].propertiesValues.concat(super.GetAllProperties(recurse)[0].propertiesValues);
+
+        return properties;
+    }
 }
 
 export abstract class NcSignalWorker extends NcWorker
@@ -209,6 +222,20 @@ export abstract class NcSignalWorker extends NcWorker
         }
 
         return currentClassDescriptor;
+    }
+
+    public override GetAllProperties(recurse: boolean) : NcObjectPropertiesHolder[]
+    {
+        let properties = [
+            new NcObjectPropertiesHolder(this.GetRolePath(), [
+                new NcPropertyValueHolder(new NcElementId(3, 1), "ports", this.ports),
+                new NcPropertyValueHolder(new NcElementId(3, 2), "latency", this.latency)
+            ])
+        ];
+
+        properties[0].propertiesValues = properties[0].propertiesValues.concat(super.GetAllProperties(recurse)[0].propertiesValues);
+
+        return properties;
     }
 }
 
@@ -325,6 +352,34 @@ export class NcGain extends NcActuator
         return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
     }
 
+    public override InvokeMethod(oid: number, methodId: NcElementId, args: { [key: string]: any; } | null, handle: number): CommandResponseNoValue
+    {
+        if(oid == this.oid)
+        {
+            let key: string = `${methodId.level}m${methodId.index}`;
+
+            switch(key)
+            {
+                case '1m7':
+                    {
+                        if(args != null)
+                        {
+                            let recurse = args['recurse'] as boolean;
+
+                            if(recurse)
+                                return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.GetAllProperties(true));
+                            else
+                                return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.GetAllProperties(false));
+                        }
+                        else
+                            return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid arguments provided');
+                    }
+            }
+        }
+
+        return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
+    }
+
     public static override GetClassDescriptor(includeInherited: boolean): NcClassDescriptor 
     {
         let currentClassDescriptor = new NcClassDescriptor(`${NcGain.name} class descriptor`,
@@ -348,7 +403,7 @@ export class NcGain extends NcActuator
         return currentClassDescriptor;
     }
 
-    public override GetAllProperties() : NcObjectPropertiesHolder[]
+    public override GetAllProperties(recurse: boolean) : NcObjectPropertiesHolder[]
     {
         let properties = [
             new NcObjectPropertiesHolder(this.GetRolePath(), [
@@ -356,7 +411,7 @@ export class NcGain extends NcActuator
             ])
         ];
 
-        properties = properties.concat(super.GetAllProperties());
+        properties[0].propertiesValues = properties[0].propertiesValues.concat(super.GetAllProperties(recurse)[0].propertiesValues);
 
         return properties;
     }
@@ -451,6 +506,19 @@ export class NcIdentBeacon extends NcWorker
         }
 
         return currentClassDescriptor;
+    }
+
+    public override GetAllProperties(recurse: boolean) : NcObjectPropertiesHolder[]
+    {
+        let properties = [
+            new NcObjectPropertiesHolder(this.GetRolePath(), [
+                new NcPropertyValueHolder(new NcElementId(3, 1), "active", this.active)
+            ])
+        ];
+
+        properties[0].propertiesValues = properties[0].propertiesValues.concat(super.GetAllProperties(recurse)[0].propertiesValues);
+
+        return properties;
     }
 }
 
@@ -610,7 +678,7 @@ export class NcReceiverMonitor extends NcWorker
         return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
     }
 
-    public override InvokeMethod(socket: WebSocketConnection, oid: number, methodId: NcElementId, args: { [key: string]: any; } | null, handle: number): CommandResponseNoValue 
+    public override InvokeMethod(oid: number, methodId: NcElementId, args: { [key: string]: any; } | null, handle: number): CommandResponseNoValue 
     {
         if(oid == this.oid)
         {
@@ -621,7 +689,7 @@ export class NcReceiverMonitor extends NcWorker
                 case '3m1':
                     return new CommandResponseWithValue(handle, NcMethodStatus.OK, new NcReceiverStatus(this.connectionStatus, this.payloadStatus));
                 default:
-                    return super.InvokeMethod(socket, oid, methodId, args, handle);
+                    return super.InvokeMethod(oid, methodId, args, handle);
             }
         }
 
@@ -654,6 +722,22 @@ export class NcReceiverMonitor extends NcWorker
         }
 
         return currentClassDescriptor;
+    }
+
+    public override GetAllProperties(recurse: boolean) : NcObjectPropertiesHolder[]
+    {
+        let properties = [
+            new NcObjectPropertiesHolder(this.GetRolePath(), [
+                new NcPropertyValueHolder(new NcElementId(3, 1), "connectionStatus", this.connectionStatus),
+                new NcPropertyValueHolder(new NcElementId(3, 2), "connectionStatusMessage", this.connectionStatusMessage),
+                new NcPropertyValueHolder(new NcElementId(3, 3), "payloadStatus", this.payloadStatus),
+                new NcPropertyValueHolder(new NcElementId(3, 4), "payloadStatusMessage", this.payloadStatusMessage),
+            ])
+        ];
+
+        properties[0].propertiesValues = properties[0].propertiesValues.concat(super.GetAllProperties(recurse)[0].propertiesValues);
+
+        return properties;
     }
 }
 
@@ -881,7 +965,7 @@ export class NcDemo extends NcWorker
         return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
     }
 
-    public override InvokeMethod(socket: WebSocketConnection, oid: number, methodId: NcElementId, args: { [key: string]: any; } | null, handle: number): CommandResponseNoValue 
+    public override InvokeMethod(oid: number, methodId: NcElementId, args: { [key: string]: any; } | null, handle: number): CommandResponseNoValue 
     {
         if(oid == this.oid)
         {
@@ -1279,6 +1363,20 @@ export class NcDemo extends NcWorker
                         else
                             return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid arguments provided');
                     }
+                case '1m7':
+                    {
+                        if(args != null)
+                        {
+                            let recurse = args['recurse'] as boolean;
+
+                            if(recurse)
+                                return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.GetAllProperties(true));
+                            else
+                                return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.GetAllProperties(false));
+                        }
+                        else
+                            return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid arguments provided');
+                    }
                 case '3m1':
                     {
                         this.methodNoArgsCount = this.methodNoArgsCount + 1;
@@ -1344,7 +1442,7 @@ export class NcDemo extends NcWorker
                             return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid arguments provided');
                     }
                 default:
-                    return super.InvokeMethod(socket, oid, methodId, args, handle);
+                    return super.InvokeMethod(oid, methodId, args, handle);
             }
         }
 
@@ -1400,7 +1498,7 @@ export class NcDemo extends NcWorker
         return currentClassDescriptor;
     }
 
-    public override GetAllProperties() : NcObjectPropertiesHolder[]
+    public override GetAllProperties(recurse: boolean) : NcObjectPropertiesHolder[]
     {
         let properties = [
             new NcObjectPropertiesHolder(this.GetRolePath(), [
@@ -1420,7 +1518,7 @@ export class NcDemo extends NcWorker
             ])
         ];
 
-        properties = properties.concat(super.GetAllProperties());
+        properties[0].propertiesValues = properties[0].propertiesValues.concat(super.GetAllProperties(recurse)[0].propertiesValues);
 
         return properties;
     }

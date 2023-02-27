@@ -17,6 +17,7 @@ import {
     NcPort,
     NcPropertyConstraints,
     NcPropertyDescriptor,
+    NcPropertyValueHolder,
     NcSignalPath,
     NcTouchpoint } from './Core';
 
@@ -98,8 +99,8 @@ export class NcBlock extends NcObject
         this.specDescription = specDescription;
         this.isDynamic = isDynamic;
         this.isModified = false;
-        this.memberObjects = memberObjects;
 
+        this.memberObjects = memberObjects;
         this.members = this.memberObjects.map(x => x.GenerateMemberDescriptor());
 
         this.ports = ports;
@@ -177,7 +178,7 @@ export class NcBlock extends NcObject
         return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
     }
 
-    public override InvokeMethod(socket: WebSocketConnection, oid: number, methodId: NcElementId, args: { [key: string]: any; } | null, handle: number): CommandResponseNoValue 
+    public override InvokeMethod(oid: number, methodId: NcElementId, args: { [key: string]: any; } | null, handle: number): CommandResponseNoValue 
     {
         if(oid == this.oid)
         {
@@ -185,6 +186,20 @@ export class NcBlock extends NcObject
 
             switch(key)
             {
+                case '1m7':
+                    {
+                        if(args != null)
+                        {
+                            let recurse = args['recurse'] as boolean;
+
+                            if(recurse)
+                                return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.GetAllProperties(true));
+                            else
+                                return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.GetAllProperties(false));
+                        }
+                        else
+                            return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid arguments provided');
+                    }
                 case '2m1':
                     {
                         if(args != null)
@@ -268,12 +283,31 @@ export class NcBlock extends NcObject
                         else
                             return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid arguments provided');
                     }
+                case '2m5':
+                    {
+                        if(args != null)
+                        {
+                            let holders = args['holders'] as NcObjectPropertiesHolder[];
+                            if(holders)
+                                return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.SetPropertiesHolders(holders));
+                            else
+                            return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid arguments provided');
+                        }
+                        else
+                            return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid arguments provided');
+                    }
                 default:
-                    return super.InvokeMethod(socket, oid, methodId, args, handle);
+                    return super.InvokeMethod(oid, methodId, args, handle);
             }
         }
 
         return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
+    }
+
+    public UpdateMembers(memberObjects: NcObject[])
+    {
+        this.memberObjects = memberObjects;
+        this.members = this.memberObjects.map(x => x.GenerateMemberDescriptor());
     }
 
     public override GenerateMemberDescriptor() : NcBlockMemberDescriptor
@@ -454,15 +488,44 @@ export class NcBlock extends NcObject
             return null;
     }
 
-    public override GetAllProperties() : NcObjectPropertiesHolder[]
+    public override GetAllProperties(recurse: boolean) : NcObjectPropertiesHolder[]
     {
-        let holders = new Array<NcObjectPropertiesHolder>();
+        let holders = [
+            new NcObjectPropertiesHolder(this.GetRolePath(), [
+                new NcPropertyValueHolder(new NcElementId(2, 1), "isRoot", this.isRoot),
+                new NcPropertyValueHolder(new NcElementId(2, 2), "specId", this.specId),
+                new NcPropertyValueHolder(new NcElementId(2, 3), "specVersion", this.specVersion),
+                new NcPropertyValueHolder(new NcElementId(2, 4), "specDescription", this.specDescription),
+                new NcPropertyValueHolder(new NcElementId(2, 5), "parentSpecId", this.parentSpecId),
+                new NcPropertyValueHolder(new NcElementId(2, 6), "parentSpecVersion", this.parentSpecVersion),
+                new NcPropertyValueHolder(new NcElementId(2, 7), "isDynamic", this.isDynamic),
+                new NcPropertyValueHolder(new NcElementId(2, 8), "isModified", this.isModified),
+                new NcPropertyValueHolder(new NcElementId(2, 9), "enabled", this.enabled),
+                new NcPropertyValueHolder(new NcElementId(2, 10), "members", this.members),
+                new NcPropertyValueHolder(new NcElementId(2, 11), "ports", this.ports),
+                new NcPropertyValueHolder(new NcElementId(2, 12), "signalPaths", this.signalPaths)
+            ])
+        ];
 
-        this.memberObjects.forEach(member => {
-            holders = holders.concat(member.GetAllProperties());
-        });
+        holders[0].propertiesValues = holders[0].propertiesValues.concat(super.GetAllProperties(recurse)[0].propertiesValues);
+
+        if(recurse)
+        {
+            this.memberObjects.forEach(member => {
+                holders = holders.concat(member.GetAllProperties(recurse));
+            });
+        }
 
         return holders
+    }
+
+    public SetPropertiesHolders(holders: NcObjectPropertiesHolder[])
+    {
+        holders.forEach(holder => {
+            let member = this.FindMemberByRolePath(holder.rolePath);
+            if(member)
+                member.SetProperties(holder.propertiesValues);
+        });
     }
 
     public GenerateMemberDescriptorsByRole(role: string, caseSensitive: boolean, matchWholeString: boolean, recurse: boolean) : NcBlockMemberDescriptor[]
@@ -678,12 +741,12 @@ export class RootBlock extends NcBlock
         else
         {
             if(commandMsg.oid == this.oid)
-                return this.InvokeMethod(socket, commandMsg.oid, commandMsg.methodId, commandMsg.arguments, commandMsg.handle);
+                return this.InvokeMethod(commandMsg.oid, commandMsg.methodId, commandMsg.arguments, commandMsg.handle);
             else if(this.memberObjects != null)
             {
                 let member = this.FindNestedMember(commandMsg.oid);
                 if(member)
-                    return member.InvokeMethod(socket, commandMsg.oid, commandMsg.methodId, commandMsg.arguments, commandMsg.handle);
+                    return member.InvokeMethod(commandMsg.oid, commandMsg.methodId, commandMsg.arguments, commandMsg.handle);
                 else
                     return new CommandResponseError(commandMsg.handle, NcMethodStatus.InvalidRequest, "OID could not be found");
             }

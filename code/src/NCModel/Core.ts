@@ -135,9 +135,34 @@ export abstract class NcObject
         return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
     }
 
-    public InvokeMethod(socket: WebSocketConnection, oid: number, methodId: NcElementId, args: { [key: string]: any } | null, handle: number) : CommandResponseNoValue
+    public InvokeMethod(oid: number, methodId: NcElementId, args: { [key: string]: any } | null, handle: number) : CommandResponseNoValue
     {
-        return new CommandResponseError(handle, NcMethodStatus.MethodNotImplemented, 'Method does not exist in object');
+        if(oid == this.oid)
+        {
+            let key: string = `${methodId.level}m${methodId.index}`;
+
+            switch(key)
+            {
+                case '1m7':
+                    {
+                        if(args != null)
+                        {
+                            let recurse = args['recurse'] as boolean;
+
+                            if(recurse)
+                                return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.GetAllProperties(true));
+                            else
+                                return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.GetAllProperties(false));
+                        }
+                        else
+                            return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid arguments provided');
+                    }
+                default:
+                    return new CommandResponseError(handle, NcMethodStatus.MethodNotImplemented, 'Method does not exist in object');
+            }
+        }
+
+        return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
     }
 
     public GenerateMemberDescriptor() : NcBlockMemberDescriptor
@@ -189,7 +214,7 @@ export abstract class NcObject
         );
     }
 
-    public GetAllProperties() : NcObjectPropertiesHolder[]
+    public GetAllProperties(recurse: boolean) : NcObjectPropertiesHolder[]
     {
         return [
             new NcObjectPropertiesHolder(this.GetRolePath(), [
@@ -203,6 +228,13 @@ export abstract class NcObject
                 new NcPropertyValueHolder(new NcElementId(1, 8), "runtimePropertyConstraints", this.runtimePropertyConstraints),
             ])
         ];
+    }
+
+    public SetProperties(properties: NcPropertyValueHolder[])
+    {
+        properties.forEach(property => {
+            this.Set(this.oid, property.propertyId, property.value, 1);
+        });
     }
 
     public GetRolePath(): string[]

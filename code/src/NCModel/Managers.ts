@@ -20,6 +20,7 @@ import {
     NcMethodDescriptor,
     NcMethodStatus,
     NcObject,
+    NcObjectPropertiesHolder,
     NcParameterDescriptor,
     NcPort,
     NcPortReference,
@@ -28,6 +29,7 @@ import {
     NcPropertyConstraintsNumber,
     NcPropertyConstraintsString,
     NcPropertyDescriptor,
+    NcPropertyValueHolder,
     NcSignalPath,
     NcTouchpoint,
     NcTouchpointNmos,
@@ -367,6 +369,28 @@ export class NcDeviceManager extends NcManager
 
         return currentClassDescriptor;
     }
+
+    public override GetAllProperties(recurse: boolean) : NcObjectPropertiesHolder[]
+    {
+        let properties = [
+            new NcObjectPropertiesHolder(this.GetRolePath(), [
+                new NcPropertyValueHolder(new NcElementId(3, 1), "ncVersion", this.ncVersion),
+                new NcPropertyValueHolder(new NcElementId(3, 2), "manufacturer", this.manufacturer),
+                new NcPropertyValueHolder(new NcElementId(3, 3), "product", this.product),
+                new NcPropertyValueHolder(new NcElementId(3, 4), "serialNumber", this.serialNumber),
+                new NcPropertyValueHolder(new NcElementId(3, 5), "userInventoryCode", this.userInventoryCode),
+                new NcPropertyValueHolder(new NcElementId(3, 6), "deviceName", this.deviceName),
+                new NcPropertyValueHolder(new NcElementId(3, 7), "deviceName", this.deviceName),
+                new NcPropertyValueHolder(new NcElementId(3, 8), "operationalState", this.operationalState),
+                new NcPropertyValueHolder(new NcElementId(3, 9), "resetCause", this.resetCause),
+                new NcPropertyValueHolder(new NcElementId(3, 10), "message", this.message),
+            ])
+        ];
+
+        properties[0].propertiesValues = properties[0].propertiesValues.concat(super.GetAllProperties(recurse)[0].propertiesValues);
+
+        return properties;
+    }
 }
 
 export class NcClassManager extends NcManager
@@ -427,7 +451,7 @@ export class NcClassManager extends NcManager
         return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
     }
 
-    public override InvokeMethod(socket: WebSocketConnection, oid: number, methodId: NcElementId, args: { [key: string]: any; } | null, handle: number): CommandResponseNoValue 
+    public override InvokeMethod(oid: number, methodId: NcElementId, args: { [key: string]: any; } | null, handle: number): CommandResponseNoValue 
     {
         if(oid == this.oid)
         {
@@ -500,7 +524,7 @@ export class NcClassManager extends NcManager
                             return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'No type name has been provided');
                     }
                 default:
-                    return super.InvokeMethod(socket, oid, methodId, args, handle);
+                    return super.InvokeMethod(oid, methodId, args, handle);
             }
         }
 
@@ -762,5 +786,19 @@ export class NcClassManager extends NcManager
             return this.GenerateTypeDescriptorWithInheritedElements(name);
         else
             return this.dataTypesRegister[name];
+    }
+
+    public override GetAllProperties(recurse: boolean) : NcObjectPropertiesHolder[]
+    {
+        let properties = [
+            new NcObjectPropertiesHolder(this.GetRolePath(), [
+                new NcPropertyValueHolder(new NcElementId(3, 1), "controlClasses", this.controlClasses),
+                new NcPropertyValueHolder(new NcElementId(3, 2), "dataTypes", this.dataTypes)
+            ])
+        ];
+
+        properties[0].propertiesValues = properties[0].propertiesValues.concat(super.GetAllProperties(recurse)[0].propertiesValues);
+
+        return properties;
     }
 }

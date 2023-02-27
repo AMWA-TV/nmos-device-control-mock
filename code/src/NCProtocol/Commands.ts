@@ -186,3 +186,14 @@ export class ConfigApiCommand
         this.arguments = commandArguments;
     }
 }
+
+export class ConfigApiValue
+{
+    public value: any;
+
+    constructor(
+        value: any)
+    {
+        this.value = value;
+    }
+}
