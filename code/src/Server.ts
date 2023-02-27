@@ -595,7 +595,7 @@ try
     app.patch('/x-nmos/config/:version/root*', function (req, res) {
         res.setHeader('Content-Type', 'application/json');
 
-        let apiCommands = req.body as ConfigApiCommand[];
+        let apiCommand = req.body as ConfigApiCommand;
 
         console.log(`Config API PATCH ${req.url}`);
 
@@ -607,14 +607,8 @@ try
         let member = rootBlock.FindMemberByRolePath(rolePath);
         if(member)
         {
-            apiCommands.forEach(command => 
-            {
-                if(member)
-                {
-                    let response = member.InvokeMethod(member.oid, command.methodId, command.arguments, command.handle);
-                    res.send(JSON.stringify(response));
-                }
-            });
+            let response = member.InvokeMethod(member.oid, apiCommand.methodId, apiCommand.arguments, 1);
+            res.send(JSON.stringify(response.result));
         }
         else
             res.sendStatus(404);

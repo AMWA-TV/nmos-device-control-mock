@@ -170,18 +170,14 @@ export class ProtocolError extends ProtocolWrapper
 
 export class ConfigApiCommand
 {
-    public handle: number;
-
     public methodId: NcElementId;
 
     public arguments: { [key: string]: any } | null;
 
     constructor(
-        handle: number,
         methodId: NcElementId,
         commandArguments: { [key: string]: any } | null)
     {
-        this.handle = handle;
         this.methodId = methodId;
         this.arguments = commandArguments;
     }
