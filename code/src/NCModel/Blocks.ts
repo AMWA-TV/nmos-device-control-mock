@@ -1,5 +1,5 @@
 import { jsonIgnoreReplacer, jsonIgnore } from 'json-ignore';
-import { CommandMsg, CommandResponseError, CommandResponseNoValue, CommandResponseWithValue, ProtoCommand, ProtoCommandResponse, ProtoError } from '../NCProtocol/Commands';
+import { CommandMsg, CommandResponseError, CommandResponseNoValue, CommandResponseWithValue, ProtocolCommand, ProtocolCommandResponse, ProtocolError } from '../NCProtocol/Commands';
 import { MessageType, ProtocolWrapper } from '../NCProtocol/Core';
 import { WebSocketConnection } from '../Server';
 import { INotificationContext } from '../SessionManager';
@@ -8,13 +8,13 @@ import {
     NcBlockDescriptor,
     NcBlockMemberDescriptor,
     NcClassDescriptor,
-    NcClassIdentity,
     NcElementId,
     NcMethodDescriptor,
     NcMethodStatus,
     NcObject,
     NcParameterDescriptor,
     NcPort,
+    NcPropertyConstraints,
     NcPropertyDescriptor,
     NcSignalPath,
     NcTouchpoint } from './Core';
@@ -22,13 +22,9 @@ import {
 export class NcBlock extends NcObject
 {
     public static staticClassID: number[] = [ 1, 1 ];
-    public static staticClassVersion: string = "1.0.0";
 
     @myIdDecorator('1p1')
     public override classID: number[] = NcBlock.staticClassID;
-
-    @myIdDecorator('1p2')
-    public override classVersion: string = NcBlock.staticClassVersion;
 
     @myIdDecorator('2p1')
     public isRoot: boolean;
@@ -76,6 +72,7 @@ export class NcBlock extends NcObject
         role: string,
         userLabel: string,
         touchpoints: NcTouchpoint[] | null,
+        runtimePropertyConstraints: NcPropertyConstraints[] | null,
         enabled: boolean,
         specId: string | null,
         specVersion: string | null,
@@ -89,7 +86,7 @@ export class NcBlock extends NcObject
         description: string,
         notificationContext: INotificationContext)
     {
-        super(oid, constantOid, owner, role, userLabel, touchpoints, description, notificationContext);
+        super(oid, constantOid, owner, role, userLabel, touchpoints, runtimePropertyConstraints, description, notificationContext);
 
         this.isRoot = isRoot;
         this.enabled = enabled;
@@ -280,7 +277,7 @@ export class NcBlock extends NcObject
 
     public override GenerateMemberDescriptor() : NcBlockMemberDescriptor
     {
-        return new NcBlockDescriptor(this.specId, this.role, this.oid, this.constantOid, new NcClassIdentity(this.classID, this.classVersion), this.userLabel, this.owner, this.description, null);
+        return new NcBlockDescriptor(this.specId, this.role, this.oid, this.constantOid, this.classID, this.userLabel, this.owner, this.description, null);
     }
 
     public FindNestedMember(oid: number): NcObject | null
@@ -318,7 +315,7 @@ export class NcBlock extends NcObject
     public static override GetClassDescriptor(includeInherited: boolean): NcClassDescriptor 
     {
         let currentClassDescriptor = new NcClassDescriptor(`${NcBlock.name} class descriptor`,
-            new NcClassIdentity(NcBlock.staticClassID, NcBlock.staticClassVersion), NcBlock.name, null,
+            NcBlock.staticClassID, NcBlock.name, null,
             [
                 new NcPropertyDescriptor(new NcElementId(2, 1), "isRoot", "NcBoolean", true, true, false, false, null, "TRUE if block is the root block"),
                 new NcPropertyDescriptor(new NcElementId(2, 2), "specId", "NcString", true, true, true, false, null, "Global ID of blockSpec that defines this block"),
@@ -496,6 +493,7 @@ export class RootBlock extends NcBlock
         role: string,
         userLabel: string,
         touchpoints: NcTouchpoint[] | null,
+        runtimePropertyConstraints: NcPropertyConstraints[] | null,
         enabled: boolean,
         specId: string | null,
         specVersion: string | null,
@@ -517,6 +515,7 @@ export class RootBlock extends NcBlock
             role,
             userLabel,
             touchpoints,
+            runtimePropertyConstraints,
             enabled,
             specId,
             specVersion,
@@ -545,7 +544,7 @@ export class RootBlock extends NcBlock
             {
                 case MessageType.Command:
                 {
-                    let msgCommand = JSON.parse(msg) as ProtoCommand;
+                    let msgCommand = JSON.parse(msg) as ProtocolCommand;
                     socket.send(this.ProcessCommand(msgCommand, socket).ToJson());
                     isMessageValid = true;
                 }
@@ -568,14 +567,14 @@ export class RootBlock extends NcBlock
         if(isMessageValid == false)
         {
             console.log(errorMessage);
-            let error = new ProtoError(status, errorMessage);
+            let error = new ProtocolError(status, errorMessage);
             socket.send(error.ToJson());
         }
     }
 
-    public ProcessCommand(command: ProtoCommand, socket: WebSocketConnection) : ProtoCommandResponse
+    public ProcessCommand(command: ProtocolCommand, socket: WebSocketConnection) : ProtocolCommandResponse
     {
-        let responses = new ProtoCommandResponse([]);
+        let responses = new ProtocolCommandResponse([]);
 
         for (var i = 0; i < command.commands.length; i++) {
             let msg = command.commands[i];

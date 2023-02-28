@@ -9,7 +9,6 @@ import {
     myIdDecorator,
     NcBlockMemberDescriptor,
     NcClassDescriptor,
-    NcClassIdentity,
     NcDatatypeDescriptor,
     NcDatatypeDescriptorEnum,
     NcDatatypeDescriptorPrimitive,
@@ -25,6 +24,9 @@ import {
     NcPort,
     NcPortReference,
     NcPropertyChangeType,
+    NcPropertyConstraints,
+    NcPropertyConstraintsNumber,
+    NcPropertyConstraintsString,
     NcPropertyDescriptor,
     NcSignalPath,
     NcTouchpoint,
@@ -36,13 +38,9 @@ import { DemoDataType, NcActuator, NcDemo, NcGain, NcIdentBeacon, NcReceiverMoni
 export abstract class NcManager extends NcObject
 {
     public static staticClassID: number[] = [ 1, 3 ];
-    public static staticClassVersion: string = "1.0.0";
 
     @myIdDecorator('1p1')
     public override classID: number[] = NcManager.staticClassID;
-
-    @myIdDecorator('1p2')
-    public override classVersion: string = NcManager.staticClassVersion;
 
     public constructor(
         oid: number,
@@ -51,16 +49,17 @@ export abstract class NcManager extends NcObject
         role: string,
         userLabel: string,
         touchpoints: NcTouchpoint[] | null,
+        runtimePropertyConstraints: NcPropertyConstraints[] | null,
         description: string,
         notificationContext: INotificationContext)
     {
-        super(oid, constantOid, owner, role, userLabel, touchpoints, description, notificationContext);
+        super(oid, constantOid, owner, role, userLabel, touchpoints, runtimePropertyConstraints, description, notificationContext);
     }
 
     public static override GetClassDescriptor(includeInherited: boolean): NcClassDescriptor
     {
         let currentClassDescriptor = new NcClassDescriptor(`${NcManager.name} class descriptor`,
-            new NcClassIdentity(NcManager.staticClassID, NcManager.staticClassVersion), NcManager.name, null,
+            NcManager.staticClassID, NcManager.name, null,
         [], [], []);
 
         if(includeInherited)
@@ -204,13 +203,9 @@ export enum NcResetCause
 export class NcDeviceManager extends NcManager
 {
     public static staticClassID: number[] = [ 1, 3, 1 ];
-    public static staticClassVersion: string = "1.0.0";
 
     @myIdDecorator('1p1')
     public override classID: number[] = NcDeviceManager.staticClassID;
-
-    @myIdDecorator('1p2')
-    public override classVersion: string = NcDeviceManager.staticClassVersion;
 
     @myIdDecorator('3p1')
     public ncVersion: string = "1.0.0";
@@ -250,10 +245,11 @@ export class NcDeviceManager extends NcManager
         owner: number | null,
         userLabel: string,
         touchpoints: NcTouchpoint[] | null,
+        runtimePropertyConstraints: NcPropertyConstraints[] | null,
         description: string,
         notificationContext: INotificationContext)
     {
-        super(oid, constantOid, owner, NcDeviceManager.staticRole, userLabel, touchpoints, description, notificationContext);
+        super(oid, constantOid, owner, NcDeviceManager.staticRole, userLabel, touchpoints, runtimePropertyConstraints, description, notificationContext);
 
         this.manufacturer = new NcManufacturer("Mock manufacturer", "https://specs.amwa.tv/nmos/");
         this.product = new NcProduct("Mock device", "mock-001", "1.0.0", "Mock brand", "2dcd15f6-aecc-4f01-bf66-b1044c677ef4", "Mock device for testing and prototyping");
@@ -343,7 +339,7 @@ export class NcDeviceManager extends NcManager
     public static override GetClassDescriptor(includeInherited: boolean): NcClassDescriptor
     {
         let currentClassDescriptor = new NcClassDescriptor(`${NcDeviceManager.name} class descriptor`,
-            new NcClassIdentity(NcDeviceManager.staticClassID, NcDeviceManager.staticClassVersion), NcDeviceManager.name, NcDeviceManager.staticRole,
+            NcDeviceManager.staticClassID, NcDeviceManager.name, NcDeviceManager.staticRole,
             [
                 new NcPropertyDescriptor(new NcElementId(3, 1), "ncVersion", "NcVersionCode", true, true, false, false, null, "Version of nc this dev uses"),
                 new NcPropertyDescriptor(new NcElementId(3, 2), "manufacturer", "NcManufacturer", true, true, false, false, null, "Manufacturer descriptor"),
@@ -376,13 +372,9 @@ export class NcDeviceManager extends NcManager
 export class NcClassManager extends NcManager
 {
     public static staticClassID: number[] = [ 1, 3, 2 ];
-    public static staticClassVersion: string = "1.0.0";
 
     @myIdDecorator('1p1')
     public override classID: number[] = NcClassManager.staticClassID;
-
-    @myIdDecorator('1p2')
-    public override classVersion: string = NcClassManager.staticClassVersion;
 
     @myIdDecorator('3p1')
     public controlClasses: NcClassDescriptor[];
@@ -401,10 +393,11 @@ export class NcClassManager extends NcManager
         owner: number | null,
         userLabel: string,
         touchpoints: NcTouchpoint[] | null,
+        runtimePropertyConstraints: NcPropertyConstraints[] | null,
         description: string,
         notificationContext: INotificationContext)
     {
-        super(oid, constantOid, owner, NcClassManager.staticRole, userLabel, touchpoints, description, notificationContext);
+        super(oid, constantOid, owner, NcClassManager.staticRole, userLabel, touchpoints, runtimePropertyConstraints, description, notificationContext);
 
         this.controlClassesRegister = this.GenerateClassDescriptors();
         this.controlClasses = Object.values(this.controlClassesRegister);
@@ -448,7 +441,7 @@ export class NcClassManager extends NcManager
                         {
                             if('includeInherited' in args)
                             {
-                                let identity = args['identity'] as NcClassIdentity;
+                                let identity = args['identity'] as number[];
                                 let includeInherited = args['includeInherited'] as boolean;
 
                                 if(includeInherited)
@@ -517,14 +510,14 @@ export class NcClassManager extends NcManager
     public static override GetClassDescriptor(includeInherited: boolean): NcClassDescriptor 
     {
         let currentClassDescriptor = new NcClassDescriptor(`${NcClassManager.name} class descriptor`,
-            new NcClassIdentity(NcClassManager.staticClassID, NcClassManager.staticClassVersion), NcClassManager.name, NcClassManager.staticRole,
+            NcClassManager.staticClassID, NcClassManager.name, NcClassManager.staticRole,
             [ 
                 new NcPropertyDescriptor(new NcElementId(3, 1), "controlClasses", "NcClassDescriptor", true, true, false, true, null, "Descriptions of all control classes in the device"),
                 new NcPropertyDescriptor(new NcElementId(3, 2), "datatypes", "NcDatatypeDescriptor", true, true, false, true, null, "Descriptions of all data types in the device")
             ],
             [ 
                 new NcMethodDescriptor(new NcElementId(3, 1), "GetControlClass", "NcMethodResultClassDescriptor", [
-                    new NcParameterDescriptor("identity", "NcClassIdentity", false, false, null, "class ID & version")
+                    new NcParameterDescriptor("identity", "NcClassId", false, false, null, "class ID")
                 ], "Get a single class descriptor"),
                 new NcMethodDescriptor(new NcElementId(3, 2), "GetDatatype", "NcMethodResultDatatypeDescriptor", [
                     new NcParameterDescriptor("name", "NcName", false, false, null, "name of datatype")
@@ -565,9 +558,9 @@ export class NcClassManager extends NcManager
         return register;
     }
 
-    private GenerateClassDescriptorWithInheritedElements(identity: NcClassIdentity) : NcClassDescriptor | null
+    private GenerateClassDescriptorWithInheritedElements(identity: number[]) : NcClassDescriptor | null
     {
-        let key: string = identity.id.join('.');
+        let key: string = identity.join('.');
 
         switch (key)
         {
@@ -600,8 +593,7 @@ export class NcClassManager extends NcManager
             'NcFloat32': new NcDatatypeDescriptorPrimitive("NcFloat32", null, "unrestrictedfloat"),
             'NcFloat64': new NcDatatypeDescriptorPrimitive("NcFloat64", null, "unrestricteddouble"),
             'NcString': new NcDatatypeDescriptorPrimitive("NcString", null, "UTF-8 string"),
-            'NcClassId': new NcDatatypeDescriptorTypeDef("NcClassId", "NcClassIdField", true, null, "Sequence of class ID fields."),
-            'NcClassIdField': new NcDatatypeDescriptorTypeDef("NcClassIdField", "NcInt32", false, null, "Class ID field. Either a definition index or an authority key."),
+            'NcClassId': new NcDatatypeDescriptorTypeDef("NcClassId", "NcInt32", true, null, "Sequence of class ID fields."),
             'NcVersionCode': new NcDatatypeDescriptorTypeDef("NcVersionCode", "NcString", false, null, "Version code in semantic versioning format"),
             'NcUri': new NcDatatypeDescriptorTypeDef("NcUri", "NcString", false, null, "Uniform resource identifier"),
             'NcOrganizationId': new NcDatatypeDescriptorTypeDef("NcOrganizationId", "NcInt32", true, null, "Unique 24-bit organization ID"),
@@ -641,6 +633,8 @@ export class NcClassManager extends NcManager
             'NcPropertyChangedEventData': NcPropertyChangedEventData.GetTypeDescriptor(false),
             'NcMethodStatus': new NcDatatypeDescriptorEnum("NcMethodStatus", [
                 new NcEnumItemDescriptor("Ok", 200, "Method call was successful"),
+                new NcEnumItemDescriptor("PropertyDeprecated", 298, "Method call was successful but targeted property is deprecated"),
+                new NcEnumItemDescriptor("MethodDeprecated", 299, "Method call was successful but method is deprecated"),
                 new NcEnumItemDescriptor("BadCommandFormat", 400, "Badly-formed command"),
                 new NcEnumItemDescriptor("Unauthorized", 401, "Client is not authorized"),
                 new NcEnumItemDescriptor("BadOid", 404, "Command addresses a nonexistent object"),
@@ -671,7 +665,6 @@ export class NcClassManager extends NcManager
                 new NcFieldDescriptor("errorMessage", "NcString", true, false, null, "Optional error message"),
                 new NcFieldDescriptor("value", "NcId", false, false, null, "NcId method result value")
             ], "NcMethodResult", null, "Method result containing an NcId value"),
-            'NcClassIdentity': NcClassIdentity.GetTypeDescriptor(false),
             'NcBlockMemberDescriptor': NcBlockMemberDescriptor.GetTypeDescriptor(false),
             'NcMethodResultBlockMemberDescriptors': new NcDatatypeDescriptorStruct("NcMethodResultBlockMemberDescriptors", [
                 new NcFieldDescriptor("status", "NcMethodStatus", false, false, null, "Status for the invoked method"),
@@ -715,7 +708,11 @@ export class NcClassManager extends NcManager
                 new NcEnumItemDescriptor("Beta", 2, "Beta option"),
                 new NcEnumItemDescriptor("Gamma", 3, "Gamma option")
             ], null, "Demonstration enum data type"),
-            'DemoDataType': DemoDataType.GetTypeDescriptor(false)
+            'DemoDataType': DemoDataType.GetTypeDescriptor(false),
+            'NcRegex': new NcDatatypeDescriptorTypeDef("NcRegex", "NcString", false, null, "Regex pattern"),
+            'NcPropertyConstraints': NcPropertyConstraints.GetTypeDescriptor(false),
+            'NcPropertyConstraintsNumber': NcPropertyConstraintsNumber.GetTypeDescriptor(false),
+            'NcPropertyConstraintsString': NcPropertyConstraintsString.GetTypeDescriptor(false),
         };
 
         return register;
@@ -730,7 +727,6 @@ export class NcClassManager extends NcManager
             case 'NcDeviceOperationalState': return NcDeviceOperationalState.GetTypeDescriptor(true);
             case 'NcElementId': return NcElementId.GetTypeDescriptor(true);
             case 'NcPropertyChangedEventData': return NcPropertyChangedEventData.GetTypeDescriptor(true);
-            case 'NcClassIdentity': return NcClassIdentity.GetTypeDescriptor(true);
             case 'NcBlockMemberDescriptor': return NcBlockMemberDescriptor.GetTypeDescriptor(true);
             case 'NcReceiverStatus': return NcReceiverStatus.GetTypeDescriptor(true);
             case 'NcPort': return NcPort.GetTypeDescriptor(true);
@@ -741,17 +737,20 @@ export class NcClassManager extends NcManager
             case 'NcTouchpointNmos': return NcTouchpointNmos.GetTypeDescriptor(true);
             case 'NcTouchpointResourceNmos': return NcTouchpointResourceNmos.GetTypeDescriptor(true);
             case 'DemoDataType': return DemoDataType.GetTypeDescriptor(true);
+            case 'NcPropertyConstraints': return NcPropertyConstraints.GetTypeDescriptor(true);
+            case 'NcPropertyConstraintsNumber': return NcPropertyConstraintsNumber.GetTypeDescriptor(true);
+            case 'NcPropertyConstraintsString': return NcPropertyConstraintsString.GetTypeDescriptor(true);
             default: return this.dataTypesRegister[name];
         }
     }
 
-    private GetClassDescriptor(identity: NcClassIdentity, includeInherited: boolean) : NcClassDescriptor | null
+    private GetClassDescriptor(identity: number[], includeInherited: boolean) : NcClassDescriptor | null
     {
         if(includeInherited)
             return this.GenerateClassDescriptorWithInheritedElements(identity);
         else
         {
-            let key: string = identity.id.join('.');
+            let key: string = identity.join('.');
 
             return this.controlClassesRegister[key];
         }

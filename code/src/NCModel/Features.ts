@@ -6,7 +6,6 @@ import {
     BaseType,
     myIdDecorator,
     NcClassDescriptor,
-    NcClassIdentity,
     NcDatatypeDescriptor,
     NcDatatypeDescriptorStruct,
     NcElementId,
@@ -19,19 +18,16 @@ import {
     NcParameterDescriptor,
     NcPort,
     NcPropertyChangeType,
+    NcPropertyConstraints,
     NcPropertyDescriptor,
     NcTouchpoint } from './Core';
 
 export abstract class NcWorker extends NcObject
 {
     public static staticClassID: number[] = [ 1, 2 ];
-    public static staticClassVersion: string = "1.0.0";
 
     @myIdDecorator('1p1')
     public override classID: number[] = NcWorker.staticClassID;
-
-    @myIdDecorator('1p2')
-    public override classVersion: string = NcWorker.staticClassVersion;
 
     @myIdDecorator('2p1')
     public enabled: boolean;
@@ -43,11 +39,12 @@ export abstract class NcWorker extends NcObject
         role: string,
         userLabel: string,
         touchpoints: NcTouchpoint[],
+        runtimePropertyConstraints: NcPropertyConstraints[] | null,
         enabled: boolean,
         description: string,
         notificationContext: INotificationContext)
     {
-        super(oid, constantOid, owner, role, userLabel, touchpoints, description, notificationContext);
+        super(oid, constantOid, owner, role, userLabel, touchpoints, runtimePropertyConstraints, description, notificationContext);
 
         this.enabled = enabled;
     }
@@ -93,7 +90,7 @@ export abstract class NcWorker extends NcObject
     public static override GetClassDescriptor(includeInherited: boolean): NcClassDescriptor 
     {
         let currentClassDescriptor = new NcClassDescriptor(`${NcWorker.name} class descriptor`,
-            new NcClassIdentity(NcWorker.staticClassID, NcWorker.staticClassVersion), NcWorker.name, null,
+            NcWorker.staticClassID, NcWorker.name, null,
             [
                 new NcPropertyDescriptor(new NcElementId(2, 1), "enabled", "NcBoolean", false, true, false, false, null, "TRUE iff worker is enabled")
             ],
@@ -117,13 +114,9 @@ export abstract class NcWorker extends NcObject
 export abstract class NcSignalWorker extends NcWorker
 {
     public static staticClassID: number[] = [ 1, 2, 1 ];
-    public static staticClassVersion: string = "1.0.0";
 
     @myIdDecorator('1p1')
     public override classID: number[] = NcSignalWorker.staticClassID;
-
-    @myIdDecorator('1p2')
-    public override classVersion: string = NcSignalWorker.staticClassVersion;
 
     @myIdDecorator('3p1')
     public ports: NcPort[] | null;
@@ -138,13 +131,14 @@ export abstract class NcSignalWorker extends NcWorker
         role: string,
         userLabel: string,
         touchpoints: NcTouchpoint[],
+        runtimePropertyConstraints: NcPropertyConstraints[] | null,
         enabled: boolean,
         ports: NcPort[] | null,
         latency: number | null,
         description: string,
         notificationContext: INotificationContext)
     {
-        super(oid, constantOid, owner, role, userLabel, touchpoints, enabled, description, notificationContext);
+        super(oid, constantOid, owner, role, userLabel, touchpoints, runtimePropertyConstraints, enabled, description, notificationContext);
 
         this.ports = ports;
         this.latency = latency;
@@ -194,7 +188,7 @@ export abstract class NcSignalWorker extends NcWorker
     public static override GetClassDescriptor(includeInherited: boolean): NcClassDescriptor 
     {
         let currentClassDescriptor = new NcClassDescriptor(`${NcSignalWorker.name} class descriptor`,
-            new NcClassIdentity(NcSignalWorker.staticClassID, NcSignalWorker.staticClassVersion), NcSignalWorker.name, null,
+            NcSignalWorker.staticClassID, NcSignalWorker.name, null,
             [
                 new NcPropertyDescriptor(new NcElementId(3, 1), "ports", "NcPort", false, true, false, true, null, "The worker's signal ports"),
                 new NcPropertyDescriptor(new NcElementId(3, 2), "latency", "NcTimeInterval", true, true, true, false, null, "Processing latency of this object (null if not defined)")
@@ -219,13 +213,9 @@ export abstract class NcSignalWorker extends NcWorker
 export abstract class NcActuator extends NcSignalWorker
 {
     public static staticClassID: number[] = [ 1, 2, 1, 1 ];
-    public static staticClassVersion: string = "1.0.0";
 
     @myIdDecorator('1p1')
     public override classID: number[] = NcActuator.staticClassID;
-
-    @myIdDecorator('1p2')
-    public override classVersion: string = NcActuator.staticClassVersion;
 
     public constructor(
         oid: number,
@@ -234,19 +224,20 @@ export abstract class NcActuator extends NcSignalWorker
         role: string,
         userLabel: string,
         touchpoints: NcTouchpoint[],
+        runtimePropertyConstraints: NcPropertyConstraints[] | null,
         enabled: boolean,
         ports: NcPort[] | null,
         latency: number | null,
         description: string,
         notificationContext: INotificationContext)
     {
-        super(oid, constantOid, owner, role, userLabel, touchpoints, enabled, ports, latency, description, notificationContext);
+        super(oid, constantOid, owner, role, userLabel, touchpoints, runtimePropertyConstraints, enabled, ports, latency, description, notificationContext);
     }
 
     public static override GetClassDescriptor(includeInherited: boolean): NcClassDescriptor 
     {
         let currentClassDescriptor = new NcClassDescriptor(`${NcActuator.name} class descriptor`,
-            new NcClassIdentity(NcActuator.staticClassID, NcActuator.staticClassVersion), NcActuator.name, null,
+            NcActuator.staticClassID, NcActuator.name, null,
         [], [], []);
 
         if(includeInherited)
@@ -265,13 +256,9 @@ export abstract class NcActuator extends NcSignalWorker
 export class NcGain extends NcActuator
 {
     public static staticClassID: number[] = [ 1, 2, 1, 1, 1 ];
-    public static staticClassVersion: string = "1.0.0";
 
     @myIdDecorator('1p1')
     public override classID: number[] = NcGain.staticClassID;
-
-    @myIdDecorator('1p2')
-    public override classVersion: string = NcGain.staticClassVersion;
 
     @myIdDecorator('5p1')
     public gainValue: number;
@@ -283,6 +270,7 @@ export class NcGain extends NcActuator
         role: string,
         userLabel: string,
         touchpoints: NcTouchpoint[],
+        runtimePropertyConstraints: NcPropertyConstraints[] | null,
         enabled: boolean,
         ports: NcPort[] | null,
         latency: number | null,
@@ -290,7 +278,7 @@ export class NcGain extends NcActuator
         description: string,
         notificationContext: INotificationContext)
     {
-        super(oid, constantOid, owner, role, userLabel, touchpoints, enabled, ports, latency, description, notificationContext);
+        super(oid, constantOid, owner, role, userLabel, touchpoints, runtimePropertyConstraints, enabled, ports, latency, description, notificationContext);
 
         this.gainValue = gainValue;
     }
@@ -338,7 +326,7 @@ export class NcGain extends NcActuator
     public static override GetClassDescriptor(includeInherited: boolean): NcClassDescriptor 
     {
         let currentClassDescriptor = new NcClassDescriptor(`${NcGain.name} class descriptor`,
-            new NcClassIdentity(NcGain.staticClassID, NcGain.staticClassVersion), NcGain.name, null,
+            NcGain.staticClassID, NcGain.name, null,
             [
                 new NcPropertyDescriptor(new NcElementId(5, 1), "gainValue", "NcDB", false, false, false, false, null, "Gain value")
             ],
@@ -362,13 +350,9 @@ export class NcGain extends NcActuator
 export class NcIdentBeacon extends NcWorker
 {
     public static staticClassID: number[] = [ 1, 2, 2 ];
-    public static staticClassVersion: string = "1.0.0";
 
     @myIdDecorator('1p1')
     public override classID: number[] = NcIdentBeacon.staticClassID;
-
-    @myIdDecorator('1p2')
-    public override classVersion: string = NcIdentBeacon.staticClassVersion;
 
     @myIdDecorator('3p1')
     public active: boolean;
@@ -380,12 +364,13 @@ export class NcIdentBeacon extends NcWorker
         role: string,
         userLabel: string,
         touchpoints: NcTouchpoint[],
+        runtimePropertyConstraints: NcPropertyConstraints[] | null,
         enabled: boolean,
         active: boolean,
         description: string,
         notificationContext: INotificationContext)
     {
-        super(oid, constantOid, owner, role, userLabel, touchpoints, enabled, description, notificationContext);
+        super(oid, constantOid, owner, role, userLabel, touchpoints, runtimePropertyConstraints, enabled, description, notificationContext);
 
         this.active = active;
     }
@@ -433,7 +418,7 @@ export class NcIdentBeacon extends NcWorker
     public static override GetClassDescriptor(includeInherited: boolean): NcClassDescriptor 
     {
         let currentClassDescriptor = new NcClassDescriptor(`${NcIdentBeacon.name} class descriptor`,
-            new NcClassIdentity(NcIdentBeacon.staticClassID, NcIdentBeacon.staticClassVersion), NcIdentBeacon.name, null,
+            NcIdentBeacon.staticClassID, NcIdentBeacon.name, null,
             [
                 new NcPropertyDescriptor(new NcElementId(3, 1), "active", "NcBoolean", false, false, false, false, null, "Indicator active state")
             ],
@@ -502,13 +487,9 @@ export class NcReceiverStatus extends BaseType
 export class NcReceiverMonitor extends NcWorker
 {
     public static staticClassID: number[] = [ 1, 2, 3 ];
-    public static staticClassVersion: string = "1.0.0";
 
     @myIdDecorator('1p1')
     public override classID: number[] = NcReceiverMonitor.staticClassID;
-
-    @myIdDecorator('1p2')
-    public override classVersion: string = NcReceiverMonitor.staticClassVersion;
 
     @myIdDecorator('3p1')
     public connectionStatus: NcConnectionStatus;
@@ -529,11 +510,12 @@ export class NcReceiverMonitor extends NcWorker
         role: string,
         userLabel: string,
         touchpoints: NcTouchpoint[],
+        runtimePropertyConstraints: NcPropertyConstraints[] | null,
         enabled: boolean,
         description: string,
         notificationContext: INotificationContext)
     {
-        super(oid, constantOid, owner, role, userLabel, touchpoints, enabled, description, notificationContext);
+        super(oid, constantOid, owner, role, userLabel, touchpoints, runtimePropertyConstraints, enabled, description, notificationContext);
 
         this.connectionStatus = NcConnectionStatus.Undefined;
         this.connectionStatusMessage = null;
@@ -634,7 +616,7 @@ export class NcReceiverMonitor extends NcWorker
     public static override GetClassDescriptor(includeInherited: boolean): NcClassDescriptor 
     {
         let currentClassDescriptor = new NcClassDescriptor(`${NcReceiverMonitor.name} class descriptor`,
-            new NcClassIdentity(NcReceiverMonitor.staticClassID, NcReceiverMonitor.staticClassVersion), NcReceiverMonitor.name, null,
+            NcReceiverMonitor.staticClassID, NcReceiverMonitor.name, null,
             [
                 new NcPropertyDescriptor(new NcElementId(3, 1), "connectionStatus", "NcConnectionStatus", true, false, false, false, null, "Connection status property"),
                 new NcPropertyDescriptor(new NcElementId(3, 2), "connectionStatusMessage", "NcString", true, false, true, false, null, "Connection status message property"),
@@ -708,13 +690,9 @@ export class DemoDataType extends BaseType
 export class NcDemo extends NcWorker
 {
     public static staticClassID: number[] = [ 1, 2, 0, 1 ];
-    public static staticClassVersion: string = "1.0.0";
 
     @myIdDecorator('1p1')
     public override classID: number[] = NcDemo.staticClassID;
-
-    @myIdDecorator('1p2')
-    public override classVersion: string = NcDemo.staticClassVersion;
 
     @myIdDecorator('3p1')
     public enumProperty: NcDemoEnum;
@@ -762,11 +740,12 @@ export class NcDemo extends NcWorker
         role: string,
         userLabel: string,
         touchpoints: NcTouchpoint[],
+        runtimePropertyConstraints: NcPropertyConstraints[] | null,
         enabled: boolean,
         description: string,
         notificationContext: INotificationContext)
     {
-        super(oid, constantOid, owner, role, userLabel, touchpoints, enabled, description, notificationContext);
+        super(oid, constantOid, owner, role, userLabel, touchpoints, runtimePropertyConstraints, enabled, description, notificationContext);
 
         this.enumProperty = NcDemoEnum.Undefined;
         this.stringProperty = "test";
@@ -1360,7 +1339,7 @@ export class NcDemo extends NcWorker
     public static override GetClassDescriptor(includeInherited: boolean): NcClassDescriptor 
     {
         let currentClassDescriptor = new NcClassDescriptor(`${NcDemo.name} class descriptor`,
-            new NcClassIdentity(NcDemo.staticClassID, NcDemo.staticClassVersion), NcDemo.name, null,
+            NcDemo.staticClassID, NcDemo.name, null,
             [
                 new NcPropertyDescriptor(new NcElementId(3, 1), "enumProperty", "NcDemoEnum", false, false, false, false, null, "Demo enum property"),
                 new NcPropertyDescriptor(new NcElementId(3, 2), "stringProperty", "NcString", false, false, false, false, new NcParameterConstraintsString(10, null),

@@ -1,4 +1,3 @@
-import exp from 'constants';
 import { jsonIgnoreReplacer, jsonIgnore } from 'json-ignore';
 import { BaseType, NcDatatypeDescriptor, NcDatatypeDescriptorStruct, NcElementId, NcFieldDescriptor, NcPropertyChangeType } from '../NCModel/Core';
 import { MessageType, ProtocolWrapper } from './Core';
@@ -62,7 +61,7 @@ export class NcNotification
     }
 }
 
-export class ProtoNotification extends ProtocolWrapper
+export class ProtocolNotification extends ProtocolWrapper
 {
     public notifications: NcNotification[];
 

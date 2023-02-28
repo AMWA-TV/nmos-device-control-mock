@@ -2,8 +2,8 @@ import { jsonIgnoreReplacer, jsonIgnore } from 'json-ignore';
 
 import { WebSocketConnection } from './Server';
 import { NcElementId, NcMethodStatus, NcPropertyChangeType } from './NCModel/Core';
-import { NcPropertyChangedEventData, NcNotification, ProtoNotification } from './NCProtocol/Notifications';
-import { ProtoError, ProtoSubscription, ProtoSubscriptionResponse } from './NCProtocol/Commands';
+import { NcPropertyChangedEventData, NcNotification, ProtocolNotification } from './NCProtocol/Notifications';
+import { ProtocolError, ProtocolSubscription, ProtocolSubscriptionResponse } from './NCProtocol/Commands';
 
 export interface INotificationContext
 {
@@ -22,7 +22,7 @@ export class SessionManager implements INotificationContext
         this.sessions = {};
     }
 
-    public ModifySubscription(socket: WebSocketConnection, subscription: ProtoSubscription)
+    public ModifySubscription(socket: WebSocketConnection, subscription: ProtocolSubscription)
     {
         if(subscription.subscriptions)
         {
@@ -35,7 +35,7 @@ export class SessionManager implements INotificationContext
                     sub.Subscribe(oid);
                 });
 
-                let response = new ProtoSubscriptionResponse(subscription.subscriptions);
+                let response = new ProtocolSubscriptionResponse(subscription.subscriptions);
                 socket.send(response.ToJson());
             }
         }
@@ -43,7 +43,7 @@ export class SessionManager implements INotificationContext
         {
             let errorMessage = `Invalid subscription message received.`
             console.log(errorMessage);
-            let error = new ProtoError(NcMethodStatus.BadCommandFormat, errorMessage);
+            let error = new ProtocolError(NcMethodStatus.BadCommandFormat, errorMessage);
             socket.send(error.ToJson());
         }
     }
@@ -58,7 +58,7 @@ export class SessionManager implements INotificationContext
             if(this.notifyWithoutSubscriptions || session.ShouldNotify(oid))
             {
                 session.socket.send(
-                    new ProtoNotification(
+                    new ProtocolNotification(
                         [ new NcNotification(oid, new NcElementId(1, 1), new NcPropertyChangedEventData(propertyId, changeType, value, sequenceItemIndex)) ]
                     ).ToJson());
             }
