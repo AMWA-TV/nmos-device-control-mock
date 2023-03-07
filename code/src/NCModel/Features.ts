@@ -78,7 +78,9 @@ export abstract class NcWorker extends NcObject
             switch(key)
             {
                 case '2p1':
-                    return new CommandResponseError(handle, NcMethodStatus.Readonly, 'Property is readonly');
+                    this.enabled = value;
+                    this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.enabled, null);
+                    return new CommandResponseNoValue(handle, NcMethodStatus.OK);
                 default:
                     return super.Set(oid, id, value, handle);
             }
