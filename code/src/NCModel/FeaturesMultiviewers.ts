@@ -23,31 +23,6 @@ import {
     NcTouchpoint } from './Core';
 import { NcWorker } from './Features';
 
-export class UMDTally extends BaseType
-{
-    public active: boolean;
-
-    constructor(
-        active: boolean) 
-    {
-        super();
-
-        this.active = active;
-    }
-
-    public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor
-    {
-        return new NcDatatypeDescriptorStruct("UMDTally", [
-            new NcFieldDescriptor("active", "NcBoolean", false, false, null, "UMD tally active state")
-        ], null, null, "UMDTally data type");
-    }
-
-    public ToJson()
-    {
-        return JSON.stringify(this, jsonIgnoreReplacer);
-    }
-}
-
 export class NcUMD extends NcWorker
 {
     public static staticClassID: number[] = [ 1, 2, 0, 11 ];
@@ -56,10 +31,10 @@ export class NcUMD extends NcWorker
     public override classID: number[] = NcUMD.staticClassID;
 
     @myIdDecorator('3p1')
-    public tallyLeft: UMDTally;
+    public tallyLeft: boolean;
 
     @myIdDecorator('3p2')
-    public tallyRight: UMDTally;
+    public tallyRight: boolean;
 
     @myIdDecorator('3p3')
     public text: string | null;
@@ -78,9 +53,9 @@ export class NcUMD extends NcWorker
     {
         super(oid, constantOid, owner, role, userLabel, touchpoints, runtimePropertyConstraints, enabled, description, notificationContext);
 
-        this.tallyLeft = new UMDTally(false);
-        this.tallyRight = new UMDTally(false);
-        this.text = null;
+        this.tallyLeft = false;
+        this.tallyRight = false;
+        this.text = "---";
     }
 
     //'1m1'
@@ -148,9 +123,9 @@ export class NcUMD extends NcWorker
         let currentClassDescriptor = new NcClassDescriptor(`${NcUMD.name} class descriptor`,
             NcUMD.staticClassID, NcUMD.name, null,
             [
-                new NcPropertyDescriptor(new NcElementId(3, 1), "tallyLeft", "UMDTally", false, false, false, false, null, "UMD tally left"),
-                new NcPropertyDescriptor(new NcElementId(3, 2), "tallyRight", "UMDTally", false, false, false, false, null, "UMD tally right"),
-                new NcPropertyDescriptor(new NcElementId(3, 3), "text", "NcString", true, false, true, false, null, "UMD text"),
+                new NcPropertyDescriptor(new NcElementId(3, 1), "tallyLeft", "NcBoolean", false, false, false, false, null, "UMD tally left"),
+                new NcPropertyDescriptor(new NcElementId(3, 2), "tallyRight", "NcBoolean", false, false, false, false, null, "UMD tally right"),
+                new NcPropertyDescriptor(new NcElementId(3, 3), "text", "NcString", false, false, true, false, null, "UMD text"),
             ],
             [], []
         );

@@ -34,7 +34,7 @@ import {
     NcTouchpointResource,
     NcTouchpointResourceNmos } from './Core';
 import { DemoDataType, NcActuator, NcDemo, NcGain, NcIdentBeacon, NcReceiverMonitor, NcReceiverStatus, NcSignalWorker, NcWorker } from './Features';
-import { MultiviewerLayoutElement, NcMultiviewerDisplay, NcMultiviewerLayout, NcMultiviewerTile, NcUMD, UMDTally } from './FeaturesMultiviewers';
+import { MultiviewerLayoutElement, NcMultiviewerDisplay, NcMultiviewerLayout, NcMultiviewerTile, NcUMD } from './FeaturesMultiviewers';
 
 export abstract class NcManager extends NcObject
 {
@@ -722,7 +722,6 @@ export class NcClassManager extends NcManager
             'NcPropertyConstraints': NcPropertyConstraints.GetTypeDescriptor(false),
             'NcPropertyConstraintsNumber': NcPropertyConstraintsNumber.GetTypeDescriptor(false),
             'NcPropertyConstraintsString': NcPropertyConstraintsString.GetTypeDescriptor(false),
-            'UMDTally': UMDTally.GetTypeDescriptor(false),
             'MultiviewerLayoutElement': MultiviewerLayoutElement.GetTypeDescriptor(false),
         };
 
@@ -751,7 +750,6 @@ export class NcClassManager extends NcManager
             case 'NcPropertyConstraints': return NcPropertyConstraints.GetTypeDescriptor(true);
             case 'NcPropertyConstraintsNumber': return NcPropertyConstraintsNumber.GetTypeDescriptor(true);
             case 'NcPropertyConstraintsString': return NcPropertyConstraintsString.GetTypeDescriptor(true);
-            case 'UMDTally': return UMDTally.GetTypeDescriptor(true);
             case 'MultiviewerLayoutElement': return MultiviewerLayoutElement.GetTypeDescriptor(true);
             default: return this.dataTypesRegister[name];
         }
