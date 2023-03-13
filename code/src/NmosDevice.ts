@@ -37,8 +37,8 @@ export class NmosDevice extends NmosResource
         port: number,
         manufacturer: string,
         product: string,
-        application: string,
         instance: string,
+        application: string,
         registrationClient: RegistrationClient)
     {
         super(id, `${base_label} device`, registrationClient);
