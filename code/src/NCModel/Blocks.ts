@@ -383,38 +383,82 @@ export class NcBlock extends NcObject
 
     public GenerateMemberDescriptorsForRolePath(rolePath: string[]) : NcBlockMemberDescriptor[]
     {
-        if(rolePath.length == 1 && rolePath[0] == this.role)
+        if(rolePath.length == 1)
         {
-            return [ this.GenerateMemberDescriptor() ];
-        }
-        else if(rolePath.length > 1 && rolePath[0] == this.role)
-        {
-            let childRole = rolePath[1];
-            if(this.memberObjects != null)
+            if(rolePath[0] == this.role)
+                return [ this.GenerateMemberDescriptor() ];
+            else
             {
-                let member = this.memberObjects.find(e => e.role === childRole);
-                if(member)
+                let childRole = rolePath[0];
+                if(this.memberObjects != null)
                 {
-                    if(rolePath.length == 2)
-                    {
+                    let member = this.memberObjects.find(e => e.role === childRole);
+                    if(member)
                         return [ member.GenerateMemberDescriptor() ];
-                    }
-                    else if(member instanceof NcBlock)
-                    {
-                        let furtherPath = rolePath.splice(1);
-                        return member.GenerateMemberDescriptorsForRolePath(furtherPath);
-                    }
                     else
-                        return new Array<NcBlockMemberDescriptor>()
+                        return new Array<NcBlockMemberDescriptor>();
                 }
                 else
-                    return new Array<NcBlockMemberDescriptor>()
+                    return new Array<NcBlockMemberDescriptor>();
+            }
+        }
+        else if(rolePath.length > 1)
+        {
+            if(rolePath[0] == this.role)
+            {
+                let childRole = rolePath[1];
+                if(this.memberObjects != null)
+                {
+                    let member = this.memberObjects.find(e => e.role === childRole);
+                    if(member)
+                    {
+                        if(rolePath.length == 2)
+                        {
+                            return [ member.GenerateMemberDescriptor() ];
+                        }
+                        else if(member instanceof NcBlock)
+                        {
+                            let furtherPath = rolePath.splice(1);
+                            return member.GenerateMemberDescriptorsForRolePath(furtherPath);
+                        }
+                        else
+                            return new Array<NcBlockMemberDescriptor>();
+                    }
+                    else
+                        return new Array<NcBlockMemberDescriptor>();
+                }
+                else
+                    return new Array<NcBlockMemberDescriptor>();
             }
             else
-                return new Array<NcBlockMemberDescriptor>()
+            {
+                let childRole = rolePath[0];
+                if(this.memberObjects != null)
+                {
+                    let member = this.memberObjects.find(e => e.role === childRole);
+                    if(member)
+                    {
+                        if(rolePath.length == 1)
+                        {
+                            return [ member.GenerateMemberDescriptor() ];
+                        }
+                        else if(member instanceof NcBlock)
+                        {
+                            let furtherPath = rolePath.splice(1);
+                            return member.GenerateMemberDescriptorsForRolePath(furtherPath);
+                        }
+                        else
+                            return new Array<NcBlockMemberDescriptor>();
+                    }
+                    else
+                        return new Array<NcBlockMemberDescriptor>();
+                }
+                else
+                    return new Array<NcBlockMemberDescriptor>();
+            }
         }
         else
-            return new Array<NcBlockMemberDescriptor>()
+            return new Array<NcBlockMemberDescriptor>();
     }
 
     public GenerateMemberDescriptorsByRole(role: string, caseSensitive: boolean, matchWholeString: boolean, recurse: boolean) : NcBlockMemberDescriptor[]
