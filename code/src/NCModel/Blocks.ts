@@ -404,25 +404,20 @@ export class NcBlock extends NcObject
         }
         else if(rolePath.length > 1)
         {
-            if(rolePath[0] == this.role)
+            let childRole = rolePath[0];
+            if(this.memberObjects != null)
             {
-                let childRole = rolePath[1];
-                if(this.memberObjects != null)
+                let member = this.memberObjects.find(e => e.role === childRole);
+                if(member)
                 {
-                    let member = this.memberObjects.find(e => e.role === childRole);
-                    if(member)
+                    if(rolePath.length == 1)
                     {
-                        if(rolePath.length == 2)
-                        {
-                            return [ member.GenerateMemberDescriptor() ];
-                        }
-                        else if(member instanceof NcBlock)
-                        {
-                            let furtherPath = rolePath.splice(1);
-                            return member.GenerateMemberDescriptorsForRolePath(furtherPath);
-                        }
-                        else
-                            return new Array<NcBlockMemberDescriptor>();
+                        return [ member.GenerateMemberDescriptor() ];
+                    }
+                    else if(member instanceof NcBlock)
+                    {
+                        let furtherPath = rolePath.splice(1);
+                        return member.GenerateMemberDescriptorsForRolePath(furtherPath);
                     }
                     else
                         return new Array<NcBlockMemberDescriptor>();
@@ -431,31 +426,7 @@ export class NcBlock extends NcObject
                     return new Array<NcBlockMemberDescriptor>();
             }
             else
-            {
-                let childRole = rolePath[0];
-                if(this.memberObjects != null)
-                {
-                    let member = this.memberObjects.find(e => e.role === childRole);
-                    if(member)
-                    {
-                        if(rolePath.length == 1)
-                        {
-                            return [ member.GenerateMemberDescriptor() ];
-                        }
-                        else if(member instanceof NcBlock)
-                        {
-                            let furtherPath = rolePath.splice(1);
-                            return member.GenerateMemberDescriptorsForRolePath(furtherPath);
-                        }
-                        else
-                            return new Array<NcBlockMemberDescriptor>();
-                    }
-                    else
-                        return new Array<NcBlockMemberDescriptor>();
-                }
-                else
-                    return new Array<NcBlockMemberDescriptor>();
-            }
+                return new Array<NcBlockMemberDescriptor>();
         }
         else
             return new Array<NcBlockMemberDescriptor>();
