@@ -566,6 +566,7 @@ export class NcPropertyDescriptor extends NcDescriptor
     public isNullable: boolean;
     public isSequence: boolean;
     public isDeprecated: boolean;
+    public isConstant: boolean;
     public constraints: NcParameterConstraints | null;
 
     constructor(
@@ -578,7 +579,8 @@ export class NcPropertyDescriptor extends NcDescriptor
         isSequence: boolean,
         constraints: NcParameterConstraints | null,
         description: string,
-        isDeprecated: boolean = false)
+        isDeprecated: boolean = false,
+        isConstant: boolean = false)
     {
         super(description);
 
@@ -591,6 +593,7 @@ export class NcPropertyDescriptor extends NcDescriptor
         this.isSequence = isSequence;
         this.constraints = constraints;
         this.isDeprecated = isDeprecated
+        this.isConstant = isConstant;
     }
 
     public ToJson()
