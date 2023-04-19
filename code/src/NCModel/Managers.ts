@@ -637,7 +637,7 @@ export class NcClassManager extends NcManager
                 new NcEnumItemDescriptor("Upgrade", 3, "Upgrade"),
                 new NcEnumItemDescriptor("ControllerRequest", 4, "Controller request"),
                 new NcEnumItemDescriptor("ManualReset", 5, "Manual request from the front panel")
-            ], null, "Device generic operational state"),
+            ], null, "Reset cause enum"),
             'NcDeviceOperationalState': NcDeviceOperationalState.GetTypeDescriptor(false),
             'NcOid': new NcDatatypeDescriptorTypeDef("NcOid", "NcUint32", false, null, "Object id"),
             'NcName': new NcDatatypeDescriptorTypeDef("NcName", "NcString", false, null, "Programmatically significant name, alphanumerics + underscore, no spaces"),

@@ -474,7 +474,7 @@ export class NcMethodResultError extends NcMethodResult
     public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor
     {
         let currentClassDescriptor = new NcDatatypeDescriptorStruct("NcMethodResultError", [
-            new NcFieldDescriptor("errorMessage", "NcString", true, false, null, "Optional error message"),
+            new NcFieldDescriptor("errorMessage", "NcString", false, false, null, "Optional error message"),
         ], "NcMethodResult", null, "Error result - to be used when the method call encounters an error")
 
         if(includeInherited)
@@ -915,7 +915,8 @@ export class NcBlockMemberDescriptor extends BaseType
             new NcFieldDescriptor("constantOid", "NcBoolean", false, false, null, "TRUE iff member's OID is hardwired into device"),
             new NcFieldDescriptor("classId", "NcClassId", false, false, null, "Class ID"),
             new NcFieldDescriptor("userLabel", "NcString", true, false, null, "User label"),
-            new NcFieldDescriptor("owner", "NcOid", false, false, null, "Containing block's OID")
+            new NcFieldDescriptor("owner", "NcOid", false, false, null, "Containing block's OID"),
+            new NcFieldDescriptor("constraints", "NcPropertyConstraints", true, true, null, "Constraints on this member or, for a block, its members")
         ], "NcDescriptor", null, "Descriptor which is specific to a block member which is not a block");
 
         if(includeInherited)
@@ -959,7 +960,7 @@ export class NcBlockDescriptor extends NcBlockMemberDescriptor
     public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor
     {
         let currentClassDescriptor = new NcDatatypeDescriptorStruct("NcBlockDescriptor", [
-            new NcFieldDescriptor("blockSpecId", "NcString", false, false, null, "ID of BlockSpec this block implements")
+            new NcFieldDescriptor("blockSpecId", "NcString", true, false, null, "ID of BlockSpec this block implements")
         ], "NcBlockMemberDescriptor", null, "Descriptor which is specific to a block");
 
         if(includeInherited)
@@ -1446,7 +1447,7 @@ export class NcMethodDescriptor extends NcDescriptor
         let currentClassDescriptor = new NcDatatypeDescriptorStruct("NcMethodDescriptor", [
             new NcFieldDescriptor("id", "NcMethodId", false, false, null, "Method id with level and index"),
             new NcFieldDescriptor("name", "NcName", false, false, null, "Name of method"),
-            new NcFieldDescriptor("resultDatatype", "NcName", true, false, null, "Name of method result's datatype"),
+            new NcFieldDescriptor("resultDatatype", "NcName", false, false, null, "Name of method result's datatype"),
             new NcFieldDescriptor("parameters", "NcParameterDescriptor", false, true, null, "Parameter descriptors if any"),
             new NcFieldDescriptor("isDeprecated", "NcBoolean", false, false, null, "TRUE iff property is marked as deprecated")
         ], "NcDescriptor", null, "Descriptor of a class method");
@@ -1496,7 +1497,7 @@ export class NcEventDescriptor extends NcDescriptor
         let currentClassDescriptor = new NcDatatypeDescriptorStruct("NcEventDescriptor", [
             new NcFieldDescriptor("id", "NcEventId", false, false, null, "Event id with level and index"),
             new NcFieldDescriptor("name", "NcName", false, false, null, "Name of event"),
-            new NcFieldDescriptor("eventDatatype", "NcName", true, false, null, "Name of event data's datatype"),
+            new NcFieldDescriptor("eventDatatype", "NcName", false, false, null, "Name of event data's datatype"),
             new NcFieldDescriptor("isDeprecated", "NcBoolean", false, false, null, "TRUE iff property is marked as deprecated")
         ], "NcDescriptor", null, "Descriptor of a class event");
 
