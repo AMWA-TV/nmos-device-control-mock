@@ -533,16 +533,18 @@ export class NcClassManager extends NcManager
         let currentClassDescriptor = new NcClassDescriptor(`${NcClassManager.name} class descriptor`,
             NcClassManager.staticClassID, NcClassManager.name, NcClassManager.staticRole,
             [ 
-                new NcPropertyDescriptor(new NcElementId(3, 1), "controlClasses", "NcClassDescriptor", true, true, false, true, null, "Descriptions of all control classes in the device"),
-                new NcPropertyDescriptor(new NcElementId(3, 2), "datatypes", "NcDatatypeDescriptor", true, true, false, true, null, "Descriptions of all data types in the device")
+                new NcPropertyDescriptor(new NcElementId(3, 1), "controlClasses", "NcClassDescriptor", true, true, false, true, null, "Descriptions of all control classes in the device (descriptors do not contain inherited elements)"),
+                new NcPropertyDescriptor(new NcElementId(3, 2), "datatypes", "NcDatatypeDescriptor", true, true, false, true, null, "Descriptions of all data types in the device (descriptors do not contain inherited elements)")
             ],
             [ 
                 new NcMethodDescriptor(new NcElementId(3, 1), "GetControlClass", "NcMethodResultClassDescriptor", [
-                    new NcParameterDescriptor("identity", "NcClassId", false, false, null, "class ID")
+                    new NcParameterDescriptor("identity", "NcClassId", false, false, null, "class ID"),
+                    new NcParameterDescriptor("includeInherited", "NcBoolean", false, false, null, "if set the descriptor would contain all inherited elements")
                 ], "Get a single class descriptor"),
                 new NcMethodDescriptor(new NcElementId(3, 2), "GetDatatype", "NcMethodResultDatatypeDescriptor", [
-                    new NcParameterDescriptor("name", "NcName", false, false, null, "name of datatype")
-                ], "Get descriptor of datatype and maybe its component datatypes")
+                    new NcParameterDescriptor("name", "NcName", false, false, null, "name of datatype"),
+                    new NcParameterDescriptor("includeInherited", "NcBoolean", false, false, null, "if set the descriptor would contain all inherited elements")
+                ], "Get a single datatype descriptor")
             ],
             []
         );
@@ -677,7 +679,7 @@ export class NcClassManager extends NcManager
                 new NcEnumItemDescriptor("Typedef", 1, "Simple alias of another datatype"),
                 new NcEnumItemDescriptor("Struct", 2, "Data structure"),
                 new NcEnumItemDescriptor("Enum", 3, "Enum datatype")
-            ], null, "Type of property change"),
+            ], null, "Datatype type"),
             'NcPropertyChangedEventData': NcPropertyChangedEventData.GetTypeDescriptor(false),
             'NcMethodStatus': new NcDatatypeDescriptorEnum("NcMethodStatus", [
                 new NcEnumItemDescriptor("Ok", 200, "Method call was successful"),
