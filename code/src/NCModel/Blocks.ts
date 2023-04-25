@@ -334,7 +334,7 @@ export class NcBlock extends NcObject
                 new NcMethodDescriptor(new NcElementId(2, 1), "GetMemberDescriptors", "NcMethodResultBlockMemberDescriptors",
                     [new NcParameterDescriptor("recurse", "NcBoolean", false, false, null, "If recurse is set to true, nested members can be retrieved")], "gets descriptors of members of the block"),
                 new NcMethodDescriptor(new NcElementId(2, 2), "FindMembersByPath", "NcMethodResultBlockMemberDescriptors", [
-                    new NcParameterDescriptor("path", "NcRolePath", false, false, null, "path to search for")
+                    new NcParameterDescriptor("path", "NcRolePath", false, false, null, "relative path to search for (MUST not include the role of the block targeted by oid)")
                 ], "finds member(s) by path"),
                 new NcMethodDescriptor(new NcElementId(2, 3), "FindMembersByRole", "NcMethodResultBlockMemberDescriptors", [
                     new NcParameterDescriptor("role", "NcString", false, false, null, "role text to search for"),

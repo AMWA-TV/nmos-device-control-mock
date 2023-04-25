@@ -89,7 +89,7 @@ export abstract class NcWorker extends NcObject
         return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
     }
 
-    public static override GetClassDescriptor(includeInherited: boolean): NcClassDescriptor 
+    public static override GetClassDescriptor(includeInherited: boolean): NcClassDescriptor
     {
         let currentClassDescriptor = new NcClassDescriptor(`${NcWorker.name} class descriptor`,
             NcWorker.staticClassID, NcWorker.name, null,
@@ -240,6 +240,49 @@ export abstract class NcActuator extends NcSignalWorker
     {
         let currentClassDescriptor = new NcClassDescriptor(`${NcActuator.name} class descriptor`,
             NcActuator.staticClassID, NcActuator.name, null,
+        [], [], []);
+
+        if(includeInherited)
+        {
+            let baseDescriptor = super.GetClassDescriptor(includeInherited);
+
+            currentClassDescriptor.properties = currentClassDescriptor.properties.concat(baseDescriptor.properties);
+            currentClassDescriptor.methods = currentClassDescriptor.methods.concat(baseDescriptor.methods);
+            currentClassDescriptor.events = currentClassDescriptor.events.concat(baseDescriptor.events);
+        }
+
+        return currentClassDescriptor;
+    }
+}
+
+export abstract class NcSensor extends NcSignalWorker
+{
+    public static staticClassID: number[] = [ 1, 2, 1, 2 ];
+
+    @myIdDecorator('1p1')
+    public override classID: number[] = NcSensor.staticClassID;
+
+    public constructor(
+        oid: number,
+        constantOid: boolean,
+        owner: number | null,
+        role: string,
+        userLabel: string,
+        touchpoints: NcTouchpoint[],
+        runtimePropertyConstraints: NcPropertyConstraints[] | null,
+        enabled: boolean,
+        ports: NcPort[] | null,
+        latency: number | null,
+        description: string,
+        notificationContext: INotificationContext)
+    {
+        super(oid, constantOid, owner, role, userLabel, touchpoints, runtimePropertyConstraints, enabled, ports, latency, description, notificationContext);
+    }
+
+    public static override GetClassDescriptor(includeInherited: boolean): NcClassDescriptor 
+    {
+        let currentClassDescriptor = new NcClassDescriptor(`${NcSensor.name} class descriptor`,
+            NcSensor.staticClassID, NcSensor.name, null,
         [], [], []);
 
         if(includeInherited)

@@ -29,7 +29,7 @@ export class NcPropertyChangedEventData extends BaseType
     public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor
     {
         return new NcDatatypeDescriptorStruct("NcPropertyChangedEventData", [
-            new NcFieldDescriptor("propertyId", "NcElementId", false, false, null, "ID of changed property"),
+            new NcFieldDescriptor("propertyId", "NcPropertyId", false, false, null, "ID of changed property"),
             new NcFieldDescriptor("changeType", "NcPropertyChangeType", false, false, null, "Information regarding the change type"),
             new NcFieldDescriptor("value", null, true, false, null, "Property-type specific value"),
             new NcFieldDescriptor("sequenceItemIndex", "NcId", true, false, null, "Index of sequence item if the property is a sequence")
