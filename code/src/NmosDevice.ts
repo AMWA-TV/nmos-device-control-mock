@@ -51,10 +51,10 @@ export class NmosDevice extends NmosResource
         this.application = application;
 
         this.tags = {
-            "urn:x-nmos:tag:asset:facts:manufacturer/v1.0": [ this.manufacturer ],
-            "urn:x-nmos:tag:asset:facts:product/v1.0": [ this.product ],
-            "urn:x-nmos:tag:asset:facts:instance/v1.0": [ this.instance ],
-            "urn:x-nmos:tag:asset:facts:application/v1.0": [ this.application ]
+            "urn:x-nmos:tag:asset:manufacturer/v1.0": [ this.manufacturer ],
+            "urn:x-nmos:tag:asset:product/v1.0": [ this.product ],
+            "urn:x-nmos:tag:asset:instance-id/v1.0": [ this.instance ],
+            "urn:x-nmos:tag:asset:function/v1.0": [ this.application ]
         };
 
         this.receiverObjects = [];

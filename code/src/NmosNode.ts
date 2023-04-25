@@ -43,9 +43,9 @@ export class NmosNode extends NmosResource
         this.instance = instance;
 
         this.tags = {
-            "urn:x-nmos:tag:asset:facts:manufacturer/v1.0": [ this.manufacturer ],
-            "urn:x-nmos:tag:asset:facts:product/v1.0": [ this.product ],
-            "urn:x-nmos:tag:asset:facts:instance/v1.0": [ this.instance ]
+            "urn:x-nmos:tag:asset:manufacturer/v1.0": [ this.manufacturer ],
+            "urn:x-nmos:tag:asset:product/v1.0": [ this.product ],
+            "urn:x-nmos:tag:asset:instance-id/v1.0": [ this.instance ]
         };
 
         this.hostname = os.hostname();
