@@ -399,7 +399,7 @@ try
 
     app.get('/x-nmos/node/v1.3/devices', function (req, res) {
         res.setHeader('Content-Type', 'application/json');
-        res.send(JSON.stringify([ `${myDevice.id}/` ]));
+        res.send(myDevice.ToJsonArray());
     })
 
     app.get('/x-nmos/node/v1.3/devices/:id', function (req, res) {
@@ -428,8 +428,8 @@ try
 
     app.get('/x-nmos/node/v1.3/receivers', function (req, res) {
         res.setHeader('Content-Type', 'application/json');
-        res.send(JSON.stringify(myDevice.FetchReceiversUris()))
-    })
+        res.send(JSON.stringify(myDevice.FetchReceivers()))
+    }) 
 
     app.get('/x-nmos/node/v1.3/receivers/:id', function (req, res) {
         res.setHeader('Content-Type', 'application/json');
