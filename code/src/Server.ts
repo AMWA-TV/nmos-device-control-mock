@@ -3,6 +3,7 @@ import http from 'http';
 import { AddressInfo, Socket } from 'net';
 import WebSocket from 'ws';
 import { v4 as uuidv4 } from 'uuid';
+import { jsonIgnoreReplacer } from 'json-ignore';
 
 import { Configuration } from './Configuration';
 import { NmosNode } from './NmosNode';
@@ -399,7 +400,7 @@ try
 
     app.get('/x-nmos/node/v1.3/devices', function (req, res) {
         res.setHeader('Content-Type', 'application/json');
-        res.send(JSON.stringify([ `${myDevice.id}/` ]));
+        res.send(myDevice.ToJsonArray());
     })
 
     app.get('/x-nmos/node/v1.3/devices/:id', function (req, res) {
@@ -428,8 +429,8 @@ try
 
     app.get('/x-nmos/node/v1.3/receivers', function (req, res) {
         res.setHeader('Content-Type', 'application/json');
-        res.send(JSON.stringify(myDevice.FetchReceiversUris()))
-    })
+        res.send(JSON.stringify(myDevice.FetchReceivers(), jsonIgnoreReplacer));
+    }) 
 
     app.get('/x-nmos/node/v1.3/receivers/:id', function (req, res) {
         res.setHeader('Content-Type', 'application/json');
