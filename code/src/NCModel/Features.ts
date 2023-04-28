@@ -392,6 +392,98 @@ export class NcGain extends NcActuator
     }
 }
 
+export class NcLevelSensor extends NcSensor
+{
+    public static staticClassID: number[] = [ 1, 2, 1, 2, 1 ];
+
+    @myIdDecorator('1p1')
+    public override classID: number[] = NcLevelSensor.staticClassID;
+
+    @myIdDecorator('5p1')
+    public reading: number;
+
+    public constructor(
+        oid: number,
+        constantOid: boolean,
+        owner: number | null,
+        role: string,
+        userLabel: string,
+        touchpoints: NcTouchpoint[],
+        runtimePropertyConstraints: NcPropertyConstraints[] | null,
+        enabled: boolean,
+        ports: NcPort[] | null,
+        latency: number | null,
+        reading: number,
+        description: string,
+        notificationContext: INotificationContext)
+    {
+        super(oid, constantOid, owner, role, userLabel, touchpoints, runtimePropertyConstraints, enabled, ports, latency, description, notificationContext);
+
+        this.reading = reading;
+    }
+
+    //'1m1'
+    public override Get(oid: number, propertyId: NcElementId, handle: number) : CommandResponseNoValue
+    {
+        if(oid == this.oid)
+        {
+            let key: string = `${propertyId.level}p${propertyId.index}`;
+
+            switch(key)
+            {
+                case '5p1':
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.reading);
+                default:
+                    return super.Get(oid, propertyId, handle);
+            }
+        }
+
+        return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
+    }
+
+    //'1m2'
+    public override Set(oid: number, id: NcElementId, value: any, handle: number) : CommandResponseNoValue
+    {
+        if(oid == this.oid)
+        {
+            let key: string = `${id.level}p${id.index}`;
+
+            switch(key)
+            {
+                case '5p1':
+                    return new CommandResponseError(handle, NcMethodStatus.Readonly, 'Property is readonly');
+                default:
+                    return super.Set(oid, id, value, handle);
+            }
+        }
+
+        return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
+    }
+
+    public static override GetClassDescriptor(includeInherited: boolean): NcClassDescriptor 
+    {
+        let currentClassDescriptor = new NcClassDescriptor(`${NcLevelSensor.name} class descriptor`,
+            NcLevelSensor.staticClassID, NcLevelSensor.name, null,
+            [
+                new NcPropertyDescriptor(new NcElementId(5, 1), "reading", "NcDB", true, false, false, false, null, "Level sensor reading in DB")
+            ],
+            [],
+            []
+        );
+
+        if(includeInherited)
+        {
+            let baseDescriptor = super.GetClassDescriptor(includeInherited);
+
+            currentClassDescriptor.properties = currentClassDescriptor.properties.concat(baseDescriptor.properties);
+            currentClassDescriptor.methods = currentClassDescriptor.methods.concat(baseDescriptor.methods);
+            currentClassDescriptor.events = currentClassDescriptor.events.concat(baseDescriptor.events);
+        }
+
+        return currentClassDescriptor;
+    }
+}
+
 export class NcIdentBeacon extends NcWorker
 {
     public static staticClassID: number[] = [ 1, 2, 2 ];
@@ -640,24 +732,6 @@ export class NcReceiverMonitor extends NcWorker
         return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
     }
 
-    public override InvokeMethod(socket: WebSocketConnection, oid: number, methodId: NcElementId, args: { [key: string]: any; } | null, handle: number): CommandResponseNoValue 
-    {
-        if(oid == this.oid)
-        {
-            let key: string = `${methodId.level}m${methodId.index}`;
-
-            switch(key)
-            {
-                case '3m1':
-                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, new NcReceiverStatus(this.connectionStatus, this.payloadStatus));
-                default:
-                    return super.InvokeMethod(socket, oid, methodId, args, handle);
-            }
-        }
-
-        return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
-    }
-
     public static override GetClassDescriptor(includeInherited: boolean): NcClassDescriptor 
     {
         let currentClassDescriptor = new NcClassDescriptor(`${NcReceiverMonitor.name} class descriptor`,
@@ -668,9 +742,126 @@ export class NcReceiverMonitor extends NcWorker
                 new NcPropertyDescriptor(new NcElementId(3, 3), "payloadStatus", "NcPayloadStatus", true, false, false, false, null, "Payload status property"),
                 new NcPropertyDescriptor(new NcElementId(3, 4), "payloadStatusMessage", "NcString", true, false, true, false, null, "Payload status message property")
             ],
+            [],
+            []
+        );
+
+        if(includeInherited)
+        {
+            let baseDescriptor = super.GetClassDescriptor(includeInherited);
+
+            currentClassDescriptor.properties = currentClassDescriptor.properties.concat(baseDescriptor.properties);
+            currentClassDescriptor.methods = currentClassDescriptor.methods.concat(baseDescriptor.methods);
+            currentClassDescriptor.events = currentClassDescriptor.events.concat(baseDescriptor.events);
+        }
+
+        return currentClassDescriptor;
+    }
+}
+
+export class NcReceiverMonitorProtected extends NcReceiverMonitor
+{
+    public static staticClassID: number[] = [ 1, 2, 3, 1 ];
+
+    @myIdDecorator('1p1')
+    public override classID: number[] = NcReceiverMonitorProtected.staticClassID;
+
+    @myIdDecorator('4p1')
+    public signalProtectionStatus: boolean;
+
+    public constructor(
+        oid: number,
+        constantOid: boolean,
+        owner: number | null,
+        role: string,
+        userLabel: string,
+        touchpoints: NcTouchpoint[],
+        runtimePropertyConstraints: NcPropertyConstraints[] | null,
+        enabled: boolean,
+        description: string,
+        notificationContext: INotificationContext)
+    {
+        super(oid, constantOid, owner, role, userLabel, touchpoints, runtimePropertyConstraints, enabled, description, notificationContext);
+
+        this.connectionStatus = NcConnectionStatus.Undefined;
+        this.connectionStatusMessage = null;
+        
+        this.payloadStatus = NcPayloadStatus.Undefined;
+        this.payloadStatusMessage = null;
+
+        this.signalProtectionStatus = false;
+    }
+
+    public Connected()
+    {
+        this.connectionStatus = NcConnectionStatus.Connected;
+        this.payloadStatus = NcPayloadStatus.PayloadOK;
+
+        this.connectionStatusMessage = null;
+        this.payloadStatusMessage = null;
+
+        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 1), NcPropertyChangeType.ValueChanged, this.connectionStatus, null);
+        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 3), NcPropertyChangeType.ValueChanged, this.payloadStatus, null);
+    }
+
+    public Disconnected()
+    {
+        this.connectionStatus = NcConnectionStatus.Undefined;
+        this.payloadStatus = NcPayloadStatus.Undefined;
+
+        this.connectionStatusMessage = null;
+        this.payloadStatusMessage = null;
+
+        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 1), NcPropertyChangeType.ValueChanged, this.connectionStatus, null);
+        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 3), NcPropertyChangeType.ValueChanged, this.payloadStatus, null);
+    }
+
+    //'1m1'
+    public override Get(oid: number, id: NcElementId, handle: number) : CommandResponseNoValue
+    {
+        if(oid == this.oid)
+        {
+            let key: string = `${id.level}p${id.index}`;
+
+            switch(key)
+            {
+                case '4p1':
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.signalProtectionStatus);
+                default:
+                    return super.Get(oid, id, handle);
+            }
+        }
+
+        return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
+    }
+
+    //'1m2'
+    public override Set(oid: number, id: NcElementId, value: any, handle: number) : CommandResponseNoValue
+    {
+        if(oid == this.oid)
+        {
+            let key: string = `${id.level}p${id.index}`;
+
+            switch(key)
+            {
+                case '4p1':
+                    return new CommandResponseError(handle, NcMethodStatus.Readonly, 'Property is readonly');
+                default:
+                    return super.Set(oid, id, value, handle);
+            }
+        }
+
+        return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
+    }
+
+    public static override GetClassDescriptor(includeInherited: boolean): NcClassDescriptor 
+    {
+        let currentClassDescriptor = new NcClassDescriptor(`${NcReceiverMonitorProtected.name} class descriptor`,
+            NcReceiverMonitorProtected.staticClassID, NcReceiverMonitorProtected.name, null,
             [
-                new NcMethodDescriptor(new NcElementId(3, 1), "GetStatus", "NcMethodResultReceiverStatus", [], "Method to retrieve both connection status and payload status in one call")
+                new NcPropertyDescriptor(new NcElementId(4, 1), "signalProtectionStatus", "NcBoolean", true, false, false, false, null, "Indicates if signal protection is active"),
             ],
+            [],
             []
         );
 
