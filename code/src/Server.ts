@@ -428,7 +428,7 @@ try
 
     app.get('/x-nmos/node/v1.3/receivers', function (req, res) {
         res.setHeader('Content-Type', 'application/json');
-        res.send(JSON.stringify(myDevice.FetchReceivers()))
+        res.send(JSON.stringify(myDevice.FetchReceivers(), jsonIgnoreReplacer));
     }) 
 
     app.get('/x-nmos/node/v1.3/receivers/:id', function (req, res) {
