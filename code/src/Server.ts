@@ -3,6 +3,7 @@ import http from 'http';
 import { AddressInfo, Socket } from 'net';
 import WebSocket from 'ws';
 import { v4 as uuidv4 } from 'uuid';
+import { jsonIgnoreReplacer } from 'json-ignore';
 
 import { Configuration } from './Configuration';
 import { NmosNode } from './NmosNode';
