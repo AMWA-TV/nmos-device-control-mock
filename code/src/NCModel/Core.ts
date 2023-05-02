@@ -554,38 +554,6 @@ export class NcMethodResultId extends NcMethodResult
     }
 }
 
-export class NcMethodResultReceiverStatus extends NcMethodResult
-{
-    public value: NcReceiverStatus;
-
-    public constructor(
-        status: NcMethodStatus,
-        value: NcReceiverStatus)
-    {
-        super(status);
-
-        this.value = value;
-    }
-
-    public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor
-    {
-        let currentClassDescriptor = new NcDatatypeDescriptorStruct("NcMethodResultReceiverStatus", [
-            new NcFieldDescriptor("value", "NcReceiverStatus", false, false, null, "Receiver status method result value")
-        ], "NcMethodResult", null, "Method result containing receiver status information as the value")
-
-        if(includeInherited)
-        {
-            let baseDescriptor = super.GetTypeDescriptor(includeInherited);
-
-            let baseDescriptorStruct = baseDescriptor as NcDatatypeDescriptorStruct;
-            if(baseDescriptorStruct)
-                currentClassDescriptor.fields = currentClassDescriptor.fields.concat(baseDescriptorStruct.fields);
-        }
-
-        return currentClassDescriptor;
-    }
-}
-
 export class NcMethodResultBlockMemberDescriptors extends NcMethodResult
 {
     public value: NcBlockMemberDescriptor[];

@@ -30,7 +30,6 @@ import {
     NcMethodResultError,
     NcMethodResultId,
     NcMethodResultPropertyValue,
-    NcMethodResultReceiverStatus,
     NcMethodStatus,
     NcObject,
     NcParameterConstraints,
@@ -54,7 +53,7 @@ import {
     NcTouchpointResource,
     NcTouchpointResourceNmos, 
     NcTouchpointResourceNmosChannelMapping} from './Core';
-import { DemoDataType, NcActuator, NcDemo, NcGain, NcIdentBeacon, NcReceiverMonitor, NcReceiverStatus, NcSensor, NcSignalWorker, NcWorker } from './Features';
+import { DemoDataType, NcActuator, NcDemo, NcGain, NcIdentBeacon, NcLevelSensor, NcReceiverMonitor, NcReceiverMonitorProtected, NcReceiverStatus, NcSensor, NcSignalWorker, NcWorker } from './Features';
 
 export abstract class NcManager extends NcObject
 {
@@ -569,14 +568,16 @@ export class NcClassManager extends NcManager
             '1.2': NcWorker.GetClassDescriptor(false),
             '1.2.1': NcSignalWorker.GetClassDescriptor(false),
             '1.2.1.1': NcActuator.GetClassDescriptor(false),
+            '1.2.1.1.1': NcGain.GetClassDescriptor(false),
             '1.2.1.2': NcSensor.GetClassDescriptor(false),
-            '1.3': NcManager.GetClassDescriptor(false),
-            '1.3.1': NcDeviceManager.GetClassDescriptor(false),
-            '1.3.2': NcClassManager.GetClassDescriptor(false),
+            '1.2.1.2.1': NcLevelSensor.GetClassDescriptor(false),
             '1.2.0.1': NcDemo.GetClassDescriptor(false),
             '1.2.2': NcIdentBeacon.GetClassDescriptor(false),
             '1.2.3': NcReceiverMonitor.GetClassDescriptor(false),
-            '1.2.1.1.1': NcGain.GetClassDescriptor(false)
+            '1.2.3.1': NcReceiverMonitorProtected.GetClassDescriptor(false),
+            '1.3': NcManager.GetClassDescriptor(false),
+            '1.3.1': NcDeviceManager.GetClassDescriptor(false),
+            '1.3.2': NcClassManager.GetClassDescriptor(false)
         };
 
         return register;
@@ -593,14 +594,16 @@ export class NcClassManager extends NcManager
             case '1.2': return NcWorker.GetClassDescriptor(true);
             case '1.2.1': return NcSignalWorker.GetClassDescriptor(true);
             case '1.2.1.1': return NcActuator.GetClassDescriptor(true);
+            case '1.2.1.1.1': return NcGain.GetClassDescriptor(true);
             case '1.2.1.2': return NcSensor.GetClassDescriptor(true);
-            case '1.3': return NcManager.GetClassDescriptor(true);
-            case '1.3.1': return NcDeviceManager.GetClassDescriptor(true);
-            case '1.3.2': return NcClassManager.GetClassDescriptor(true);
+            case '1.2.1.2.1': return NcLevelSensor.GetClassDescriptor(true);
             case '1.2.0.1': return NcDemo.GetClassDescriptor(true);
             case '1.2.2': return NcIdentBeacon.GetClassDescriptor(true);
             case '1.2.3': return NcReceiverMonitor.GetClassDescriptor(true);
-            case '1.2.1.1.1': return NcGain.GetClassDescriptor(true);
+            case '1.2.3.1': return NcReceiverMonitorProtected.GetClassDescriptor(true);
+            case '1.3': return NcManager.GetClassDescriptor(true);
+            case '1.3.1': return NcDeviceManager.GetClassDescriptor(true);
+            case '1.3.2': return NcClassManager.GetClassDescriptor(true);
             default: return null;
         }
     }
@@ -711,7 +714,6 @@ export class NcClassManager extends NcManager
             'NcMethodResultClassDescriptor': NcMethodResultClassDescriptor.GetTypeDescriptor(false),
             'NcMethodResultDatatypeDescriptor': NcMethodResultDatatypeDescriptor.GetTypeDescriptor(false),
             'NcReceiverStatus': NcReceiverStatus.GetTypeDescriptor(false),
-            'NcMethodResultReceiverStatus': NcMethodResultReceiverStatus.GetTypeDescriptor(false),
             'NcIoDirection': new NcDatatypeDescriptorEnum("NcIoDirection", [
                 new NcEnumItemDescriptor("Undefined", 0, "Not defined"),
                 new NcEnumItemDescriptor("Input", 1, "Input direction"),
@@ -794,7 +796,6 @@ export class NcClassManager extends NcManager
             case 'NcMethodResultClassDescriptor': return NcMethodResultClassDescriptor.GetTypeDescriptor(true);
             case 'NcMethodResultDatatypeDescriptor': return NcMethodResultDatatypeDescriptor.GetTypeDescriptor(true);
             case 'NcMethodResultId': return NcMethodResultId.GetTypeDescriptor(true);
-            case 'NcMethodResultReceiverStatus': return NcMethodResultReceiverStatus.GetTypeDescriptor(true);
             default: return this.dataTypesRegister[name];
         }
     }
