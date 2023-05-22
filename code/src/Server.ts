@@ -41,9 +41,9 @@ try
         config.base_label,
         config.address,
         config.port,
-        "ACME",
-        "Widget Pro",
-        "XYZ123-456789",
+        config.manufacturer,
+        config.product,
+        config.instance,
         registrationClient);
 
     const myDevice = new NmosDevice(
@@ -52,10 +52,10 @@ try
         config.base_label,
         config.address,
         config.port,
-        "ACME-D",
-        "Widget Pro-D",
-        "XYZ123-456789-D",
-        "UHD Decoder",
+        config.manufacturer,
+        config.product,
+        config.instance,
+        config.function,
         registrationClient);
 
     const myVideoReceiver = new NmosReceiverVideo(
