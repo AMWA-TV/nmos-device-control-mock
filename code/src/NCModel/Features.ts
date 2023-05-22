@@ -1,5 +1,5 @@
 import { jsonIgnoreReplacer, jsonIgnore } from 'json-ignore';
-import { CommandResponseNoValue, CommandResponseWithValue } from '../NCProtocol/Commands';
+import { CommandResponseError, CommandResponseNoValue, CommandResponseWithValue } from '../NCProtocol/Commands';
 import { WebSocketConnection } from '../Server';
 import { INotificationContext } from '../SessionManager';
 import {
@@ -13,16 +13,22 @@ import {
     NcMethodDescriptor,
     NcMethodStatus,
     NcObject,
-    NcParameterConstraintNumber,
-    NcParameterConstraintString,
+    NcParameterConstraintsNumber,
+    NcParameterConstraintsString,
     NcParameterDescriptor,
     NcPort,
     NcPropertyChangeType,
+    NcPropertyConstraints,
     NcPropertyDescriptor,
     NcTouchpoint } from './Core';
 
 export abstract class NcWorker extends NcObject
 {
+    public static staticClassID: number[] = [ 1, 2 ];
+
+    @myIdDecorator('1p1')
+    public override classID: number[] = NcWorker.staticClassID;
+
     @myIdDecorator('2p1')
     public enabled: boolean;
 
@@ -33,11 +39,12 @@ export abstract class NcWorker extends NcObject
         role: string,
         userLabel: string,
         touchpoints: NcTouchpoint[],
+        runtimePropertyConstraints: NcPropertyConstraints[] | null,
         enabled: boolean,
         description: string,
         notificationContext: INotificationContext)
     {
-        super(oid, constantOid, owner, role, userLabel, touchpoints, description, notificationContext);
+        super(oid, constantOid, owner, role, userLabel, touchpoints, runtimePropertyConstraints, description, notificationContext);
 
         this.enabled = enabled;
     }
@@ -52,13 +59,13 @@ export abstract class NcWorker extends NcObject
             switch(key)
             {
                 case '2p1':
-                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.enabled, null);
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.enabled);
                 default:
                     return super.Get(oid, propertyId, handle);
             }
         }
 
-        return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
+        return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
     }
 
     //'1m2'
@@ -71,20 +78,21 @@ export abstract class NcWorker extends NcObject
             switch(key)
             {
                 case '2p1':
-                    return new CommandResponseNoValue(handle, NcMethodStatus.Readonly, 'Property is readonly');
+                    this.enabled = value;
+                    this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.enabled, null);
+                    return new CommandResponseNoValue(handle, NcMethodStatus.OK);
                 default:
                     return super.Set(oid, id, value, handle);
             }
         }
 
-        return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
+        return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
     }
 
-    public static override GetClassDescriptor(): NcClassDescriptor 
+    public static override GetClassDescriptor(includeInherited: boolean): NcClassDescriptor
     {
-        let baseDescriptor = super.GetClassDescriptor();
-
-        let currentClassDescriptor = new NcClassDescriptor("NcWorker class descriptor",
+        let currentClassDescriptor = new NcClassDescriptor(`${NcWorker.name} class descriptor`,
+            NcWorker.staticClassID, NcWorker.name, null,
             [
                 new NcPropertyDescriptor(new NcElementId(2, 1), "enabled", "NcBoolean", false, true, false, false, null, "TRUE iff worker is enabled")
             ],
@@ -92,9 +100,14 @@ export abstract class NcWorker extends NcObject
             []
         );
 
-        currentClassDescriptor.properties = currentClassDescriptor.properties.concat(baseDescriptor.properties);
-        currentClassDescriptor.methods = currentClassDescriptor.methods.concat(baseDescriptor.methods);
-        currentClassDescriptor.events = currentClassDescriptor.events.concat(baseDescriptor.events);
+        if(includeInherited)
+        {
+            let baseDescriptor = super.GetClassDescriptor(includeInherited);
+
+            currentClassDescriptor.properties = currentClassDescriptor.properties.concat(baseDescriptor.properties);
+            currentClassDescriptor.methods = currentClassDescriptor.methods.concat(baseDescriptor.methods);
+            currentClassDescriptor.events = currentClassDescriptor.events.concat(baseDescriptor.events);
+        }
 
         return currentClassDescriptor;
     }
@@ -102,6 +115,11 @@ export abstract class NcWorker extends NcObject
 
 export abstract class NcSignalWorker extends NcWorker
 {
+    public static staticClassID: number[] = [ 1, 2, 1 ];
+
+    @myIdDecorator('1p1')
+    public override classID: number[] = NcSignalWorker.staticClassID;
+
     @myIdDecorator('3p1')
     public ports: NcPort[] | null;
 
@@ -115,13 +133,14 @@ export abstract class NcSignalWorker extends NcWorker
         role: string,
         userLabel: string,
         touchpoints: NcTouchpoint[],
+        runtimePropertyConstraints: NcPropertyConstraints[] | null,
         enabled: boolean,
         ports: NcPort[] | null,
         latency: number | null,
         description: string,
         notificationContext: INotificationContext)
     {
-        super(oid, constantOid, owner, role, userLabel, touchpoints, enabled, description, notificationContext);
+        super(oid, constantOid, owner, role, userLabel, touchpoints, runtimePropertyConstraints, enabled, description, notificationContext);
 
         this.ports = ports;
         this.latency = latency;
@@ -137,15 +156,15 @@ export abstract class NcSignalWorker extends NcWorker
             switch(key)
             {
                 case '3p1':
-                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.ports, null);
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.ports);
                 case '3p2':
-                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.latency, null);
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.latency);
                 default:
                     return super.Get(oid, propertyId, handle);
             }
         }
 
-        return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
+        return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
     }
 
     //'1m2'
@@ -159,20 +178,19 @@ export abstract class NcSignalWorker extends NcWorker
             {
                 case '3p1':
                 case '3p2':
-                    return new CommandResponseNoValue(handle, NcMethodStatus.Readonly, 'Property is readonly');
+                    return new CommandResponseError(handle, NcMethodStatus.Readonly, 'Property is readonly');
                 default:
                     return super.Set(oid, id, value, handle);
             }
         }
 
-        return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
+        return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
     }
 
-    public static override GetClassDescriptor(): NcClassDescriptor 
+    public static override GetClassDescriptor(includeInherited: boolean): NcClassDescriptor 
     {
-        let baseDescriptor = super.GetClassDescriptor();
-
-        let currentClassDescriptor = new NcClassDescriptor("NcSignalWorker class descriptor",
+        let currentClassDescriptor = new NcClassDescriptor(`${NcSignalWorker.name} class descriptor`,
+            NcSignalWorker.staticClassID, NcSignalWorker.name, null,
             [
                 new NcPropertyDescriptor(new NcElementId(3, 1), "ports", "NcPort", false, true, false, true, null, "The worker's signal ports"),
                 new NcPropertyDescriptor(new NcElementId(3, 2), "latency", "NcTimeInterval", true, true, true, false, null, "Processing latency of this object (null if not defined)")
@@ -181,9 +199,14 @@ export abstract class NcSignalWorker extends NcWorker
             []
         );
 
-        currentClassDescriptor.properties = currentClassDescriptor.properties.concat(baseDescriptor.properties);
-        currentClassDescriptor.methods = currentClassDescriptor.methods.concat(baseDescriptor.methods);
-        currentClassDescriptor.events = currentClassDescriptor.events.concat(baseDescriptor.events);
+        if(includeInherited)
+        {
+            let baseDescriptor = super.GetClassDescriptor(includeInherited);
+
+            currentClassDescriptor.properties = currentClassDescriptor.properties.concat(baseDescriptor.properties);
+            currentClassDescriptor.methods = currentClassDescriptor.methods.concat(baseDescriptor.methods);
+            currentClassDescriptor.events = currentClassDescriptor.events.concat(baseDescriptor.events);
+        }
 
         return currentClassDescriptor;
     }
@@ -191,6 +214,11 @@ export abstract class NcSignalWorker extends NcWorker
 
 export abstract class NcActuator extends NcSignalWorker
 {
+    public static staticClassID: number[] = [ 1, 2, 1, 1 ];
+
+    @myIdDecorator('1p1')
+    public override classID: number[] = NcActuator.staticClassID;
+
     public constructor(
         oid: number,
         constantOid: boolean,
@@ -198,24 +226,73 @@ export abstract class NcActuator extends NcSignalWorker
         role: string,
         userLabel: string,
         touchpoints: NcTouchpoint[],
+        runtimePropertyConstraints: NcPropertyConstraints[] | null,
         enabled: boolean,
         ports: NcPort[] | null,
         latency: number | null,
         description: string,
         notificationContext: INotificationContext)
     {
-        super(oid, constantOid, owner, role, userLabel, touchpoints, enabled, ports, latency, description, notificationContext);
+        super(oid, constantOid, owner, role, userLabel, touchpoints, runtimePropertyConstraints, enabled, ports, latency, description, notificationContext);
     }
 
-    public static override GetClassDescriptor(): NcClassDescriptor 
+    public static override GetClassDescriptor(includeInherited: boolean): NcClassDescriptor 
     {
-        let baseDescriptor = super.GetClassDescriptor();
+        let currentClassDescriptor = new NcClassDescriptor(`${NcActuator.name} class descriptor`,
+            NcActuator.staticClassID, NcActuator.name, null,
+        [], [], []);
 
-        let currentClassDescriptor = new NcClassDescriptor("NcActuator class descriptor", [], [], []);
+        if(includeInherited)
+        {
+            let baseDescriptor = super.GetClassDescriptor(includeInherited);
 
-        currentClassDescriptor.properties = currentClassDescriptor.properties.concat(baseDescriptor.properties);
-        currentClassDescriptor.methods = currentClassDescriptor.methods.concat(baseDescriptor.methods);
-        currentClassDescriptor.events = currentClassDescriptor.events.concat(baseDescriptor.events);
+            currentClassDescriptor.properties = currentClassDescriptor.properties.concat(baseDescriptor.properties);
+            currentClassDescriptor.methods = currentClassDescriptor.methods.concat(baseDescriptor.methods);
+            currentClassDescriptor.events = currentClassDescriptor.events.concat(baseDescriptor.events);
+        }
+
+        return currentClassDescriptor;
+    }
+}
+
+export abstract class NcSensor extends NcSignalWorker
+{
+    public static staticClassID: number[] = [ 1, 2, 1, 2 ];
+
+    @myIdDecorator('1p1')
+    public override classID: number[] = NcSensor.staticClassID;
+
+    public constructor(
+        oid: number,
+        constantOid: boolean,
+        owner: number | null,
+        role: string,
+        userLabel: string,
+        touchpoints: NcTouchpoint[],
+        runtimePropertyConstraints: NcPropertyConstraints[] | null,
+        enabled: boolean,
+        ports: NcPort[] | null,
+        latency: number | null,
+        description: string,
+        notificationContext: INotificationContext)
+    {
+        super(oid, constantOid, owner, role, userLabel, touchpoints, runtimePropertyConstraints, enabled, ports, latency, description, notificationContext);
+    }
+
+    public static override GetClassDescriptor(includeInherited: boolean): NcClassDescriptor 
+    {
+        let currentClassDescriptor = new NcClassDescriptor(`${NcSensor.name} class descriptor`,
+            NcSensor.staticClassID, NcSensor.name, null,
+        [], [], []);
+
+        if(includeInherited)
+        {
+            let baseDescriptor = super.GetClassDescriptor(includeInherited);
+
+            currentClassDescriptor.properties = currentClassDescriptor.properties.concat(baseDescriptor.properties);
+            currentClassDescriptor.methods = currentClassDescriptor.methods.concat(baseDescriptor.methods);
+            currentClassDescriptor.events = currentClassDescriptor.events.concat(baseDescriptor.events);
+        }
 
         return currentClassDescriptor;
     }
@@ -223,11 +300,13 @@ export abstract class NcActuator extends NcSignalWorker
 
 export class NcGain extends NcActuator
 {
+    public static staticClassID: number[] = [ 1, 2, 1, 1, 1 ];
+
+    @myIdDecorator('1p1')
+    public override classID: number[] = NcGain.staticClassID;
+
     @myIdDecorator('5p1')
     public gainValue: number;
-
-    public classID: number[] = [ 1, 2, 1, 1, 1 ];
-    public classVersion: string = "1.0.0";
 
     public constructor(
         oid: number,
@@ -236,6 +315,7 @@ export class NcGain extends NcActuator
         role: string,
         userLabel: string,
         touchpoints: NcTouchpoint[],
+        runtimePropertyConstraints: NcPropertyConstraints[] | null,
         enabled: boolean,
         ports: NcPort[] | null,
         latency: number | null,
@@ -243,7 +323,7 @@ export class NcGain extends NcActuator
         description: string,
         notificationContext: INotificationContext)
     {
-        super(oid, constantOid, owner, role, userLabel, touchpoints, enabled, ports, latency, description, notificationContext);
+        super(oid, constantOid, owner, role, userLabel, touchpoints, runtimePropertyConstraints, enabled, ports, latency, description, notificationContext);
 
         this.gainValue = gainValue;
     }
@@ -258,13 +338,13 @@ export class NcGain extends NcActuator
             switch(key)
             {
                 case '5p1':
-                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.gainValue, null);
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.gainValue);
                 default:
                     return super.Get(oid, propertyId, handle);
             }
         }
 
-        return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
+        return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
     }
 
     //'1m2'
@@ -279,20 +359,19 @@ export class NcGain extends NcActuator
                 case '5p1':
                     this.gainValue = value;
                     this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.gainValue, null);
-                    return new CommandResponseNoValue(handle, NcMethodStatus.OK, null);
+                    return new CommandResponseNoValue(handle, NcMethodStatus.OK);
                 default:
                     return super.Set(oid, id, value, handle);
             }
         }
 
-        return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
+        return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
     }
 
-    public static override GetClassDescriptor(): NcClassDescriptor 
+    public static override GetClassDescriptor(includeInherited: boolean): NcClassDescriptor 
     {
-        let baseDescriptor = super.GetClassDescriptor();
-
-        let currentClassDescriptor = new NcClassDescriptor("NcGain class descriptor",
+        let currentClassDescriptor = new NcClassDescriptor(`${NcGain.name} class descriptor`,
+            NcGain.staticClassID, NcGain.name, null,
             [
                 new NcPropertyDescriptor(new NcElementId(5, 1), "gainValue", "NcDB", false, false, false, false, null, "Gain value")
             ],
@@ -300,22 +379,29 @@ export class NcGain extends NcActuator
             []
         );
 
-        currentClassDescriptor.properties = currentClassDescriptor.properties.concat(baseDescriptor.properties);
-        currentClassDescriptor.methods = currentClassDescriptor.methods.concat(baseDescriptor.methods);
-        currentClassDescriptor.events = currentClassDescriptor.events.concat(baseDescriptor.events);
+        if(includeInherited)
+        {
+            let baseDescriptor = super.GetClassDescriptor(includeInherited);
+
+            currentClassDescriptor.properties = currentClassDescriptor.properties.concat(baseDescriptor.properties);
+            currentClassDescriptor.methods = currentClassDescriptor.methods.concat(baseDescriptor.methods);
+            currentClassDescriptor.events = currentClassDescriptor.events.concat(baseDescriptor.events);
+        }
 
         return currentClassDescriptor;
     }
 }
 
-export class NcIdentBeacon extends NcWorker
+export class NcLevelSensor extends NcSensor
 {
-    @myIdDecorator('3p1')
-    public active: boolean;
+    public static staticClassID: number[] = [ 1, 2, 1, 2, 1 ];
 
-    public classID: number[] = [ 1, 2, 2 ];
-    public classVersion: string = "1.0.0";
-    
+    @myIdDecorator('1p1')
+    public override classID: number[] = NcLevelSensor.staticClassID;
+
+    @myIdDecorator('5p1')
+    public reading: number;
+
     public constructor(
         oid: number,
         constantOid: boolean,
@@ -323,12 +409,105 @@ export class NcIdentBeacon extends NcWorker
         role: string,
         userLabel: string,
         touchpoints: NcTouchpoint[],
+        runtimePropertyConstraints: NcPropertyConstraints[] | null,
+        enabled: boolean,
+        ports: NcPort[] | null,
+        latency: number | null,
+        reading: number,
+        description: string,
+        notificationContext: INotificationContext)
+    {
+        super(oid, constantOid, owner, role, userLabel, touchpoints, runtimePropertyConstraints, enabled, ports, latency, description, notificationContext);
+
+        this.reading = reading;
+    }
+
+    //'1m1'
+    public override Get(oid: number, propertyId: NcElementId, handle: number) : CommandResponseNoValue
+    {
+        if(oid == this.oid)
+        {
+            let key: string = `${propertyId.level}p${propertyId.index}`;
+
+            switch(key)
+            {
+                case '5p1':
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.reading);
+                default:
+                    return super.Get(oid, propertyId, handle);
+            }
+        }
+
+        return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
+    }
+
+    //'1m2'
+    public override Set(oid: number, id: NcElementId, value: any, handle: number) : CommandResponseNoValue
+    {
+        if(oid == this.oid)
+        {
+            let key: string = `${id.level}p${id.index}`;
+
+            switch(key)
+            {
+                case '5p1':
+                    return new CommandResponseError(handle, NcMethodStatus.Readonly, 'Property is readonly');
+                default:
+                    return super.Set(oid, id, value, handle);
+            }
+        }
+
+        return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
+    }
+
+    public static override GetClassDescriptor(includeInherited: boolean): NcClassDescriptor 
+    {
+        let currentClassDescriptor = new NcClassDescriptor(`${NcLevelSensor.name} class descriptor`,
+            NcLevelSensor.staticClassID, NcLevelSensor.name, null,
+            [
+                new NcPropertyDescriptor(new NcElementId(5, 1), "reading", "NcDB", true, false, false, false, null, "Level sensor reading in DB")
+            ],
+            [],
+            []
+        );
+
+        if(includeInherited)
+        {
+            let baseDescriptor = super.GetClassDescriptor(includeInherited);
+
+            currentClassDescriptor.properties = currentClassDescriptor.properties.concat(baseDescriptor.properties);
+            currentClassDescriptor.methods = currentClassDescriptor.methods.concat(baseDescriptor.methods);
+            currentClassDescriptor.events = currentClassDescriptor.events.concat(baseDescriptor.events);
+        }
+
+        return currentClassDescriptor;
+    }
+}
+
+export class NcIdentBeacon extends NcWorker
+{
+    public static staticClassID: number[] = [ 1, 2, 2 ];
+
+    @myIdDecorator('1p1')
+    public override classID: number[] = NcIdentBeacon.staticClassID;
+
+    @myIdDecorator('3p1')
+    public active: boolean;
+
+    public constructor(
+        oid: number,
+        constantOid: boolean,
+        owner: number | null,
+        role: string,
+        userLabel: string,
+        touchpoints: NcTouchpoint[],
+        runtimePropertyConstraints: NcPropertyConstraints[] | null,
         enabled: boolean,
         active: boolean,
         description: string,
         notificationContext: INotificationContext)
     {
-        super(oid, constantOid, owner, role, userLabel, touchpoints, enabled, description, notificationContext);
+        super(oid, constantOid, owner, role, userLabel, touchpoints, runtimePropertyConstraints, enabled, description, notificationContext);
 
         this.active = active;
     }
@@ -343,13 +522,13 @@ export class NcIdentBeacon extends NcWorker
             switch(key)
             {
                 case '3p1':
-                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.active, null);
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.active);
                 default:
                     return super.Get(oid, propertyId, handle);
             }
         }
 
-        return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
+        return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
     }
 
     //'1m2'
@@ -364,20 +543,19 @@ export class NcIdentBeacon extends NcWorker
                 case '3p1':
                     this.active = value;
                     this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.active, null);
-                    return new CommandResponseNoValue(handle, NcMethodStatus.OK, null);
+                    return new CommandResponseNoValue(handle, NcMethodStatus.OK);
                 default:
                     return super.Set(oid, id, value, handle);
             }
         }
 
-        return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
+        return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
     }
 
-    public static override GetClassDescriptor(): NcClassDescriptor 
+    public static override GetClassDescriptor(includeInherited: boolean): NcClassDescriptor 
     {
-        let baseDescriptor = super.GetClassDescriptor();
-
-        let currentClassDescriptor = new NcClassDescriptor("NcIdentBeacon class descriptor",
+        let currentClassDescriptor = new NcClassDescriptor(`${NcIdentBeacon.name} class descriptor`,
+            NcIdentBeacon.staticClassID, NcIdentBeacon.name, null,
             [
                 new NcPropertyDescriptor(new NcElementId(3, 1), "active", "NcBoolean", false, false, false, false, null, "Indicator active state")
             ],
@@ -385,9 +563,14 @@ export class NcIdentBeacon extends NcWorker
             []
         );
 
-        currentClassDescriptor.properties = currentClassDescriptor.properties.concat(baseDescriptor.properties);
-        currentClassDescriptor.methods = currentClassDescriptor.methods.concat(baseDescriptor.methods);
-        currentClassDescriptor.events = currentClassDescriptor.events.concat(baseDescriptor.events);
+        if(includeInherited)
+        {
+            let baseDescriptor = super.GetClassDescriptor(includeInherited);
+
+            currentClassDescriptor.properties = currentClassDescriptor.properties.concat(baseDescriptor.properties);
+            currentClassDescriptor.methods = currentClassDescriptor.methods.concat(baseDescriptor.methods);
+            currentClassDescriptor.events = currentClassDescriptor.events.concat(baseDescriptor.events);
+        }
 
         return currentClassDescriptor;
     }
@@ -424,7 +607,7 @@ export class NcReceiverStatus extends BaseType
         this.payloadStatus = payloadStatus;
     }
 
-    public static override GetTypeDescriptor(): NcDatatypeDescriptor
+    public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor
     {
         return new NcDatatypeDescriptorStruct("NcReceiverStatus", [
             new NcFieldDescriptor("connectionStatus", "NcConnectionStatus", false, false, null, "Receiver connection status field"),
@@ -440,11 +623,10 @@ export class NcReceiverStatus extends BaseType
 
 export class NcReceiverMonitor extends NcWorker
 {
-    @myIdDecorator('1p1')
-    public classID: number[] = [ 1, 2, 3 ];
+    public static staticClassID: number[] = [ 1, 2, 3 ];
 
-    @myIdDecorator('1p2')
-    public classVersion: string = "1.0.0";
+    @myIdDecorator('1p1')
+    public override classID: number[] = NcReceiverMonitor.staticClassID;
 
     @myIdDecorator('3p1')
     public connectionStatus: NcConnectionStatus;
@@ -465,11 +647,12 @@ export class NcReceiverMonitor extends NcWorker
         role: string,
         userLabel: string,
         touchpoints: NcTouchpoint[],
+        runtimePropertyConstraints: NcPropertyConstraints[] | null,
         enabled: boolean,
         description: string,
         notificationContext: INotificationContext)
     {
-        super(oid, constantOid, owner, role, userLabel, touchpoints, enabled, description, notificationContext);
+        super(oid, constantOid, owner, role, userLabel, touchpoints, runtimePropertyConstraints, enabled, description, notificationContext);
 
         this.connectionStatus = NcConnectionStatus.Undefined;
         this.connectionStatusMessage = null;
@@ -512,19 +695,19 @@ export class NcReceiverMonitor extends NcWorker
             switch(key)
             {
                 case '3p1':
-                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.connectionStatus, null);
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.connectionStatus);
                 case '3p2':
-                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.connectionStatusMessage, null);
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.connectionStatusMessage);
                 case '3p3':
-                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.payloadStatus, null);
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.payloadStatus);
                 case '3p4':
-                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.payloadStatusMessage, null);
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.payloadStatusMessage);
                 default:
                     return super.Get(oid, id, handle);
             }
         }
 
-        return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
+        return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
     }
 
     //'1m2'
@@ -540,53 +723,156 @@ export class NcReceiverMonitor extends NcWorker
                 case '3p2':
                 case '3p3':
                 case '3p4':
-                    return new CommandResponseNoValue(handle, NcMethodStatus.Readonly, 'Property is readonly');
+                    return new CommandResponseError(handle, NcMethodStatus.Readonly, 'Property is readonly');
                 default:
                     return super.Set(oid, id, value, handle);
             }
         }
 
-        return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
+        return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
     }
 
-    public override InvokeMethod(socket: WebSocketConnection, oid: number, methodId: NcElementId, args: { [key: string]: any; } | null, handle: number): CommandResponseNoValue 
+    public static override GetClassDescriptor(includeInherited: boolean): NcClassDescriptor 
     {
-        if(oid == this.oid)
-        {
-            let key: string = `${methodId.level}m${methodId.index}`;
-
-            switch(key)
-            {
-                case '3m1':
-                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, new NcReceiverStatus(this.connectionStatus, this.payloadStatus), null);
-                default:
-                    return super.InvokeMethod(socket, oid, methodId, args, handle);
-            }
-        }
-
-        return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
-    }
-
-    public static override GetClassDescriptor(): NcClassDescriptor 
-    {
-        let baseDescriptor = super.GetClassDescriptor();
-
-        let currentClassDescriptor = new NcClassDescriptor("NcReceiverMonitor class descriptor",
+        let currentClassDescriptor = new NcClassDescriptor(`${NcReceiverMonitor.name} class descriptor`,
+            NcReceiverMonitor.staticClassID, NcReceiverMonitor.name, null,
             [
                 new NcPropertyDescriptor(new NcElementId(3, 1), "connectionStatus", "NcConnectionStatus", true, false, false, false, null, "Connection status property"),
                 new NcPropertyDescriptor(new NcElementId(3, 2), "connectionStatusMessage", "NcString", true, false, true, false, null, "Connection status message property"),
                 new NcPropertyDescriptor(new NcElementId(3, 3), "payloadStatus", "NcPayloadStatus", true, false, false, false, null, "Payload status property"),
                 new NcPropertyDescriptor(new NcElementId(3, 4), "payloadStatusMessage", "NcString", true, false, true, false, null, "Payload status message property")
             ],
-            [
-                new NcMethodDescriptor(new NcElementId(3, 1), "GetStatus", "NcMethodResultReceiverStatus", [], "Method to retrieve both connection status and payload status in one call")
-            ],
+            [],
             []
         );
 
-        currentClassDescriptor.properties = currentClassDescriptor.properties.concat(baseDescriptor.properties);
-        currentClassDescriptor.methods = currentClassDescriptor.methods.concat(baseDescriptor.methods);
-        currentClassDescriptor.events = currentClassDescriptor.events.concat(baseDescriptor.events);
+        if(includeInherited)
+        {
+            let baseDescriptor = super.GetClassDescriptor(includeInherited);
+
+            currentClassDescriptor.properties = currentClassDescriptor.properties.concat(baseDescriptor.properties);
+            currentClassDescriptor.methods = currentClassDescriptor.methods.concat(baseDescriptor.methods);
+            currentClassDescriptor.events = currentClassDescriptor.events.concat(baseDescriptor.events);
+        }
+
+        return currentClassDescriptor;
+    }
+}
+
+export class NcReceiverMonitorProtected extends NcReceiverMonitor
+{
+    public static staticClassID: number[] = [ 1, 2, 3, 1 ];
+
+    @myIdDecorator('1p1')
+    public override classID: number[] = NcReceiverMonitorProtected.staticClassID;
+
+    @myIdDecorator('4p1')
+    public signalProtectionStatus: boolean;
+
+    public constructor(
+        oid: number,
+        constantOid: boolean,
+        owner: number | null,
+        role: string,
+        userLabel: string,
+        touchpoints: NcTouchpoint[],
+        runtimePropertyConstraints: NcPropertyConstraints[] | null,
+        enabled: boolean,
+        description: string,
+        notificationContext: INotificationContext)
+    {
+        super(oid, constantOid, owner, role, userLabel, touchpoints, runtimePropertyConstraints, enabled, description, notificationContext);
+
+        this.connectionStatus = NcConnectionStatus.Undefined;
+        this.connectionStatusMessage = null;
+        
+        this.payloadStatus = NcPayloadStatus.Undefined;
+        this.payloadStatusMessage = null;
+
+        this.signalProtectionStatus = false;
+    }
+
+    public Connected()
+    {
+        this.connectionStatus = NcConnectionStatus.Connected;
+        this.payloadStatus = NcPayloadStatus.PayloadOK;
+
+        this.connectionStatusMessage = null;
+        this.payloadStatusMessage = null;
+
+        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 1), NcPropertyChangeType.ValueChanged, this.connectionStatus, null);
+        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 3), NcPropertyChangeType.ValueChanged, this.payloadStatus, null);
+    }
+
+    public Disconnected()
+    {
+        this.connectionStatus = NcConnectionStatus.Undefined;
+        this.payloadStatus = NcPayloadStatus.Undefined;
+
+        this.connectionStatusMessage = null;
+        this.payloadStatusMessage = null;
+
+        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 1), NcPropertyChangeType.ValueChanged, this.connectionStatus, null);
+        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 3), NcPropertyChangeType.ValueChanged, this.payloadStatus, null);
+    }
+
+    //'1m1'
+    public override Get(oid: number, id: NcElementId, handle: number) : CommandResponseNoValue
+    {
+        if(oid == this.oid)
+        {
+            let key: string = `${id.level}p${id.index}`;
+
+            switch(key)
+            {
+                case '4p1':
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.signalProtectionStatus);
+                default:
+                    return super.Get(oid, id, handle);
+            }
+        }
+
+        return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
+    }
+
+    //'1m2'
+    public override Set(oid: number, id: NcElementId, value: any, handle: number) : CommandResponseNoValue
+    {
+        if(oid == this.oid)
+        {
+            let key: string = `${id.level}p${id.index}`;
+
+            switch(key)
+            {
+                case '4p1':
+                    return new CommandResponseError(handle, NcMethodStatus.Readonly, 'Property is readonly');
+                default:
+                    return super.Set(oid, id, value, handle);
+            }
+        }
+
+        return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
+    }
+
+    public static override GetClassDescriptor(includeInherited: boolean): NcClassDescriptor 
+    {
+        let currentClassDescriptor = new NcClassDescriptor(`${NcReceiverMonitorProtected.name} class descriptor`,
+            NcReceiverMonitorProtected.staticClassID, NcReceiverMonitorProtected.name, null,
+            [
+                new NcPropertyDescriptor(new NcElementId(4, 1), "signalProtectionStatus", "NcBoolean", true, false, false, false, null, "Indicates if signal protection is active"),
+            ],
+            [],
+            []
+        );
+
+        if(includeInherited)
+        {
+            let baseDescriptor = super.GetClassDescriptor(includeInherited);
+
+            currentClassDescriptor.properties = currentClassDescriptor.properties.concat(baseDescriptor.properties);
+            currentClassDescriptor.methods = currentClassDescriptor.methods.concat(baseDescriptor.methods);
+            currentClassDescriptor.events = currentClassDescriptor.events.concat(baseDescriptor.events);
+        }
 
         return currentClassDescriptor;
     }
@@ -621,12 +907,12 @@ export class DemoDataType extends BaseType
         this.booleanProperty = booleanProperty;
     }
 
-    public static override GetTypeDescriptor(): NcDatatypeDescriptor
+    public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor
     {
         return new NcDatatypeDescriptorStruct("DemoDataType", [
             new NcFieldDescriptor("enumProperty", "NcDemoEnum", false, false, null, "Enum property demo"),
-            new NcFieldDescriptor("stringProperty", "NcString", false, false, new NcParameterConstraintString(10, null), "String property demo"),
-            new NcFieldDescriptor("numberProperty", "NcUint64", false, false, new NcParameterConstraintNumber(1000, 0, 1), "Number property demo"),
+            new NcFieldDescriptor("stringProperty", "NcString", false, false, new NcParameterConstraintsString(10, null), "String property demo"),
+            new NcFieldDescriptor("numberProperty", "NcUint64", false, false, new NcParameterConstraintsNumber(1000, 0, 1), "Number property demo"),
             new NcFieldDescriptor("booleanProperty", "NcBoolean", false, false, null, "Boolean property demo")
         ], null, null, "Demo data type");
     }
@@ -639,11 +925,10 @@ export class DemoDataType extends BaseType
 
 export class NcDemo extends NcWorker
 {
-    @myIdDecorator('1p1')
-    public classID: number[] = [ 1, 2, 0, 1 ];
+    public static staticClassID: number[] = [ 1, 2, 0, 1 ];
 
-    @myIdDecorator('1p2')
-    public classVersion: string = "1.0.0";
+    @myIdDecorator('1p1')
+    public override classID: number[] = NcDemo.staticClassID;
 
     @myIdDecorator('3p1')
     public enumProperty: NcDemoEnum;
@@ -691,11 +976,12 @@ export class NcDemo extends NcWorker
         role: string,
         userLabel: string,
         touchpoints: NcTouchpoint[],
+        runtimePropertyConstraints: NcPropertyConstraints[] | null,
         enabled: boolean,
         description: string,
         notificationContext: INotificationContext)
     {
-        super(oid, constantOid, owner, role, userLabel, touchpoints, enabled, description, notificationContext);
+        super(oid, constantOid, owner, role, userLabel, touchpoints, runtimePropertyConstraints, enabled, description, notificationContext);
 
         this.enumProperty = NcDemoEnum.Undefined;
         this.stringProperty = "test";
@@ -722,37 +1008,37 @@ export class NcDemo extends NcWorker
             switch(key)
             {
                 case '3p1':
-                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.enumProperty, null);
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.enumProperty);
                 case '3p2':
-                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.stringProperty, null);
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.stringProperty);
                 case '3p3':
-                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.numberProperty, null);
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.numberProperty);
                 case '3p4':
-                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.booleanProperty, null);
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.booleanProperty);
                 case '3p5':
-                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.objectProperty, null);
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.objectProperty);
                 case '3p6':
-                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.methodNoArgsCount, null);
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.methodNoArgsCount);
                 case '3p7':
-                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.methodSimpleArgsCount, null);
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.methodSimpleArgsCount);
                 case '3p8':
-                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.methodObjectArgCount, null);
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.methodObjectArgCount);
                 case '3p9':
-                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.stringSequence, null);
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.stringSequence);
                 case '3p10':
-                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.booleanSequence, null);
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.booleanSequence);
                 case '3p11':
-                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.enumSequence, null);
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.enumSequence);
                 case '3p12':
-                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.numberSequence, null);
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.numberSequence);
                 case '3p13':
-                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.objectSequence, null);
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.objectSequence);
                 default:
                     return super.Get(oid, id, handle);
             }
         }
 
-        return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
+        return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
     }
 
     //'1m2'
@@ -767,53 +1053,53 @@ export class NcDemo extends NcWorker
                 case '3p1':
                     this.enumProperty = value;
                     this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.enumProperty, null);
-                    return new CommandResponseNoValue(handle, NcMethodStatus.OK, null);
+                    return new CommandResponseNoValue(handle, NcMethodStatus.OK);
                 case '3p2':
                     this.stringProperty = value;
                     this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.stringProperty, null);
-                    return new CommandResponseNoValue(handle, NcMethodStatus.OK, null);
+                    return new CommandResponseNoValue(handle, NcMethodStatus.OK);
                 case '3p3':
                     this.numberProperty = value;
                     this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.numberProperty, null);
-                    return new CommandResponseNoValue(handle, NcMethodStatus.OK, null);
+                    return new CommandResponseNoValue(handle, NcMethodStatus.OK);
                 case '3p4':
                     this.booleanProperty = value;
                     this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.booleanProperty, null);
-                    return new CommandResponseNoValue(handle, NcMethodStatus.OK, null);
+                    return new CommandResponseNoValue(handle, NcMethodStatus.OK);
                 case '3p5':
                     this.objectProperty = value;
                     this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.objectProperty, null);
-                    return new CommandResponseNoValue(handle, NcMethodStatus.OK, null);
+                    return new CommandResponseNoValue(handle, NcMethodStatus.OK);
                 case '3p6':
                 case '3p7':
                 case '3p8':
-                        return new CommandResponseNoValue(handle, NcMethodStatus.Readonly, "Property is read only");
+                        return new CommandResponseError(handle, NcMethodStatus.Readonly, "Property is read only");
                 case '3p9':
                     this.stringSequence = value;
                     this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.stringSequence, null);
-                    return new CommandResponseNoValue(handle, NcMethodStatus.OK, null);
+                    return new CommandResponseNoValue(handle, NcMethodStatus.OK);
                 case '3p10':
                     this.booleanSequence = value;
                     this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.booleanSequence, null);
-                    return new CommandResponseNoValue(handle, NcMethodStatus.OK, null);
+                    return new CommandResponseNoValue(handle, NcMethodStatus.OK);
                 case '3p11':
                     this.enumSequence = value;
                     this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.enumSequence, null);
-                    return new CommandResponseNoValue(handle, NcMethodStatus.OK, null);
+                    return new CommandResponseNoValue(handle, NcMethodStatus.OK);
                 case '3p12':
                     this.numberSequence = value;
                     this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.numberSequence, null);
-                    return new CommandResponseNoValue(handle, NcMethodStatus.OK, null);
+                    return new CommandResponseNoValue(handle, NcMethodStatus.OK);
                 case '3p13':
                     this.objectSequence = value;
                     this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.objectSequence, null);
-                    return new CommandResponseNoValue(handle, NcMethodStatus.OK, null);
+                    return new CommandResponseNoValue(handle, NcMethodStatus.OK);
                 default:
                     return super.Set(oid, id, value, handle);
             }
         }
 
-        return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
+        return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
     }
 
     public override InvokeMethod(socket: WebSocketConnection, oid: number, methodId: NcElementId, args: { [key: string]: any; } | null, handle: number): CommandResponseNoValue 
@@ -845,54 +1131,54 @@ export class NcDemo extends NcWorker
                                             {
                                                 let itemValue = this.stringSequence[index];
                                                 if(itemValue)
-                                                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, itemValue, null);
+                                                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, itemValue);
                                                 else
-                                                    return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Index could not be found');
+                                                    return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Index could not be found');
                                             }
                                         case '3p10':
                                             {
                                                 let itemValue = this.booleanSequence[index];
                                                 if(itemValue)
-                                                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, itemValue, null);
+                                                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, itemValue);
                                                 else
-                                                    return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Index could not be found');
+                                                    return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Index could not be found');
                                             }
                                         case '3p11':
                                             {
                                                 let itemValue = this.enumSequence[index];
                                                 if(itemValue)
-                                                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, itemValue, null);
+                                                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, itemValue);
                                                 else
-                                                    return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Index could not be found');
+                                                    return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Index could not be found');
                                             }
                                         case '3p12':
                                             {
                                                 let itemValue = this.numberSequence[index];
                                                 if(itemValue !== undefined)
-                                                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, itemValue, null);
+                                                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, itemValue);
                                                 else
-                                                    return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Index could not be found');
+                                                    return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Index could not be found');
                                             }
                                         case '3p13':
                                             {
                                                 let itemValue = this.objectSequence[index];
                                                 if(itemValue)
-                                                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, itemValue, null);
+                                                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, itemValue);
                                                 else
-                                                    return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Index could not be found');
+                                                    return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Index could not be found');
                                             }
                                         default:
-                                            return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Property could not be found');
+                                            return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Property could not be found');
                                     }
                                 }
                                 else
-                                    return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Invalid index argument provided');
+                                    return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid index argument provided');
                             }
                             else
-                                return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Invalid id argument provided');
+                                return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid id argument provided');
                         }
                         else
-                            return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Invalid arguments provided');
+                            return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid arguments provided');
                     }
                 case '1m4': //SetSequenceItem
                     {
@@ -922,13 +1208,13 @@ export class NcDemo extends NcWorker
                                                         this.stringSequence[index] = value;
                                                         this.notificationContext.NotifyPropertyChanged(this.oid, propertyId, NcPropertyChangeType.SequenceItemChanged, value, index);
     
-                                                        return new CommandResponseNoValue(handle, NcMethodStatus.OK, null);
+                                                        return new CommandResponseNoValue(handle, NcMethodStatus.OK);
                                                     }
                                                     else
-                                                        return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Invalid value argument provided');
+                                                        return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid value argument provided');
                                                 }
                                                 else
-                                                    return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Index could not be found');
+                                                    return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Index could not be found');
                                             }
                                         case '3p10':
                                             {
@@ -940,13 +1226,13 @@ export class NcDemo extends NcWorker
                                                         this.booleanSequence[index] = value;
                                                         this.notificationContext.NotifyPropertyChanged(this.oid, propertyId, NcPropertyChangeType.SequenceItemChanged, value, index);
     
-                                                        return new CommandResponseNoValue(handle, NcMethodStatus.OK, null);
+                                                        return new CommandResponseNoValue(handle, NcMethodStatus.OK);
                                                     }
                                                     else
-                                                        return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Invalid value argument provided');
+                                                        return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid value argument provided');
                                                 }
                                                 else
-                                                    return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Index could not be found');
+                                                    return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Index could not be found');
                                             }
                                         case '3p11':
                                             {
@@ -958,13 +1244,13 @@ export class NcDemo extends NcWorker
                                                         this.enumSequence[index] = value;
                                                         this.notificationContext.NotifyPropertyChanged(this.oid, propertyId, NcPropertyChangeType.SequenceItemChanged, value, index);
     
-                                                        return new CommandResponseNoValue(handle, NcMethodStatus.OK, null);
+                                                        return new CommandResponseNoValue(handle, NcMethodStatus.OK);
                                                     }
                                                     else
-                                                        return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Invalid value argument provided');
+                                                        return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid value argument provided');
                                                 }
                                                 else
-                                                    return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Index could not be found');
+                                                    return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Index could not be found');
                                             }
                                         case '3p12':
                                             {
@@ -976,13 +1262,13 @@ export class NcDemo extends NcWorker
                                                         this.numberSequence[index] = value;
                                                         this.notificationContext.NotifyPropertyChanged(this.oid, propertyId, NcPropertyChangeType.SequenceItemChanged, value, index);
     
-                                                        return new CommandResponseNoValue(handle, NcMethodStatus.OK, null);
+                                                        return new CommandResponseNoValue(handle, NcMethodStatus.OK);
                                                     }
                                                     else
-                                                        return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Invalid value argument provided');
+                                                        return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid value argument provided');
                                                 }
                                                 else
-                                                    return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Index could not be found');
+                                                    return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Index could not be found');
                                             }
                                         case '3p13':
                                             {
@@ -994,26 +1280,26 @@ export class NcDemo extends NcWorker
                                                         this.objectSequence[index] = value;
                                                         this.notificationContext.NotifyPropertyChanged(this.oid, propertyId, NcPropertyChangeType.SequenceItemChanged, value, index);
 
-                                                        return new CommandResponseNoValue(handle, NcMethodStatus.OK, null);
+                                                        return new CommandResponseNoValue(handle, NcMethodStatus.OK);
                                                     }
                                                     else
-                                                        return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Invalid value argument provided');
+                                                        return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid value argument provided');
                                                 }
                                                 else
-                                                    return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Index could not be found');
+                                                    return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Index could not be found');
                                             }
                                         default:
-                                            return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Property could not be found');
+                                            return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Property could not be found');
                                     }
                                 }
                                 else
-                                    return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Invalid index argument provided');
+                                    return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid index argument provided');
                             }
                             else
-                                return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Invalid id argument provided');
+                                return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid id argument provided');
                         }
                         else
-                            return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Invalid arguments provided');
+                            return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid arguments provided');
                     }
                 case '1m5': //AddSequenceItem
                     {
@@ -1039,10 +1325,10 @@ export class NcDemo extends NcWorker
 
                                                 this.notificationContext.NotifyPropertyChanged(this.oid, propertyId, NcPropertyChangeType.SequenceItemAdded, value, index);
 
-                                                return new CommandResponseWithValue(handle, NcMethodStatus.OK, index, null);
+                                                return new CommandResponseWithValue(handle, NcMethodStatus.OK, index);
                                             }
                                             else
-                                                return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Invalid value argument provided');
+                                                return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid value argument provided');
                                         }
                                     case '3p10':
                                         {
@@ -1054,10 +1340,10 @@ export class NcDemo extends NcWorker
 
                                                 this.notificationContext.NotifyPropertyChanged(this.oid, propertyId, NcPropertyChangeType.SequenceItemAdded, value, index);
 
-                                                return new CommandResponseWithValue(handle, NcMethodStatus.OK, index, null);
+                                                return new CommandResponseWithValue(handle, NcMethodStatus.OK, index);
                                             }
                                             else
-                                                return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Invalid value argument provided');
+                                                return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid value argument provided');
                                         }
                                     case '3p11':
                                         {
@@ -1069,10 +1355,10 @@ export class NcDemo extends NcWorker
 
                                                 this.notificationContext.NotifyPropertyChanged(this.oid, propertyId, NcPropertyChangeType.SequenceItemAdded, value, index);
 
-                                                return new CommandResponseWithValue(handle, NcMethodStatus.OK, index, null);
+                                                return new CommandResponseWithValue(handle, NcMethodStatus.OK, index);
                                             }
                                             else
-                                                return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Invalid value argument provided');
+                                                return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid value argument provided');
                                         }
                                     case '3p12':
                                         {
@@ -1084,10 +1370,10 @@ export class NcDemo extends NcWorker
 
                                                 this.notificationContext.NotifyPropertyChanged(this.oid, propertyId, NcPropertyChangeType.SequenceItemAdded, value, index);
 
-                                                return new CommandResponseWithValue(handle, NcMethodStatus.OK, index, null);
+                                                return new CommandResponseWithValue(handle, NcMethodStatus.OK, index);
                                             }
                                             else
-                                                return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Invalid value argument provided');
+                                                return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid value argument provided');
                                         }
                                     case '3p13':
                                         {
@@ -1099,20 +1385,20 @@ export class NcDemo extends NcWorker
 
                                                 this.notificationContext.NotifyPropertyChanged(this.oid, propertyId, NcPropertyChangeType.SequenceItemAdded, value, index);
 
-                                                return new CommandResponseWithValue(handle, NcMethodStatus.OK, index, null);
+                                                return new CommandResponseWithValue(handle, NcMethodStatus.OK, index);
                                             }
                                             else
-                                                return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Invalid value argument provided');
+                                                return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid value argument provided');
                                         }
                                     default:
-                                        return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Property could not be found');
+                                        return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Property could not be found');
                                 }
                             }
                             else
-                                return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Invalid id argument provided');
+                                return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid id argument provided');
                         }
                         else
-                            return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Invalid arguments provided');
+                            return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid arguments provided');
                     }
                 case '1m6': //RemoveSequenceItem
                     {
@@ -1140,10 +1426,10 @@ export class NcDemo extends NcWorker
                                                     this.stringSequence.splice(index, 1);
                                                     this.notificationContext.NotifyPropertyChanged(this.oid, propertyId, NcPropertyChangeType.SequenceItemRemoved, oldValue, index);
 
-                                                    return new CommandResponseNoValue(handle, NcMethodStatus.OK, null);
+                                                    return new CommandResponseNoValue(handle, NcMethodStatus.OK);
                                                 }
                                                 else
-                                                    return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Index could not be found');
+                                                    return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Index could not be found');
                                             }
                                         case '3p10':
                                             {
@@ -1154,10 +1440,10 @@ export class NcDemo extends NcWorker
                                                     this.booleanSequence.splice(index, 1);
                                                     this.notificationContext.NotifyPropertyChanged(this.oid, propertyId, NcPropertyChangeType.SequenceItemRemoved, oldValue, index);
 
-                                                    return new CommandResponseNoValue(handle, NcMethodStatus.OK, null);
+                                                    return new CommandResponseNoValue(handle, NcMethodStatus.OK);
                                                 }
                                                 else
-                                                    return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Index could not be found');
+                                                    return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Index could not be found');
                                             }
                                         case '3p11':
                                             {
@@ -1168,10 +1454,10 @@ export class NcDemo extends NcWorker
                                                     this.enumSequence.splice(index, 1);
                                                     this.notificationContext.NotifyPropertyChanged(this.oid, propertyId, NcPropertyChangeType.SequenceItemRemoved, oldValue, index);
 
-                                                    return new CommandResponseNoValue(handle, NcMethodStatus.OK, null);
+                                                    return new CommandResponseNoValue(handle, NcMethodStatus.OK);
                                                 }
                                                 else
-                                                    return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Index could not be found');
+                                                    return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Index could not be found');
                                             }
                                         case '3p12':
                                             {
@@ -1182,10 +1468,10 @@ export class NcDemo extends NcWorker
                                                     this.numberSequence.splice(index, 1);
                                                     this.notificationContext.NotifyPropertyChanged(this.oid, propertyId, NcPropertyChangeType.SequenceItemRemoved, oldValue, index);
 
-                                                    return new CommandResponseNoValue(handle, NcMethodStatus.OK, null);
+                                                    return new CommandResponseNoValue(handle, NcMethodStatus.OK);
                                                 }
                                                 else
-                                                    return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Index could not be found');
+                                                    return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Index could not be found');
                                             }
                                         case '3p13':
                                             {
@@ -1196,29 +1482,29 @@ export class NcDemo extends NcWorker
                                                     this.objectSequence.splice(index, 1);
                                                     this.notificationContext.NotifyPropertyChanged(this.oid, propertyId, NcPropertyChangeType.SequenceItemRemoved, oldValue, index);
 
-                                                    return new CommandResponseNoValue(handle, NcMethodStatus.OK, null);
+                                                    return new CommandResponseNoValue(handle, NcMethodStatus.OK);
                                                 }
                                                 else
-                                                    return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Index could not be found');
+                                                    return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Index could not be found');
                                             }
                                         default:
-                                            return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Property could not be found');
+                                            return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Property could not be found');
                                     }
                                 }
                                 else
-                                    return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Invalid index argument provided');
+                                    return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid index argument provided');
                             }
                             else
-                                return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Invalid id argument provided');
+                                return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid id argument provided');
                         }
                         else
-                            return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Invalid arguments provided');
+                            return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid arguments provided');
                     }
                 case '3m1':
                     {
                         this.methodNoArgsCount = this.methodNoArgsCount + 1;
                         this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 6), NcPropertyChangeType.ValueChanged, this.methodNoArgsCount, null);
-                        return new CommandResponseNoValue(handle, NcMethodStatus.OK, null);
+                        return new CommandResponseNoValue(handle, NcMethodStatus.OK);
                     }
                 case '3m2':
                     {
@@ -1243,22 +1529,22 @@ export class NcDemo extends NcWorker
                                         {
                                             this.methodSimpleArgsCount = this.methodSimpleArgsCount + 1;
                                             this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 7), NcPropertyChangeType.ValueChanged, this.methodSimpleArgsCount, null);
-                                            return new CommandResponseNoValue(handle, NcMethodStatus.OK, null);
+                                            return new CommandResponseNoValue(handle, NcMethodStatus.OK);
                                         }
                                         else
-                                            return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Invalid booleanArg argument provided');
+                                            return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid booleanArg argument provided');
                                     }
                                     else
-                                        return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Invalid numberArg argument provided');
+                                        return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid numberArg argument provided');
                                 }
                                 else
-                                    return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Invalid stringArg argument provided');
+                                    return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid stringArg argument provided');
                             }
                             else
-                                return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Invalid enumArg argument provided');
+                                return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid enumArg argument provided');
                         }
                         else
-                            return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Invalid arguments provided');
+                            return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid arguments provided');
                     }
                 case '3m3':
                     {
@@ -1270,32 +1556,31 @@ export class NcDemo extends NcWorker
                             {
                                 this.methodObjectArgCount = this.methodObjectArgCount + 1;
                                 this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 8), NcPropertyChangeType.ValueChanged, this.methodObjectArgCount, null);
-                                return new CommandResponseNoValue(handle, NcMethodStatus.OK, null);
+                                return new CommandResponseNoValue(handle, NcMethodStatus.OK);
                             }
                             else
-                                return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Invalid objArg argument provided');
+                                return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid objArg argument provided');
                         }
                         else
-                            return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'Invalid arguments provided');
+                            return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid arguments provided');
                     }
                 default:
                     return super.InvokeMethod(socket, oid, methodId, args, handle);
             }
         }
 
-        return new CommandResponseNoValue(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
+        return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
     }
 
-    public static override GetClassDescriptor(): NcClassDescriptor 
+    public static override GetClassDescriptor(includeInherited: boolean): NcClassDescriptor 
     {
-        let baseDescriptor = super.GetClassDescriptor();
-
-        let currentClassDescriptor = new NcClassDescriptor("NcDemo class descriptor",
+        let currentClassDescriptor = new NcClassDescriptor(`${NcDemo.name} class descriptor`,
+            NcDemo.staticClassID, NcDemo.name, null,
             [
                 new NcPropertyDescriptor(new NcElementId(3, 1), "enumProperty", "NcDemoEnum", false, false, false, false, null, "Demo enum property"),
-                new NcPropertyDescriptor(new NcElementId(3, 2), "stringProperty", "NcString", false, false, false, false, new NcParameterConstraintString(10, null),
+                new NcPropertyDescriptor(new NcElementId(3, 2), "stringProperty", "NcString", false, false, false, false, new NcParameterConstraintsString(10, null),
                     "Demo string property"),
-                new NcPropertyDescriptor(new NcElementId(3, 3), "numberProperty", "NcUint64", false, false, false, false, new NcParameterConstraintNumber(1000, 0, 1),
+                new NcPropertyDescriptor(new NcElementId(3, 3), "numberProperty", "NcUint64", false, false, false, false, new NcParameterConstraintsNumber(1000, 0, 1),
                     "Demo numeric property"),
                 new NcPropertyDescriptor(new NcElementId(3, 4), "booleanProperty", "NcBoolean", false, false, false, false, null, "Demo boolean property"),
                 new NcPropertyDescriptor(new NcElementId(3, 5), "objectProperty", "DemoDataType", false, false, false, false, null, "Demo object property"),
@@ -1312,8 +1597,8 @@ export class NcDemo extends NcWorker
                 new NcMethodDescriptor(new NcElementId(3, 1), "MethodNoArgs", "NcMethodResult", [], "Demo method with no arguments"),
                 new NcMethodDescriptor(new NcElementId(3, 2), "MethodSimpleArgs", "NcMethodResult", [
                     new NcParameterDescriptor("enumArg", "NcDemoEnum", false, false, null, "Enum demo argument"),
-                    new NcParameterDescriptor("stringArg", "NcString", false, false, new NcParameterConstraintString(10, null), "String demo argument"),
-                    new NcParameterDescriptor("numberArg", "NcUint64", false, false, new NcParameterConstraintNumber(1000, 0, 1),
+                    new NcParameterDescriptor("stringArg", "NcString", false, false, new NcParameterConstraintsString(10, null), "String demo argument"),
+                    new NcParameterDescriptor("numberArg", "NcUint64", false, false, new NcParameterConstraintsNumber(1000, 0, 1),
                     "Number demo argument"),
                     new NcParameterDescriptor("booleanArg", "NcBoolean", false, false, null, "Boolean demo argument")
                 ], "Demo method with simple arguments"),
@@ -1324,9 +1609,14 @@ export class NcDemo extends NcWorker
             []
         );
 
-        currentClassDescriptor.properties = currentClassDescriptor.properties.concat(baseDescriptor.properties);
-        currentClassDescriptor.methods = currentClassDescriptor.methods.concat(baseDescriptor.methods);
-        currentClassDescriptor.events = currentClassDescriptor.events.concat(baseDescriptor.events);
+        if(includeInherited)
+        {
+            let baseDescriptor = super.GetClassDescriptor(includeInherited);
+
+            currentClassDescriptor.properties = currentClassDescriptor.properties.concat(baseDescriptor.properties);
+            currentClassDescriptor.methods = currentClassDescriptor.methods.concat(baseDescriptor.methods);
+            currentClassDescriptor.events = currentClassDescriptor.events.concat(baseDescriptor.events);
+        }
 
         return currentClassDescriptor;
     }

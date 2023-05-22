@@ -3,6 +3,7 @@ import http from 'http';
 import { AddressInfo, Socket } from 'net';
 import WebSocket from 'ws';
 import { v4 as uuidv4 } from 'uuid';
+import { jsonIgnoreReplacer } from 'json-ignore';
 
 import { Configuration } from './Configuration';
 import { NmosNode } from './NmosNode';
@@ -12,9 +13,11 @@ import { NmosReceiverVideo } from './NmosReceiverVideo';
 import { NmosReceiverActiveRtp } from './NmosReceiverActiveRtp';
 import { SessionManager } from './SessionManager';
 import { NcBlock, RootBlock } from './NCModel/Blocks';
-import { NcClassManager, NcDeviceManager, NcSubscriptionManager } from './NCModel/Managers';
-import { NcIoDirection, NcPort, NcPortReference, NcSignalPath, NcTouchpointNmos, NcTouchpointResourceNmos } from './NCModel/Core';
+import { NcClassManager, NcDeviceManager } from './NCModel/Managers';
+import { NcIoDirection, NcMethodStatus, NcPort, NcPortReference, NcSignalPath, NcTouchpointNmos, NcTouchpointResourceNmos } from './NCModel/Core';
 import { NcDemo, NcGain, NcIdentBeacon, NcReceiverMonitor } from './NCModel/Features';
+import { ProtocolError, ProtocolSubscription } from './NCProtocol/Commands';
+import { MessageType, ProtocolWrapper } from './NCProtocol/Core';
 
 export interface WebSocketConnection extends WebSocket {
     isAlive: boolean;
@@ -31,7 +34,7 @@ try
     console.log('App started');
     const config = new Configuration();
 
-    const registrationClient = new RegistrationClient(config.registry_address, config.registry_port);
+    const registrationClient = new RegistrationClient(config.registry_address, config.registry_port, config.work_without_registry);
 
     const myNode = new NmosNode(
         config.node_id,
@@ -70,8 +73,8 @@ try
         2,
         true,
         1,
-        'DeviceManager',
         'Device manager',
+        null,
         null,
         "The device manager offers information about the product this device is representing",
         sessionManager);
@@ -80,20 +83,10 @@ try
         3,
         true,
         1,
-        'ClassManager',
         'Class manager',
         null,
-        "The class manager offers access to control class and data type descriptors",
-        sessionManager);
-
-    const subscriptionManager = new NcSubscriptionManager(
-        5,
-        true,
-        1,
-        'SubscriptionManager',
-        'Subscription manager',
         null,
-        "The subscription manager offers the ability to subscribe to events on particular objects and properties",
+        "The class manager offers access to control class and data type descriptors",
         sessionManager);
 
     const receiverMonitorAgent = new NcReceiverMonitor(
@@ -103,6 +96,7 @@ try
         'ReceiverMonitor_01',
         'Receiver monitor 01',
         [ new NcTouchpointNmos('x-nmos', new NcTouchpointResourceNmos('receiver', myVideoReceiver.id)) ],
+        null,
         true,
         "Receiver monitor worker",
         sessionManager);
@@ -116,6 +110,7 @@ try
         'DemoClass',
         'Demo class',
         [],
+        null,
         true,
         "Demo control class",
         sessionManager);
@@ -128,6 +123,7 @@ try
         'channel-gain',
         'Channel gain',
         null,
+        null,
         true,
         null,
         null,
@@ -136,11 +132,11 @@ try
         null,
         false,
         [
-            new NcGain(22, true, 21, "left-gain", "Left gain", [], true, [
+            new NcGain(22, true, 21, "left-gain", "Left gain", [], null, true, [
                 new NcPort('input_1', NcIoDirection.Input, null),
                 new NcPort('output_1', NcIoDirection.Output, null),
             ], null, 0, "Left channel gain", sessionManager),
-            new NcGain(23, true, 21, "right-gain", "Right gain", [], true, [
+            new NcGain(23, true, 21, "right-gain", "Right gain", [], null, true, [
                 new NcPort('input_1', NcIoDirection.Input, null),
                 new NcPort('output_1', NcIoDirection.Output, null),
             ], null, 0, "Right channel gain", sessionManager)
@@ -168,6 +164,7 @@ try
             'stereo-gain',
             'Stereo gain',
             null,
+            null,
             true,
             null,
             null,
@@ -177,7 +174,7 @@ try
             false,
             [
                 channelGainBlock,
-                new NcGain(24, true, 31, "master-gain", "Master gain", [], true, [
+                new NcGain(24, true, 31, "master-gain", "Master gain", [], null, true, [
                     new NcPort('input_1', NcIoDirection.Input, null),
                     new NcPort('input_2', NcIoDirection.Input, null),
                     new NcPort('output_1', NcIoDirection.Output, null),
@@ -201,7 +198,7 @@ try
             "Stereo gain block",
             sessionManager);
 
-    const identBeacon = new NcIdentBeacon(51, true, 1, "IdentBeacon", "Identification beacon", [], true, false, "Identification beacon", sessionManager);
+    const identBeacon = new NcIdentBeacon(51, true, 1, "IdentBeacon", "Identification beacon", [], null, true, false, "Identification beacon", sessionManager);
 
     const rootBlock = new RootBlock(
         1,
@@ -210,6 +207,7 @@ try
         'root',
         'Root',
         null,
+        null,
         true,
         "base-root",
         "1.0.0",
@@ -217,7 +215,7 @@ try
         null,
         "Blockspec for root block of minimum compliant device",
         false,
-        [ deviceManager, classManager, subscriptionManager, receiverMonitorAgent, stereoGainBlock, demoClass, identBeacon ],
+        [ deviceManager, classManager, receiverMonitorAgent, stereoGainBlock, demoClass, identBeacon ],
         null,
         null,
         "Root block",
@@ -260,7 +258,68 @@ try
         //subscribe to messages
         ws.on('message', (msg: string) => {
             console.log(`WS msg received - connection id: ${extWs.connectionId}, msg: ${msg}`);
-            rootBlock.ProcessMessage(msg, extWs);
+            
+            let isMessageValid = false;
+            let errorMessage = ``;
+            let status: NcMethodStatus = NcMethodStatus.BadCommandFormat;
+
+            try
+            {
+                let message = JSON.parse(msg) as ProtocolWrapper;
+
+                if(message)
+                {
+                    if(message.protocolVersion == "1.0.0")
+                    {
+                        switch(message.messageType)
+                        {
+                            case MessageType.Command:
+                            {
+                                rootBlock.ProcessMessage(msg, extWs);
+                                isMessageValid = true;
+                            }
+                            break;
+                            case MessageType.Subscription:
+                            {
+                                let message = JSON.parse(msg) as ProtocolSubscription;
+                                sessionManager.ModifySubscription(extWs, message);
+                                isMessageValid = true;
+                            }
+                            break;
+                            default:
+                            {
+                                isMessageValid = false;
+                                errorMessage = `Invalid message type received: ${message.messageType}`;
+                            }
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        isMessageValid = false;
+                        errorMessage = `Unsupported protocol version`;
+                        status = NcMethodStatus.ProtocolVersionError;
+                    }
+                }
+                else
+                {
+                    isMessageValid = false;
+                    errorMessage = `Could not parse JSON message: ${msg}`;
+                }
+            }
+            catch (err)
+            {
+                console.log(err);
+                isMessageValid = false;
+                errorMessage = `Could not parse JSON message: ${msg}`;
+            }
+
+            if(isMessageValid == false)
+            {
+                console.log(errorMessage);
+                let error = new ProtocolError(status, errorMessage);
+                extWs.send(error.ToJson());
+            }
         });
     
         ws.on('error', (err) => {
@@ -348,7 +407,7 @@ try
 
     app.get('/x-nmos/node/v1.3/devices', function (req, res) {
         res.setHeader('Content-Type', 'application/json');
-        res.send(JSON.stringify([ `${myDevice.id}/` ]));
+        res.send(myDevice.ToJsonArray());
     })
 
     app.get('/x-nmos/node/v1.3/devices/:id', function (req, res) {
@@ -377,8 +436,8 @@ try
 
     app.get('/x-nmos/node/v1.3/receivers', function (req, res) {
         res.setHeader('Content-Type', 'application/json');
-        res.send(JSON.stringify(myDevice.FetchReceiversUris()))
-    })
+        res.send(JSON.stringify(myDevice.FetchReceivers(), jsonIgnoreReplacer));
+    }) 
 
     app.get('/x-nmos/node/v1.3/receivers/:id', function (req, res) {
         res.setHeader('Content-Type', 'application/json');

@@ -1,4 +1,3 @@
-import exp from 'constants';
 import { jsonIgnoreReplacer, jsonIgnore } from 'json-ignore';
 import { BaseType, NcDatatypeDescriptor, NcDatatypeDescriptorStruct, NcElementId, NcFieldDescriptor, NcPropertyChangeType } from '../NCModel/Core';
 import { MessageType, ProtocolWrapper } from './Core';
@@ -27,13 +26,13 @@ export class NcPropertyChangedEventData extends BaseType
         this.sequenceItemIndex = sequenceItemIndex;
     }
 
-    public static override GetTypeDescriptor(): NcDatatypeDescriptor
+    public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor
     {
         return new NcDatatypeDescriptorStruct("NcPropertyChangedEventData", [
-            new NcFieldDescriptor("propertyId", "NcElementId", false, false, null, "ID of changed property"),
+            new NcFieldDescriptor("propertyId", "NcPropertyId", false, false, null, "ID of changed property"),
             new NcFieldDescriptor("changeType", "NcPropertyChangeType", false, false, null, "Information regarding the change type"),
             new NcFieldDescriptor("value", null, true, false, null, "Property-type specific value"),
-            new NcFieldDescriptor("sequenceItemIndex", "NcId32", true, false, null, "Index of sequence item if the property is a sequence")
+            new NcFieldDescriptor("sequenceItemIndex", "NcId", true, false, null, "Index of sequence item if the property is a sequence")
         ], null, null, "Payload of property-changed event");
     }
 
@@ -47,18 +46,22 @@ export class NcNotification
 {
     public oid: number;
 
+    public eventId: NcElementId;
+
     public eventData: NcPropertyChangedEventData;
 
     constructor(
         oid: number,
+        eventId: NcElementId,
         eventData: NcPropertyChangedEventData)
     {
         this.oid = oid;
+        this.eventId = eventId;
         this.eventData = eventData;
     }
 }
 
-export class ProtoNotification extends ProtocolWrapper
+export class ProtocolNotification extends ProtocolWrapper
 {
     public notifications: NcNotification[];
 

@@ -90,6 +90,10 @@ export class NmosDevice extends NmosResource
         return this.receiverObjects.find(e => e.id === id);
     }
 
+    public FetchReceivers() {
+        return this.receiverObjects;
+    }
+
     public ChangeReceiverSettings(id: string, settings: NmosReceiverActiveRtp)
     {
         let receiver = this.receiverObjects.find(e => e.id === id);
@@ -111,6 +115,11 @@ export class NmosDevice extends NmosResource
     public ToJson()
     {
         return JSON.stringify(this, jsonIgnoreReplacer);
+    }
+
+    public ToJsonArray()
+    {
+        return JSON.stringify([this], jsonIgnoreReplacer);
     }
 }
 

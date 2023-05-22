@@ -24,7 +24,7 @@ export class CommandMsg extends ProtoMsg
     }
 }
 
-export class CommandResponseNoValue extends ProtoMsg
+export class CommandResponseError extends ProtoMsg
 {
     public result: { [key: string]: any };
 
@@ -42,35 +42,34 @@ export class CommandResponseNoValue extends ProtoMsg
     }
 }
 
+export class CommandResponseNoValue extends ProtoMsg
+{
+    public result: { [key: string]: any };
+
+    constructor(
+        handle: number,
+        status: NcMethodStatus)
+    {
+        super(handle);
+
+        this.result = {};
+        this.result['status'] = status;
+    }
+}
+
 export class CommandResponseWithValue extends CommandResponseNoValue
 {
     constructor(
         handle: number,
         status: NcMethodStatus,
-        value: any | null,
-        errorMessage: string | null)
+        value: any | null)
     {
-        super(handle, status, errorMessage);
+        super(handle, status);
         this.result['value'] = value;
     }
 }
 
-export class EventSubscriptionData
-{
-    public emitterOid: number;
-
-    public eventId: NcElementId;
-
-    constructor(
-        emitterOid: number,
-        eventId: NcElementId)
-    {
-        this.emitterOid = emitterOid;
-        this.eventId = eventId;
-    }
-}
-
-export class ProtoCommand extends ProtocolWrapper
+export class ProtocolCommand extends ProtocolWrapper
 {
     public commands: CommandMsg[];
 
@@ -88,7 +87,7 @@ export class ProtoCommand extends ProtocolWrapper
     }
 }
 
-export class ProtoCommandResponse extends ProtocolWrapper
+export class ProtocolCommandResponse extends ProtocolWrapper
 {
     public responses: CommandResponseNoValue[];
 
@@ -103,6 +102,64 @@ export class ProtoCommandResponse extends ProtocolWrapper
     public AddCommandResponse(response: CommandResponseNoValue)
     {
         this.responses.push(response);
+    }
+
+    public ToJson()
+    {
+        return JSON.stringify(this, jsonIgnoreReplacer);
+    }
+}
+
+export class ProtocolSubscription extends ProtocolWrapper
+{
+    public subscriptions: number[];
+
+    public constructor(
+        subscriptions: number[])
+    {
+        super('1.0.0', MessageType.Subscription);
+
+        this.subscriptions = subscriptions;
+    }
+
+    public ToJson()
+    {
+        return JSON.stringify(this, jsonIgnoreReplacer);
+    }
+}
+
+export class ProtocolSubscriptionResponse extends ProtocolWrapper
+{
+    public subscriptions: number[];
+
+    public constructor(
+        subscriptions: number[])
+    {
+        super('1.0.0', MessageType.SubscriptionResponse);
+
+        this.subscriptions = subscriptions;
+    }
+
+    public ToJson()
+    {
+        return JSON.stringify(this, jsonIgnoreReplacer);
+    }
+}
+
+export class ProtocolError extends ProtocolWrapper
+{
+    public status: NcMethodStatus;
+
+    public errorMessage: string;
+
+    public constructor(
+        status: NcMethodStatus,
+        errorMessage: string)
+    {
+        super('1.0.0', MessageType.Error);
+
+        this.status = status;
+        this.errorMessage = errorMessage;
     }
 
     public ToJson()

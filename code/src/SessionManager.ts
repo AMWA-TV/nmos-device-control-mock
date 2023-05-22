@@ -1,14 +1,13 @@
 import { jsonIgnoreReplacer, jsonIgnore } from 'json-ignore';
 
 import { WebSocketConnection } from './Server';
-import { NcElementId, NcPropertyChangeType } from './NCModel/Core';
-import { NcPropertyChangedEventData, NcNotification, ProtoNotification } from './NCProtocol/Notifications';
+import { NcElementId, NcMethodStatus, NcPropertyChangeType } from './NCModel/Core';
+import { NcPropertyChangedEventData, NcNotification, ProtocolNotification } from './NCProtocol/Notifications';
+import { ProtocolError, ProtocolSubscription, ProtocolSubscriptionResponse } from './NCProtocol/Commands';
 
 export interface INotificationContext
 {
     NotifyPropertyChanged(oid: number, propertyId: NcElementId, changeType: NcPropertyChangeType, value: any | null, sequenceItemIndex: number | null);
-    Subscribe(socket: WebSocketConnection, oid: number);
-    UnSubscribe(socket: WebSocketConnection, oid: number);
 }
 
 export class SessionManager implements INotificationContext
@@ -23,18 +22,30 @@ export class SessionManager implements INotificationContext
         this.sessions = {};
     }
 
-    public Subscribe(socket: WebSocketConnection, oid: number)
+    public ModifySubscription(socket: WebSocketConnection, subscription: ProtocolSubscription)
     {
-        let sub = this.sessions[socket.connectionId];
-        if(sub)
-            sub.Subscribe(oid);
-    }
+        if(subscription.subscriptions)
+        {
+            let sub = this.sessions[socket.connectionId];
+            if(sub)
+            {
+                sub.DropSession();
 
-    public UnSubscribe(socket: WebSocketConnection, oid: number)
-    {
-        let sub = this.sessions[socket.connectionId];
-        if(sub)
-            sub.UnSubscribe(oid);
+                subscription.subscriptions.forEach(function (oid) {
+                    sub.Subscribe(oid);
+                });
+
+                let response = new ProtocolSubscriptionResponse(subscription.subscriptions);
+                socket.send(response.ToJson());
+            }
+        }
+        else
+        {
+            let errorMessage = `Invalid subscription message received.`
+            console.log(errorMessage);
+            let error = new ProtocolError(NcMethodStatus.BadCommandFormat, errorMessage);
+            socket.send(error.ToJson());
+        }
     }
 
     public NotifyPropertyChanged(oid: number, propertyId: NcElementId, changeType: NcPropertyChangeType, value: any | null, sequenceItemIndex: number | null)
@@ -47,8 +58,8 @@ export class SessionManager implements INotificationContext
             if(this.notifyWithoutSubscriptions || session.ShouldNotify(oid))
             {
                 session.socket.send(
-                    new ProtoNotification(
-                        [ new NcNotification(oid, new NcPropertyChangedEventData(propertyId, changeType, value, sequenceItemIndex)) ]
+                    new ProtocolNotification(
+                        [ new NcNotification(oid, new NcElementId(1, 1), new NcPropertyChangedEventData(propertyId, changeType, value, sequenceItemIndex)) ]
                     ).ToJson());
             }
         }
