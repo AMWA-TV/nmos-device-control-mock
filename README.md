@@ -46,7 +46,7 @@ These are the configuration keys which can be specified in the configuration fil
 * notify_without_subscriptions - boolean flag which is set to false by default, but it can be set to true if you would like to get all notifications on all sessions without subscribing (for debugging purposes only).
 * work_without_registry - boolean flag which is set to false by default, but it can be set to true if you would like the mock device not to attempt to register with an NMOS registry.
 
-## Specifications
+## Specifications supported
 
 * [AMWA IS-04 NMOS Discovery and Registration](https://specs.amwa.tv/is-04)
 * [AMWA IS-05 NMOS Device Connection Management](https://specs.amwa.tv/is-05)
@@ -54,5 +54,6 @@ These are the configuration keys which can be specified in the configuration fil
 * [MS-05-01 NMOS Control Architecture](https://specs.amwa.tv/ms-05-01)
 * [MS-05-02 NMOS Control Framework](https://specs.amwa.tv/ms-05-02)
 * [MS-05-03 NMOS Control Block Specifications](https://specs.amwa.tv/ms-05-03)
+* [BCP-002-02 NMOS Asset Distinguishing Information](https://specs.amwa.tv/bcp-002-02)
 
 <!-- INTRO-END -->

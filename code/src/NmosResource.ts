@@ -14,6 +14,11 @@ export abstract class NmosResource
     @jsonIgnore()
     public registrationClient: RegistrationClient;
 
+    @jsonIgnore()
+    public versionSeconds: string;
+    @jsonIgnore()
+    public versionNanoSeconds: number;
+
     public constructor(
         id: string,
         label: string,
@@ -21,7 +26,9 @@ export abstract class NmosResource
     {
         this.id = id;
         this.label = label;
-        this.version = `${TAI64.now().toUnix().toString()}:00000000`;
+        this.versionNanoSeconds = 0;
+        this.versionSeconds = `${TAI64.now().toUnix().toString()}`;
+        this.version = `${this.versionSeconds}:${this.versionNanoSeconds}`;
         this.description = label;
         this.tags = {};
         this.registrationClient = registrationClient;
@@ -29,7 +36,16 @@ export abstract class NmosResource
 
     public BumpVersion()
     {
-        this.version = `${TAI64.now().toUnix().toString()}:00000000`;
+        let newVersionSeconds = `${TAI64.now().toUnix().toString()}`;
+        if(newVersionSeconds != this.versionSeconds)
+        {
+            this.versionSeconds = newVersionSeconds;
+            this.versionNanoSeconds = 0;
+        }
+        else
+            this.versionNanoSeconds++;
+
+        this.version = `${this.versionSeconds}:${this.versionNanoSeconds}`;
     }
 
     public abstract ToJson();

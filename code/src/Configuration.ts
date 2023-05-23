@@ -15,6 +15,10 @@ export class Configuration implements IConfiguration
     public registry_port: string;
     public notify_without_subscriptions: boolean;
     public work_without_registry: boolean;
+    public manufacturer: string;
+    public product: string;
+    public instance: string;
+    public function: string;
 
     public constructor()
     {
@@ -34,7 +38,13 @@ export class Configuration implements IConfiguration
         this.notify_without_subscriptions = config.notify_without_subscriptions;
         this.work_without_registry = config.work_without_registry;
 
+        this.manufacturer = config.manufacturer;
+        this.product = config.product;
+        this.instance = config.instance;
+        this.function = config.function;
+
         this.CheckIdentifiers();
+        this.CheckDistinguishingInformation();
     }
 
     public CheckIdentifiers()
@@ -64,6 +74,41 @@ export class Configuration implements IConfiguration
         if(shouldWriteConfig)
             this.WriteConfig();
     }
+
+    public CheckDistinguishingInformation()
+    {
+        console.log('Configuration - CheckDistinguishingInformation()');
+
+        let shouldWriteConfig: boolean = false;
+
+        if(this.manufacturer == null)
+        {
+            this.manufacturer = "ACME-D";
+            shouldWriteConfig = true;
+        }
+
+        if(this.product == null)
+        {
+            this.product = "Widget Pro-D";
+            shouldWriteConfig = true;
+        }
+
+        if(this.instance == null)
+        {
+            this.instance = "XYZ123-456789-D";
+            shouldWriteConfig = true;
+        }
+
+        if(this.function == null)
+        {
+            this.function = "UHD Decoder";
+            shouldWriteConfig = true;
+        }
+
+        if(shouldWriteConfig)
+            this.WriteConfig();
+    }
+
 
     public ToJson()
     {
@@ -99,4 +144,8 @@ export interface IConfiguration
     registry_port: string;
     notify_without_subscriptions: boolean;
     work_without_registry: boolean;
+    manufacturer: string;
+    product: string;
+    instance: string;
+    function: string;
 }

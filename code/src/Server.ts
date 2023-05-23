@@ -41,6 +41,9 @@ try
         config.base_label,
         config.address,
         config.port,
+        config.manufacturer,
+        config.product,
+        config.instance,
         registrationClient);
 
     const myDevice = new NmosDevice(
@@ -49,6 +52,10 @@ try
         config.base_label,
         config.address,
         config.port,
+        config.manufacturer,
+        config.product,
+        config.instance,
+        config.function,
         registrationClient);
 
     const myVideoReceiver = new NmosReceiverVideo(
