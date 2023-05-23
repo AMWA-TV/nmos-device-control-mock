@@ -161,7 +161,7 @@ export class NcProduct extends BaseType
             new NcFieldDescriptor("key", "NcString", false, false, null, "Manufacturer's unique key to product - model number, SKU, etc"),
             new NcFieldDescriptor("revisionLevel", "NcString", false, false, null, "Manufacturer's product revision level code"),
             new NcFieldDescriptor("brandName", "NcString", true, false, null, "Brand name under which product is sold"),
-            new NcFieldDescriptor("uuid", "NcString", true, false, null, "Unique UUID of product (not product instance)"),
+            new NcFieldDescriptor("uuid", "NcUuid", true, false, null, "Unique UUID of product (not product instance)"),
             new NcFieldDescriptor("description", "NcString", true, false, null, "Text description of product"),
         ], null, null, "Product descriptor");
     }
