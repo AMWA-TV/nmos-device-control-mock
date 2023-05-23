@@ -7,7 +7,6 @@ import { NcBlock } from './Blocks';
 import {
     BaseType,
     myIdDecorator,
-    NcBlockDescriptor,
     NcBlockMemberDescriptor,
     NcClassDescriptor,
     NcDatatypeDescriptor,
@@ -36,8 +35,6 @@ import {
     NcParameterConstraintsNumber,
     NcParameterConstraintsString,
     NcParameterDescriptor,
-    NcPort,
-    NcPortReference,
     NcPropertyChangeType,
     NcPropertyConstraints,
     NcPropertyConstraintsEnum,
@@ -46,14 +43,13 @@ import {
     NcPropertyConstraintsString,
     NcPropertyDescriptor,
     NcPropertyId,
-    NcSignalPath,
     NcTouchpoint,
     NcTouchpointNmos,
     NcTouchpointNmosChannelMapping,
     NcTouchpointResource,
-    NcTouchpointResourceNmos, 
+    NcTouchpointResourceNmos,
     NcTouchpointResourceNmosChannelMapping} from './Core';
-import { DemoDataType, NcActuator, NcDemo, NcGain, NcIdentBeacon, NcLevelSensor, NcReceiverMonitor, NcReceiverMonitorProtected, NcReceiverStatus, NcSensor, NcSignalWorker, NcWorker } from './Features';
+import { DemoDataType, DemoControl, GainControl, NcIdentBeacon, NcReceiverMonitor, NcReceiverMonitorProtected, NcReceiverStatus, NcWorker } from './Features';
 
 export abstract class NcManager extends NcObject
 {
@@ -566,12 +562,8 @@ export class NcClassManager extends NcManager
             '1': NcObject.GetClassDescriptor(false),
             '1.1': NcBlock.GetClassDescriptor(false),
             '1.2': NcWorker.GetClassDescriptor(false),
-            '1.2.1': NcSignalWorker.GetClassDescriptor(false),
-            '1.2.1.1': NcActuator.GetClassDescriptor(false),
-            '1.2.1.1.1': NcGain.GetClassDescriptor(false),
-            '1.2.1.2': NcSensor.GetClassDescriptor(false),
-            '1.2.1.2.1': NcLevelSensor.GetClassDescriptor(false),
-            '1.2.0.1': NcDemo.GetClassDescriptor(false),
+            '1.2.0.1': GainControl.GetClassDescriptor(false),
+            '1.2.0.2': DemoControl.GetClassDescriptor(false),
             '1.2.2': NcIdentBeacon.GetClassDescriptor(false),
             '1.2.3': NcReceiverMonitor.GetClassDescriptor(false),
             '1.2.3.1': NcReceiverMonitorProtected.GetClassDescriptor(false),
@@ -592,12 +584,8 @@ export class NcClassManager extends NcManager
             case '1': return NcObject.GetClassDescriptor(true);
             case '1.1': return NcBlock.GetClassDescriptor(true);
             case '1.2': return NcWorker.GetClassDescriptor(true);
-            case '1.2.1': return NcSignalWorker.GetClassDescriptor(true);
-            case '1.2.1.1': return NcActuator.GetClassDescriptor(true);
-            case '1.2.1.1.1': return NcGain.GetClassDescriptor(true);
-            case '1.2.1.2': return NcSensor.GetClassDescriptor(true);
-            case '1.2.1.2.1': return NcLevelSensor.GetClassDescriptor(true);
-            case '1.2.0.1': return NcDemo.GetClassDescriptor(true);
+            case '1.2.0.1': return GainControl.GetClassDescriptor(true);
+            case '1.2.0.2': return DemoControl.GetClassDescriptor(true);
             case '1.2.2': return NcIdentBeacon.GetClassDescriptor(true);
             case '1.2.3': return NcReceiverMonitor.GetClassDescriptor(true);
             case '1.2.3.1': return NcReceiverMonitorProtected.GetClassDescriptor(true);
@@ -650,7 +638,6 @@ export class NcClassManager extends NcManager
             'NcRolePath': new NcDatatypeDescriptorTypeDef("NcRolePath", "NcString", true, null, "Role path"),
             'NcId': new NcDatatypeDescriptorTypeDef("NcId", "NcUint32", false, null, "Identity handler"),
             'NcTimeInterval': new NcDatatypeDescriptorTypeDef("NcTimeInterval", "NcInt64", false, null, "Time interval described in nanoseconds"),
-            'NcDB': new NcDatatypeDescriptorTypeDef("NcDB", "NcFloat32", false, null, "A ratio expressed in dB."),
             'NcElementId': NcElementId.GetTypeDescriptor(false),
             'NcPropertyId': NcPropertyId.GetTypeDescriptor(false),
             'NcMethodId': NcMethodId.GetTypeDescriptor(false),
@@ -709,17 +696,10 @@ export class NcClassManager extends NcManager
             'NcMethodResultPropertyValue': NcMethodResultPropertyValue.GetTypeDescriptor(false),
             'NcMethodResultId': NcMethodResultId.GetTypeDescriptor(false),
             'NcBlockMemberDescriptor': NcBlockMemberDescriptor.GetTypeDescriptor(false),
-            'NcBlockDescriptor': NcBlockDescriptor.GetTypeDescriptor(false),
             'NcMethodResultBlockMemberDescriptors': NcMethodResultBlockMemberDescriptors.GetTypeDescriptor(false),
             'NcMethodResultClassDescriptor': NcMethodResultClassDescriptor.GetTypeDescriptor(false),
             'NcMethodResultDatatypeDescriptor': NcMethodResultDatatypeDescriptor.GetTypeDescriptor(false),
             'NcReceiverStatus': NcReceiverStatus.GetTypeDescriptor(false),
-            'NcIoDirection': new NcDatatypeDescriptorEnum("NcIoDirection", [
-                new NcEnumItemDescriptor("Undefined", 0, "Not defined"),
-                new NcEnumItemDescriptor("Input", 1, "Input direction"),
-                new NcEnumItemDescriptor("Output", 2, "Output direction"),
-                new NcEnumItemDescriptor("Bidirectional", 3, "Bidirectional")
-            ], null, "Input and/or output direction"),
             'NcConnectionStatus': new NcDatatypeDescriptorEnum("NcConnectionStatus", [
                 new NcEnumItemDescriptor("Undefined", 0, "This is the value when there is no receiver"),
                 new NcEnumItemDescriptor("Connected", 1, "Connected to a stream"),
@@ -732,16 +712,13 @@ export class NcClassManager extends NcManager
                 new NcEnumItemDescriptor("PayloadFormatUnsupported", 2, "Payload is being received but is of an unsupported type"),
                 new NcEnumItemDescriptor("PayloadError", 3, "A payload error was encountered")
             ], null, "Payload status enum data type"),
-            'NcPort': NcPort.GetTypeDescriptor(false),
-            'NcPortReference': NcPortReference.GetTypeDescriptor(false),
-            'NcSignalPath': NcSignalPath.GetTypeDescriptor(false),
             'NcTouchpoint': NcTouchpoint.GetTypeDescriptor(false),
             'NcTouchpointResource': NcTouchpointResource.GetTypeDescriptor(false),
             'NcTouchpointNmos': NcTouchpointNmos.GetTypeDescriptor(false),
             'NcTouchpointResourceNmos': NcTouchpointResourceNmos.GetTypeDescriptor(false),
             'NcTouchpointNmosChannelMapping': NcTouchpointNmosChannelMapping.GetTypeDescriptor(false),
             'NcTouchpointResourceNmosChannelMapping': NcTouchpointResourceNmosChannelMapping.GetTypeDescriptor(false),
-            'NcDemoEnum': new NcDatatypeDescriptorEnum("NcDemoEnum", [
+            'DemoEnum': new NcDatatypeDescriptorEnum("DemoEnum", [
                 new NcEnumItemDescriptor("Undefined", 0, "Not defined option"),
                 new NcEnumItemDescriptor("Alpha", 1, "Alpha option"),
                 new NcEnumItemDescriptor("Beta", 2, "Beta option"),
@@ -781,7 +758,6 @@ export class NcClassManager extends NcManager
             case 'NcParameterConstraintsNumber': return NcParameterConstraintsNumber.GetTypeDescriptor(true);
             case 'NcParameterConstraintsString': return NcParameterConstraintsString.GetTypeDescriptor(true);
             case 'NcBlockMemberDescriptor': return NcBlockMemberDescriptor.GetTypeDescriptor(true);
-            case 'NcBlockDescriptor': return NcBlockDescriptor.GetTypeDescriptor(true);
             case 'NcTouchpointNmos': return NcTouchpointNmos.GetTypeDescriptor(true);
             case 'NcTouchpointNmosChannelMapping': return NcTouchpointNmosChannelMapping.GetTypeDescriptor(true);
             case 'NcTouchpointResourceNmos': return NcTouchpointResourceNmos.GetTypeDescriptor(true);

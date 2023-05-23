@@ -2,7 +2,6 @@ import { jsonIgnoreReplacer, jsonIgnore } from 'json-ignore';
 import { CommandResponseError, CommandResponseNoValue, CommandResponseWithValue } from '../NCProtocol/Commands';
 import { WebSocketConnection } from '../Server';
 import { INotificationContext } from '../SessionManager';
-import { NcReceiverStatus } from './Features';
 
 export function myIdDecorator(identity: string) {
     return Reflect.metadata('identity', identity);
@@ -338,104 +337,6 @@ export enum NcPropertyChangeType
     SequenceItemAdded = 1,
     SequenceItemChanged = 2,
     SequenceItemRemoved = 3
-}
-
-export enum NcIoDirection
-{
-    Undefined = 0,
-    Input = 1,
-    Output = 2,
-    Bidirectional = 3
-}
-
-export class NcPort extends BaseType
-{
-    public role: string;
-
-    public direction: NcIoDirection;
-
-    public clockPath: string[] | null;
-
-    public constructor(
-        role: string,
-        direction: NcIoDirection,
-        clockPath: string[] | null)
-    {
-        super();
-
-        this.role = role;
-        this.direction = direction;
-        this.clockPath = clockPath;
-    }
-
-    public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor
-    {
-        return new NcDatatypeDescriptorStruct("NcPort", [
-            new NcFieldDescriptor("role", "NcString", false, false, null, "Unique within owning object"),
-            new NcFieldDescriptor("direction", "NcIoDirection", false, false, null, "Input (sink) or output (source) port"),
-            new NcFieldDescriptor("clockPath", "NcRolePath", true, false, null, "Role path of this port's sample clock or null if none")
-        ], null, null, "Port class");
-    }
-}
-
-export class NcPortReference extends BaseType
-{
-    public owner: string[];
-
-    public role: string;
-
-    public constructor(
-        owner: string[],
-        role: string)
-    {
-        super();
-
-        this.owner = owner;
-        this.role = role;
-    }
-
-    public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor
-    {
-        return new NcDatatypeDescriptorStruct("NcPortReference", [
-            new NcFieldDescriptor("owner", "NcRolePath", false, false, null, "Role path of owning object"),
-            new NcFieldDescriptor("role", "NcString", false, false, null, "Unique role of this port within the owning object")
-        ], null, null, "Device-unique port identifier");
-    }
-}
-
-export class NcSignalPath extends BaseType
-{
-    public role: string;
-
-    public label: string;
-
-    public source: NcPortReference;
-
-    public sink: NcPortReference;
-
-    public constructor(
-        role: string,
-        label: string,
-        source: NcPortReference,
-        sink: NcPortReference)
-    {
-        super();
-
-        this.role = role;
-        this.label = label;
-        this.source = source;
-        this.sink = sink;
-    }
-
-    public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor
-    {
-        return new NcDatatypeDescriptorStruct("NcSignalPath", [
-            new NcFieldDescriptor("role", "NcString", false, false, null, "Unique identifier of this signal path in this block"),
-            new NcFieldDescriptor("label", "NcString", true, false, null, "Optional label"),
-            new NcFieldDescriptor("source", "NcPortReference", false, false, null, "Source reference"),
-            new NcFieldDescriptor("sink", "NcPortReference", false, false, null, "Sink reference")
-        ], null, null, "Signal path descriptor");
-    }
 }
 
 export abstract class NcMethodResult extends BaseType
@@ -886,59 +787,6 @@ export class NcBlockMemberDescriptor extends BaseType
             new NcFieldDescriptor("owner", "NcOid", false, false, null, "Containing block's OID"),
             new NcFieldDescriptor("constraints", "NcPropertyConstraints", true, true, null, "Constraints on this member or, for a block, its members")
         ], "NcDescriptor", null, "Descriptor which is specific to a block member which is not a block");
-
-        if(includeInherited)
-        {
-            let baseDescriptor = super.GetTypeDescriptor(includeInherited);
-
-            let baseDescriptorStruct = baseDescriptor as NcDatatypeDescriptorStruct;
-            if(baseDescriptorStruct)
-                currentClassDescriptor.fields = currentClassDescriptor.fields.concat(baseDescriptorStruct.fields);
-        }
-
-        return currentClassDescriptor;
-    }
-
-    public ToJson()
-    {
-        return JSON.stringify(this, jsonIgnoreReplacer);
-    }
-}
-
-export class NcBlockDescriptor extends NcBlockMemberDescriptor
-{
-    public blockSpecId: string | null;
-
-    constructor(
-        blockSpecId: string | null,
-        role: string,
-        oid: number,
-        constantOid: boolean,
-        classId: number[],
-        userLabel: string | null,
-        owner: number | null,
-        description: string,
-        constraints: NcPropertyConstraints | null)
-    {
-        super(role, oid, constantOid, classId, userLabel, owner, description, constraints);
-
-        this.blockSpecId = blockSpecId;
-    }
-
-    public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor
-    {
-        let currentClassDescriptor = new NcDatatypeDescriptorStruct("NcBlockDescriptor", [
-            new NcFieldDescriptor("blockSpecId", "NcString", true, false, null, "ID of BlockSpec this block implements")
-        ], "NcBlockMemberDescriptor", null, "Descriptor which is specific to a block");
-
-        if(includeInherited)
-        {
-            let baseDescriptor = super.GetTypeDescriptor(includeInherited);
-
-            let baseDescriptorStruct = baseDescriptor as NcDatatypeDescriptorStruct;
-            if(baseDescriptorStruct)
-                currentClassDescriptor.fields = currentClassDescriptor.fields.concat(baseDescriptorStruct.fields);
-        }
 
         return currentClassDescriptor;
     }
