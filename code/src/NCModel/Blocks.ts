@@ -194,7 +194,7 @@ export class NcBlock extends NcObject
 
     public override GenerateMemberDescriptor() : NcBlockMemberDescriptor
     {
-        return new NcBlockMemberDescriptor(this.role, this.oid, this.constantOid, this.classID, this.userLabel, this.owner, this.description, null);
+        return new NcBlockMemberDescriptor(this.role, this.oid, this.constantOid, this.classID, this.userLabel, this.owner, this.description);
     }
 
     public FindNestedMember(oid: number): NcObject | null

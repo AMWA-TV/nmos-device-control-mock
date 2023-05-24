@@ -139,7 +139,7 @@ export abstract class NcObject
 
     public GenerateMemberDescriptor() : NcBlockMemberDescriptor
     {
-        return new NcBlockMemberDescriptor(this.role, this.oid, this.constantOid, this.classID, this.userLabel, this.owner, this.description, null);
+        return new NcBlockMemberDescriptor(this.role, this.oid, this.constantOid, this.classID, this.userLabel, this.owner, this.description);
     }
 
     public static GetClassDescriptor(includeInherited: boolean) : NcClassDescriptor
@@ -752,7 +752,6 @@ export class NcBlockMemberDescriptor extends BaseType
     public userLabel: string | null;
     public owner: number | null;
     public description: string;
-    public constraints: NcPropertyConstraints | null;
 
     constructor(
         role: string,
@@ -761,8 +760,7 @@ export class NcBlockMemberDescriptor extends BaseType
         classId: number[],
         userLabel: string | null,
         owner: number | null,
-        description: string,
-        constraints: NcPropertyConstraints | null)
+        description: string)
     {
         super();
 
@@ -773,7 +771,6 @@ export class NcBlockMemberDescriptor extends BaseType
         this.userLabel = userLabel;
         this.owner = owner;
         this.description = description;
-        this.constraints = constraints;
     }
 
     public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor
