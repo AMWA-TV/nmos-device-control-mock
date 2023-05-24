@@ -239,21 +239,21 @@ export class NcBlock extends NcObject
             ],
             [ 
                 new NcMethodDescriptor(new NcElementId(2, 1), "GetMemberDescriptors", "NcMethodResultBlockMemberDescriptors",
-                    [new NcParameterDescriptor("recurse", "NcBoolean", false, false, null, "If recurse is set to true, nested members can be retrieved")], "gets descriptors of members of the block"),
+                    [new NcParameterDescriptor("recurse", "NcBoolean", false, false, null, "If recurse is set to true, nested members can be retrieved")], "Gets descriptors of members of the block"),
                 new NcMethodDescriptor(new NcElementId(2, 2), "FindMembersByPath", "NcMethodResultBlockMemberDescriptors", [
-                    new NcParameterDescriptor("path", "NcRolePath", false, false, null, "relative path to search for (MUST not include the role of the block targeted by oid)")
-                ], "finds member(s) by path"),
+                    new NcParameterDescriptor("path", "NcRolePath", false, false, null, "Relative path to search for (MUST not include the role of the block targeted by oid)")
+                ], "Finds member(s) by path"),
                 new NcMethodDescriptor(new NcElementId(2, 3), "FindMembersByRole", "NcMethodResultBlockMemberDescriptors", [
-                    new NcParameterDescriptor("role", "NcString", false, false, null, "role text to search for"),
-                    new NcParameterDescriptor("caseSensitive", "NcBoolean", false,  false, null, "signals if the comparison should be case sensitive"),
+                    new NcParameterDescriptor("role", "NcString", false, false, null, "Role text to search for"),
+                    new NcParameterDescriptor("caseSensitive", "NcBoolean", false,  false, null, "Signals if the comparison should be case sensitive"),
                     new NcParameterDescriptor("matchWholeString", "NcBoolean", false,  false, null, "TRUE to only return exact matches"),
                     new NcParameterDescriptor("recurse", "NcBoolean", false,  false, null, "TRUE to search nested blocks")
-                ], "finds members with given role name or fragment"),
+                ], "Finds members with given role name or fragment"),
                 new NcMethodDescriptor(new NcElementId(2, 4), "FindMembersByClassId", "NcMethodResultBlockMemberDescriptors", [
-                    new NcParameterDescriptor("id", "NcClassId", false, false, null, "class id to search for"),
+                    new NcParameterDescriptor("id", "NcClassId", false, false, null, "Class id to search for"),
                     new NcParameterDescriptor("includeDerived", "NcBoolean", false,  false, null, "If TRUE it will also include derived class descriptors"),
                     new NcParameterDescriptor("recurse", "NcBoolean", false,  false, null, "TRUE to search nested blocks")
-                ], "finds members with given class id")
+                ], "Finds members with given class id")
             ],
             []
         );

@@ -784,9 +784,8 @@ export class NcBlockMemberDescriptor extends BaseType
             new NcFieldDescriptor("constantOid", "NcBoolean", false, false, null, "TRUE iff member's OID is hardwired into device"),
             new NcFieldDescriptor("classId", "NcClassId", false, false, null, "Class ID"),
             new NcFieldDescriptor("userLabel", "NcString", true, false, null, "User label"),
-            new NcFieldDescriptor("owner", "NcOid", false, false, null, "Containing block's OID"),
-            new NcFieldDescriptor("constraints", "NcPropertyConstraints", true, true, null, "Constraints on this member or, for a block, its members")
-        ], "NcDescriptor", null, "Descriptor which is specific to a block member which is not a block");
+            new NcFieldDescriptor("owner", "NcOid", false, false, null, "Containing block's OID")
+        ], "NcDescriptor", null, "Descriptor which is specific to a block member");
 
         return currentClassDescriptor;
     }
@@ -872,18 +871,15 @@ export class NcPropertyDescriptor extends NcDescriptor
 
 export class NcPropertyConstraints extends BaseType
 {
-    public path: string[] | null;
     public propertyId: NcElementId;
     public defaultValue: any | null;
 
     constructor(
-        path: string[] | null,
         propertyId: NcElementId,
         defaultValue: any | null)
     {
         super();
 
-        this.path = path;
         this.propertyId = propertyId;
         this.defaultValue = defaultValue;
     }
@@ -891,9 +887,8 @@ export class NcPropertyConstraints extends BaseType
     public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor
     {
         return new NcDatatypeDescriptorStruct("NcPropertyConstraints", [
-            new NcFieldDescriptor("path", "NcRolePath", true, false, null, "relative path to member (null means current member)"),
-            new NcFieldDescriptor("propertyId", "NcPropertyId", false, false, null, "ID of property being constrained"),
-            new NcFieldDescriptor("defaultValue", null, true, false, null, "optional default value")
+            new NcFieldDescriptor("propertyId", "NcPropertyId", false, false, null, "The id of the property being constrained"),
+            new NcFieldDescriptor("defaultValue", null, true, false, null, "Optional default value")
         ], null, null, "Property constraints class");
     }
 
@@ -910,14 +905,13 @@ export class NcPropertyConstraintsNumber extends NcPropertyConstraints
     public step: number;
 
     constructor(
-        path: string[] | null,
         propertyId: NcElementId,
         defaultValue: any | null,
         maximum: number,
         minimum: number,
         step: number)
     {
-        super(path, propertyId, defaultValue);
+        super(propertyId, defaultValue);
 
         this.maximum = maximum;
         this.minimum = minimum;
@@ -956,13 +950,12 @@ export class NcPropertyConstraintsString extends NcPropertyConstraints
     public pattern: string;
 
     constructor(
-        path: string[] | null,
         propertyId: NcElementId,
         defaultValue: any | null,
         maxCharacters: number,
         pattern: string)
     {
-        super(path, propertyId, defaultValue);
+        super(propertyId, defaultValue);
         
         this.maxCharacters = maxCharacters;
         this.pattern = pattern;
@@ -974,84 +967,6 @@ export class NcPropertyConstraintsString extends NcPropertyConstraints
             new NcFieldDescriptor("maxCharacters", "NcUint32", true, false, null, "maximum characters allowed"),
             new NcFieldDescriptor("pattern", "NcRegex", true, false, null, "regex pattern")
         ], "NcPropertyConstraints", null, "String property constraints class");
-
-        if(includeInherited)
-        {
-            let baseDescriptor = super.GetTypeDescriptor(includeInherited);
-
-            let baseDescriptorStruct = baseDescriptor as NcDatatypeDescriptorStruct;
-            if(baseDescriptorStruct)
-                currentClassDescriptor.fields = currentClassDescriptor.fields.concat(baseDescriptorStruct.fields);
-        }
-
-        return currentClassDescriptor;
-    }
-
-    public ToJson()
-    {
-        return JSON.stringify(this, jsonIgnoreReplacer);
-    }
-}
-
-export class NcPropertyConstraintsFixed extends NcPropertyConstraints
-{
-    public value: any | null;
-
-    constructor(
-        path: string[] | null,
-        propertyId: NcElementId,
-        defaultValue: any | null,
-        value: any | null)
-    {
-        super(path, propertyId, defaultValue);
-        
-        this.value = value;
-    }
-
-    public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor
-    {
-        let currentClassDescriptor = new NcDatatypeDescriptorStruct("NcPropertyConstraintsFixed", [
-            new NcFieldDescriptor("value", null, true, false, null, "Signals a fixed value for this property")
-        ], "NcPropertyConstraints", null, "Fixed property constraints class");
-
-        if(includeInherited)
-        {
-            let baseDescriptor = super.GetTypeDescriptor(includeInherited);
-
-            let baseDescriptorStruct = baseDescriptor as NcDatatypeDescriptorStruct;
-            if(baseDescriptorStruct)
-                currentClassDescriptor.fields = currentClassDescriptor.fields.concat(baseDescriptorStruct.fields);
-        }
-
-        return currentClassDescriptor;
-    }
-
-    public ToJson()
-    {
-        return JSON.stringify(this, jsonIgnoreReplacer);
-    }
-}
-
-export class NcPropertyConstraintsEnum extends NcPropertyConstraints
-{
-    public possibleValues: NcEnumItemDescriptor[];
-
-    constructor(
-        path: string[] | null,
-        propertyId: NcElementId,
-        defaultValue: any | null,
-        possibleValues: NcEnumItemDescriptor[])
-    {
-        super(path, propertyId, defaultValue);
-        
-        this.possibleValues = possibleValues;
-    }
-
-    public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor
-    {
-        let currentClassDescriptor = new NcDatatypeDescriptorStruct("NcPropertyConstraintsEnum", [
-            new NcFieldDescriptor("possibleValues", "NcEnumItemDescriptor", false, true, null, "Allowed values")
-        ], "NcPropertyConstraints", null, "Enum property constraints class");
 
         if(includeInherited)
         {

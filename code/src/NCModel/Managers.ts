@@ -37,8 +37,6 @@ import {
     NcParameterDescriptor,
     NcPropertyChangeType,
     NcPropertyConstraints,
-    NcPropertyConstraintsEnum,
-    NcPropertyConstraintsFixed,
     NcPropertyConstraintsNumber,
     NcPropertyConstraintsString,
     NcPropertyDescriptor,
@@ -728,9 +726,7 @@ export class NcClassManager extends NcManager
             'NcRegex': new NcDatatypeDescriptorTypeDef("NcRegex", "NcString", false, null, "Regex pattern"),
             'NcPropertyConstraints': NcPropertyConstraints.GetTypeDescriptor(false),
             'NcPropertyConstraintsNumber': NcPropertyConstraintsNumber.GetTypeDescriptor(false),
-            'NcPropertyConstraintsString': NcPropertyConstraintsString.GetTypeDescriptor(false),
-            'NcPropertyConstraintsFixed': NcPropertyConstraintsFixed.GetTypeDescriptor(false),
-            'NcPropertyConstraintsEnum': NcPropertyConstraintsEnum.GetTypeDescriptor(false)
+            'NcPropertyConstraintsString': NcPropertyConstraintsString.GetTypeDescriptor(false)
         };
 
         return register;
@@ -764,8 +760,6 @@ export class NcClassManager extends NcManager
             case 'NcTouchpointResourceNmosChannelMapping': return NcTouchpointResourceNmosChannelMapping.GetTypeDescriptor(true);
             case 'NcPropertyConstraintsNumber': return NcPropertyConstraintsNumber.GetTypeDescriptor(true);
             case 'NcPropertyConstraintsString': return NcPropertyConstraintsString.GetTypeDescriptor(true);
-            case 'NcPropertyConstraintsFixed': return NcPropertyConstraintsFixed.GetTypeDescriptor(true);
-            case 'NcPropertyConstraintsEnum': return NcPropertyConstraintsEnum.GetTypeDescriptor(true);
             case 'NcMethodResultError': return NcMethodResultError.GetTypeDescriptor(true);
             case 'NcMethodResultPropertyValue': return NcMethodResultPropertyValue.GetTypeDescriptor(true);
             case 'NcMethodResultBlockMemberDescriptors': return NcMethodResultBlockMemberDescriptors.GetTypeDescriptor(true);
