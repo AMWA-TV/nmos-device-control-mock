@@ -598,7 +598,7 @@ export class NcReceiverMonitorProtected extends NcReceiverMonitor
     }
 }
 
-enum DemoEnum
+enum ExampleEnum
 {
     Undefined = 0,
     Alpha = 1,
@@ -606,15 +606,15 @@ enum DemoEnum
     Gamma = 3
 }
 
-export class DemoDataType extends BaseType
+export class ExampleDataType extends BaseType
 {
-    public enumProperty: DemoEnum;
+    public enumProperty: ExampleEnum;
     public stringProperty: string | null;
     public numberProperty: number;
     public booleanProperty: boolean;
 
     constructor(
-        enumProperty: DemoEnum,
+        enumProperty: ExampleEnum,
         stringProperty: string | null,
         numberProperty: number,
         booleanProperty: boolean) 
@@ -629,12 +629,12 @@ export class DemoDataType extends BaseType
 
     public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor
     {
-        return new NcDatatypeDescriptorStruct("DemoDataType", [
-            new NcFieldDescriptor("enumProperty", "DemoEnum", false, false, null, "Enum property demo"),
-            new NcFieldDescriptor("stringProperty", "NcString", false, false, new NcParameterConstraintsString(10, null), "String property demo"),
-            new NcFieldDescriptor("numberProperty", "NcUint64", false, false, new NcParameterConstraintsNumber(1000, 0, 1), "Number property demo"),
-            new NcFieldDescriptor("booleanProperty", "NcBoolean", false, false, null, "Boolean property demo")
-        ], null, null, "Demo data type");
+        return new NcDatatypeDescriptorStruct("ExampleDataType", [
+            new NcFieldDescriptor("enumProperty", "ExampleEnum", false, false, null, "Enum property example"),
+            new NcFieldDescriptor("stringProperty", "NcString", false, false, new NcParameterConstraintsString(10, null), "String property example"),
+            new NcFieldDescriptor("numberProperty", "NcUint64", false, false, new NcParameterConstraintsNumber(1000, 0, 1), "Number property example"),
+            new NcFieldDescriptor("booleanProperty", "NcBoolean", false, false, null, "Boolean property example")
+        ], null, null, "Example data type");
     }
 
     public ToJson()
@@ -643,15 +643,15 @@ export class DemoDataType extends BaseType
     }
 }
 
-export class DemoControl extends NcWorker
+export class ExampleControl extends NcWorker
 {
     public static staticClassID: number[] = [ 1, 2, 0, 2 ];
 
     @myIdDecorator('1p1')
-    public override classID: number[] = DemoControl.staticClassID;
+    public override classID: number[] = ExampleControl.staticClassID;
 
     @myIdDecorator('3p1')
-    public enumProperty: DemoEnum;
+    public enumProperty: ExampleEnum;
 
     @myIdDecorator('3p2')
     public stringProperty: string | null;
@@ -663,7 +663,7 @@ export class DemoControl extends NcWorker
     public booleanProperty: boolean;
 
     @myIdDecorator('3p5')
-    public objectProperty: DemoDataType;
+    public objectProperty: ExampleDataType;
 
     @myIdDecorator('3p6')
     public methodNoArgsCount: number;
@@ -681,13 +681,13 @@ export class DemoControl extends NcWorker
     public booleanSequence: boolean[];
 
     @myIdDecorator('3p11')
-    public enumSequence: DemoEnum[];
+    public enumSequence: ExampleEnum[];
 
     @myIdDecorator('3p12')
     public numberSequence: number[];
 
     @myIdDecorator('3p13')
-    public objectSequence: DemoDataType[];
+    public objectSequence: ExampleDataType[];
 
     public constructor(
         oid: number,
@@ -703,19 +703,19 @@ export class DemoControl extends NcWorker
     {
         super(oid, constantOid, owner, role, userLabel, touchpoints, runtimePropertyConstraints, enabled, description, notificationContext);
 
-        this.enumProperty = DemoEnum.Undefined;
+        this.enumProperty = ExampleEnum.Undefined;
         this.stringProperty = "test";
         this.numberProperty = 3;
         this.booleanProperty = false;
-        this.objectProperty = new DemoDataType(DemoEnum.Undefined, "default", 5, false);
+        this.objectProperty = new ExampleDataType(ExampleEnum.Undefined, "default", 5, false);
         this.methodNoArgsCount = 0;
         this.methodSimpleArgsCount = 0;
         this.methodObjectArgCount = 0;
         this.stringSequence = [ "red", "blue", "green" ];
         this.booleanSequence = [ true, false];
-        this.enumSequence = [ DemoEnum.Alpha, DemoEnum.Gamma ];
+        this.enumSequence = [ ExampleEnum.Alpha, ExampleEnum.Gamma ];
         this.numberSequence = [ 0, 50, 88];
-        this.objectSequence = [ new DemoDataType(DemoEnum.Alpha, "demo", 50, false), new DemoDataType(DemoEnum.Gamma, "different", 75, true) ];
+        this.objectSequence = [ new ExampleDataType(ExampleEnum.Alpha, "example", 50, false), new ExampleDataType(ExampleEnum.Gamma, "different", 75, true) ];
     }
 
     //'1m1'
@@ -958,7 +958,7 @@ export class DemoControl extends NcWorker
                                             {
                                                 if (this.enumSequence[index] !== undefined) 
                                                 {
-                                                    let value = args['value'] as DemoEnum;
+                                                    let value = args['value'] as ExampleEnum;
                                                     if(value !== undefined)
                                                     {
                                                         this.enumSequence[index] = value;
@@ -994,7 +994,7 @@ export class DemoControl extends NcWorker
                                             {
                                                 if (this.objectSequence[index] !== undefined) 
                                                 {
-                                                    let value = args['value'] as DemoDataType;
+                                                    let value = args['value'] as ExampleDataType;
                                                     if(value !== undefined)
                                                     {
                                                         this.objectSequence[index] = value;
@@ -1067,7 +1067,7 @@ export class DemoControl extends NcWorker
                                         }
                                     case '3p11':
                                         {
-                                            let value = args['value'] as DemoEnum;
+                                            let value = args['value'] as ExampleEnum;
                                             if(value !== undefined)
                                             {
                                                 this.enumSequence.push(value);
@@ -1097,7 +1097,7 @@ export class DemoControl extends NcWorker
                                         }
                                     case '3p13':
                                         {
-                                            let value = args['value'] as DemoDataType;
+                                            let value = args['value'] as ExampleDataType;
                                             if(value !== undefined)
                                             {
                                                 this.objectSequence.push(value);
@@ -1234,12 +1234,12 @@ export class DemoControl extends NcWorker
                             'numberArg' in args &&
                             'booleanArg' in args)
                         {
-                            let enumArg = args['enumArg'] as DemoEnum;
+                            let enumArg = args['enumArg'] as ExampleEnum;
                             let stringArg = args['stringArg'] as string;
                             let numberArg = args['numberArg'] as number;
                             let booleanArg = args['booleanArg'] as boolean;
 
-                            if(enumArg in DemoEnum)
+                            if(enumArg in ExampleEnum)
                             {
                                 if(stringArg)
                                 {
@@ -1271,7 +1271,7 @@ export class DemoControl extends NcWorker
                         if(args != null &&
                             'objArg' in args)
                         {
-                            let objArg = args['objArg'] as DemoDataType;
+                            let objArg = args['objArg'] as ExampleDataType;
                             if(objArg)
                             {
                                 this.methodObjectArgCount = this.methodObjectArgCount + 1;
@@ -1294,37 +1294,37 @@ export class DemoControl extends NcWorker
 
     public static override GetClassDescriptor(includeInherited: boolean): NcClassDescriptor 
     {
-        let currentClassDescriptor = new NcClassDescriptor(`${DemoControl.name} class descriptor`,
-            DemoControl.staticClassID, DemoControl.name, null,
+        let currentClassDescriptor = new NcClassDescriptor(`${ExampleControl.name} class descriptor`,
+            ExampleControl.staticClassID, ExampleControl.name, null,
             [
-                new NcPropertyDescriptor(new NcElementId(3, 1), "enumProperty", "DemoEnum", false, false, false, false, null, "Demo enum property"),
+                new NcPropertyDescriptor(new NcElementId(3, 1), "enumProperty", "ExampleEnum", false, false, false, false, null, "Example enum property"),
                 new NcPropertyDescriptor(new NcElementId(3, 2), "stringProperty", "NcString", false, false, false, false, new NcParameterConstraintsString(10, null),
-                    "Demo string property"),
+                    "Example string property"),
                 new NcPropertyDescriptor(new NcElementId(3, 3), "numberProperty", "NcUint64", false, false, false, false, new NcParameterConstraintsNumber(1000, 0, 1),
-                    "Demo numeric property"),
-                new NcPropertyDescriptor(new NcElementId(3, 4), "booleanProperty", "NcBoolean", false, false, false, false, null, "Demo boolean property"),
-                new NcPropertyDescriptor(new NcElementId(3, 5), "objectProperty", "DemoDataType", false, false, false, false, null, "Demo object property"),
+                    "Example numeric property"),
+                new NcPropertyDescriptor(new NcElementId(3, 4), "booleanProperty", "NcBoolean", false, false, false, false, null, "Example boolean property"),
+                new NcPropertyDescriptor(new NcElementId(3, 5), "objectProperty", "ExampleDataType", false, false, false, false, null, "Example object property"),
                 new NcPropertyDescriptor(new NcElementId(3, 6), "methodNoArgsCount", "NcUint64", true, false, false, false, null, "Method no args invoke counter"),
                 new NcPropertyDescriptor(new NcElementId(3, 7), "methodSimpleArgsCount", "NcUint64", true, false, false, false, null, "Method simple args invoke counter"),
                 new NcPropertyDescriptor(new NcElementId(3, 8), "methodObjectArgCount", "NcUint64", true, false, false, false, null, "Method obj arg invoke counter"),
-                new NcPropertyDescriptor(new NcElementId(3, 9), "stringSequence", "NcString", false, false, false, true, null, "Demo string sequence property"),
-                new NcPropertyDescriptor(new NcElementId(3, 10), "booleanSequence", "NcBoolean", false, false, false, true, null, "Demo boolean sequence property"),
-                new NcPropertyDescriptor(new NcElementId(3, 11), "enumSequence", "DemoEnum", false, false, false, true, null, "Demo enum sequence property"),
-                new NcPropertyDescriptor(new NcElementId(3, 12), "numberSequence", "NcUint64", false, false, false, true, null, "Demo number sequence property"),
-                new NcPropertyDescriptor(new NcElementId(3, 13), "objectSequence", "DemoDataType", false, false, false, true, null, "Demo object sequence property")
+                new NcPropertyDescriptor(new NcElementId(3, 9), "stringSequence", "NcString", false, false, false, true, null, "Example string sequence property"),
+                new NcPropertyDescriptor(new NcElementId(3, 10), "booleanSequence", "NcBoolean", false, false, false, true, null, "Example boolean sequence property"),
+                new NcPropertyDescriptor(new NcElementId(3, 11), "enumSequence", "ExampleEnum", false, false, false, true, null, "Example enum sequence property"),
+                new NcPropertyDescriptor(new NcElementId(3, 12), "numberSequence", "NcUint64", false, false, false, true, null, "Example number sequence property"),
+                new NcPropertyDescriptor(new NcElementId(3, 13), "objectSequence", "ExampleDataType", false, false, false, true, null, "Example object sequence property")
             ],
             [
-                new NcMethodDescriptor(new NcElementId(3, 1), "MethodNoArgs", "NcMethodResult", [], "Demo method with no arguments"),
+                new NcMethodDescriptor(new NcElementId(3, 1), "MethodNoArgs", "NcMethodResult", [], "Example method with no arguments"),
                 new NcMethodDescriptor(new NcElementId(3, 2), "MethodSimpleArgs", "NcMethodResult", [
-                    new NcParameterDescriptor("enumArg", "DemoEnum", false, false, null, "Enum demo argument"),
-                    new NcParameterDescriptor("stringArg", "NcString", false, false, new NcParameterConstraintsString(10, null), "String demo argument"),
+                    new NcParameterDescriptor("enumArg", "ExampleEnum", false, false, null, "Enum example argument"),
+                    new NcParameterDescriptor("stringArg", "NcString", false, false, new NcParameterConstraintsString(10, null), "String example argument"),
                     new NcParameterDescriptor("numberArg", "NcUint64", false, false, new NcParameterConstraintsNumber(1000, 0, 1),
-                    "Number demo argument"),
-                    new NcParameterDescriptor("booleanArg", "NcBoolean", false, false, null, "Boolean demo argument")
-                ], "Demo method with simple arguments"),
+                    "Number example argument"),
+                    new NcParameterDescriptor("booleanArg", "NcBoolean", false, false, null, "Boolean example argument")
+                ], "Example method with simple arguments"),
                 new NcMethodDescriptor(new NcElementId(3, 3), "MethodObjectArg", "NcMethodResult", [
-                    new NcParameterDescriptor("objArg", "DemoDataType", false, false, null, "Object demo argument")
-                ], "Demo method with object argument")
+                    new NcParameterDescriptor("objArg", "ExampleDataType", false, false, null, "Object example argument")
+                ], "Example method with object argument")
             ],
             []
         );

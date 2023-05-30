@@ -47,7 +47,7 @@ import {
     NcTouchpointResource,
     NcTouchpointResourceNmos,
     NcTouchpointResourceNmosChannelMapping} from './Core';
-import { DemoDataType, DemoControl, GainControl, NcIdentBeacon, NcReceiverMonitor, NcReceiverMonitorProtected, NcReceiverStatus, NcWorker } from './Features';
+import { ExampleDataType, ExampleControl, GainControl, NcIdentBeacon, NcReceiverMonitor, NcReceiverMonitorProtected, NcReceiverStatus, NcWorker } from './Features';
 
 export abstract class NcManager extends NcObject
 {
@@ -561,7 +561,7 @@ export class NcClassManager extends NcManager
             '1.1': NcBlock.GetClassDescriptor(false),
             '1.2': NcWorker.GetClassDescriptor(false),
             '1.2.0.1': GainControl.GetClassDescriptor(false),
-            '1.2.0.2': DemoControl.GetClassDescriptor(false),
+            '1.2.0.2': ExampleControl.GetClassDescriptor(false),
             '1.2.2': NcIdentBeacon.GetClassDescriptor(false),
             '1.2.3': NcReceiverMonitor.GetClassDescriptor(false),
             '1.2.3.1': NcReceiverMonitorProtected.GetClassDescriptor(false),
@@ -583,7 +583,7 @@ export class NcClassManager extends NcManager
             case '1.1': return NcBlock.GetClassDescriptor(true);
             case '1.2': return NcWorker.GetClassDescriptor(true);
             case '1.2.0.1': return GainControl.GetClassDescriptor(true);
-            case '1.2.0.2': return DemoControl.GetClassDescriptor(true);
+            case '1.2.0.2': return ExampleControl.GetClassDescriptor(true);
             case '1.2.2': return NcIdentBeacon.GetClassDescriptor(true);
             case '1.2.3': return NcReceiverMonitor.GetClassDescriptor(true);
             case '1.2.3.1': return NcReceiverMonitorProtected.GetClassDescriptor(true);
@@ -716,13 +716,13 @@ export class NcClassManager extends NcManager
             'NcTouchpointResourceNmos': NcTouchpointResourceNmos.GetTypeDescriptor(false),
             'NcTouchpointNmosChannelMapping': NcTouchpointNmosChannelMapping.GetTypeDescriptor(false),
             'NcTouchpointResourceNmosChannelMapping': NcTouchpointResourceNmosChannelMapping.GetTypeDescriptor(false),
-            'DemoEnum': new NcDatatypeDescriptorEnum("DemoEnum", [
+            'ExampleEnum': new NcDatatypeDescriptorEnum("ExampleEnum", [
                 new NcEnumItemDescriptor("Undefined", 0, "Not defined option"),
                 new NcEnumItemDescriptor("Alpha", 1, "Alpha option"),
                 new NcEnumItemDescriptor("Beta", 2, "Beta option"),
                 new NcEnumItemDescriptor("Gamma", 3, "Gamma option")
-            ], null, "Demonstration enum data type"),
-            'DemoDataType': DemoDataType.GetTypeDescriptor(false),
+            ], null, "Example enum data type"),
+            'ExampleDataType': ExampleDataType.GetTypeDescriptor(false),
             'NcRegex': new NcDatatypeDescriptorTypeDef("NcRegex", "NcString", false, null, "Regex pattern"),
             'NcPropertyConstraints': NcPropertyConstraints.GetTypeDescriptor(false),
             'NcPropertyConstraintsNumber': NcPropertyConstraintsNumber.GetTypeDescriptor(false),

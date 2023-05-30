@@ -15,7 +15,7 @@ import { SessionManager } from './SessionManager';
 import { NcBlock, RootBlock } from './NCModel/Blocks';
 import { NcClassManager, NcDeviceManager } from './NCModel/Managers';
 import { NcMethodStatus, NcTouchpointNmos, NcTouchpointResourceNmos } from './NCModel/Core';
-import { DemoControl, GainControl, NcIdentBeacon, NcReceiverMonitor } from './NCModel/Features';
+import { ExampleControl, GainControl, NcIdentBeacon, NcReceiverMonitor } from './NCModel/Features';
 import { ProtocolError, ProtocolSubscription } from './NCProtocol/Commands';
 import { MessageType, ProtocolWrapper } from './NCProtocol/Core';
 
@@ -103,16 +103,16 @@ try
 
     myVideoReceiver.AttachMonitoringAgent(receiverMonitorAgent);
 
-    const demoClass = new DemoControl(
+    const exampleControl = new ExampleControl(
         111,
         true,
         1,
-        'DemoClass',
-        'Demo class',
+        'ExampleControl',
+        'Example control worker',
         [],
         null,
         true,
-        "Demo control class",
+        "Example control worker",
         sessionManager);
 
     const channelGainBlock = new NcBlock(
@@ -158,7 +158,7 @@ try
         null,
         null,
         true,
-        [ deviceManager, classManager, receiverMonitorAgent, stereoGainBlock, demoClass, identBeacon ],
+        [ deviceManager, classManager, receiverMonitorAgent, stereoGainBlock, exampleControl, identBeacon ],
         "Root block",
         sessionManager);
 
