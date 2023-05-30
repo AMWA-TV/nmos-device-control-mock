@@ -14,8 +14,8 @@ import { NmosReceiverActiveRtp } from './NmosReceiverActiveRtp';
 import { SessionManager } from './SessionManager';
 import { NcBlock, RootBlock } from './NCModel/Blocks';
 import { NcClassManager, NcDeviceManager } from './NCModel/Managers';
-import { NcIoDirection, NcMethodStatus, NcPort, NcPortReference, NcSignalPath, NcTouchpointNmos, NcTouchpointResourceNmos } from './NCModel/Core';
-import { NcDemo, NcGain, NcIdentBeacon, NcReceiverMonitor } from './NCModel/Features';
+import { NcMethodStatus, NcTouchpointNmos, NcTouchpointResourceNmos } from './NCModel/Core';
+import { ExampleControl, GainControl, NcIdentBeacon, NcReceiverMonitor } from './NCModel/Features';
 import { ProtocolError, ProtocolSubscription } from './NCProtocol/Commands';
 import { MessageType, ProtocolWrapper } from './NCProtocol/Core';
 
@@ -103,20 +103,19 @@ try
 
     myVideoReceiver.AttachMonitoringAgent(receiverMonitorAgent);
 
-    const demoClass = new NcDemo(
+    const exampleControl = new ExampleControl(
         111,
         true,
         1,
-        'DemoClass',
-        'Demo class',
+        'ExampleControl',
+        'Example control worker',
         [],
         null,
         true,
-        "Demo control class",
+        "Example control worker",
         sessionManager);
 
     const channelGainBlock = new NcBlock(
-        false,
         21,
         true,
         31,
@@ -125,78 +124,28 @@ try
         null,
         null,
         true,
-        null,
-        null,
-        null,
-        null,
-        null,
-        false,
         [
-            new NcGain(22, true, 21, "left-gain", "Left gain", [], null, true, [
-                new NcPort('input_1', NcIoDirection.Input, null),
-                new NcPort('output_1', NcIoDirection.Output, null),
-            ], null, 0, "Left channel gain", sessionManager),
-            new NcGain(23, true, 21, "right-gain", "Right gain", [], null, true, [
-                new NcPort('input_1', NcIoDirection.Input, null),
-                new NcPort('output_1', NcIoDirection.Output, null),
-            ], null, 0, "Right channel gain", sessionManager)
-        ],
-        [ 
-            new NcPort('stereo_gain_input_1', NcIoDirection.Input, null),
-            new NcPort('stereo_gain_input_2', NcIoDirection.Input, null),
-            new NcPort('stereo_gain_output_1', NcIoDirection.Output, null),
-            new NcPort('stereo_gain_output_2', NcIoDirection.Output, null)
-        ],
-        [
-            new NcSignalPath('left_gain_input', 'Left gain input', new NcPortReference([], "stereo_gain_input_1"), new NcPortReference(['left-gain'], 'input_1')),
-            new NcSignalPath('left_gain_output', 'Left gain output', new NcPortReference(['left-gain'], 'output_1'), new NcPortReference([], "stereo_gain_output_1")),
-            new NcSignalPath('right_gain_input', 'Right gain input', new NcPortReference([], "stereo_gain_input_2"), new NcPortReference(['right-gain'], 'input_1')),
-            new NcSignalPath('right_gain_output', 'Right gain output', new NcPortReference(['right-gain'], 'output_1'), new NcPortReference([], "stereo_gain_output_2")),
+            new GainControl(22, true, 21, "left-gain", "Left gain", [], null, true, 0, "Left channel gain", sessionManager),
+            new GainControl(23, true, 21, "right-gain", "Right gain", [], null, true, 0, "Right channel gain", sessionManager)
         ],
         "Channel gain block",
         sessionManager);
 
-        const stereoGainBlock = new NcBlock(
-            false,
-            31,
-            true,
-            1,
-            'stereo-gain',
-            'Stereo gain',
-            null,
-            null,
-            true,
-            null,
-            null,
-            null,
-            null,
-            null,
-            false,
-            [
-                channelGainBlock,
-                new NcGain(24, true, 31, "master-gain", "Master gain", [], null, true, [
-                    new NcPort('input_1', NcIoDirection.Input, null),
-                    new NcPort('input_2', NcIoDirection.Input, null),
-                    new NcPort('output_1', NcIoDirection.Output, null),
-                    new NcPort('output_2', NcIoDirection.Output, null),
-                ], null, 0, "Master gain", sessionManager)
-            ],
-            [ 
-                new NcPort('block_input_1', NcIoDirection.Input, null),
-                new NcPort('block_input_2', NcIoDirection.Input, null),
-                new NcPort('block_output_1', NcIoDirection.Output, null),
-                new NcPort('block_output_2', NcIoDirection.Output, null)
-            ],
-            [
-                new NcSignalPath('block-in-1-to-left-gain-in', 'Block input 1 to left gain input', new NcPortReference([], "block_input_1"), new NcPortReference(['stereo-gain'], 'stereo_gain_input_1')),
-                new NcSignalPath('left-gain-out-to-master-gain-in-1', 'Left gain output to master gain input 1', new NcPortReference(['stereo-gain'], 'stereo_gain_output_1'), new NcPortReference(['master-gain'], "input_1")),
-                new NcSignalPath('master-gain-out-1-to-block-out-1', 'Master gain output 1 to block output 1', new NcPortReference(['master-gain'], "output_1"), new NcPortReference([], 'block_output_1')),
-                new NcSignalPath('block-in-2-to-right-gain-in', 'Block input 2 to right gain input', new NcPortReference([], "block_input_2"), new NcPortReference(['stereo-gain'], 'stereo_gain_input_2')),
-                new NcSignalPath('right-gain-out-to-master-gain-in-2', 'Right gain output to master gain input 2', new NcPortReference(['stereo-gain'], 'stereo_gain_output_2'), new NcPortReference(['master-gain'], "input_2")),
-                new NcSignalPath('master-gain-out-2-to-block-out-2', 'Master gain output 2 to block output 2', new NcPortReference(['master-gain'], "output_2"), new NcPortReference([], 'block_output_2'))
-            ],
-            "Stereo gain block",
-            sessionManager);
+    const stereoGainBlock = new NcBlock(
+        31,
+        true,
+        1,
+        'stereo-gain',
+        'Stereo gain',
+        null,
+        null,
+        true,
+        [
+            channelGainBlock,
+            new GainControl(24, true, 31, "master-gain", "Master gain", [], null, true, 0, "Master gain", sessionManager)
+        ],
+        "Stereo gain block",
+        sessionManager);
 
     const identBeacon = new NcIdentBeacon(51, true, 1, "IdentBeacon", "Identification beacon", [], null, true, false, "Identification beacon", sessionManager);
 
@@ -209,15 +158,7 @@ try
         null,
         null,
         true,
-        "base-root",
-        "1.0.0",
-        null,
-        null,
-        "Blockspec for root block of minimum compliant device",
-        false,
-        [ deviceManager, classManager, receiverMonitorAgent, stereoGainBlock, demoClass, identBeacon ],
-        null,
-        null,
+        [ deviceManager, classManager, receiverMonitorAgent, stereoGainBlock, exampleControl, identBeacon ],
         "Root block",
         sessionManager);
 

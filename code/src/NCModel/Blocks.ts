@@ -5,7 +5,6 @@ import { WebSocketConnection } from '../Server';
 import { INotificationContext } from '../SessionManager';
 import {
     myIdDecorator,
-    NcBlockDescriptor,
     NcBlockMemberDescriptor,
     NcClassDescriptor,
     NcElementId,
@@ -13,10 +12,8 @@ import {
     NcMethodStatus,
     NcObject,
     NcParameterDescriptor,
-    NcPort,
     NcPropertyConstraints,
     NcPropertyDescriptor,
-    NcSignalPath,
     NcTouchpoint } from './Core';
 
 export class NcBlock extends NcObject
@@ -27,45 +24,14 @@ export class NcBlock extends NcObject
     public override classID: number[] = NcBlock.staticClassID;
 
     @myIdDecorator('2p1')
-    public isRoot: boolean;
-
-    @myIdDecorator('2p2')
-    public specId: string | null;
-
-    @myIdDecorator('2p3')
-    public specVersion: string | null;
-
-    @myIdDecorator('2p4')
-    public specDescription: string | null;
-
-    @myIdDecorator('2p5')
-    public parentSpecId: string | null;
-
-    @myIdDecorator('2p6')
-    public parentSpecVersion: string | null;
-
-    @myIdDecorator('2p7')
-    public isDynamic: boolean;
-
-    @myIdDecorator('2p8')
-    public isModified: boolean;
-
-    @myIdDecorator('2p9')
     public enabled: boolean;
 
-    @myIdDecorator('2p10')
+    @myIdDecorator('2p2')
     public members: NcBlockMemberDescriptor[];
-
-    @myIdDecorator('2p11')
-    public ports: NcPort[] | null;
-
-    @myIdDecorator('2p12')
-    public signalPaths: NcSignalPath[] | null;
 
     public memberObjects: NcObject[];
 
     public constructor(
-        isRoot: boolean,
         oid: number,
         constantOid: boolean,
         owner: number | null,
@@ -74,35 +40,16 @@ export class NcBlock extends NcObject
         touchpoints: NcTouchpoint[] | null,
         runtimePropertyConstraints: NcPropertyConstraints[] | null,
         enabled: boolean,
-        specId: string | null,
-        specVersion: string | null,
-        parentSpecId: string | null,
-        parentSpecVersion: string | null,
-        specDescription: string | null,
-        isDynamic: boolean,
         memberObjects: NcObject[],
-        ports: NcPort[] | null,
-        signalPaths: NcSignalPath[] | null,
         description: string,
         notificationContext: INotificationContext)
     {
         super(oid, constantOid, owner, role, userLabel, touchpoints, runtimePropertyConstraints, description, notificationContext);
 
-        this.isRoot = isRoot;
         this.enabled = enabled;
-        this.specId = specId;
-        this.specVersion = specVersion;
-        this.parentSpecId = parentSpecId;
-        this.parentSpecVersion = parentSpecVersion;
-        this.specDescription = specDescription;
-        this.isDynamic = isDynamic;
-        this.isModified = false;
         this.memberObjects = memberObjects;
 
         this.members = this.memberObjects.map(x => x.GenerateMemberDescriptor());
-
-        this.ports = ports;
-        this.signalPaths = signalPaths;
     }
 
     //'1m1'
@@ -115,29 +62,9 @@ export class NcBlock extends NcObject
             switch(key)
             {
                 case '2p1':
-                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.isRoot);
-                case '2p2':
-                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.specId);
-                case '2p3':
-                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.specVersion);
-                case '2p4':
-                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.specDescription);
-                case '2p5':
-                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.parentSpecId);
-                case '2p6':
-                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.parentSpecVersion);
-                case '2p7':
-                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.isDynamic);
-                case '2p8':
-                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.isModified);
-                case '2p9':
                     return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.enabled);
-                case '2p10':
+                case '2p2':
                     return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.members);
-                case '2p11':
-                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.ports);
-                case '2p12':
-                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.signalPaths);
                 default:
                     return super.Get(oid, propertyId, handle);
             }
@@ -157,16 +84,6 @@ export class NcBlock extends NcObject
             {
                 case '2p1':
                 case '2p2':
-                case '2p3':
-                case '2p4':
-                case '2p5':
-                case '2p6':
-                case '2p7':
-                case '2p8':
-                case '2p9':
-                case '2p10':
-                case '2p11':
-                case '2p12':
                     return new CommandResponseError(handle, NcMethodStatus.Readonly, 'Property is readonly');
                 default:
                     return super.Set(oid, id, value, handle);
@@ -277,7 +194,7 @@ export class NcBlock extends NcObject
 
     public override GenerateMemberDescriptor() : NcBlockMemberDescriptor
     {
-        return new NcBlockDescriptor(this.specId, this.role, this.oid, this.constantOid, this.classID, this.userLabel, this.owner, this.description, null);
+        return new NcBlockMemberDescriptor(this.role, this.oid, this.constantOid, this.classID, this.userLabel, this.owner, this.description);
     }
 
     public FindNestedMember(oid: number): NcObject | null
@@ -317,36 +234,26 @@ export class NcBlock extends NcObject
         let currentClassDescriptor = new NcClassDescriptor(`${NcBlock.name} class descriptor`,
             NcBlock.staticClassID, NcBlock.name, null,
             [
-                new NcPropertyDescriptor(new NcElementId(2, 1), "isRoot", "NcBoolean", true, true, false, false, null, "TRUE if block is the root block"),
-                new NcPropertyDescriptor(new NcElementId(2, 2), "specId", "NcString", true, true, true, false, null, "Global ID of blockSpec that defines this block"),
-                new NcPropertyDescriptor(new NcElementId(2, 3), "specVersion", "NcVersionCode", true, true, true, false, null, "Version code of blockSpec that defines this block"),
-                new NcPropertyDescriptor(new NcElementId(2, 4), "specDescription", "NcString", true, true, true, false, null, "Description of blockSpec that defines this block"),
-                new NcPropertyDescriptor(new NcElementId(2, 5), "parentSpecId", "NcString", true, true, true, false, null, "Global ID of parent of blockSpec that defines this block"),
-                new NcPropertyDescriptor(new NcElementId(2, 6), "parentSpecVersion", "NcVersionCode", true, true, true, false, null, "Version code of parent of blockSpec that defines this block"),
-                new NcPropertyDescriptor(new NcElementId(2, 7), "isDynamic", "NcBoolean", true, true, false, false, null, "TRUE if dynamic block"),
-                new NcPropertyDescriptor(new NcElementId(2, 8), "isModified", "NcBoolean", true, false, false, false, null, "TRUE if block contents modified since last reset"),
-                new NcPropertyDescriptor(new NcElementId(2, 9), "enabled", "NcBoolean", true, true, false, false, null, "TRUE if block is functional"),
-                new NcPropertyDescriptor(new NcElementId(2, 10), "members", "NcBlockMemberDescriptor", true, true, false, true, null, "Descriptors of this block's members"),
-                new NcPropertyDescriptor(new NcElementId(2, 11), "ports", "NcPort", true, true, true, true, null, "this block's ports"),
-                new NcPropertyDescriptor(new NcElementId(2, 12), "signalPaths", "NcSignalPath", true, true, true, true, null, "this block's signal paths"),
+                new NcPropertyDescriptor(new NcElementId(2, 1), "enabled", "NcBoolean", true, true, false, false, null, "TRUE if block is functional"),
+                new NcPropertyDescriptor(new NcElementId(2, 2), "members", "NcBlockMemberDescriptor", true, true, false, true, null, "Descriptors of this block's members"),
             ],
             [ 
                 new NcMethodDescriptor(new NcElementId(2, 1), "GetMemberDescriptors", "NcMethodResultBlockMemberDescriptors",
-                    [new NcParameterDescriptor("recurse", "NcBoolean", false, false, null, "If recurse is set to true, nested members can be retrieved")], "gets descriptors of members of the block"),
+                    [new NcParameterDescriptor("recurse", "NcBoolean", false, false, null, "If recurse is set to true, nested members can be retrieved")], "Gets descriptors of members of the block"),
                 new NcMethodDescriptor(new NcElementId(2, 2), "FindMembersByPath", "NcMethodResultBlockMemberDescriptors", [
-                    new NcParameterDescriptor("path", "NcRolePath", false, false, null, "relative path to search for (MUST not include the role of the block targeted by oid)")
-                ], "finds member(s) by path"),
+                    new NcParameterDescriptor("path", "NcRolePath", false, false, null, "Relative path to search for (MUST not include the role of the block targeted by oid)")
+                ], "Finds member(s) by path"),
                 new NcMethodDescriptor(new NcElementId(2, 3), "FindMembersByRole", "NcMethodResultBlockMemberDescriptors", [
-                    new NcParameterDescriptor("role", "NcString", false, false, null, "role text to search for"),
-                    new NcParameterDescriptor("caseSensitive", "NcBoolean", false,  false, null, "signals if the comparison should be case sensitive"),
+                    new NcParameterDescriptor("role", "NcString", false, false, null, "Role text to search for"),
+                    new NcParameterDescriptor("caseSensitive", "NcBoolean", false,  false, null, "Signals if the comparison should be case sensitive"),
                     new NcParameterDescriptor("matchWholeString", "NcBoolean", false,  false, null, "TRUE to only return exact matches"),
                     new NcParameterDescriptor("recurse", "NcBoolean", false,  false, null, "TRUE to search nested blocks")
-                ], "finds members with given role name or fragment"),
+                ], "Finds members with given role name or fragment"),
                 new NcMethodDescriptor(new NcElementId(2, 4), "FindMembersByClassId", "NcMethodResultBlockMemberDescriptors", [
-                    new NcParameterDescriptor("id", "NcClassId", false, false, null, "class id to search for"),
+                    new NcParameterDescriptor("id", "NcClassId", false, false, null, "Class id to search for"),
                     new NcParameterDescriptor("includeDerived", "NcBoolean", false,  false, null, "If TRUE it will also include derived class descriptors"),
                     new NcParameterDescriptor("recurse", "NcBoolean", false,  false, null, "TRUE to search nested blocks")
-                ], "finds members with given class id")
+                ], "Finds members with given class id")
             ],
             []
         );
@@ -510,20 +417,11 @@ export class RootBlock extends NcBlock
         touchpoints: NcTouchpoint[] | null,
         runtimePropertyConstraints: NcPropertyConstraints[] | null,
         enabled: boolean,
-        specId: string | null,
-        specVersion: string | null,
-        parentSpecId: string | null,
-        parentSpecVersion: string | null,
-        specDescription: string | null,
-        isDynamic: boolean,
         memberObjects: NcObject[],
-        ports: NcPort[] | null,
-        signalPaths: NcSignalPath[] | null,
         description: string,
         notificationContext: INotificationContext)
     {
         super(
-            true,
             oid,
             constantOid,
             owner,
@@ -532,15 +430,7 @@ export class RootBlock extends NcBlock
             touchpoints,
             runtimePropertyConstraints,
             enabled,
-            specId,
-            specVersion,
-            parentSpecId,
-            parentSpecVersion,
-            specDescription,
-            isDynamic,
             memberObjects,
-            ports,
-            signalPaths,
             description,
             notificationContext);
     }

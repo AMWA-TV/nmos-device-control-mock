@@ -2,7 +2,6 @@ import { jsonIgnoreReplacer, jsonIgnore } from 'json-ignore';
 import { CommandResponseError, CommandResponseNoValue, CommandResponseWithValue } from '../NCProtocol/Commands';
 import { WebSocketConnection } from '../Server';
 import { INotificationContext } from '../SessionManager';
-import { NcReceiverStatus } from './Features';
 
 export function myIdDecorator(identity: string) {
     return Reflect.metadata('identity', identity);
@@ -140,7 +139,7 @@ export abstract class NcObject
 
     public GenerateMemberDescriptor() : NcBlockMemberDescriptor
     {
-        return new NcBlockMemberDescriptor(this.role, this.oid, this.constantOid, this.classID, this.userLabel, this.owner, this.description, null);
+        return new NcBlockMemberDescriptor(this.role, this.oid, this.constantOid, this.classID, this.userLabel, this.owner, this.description);
     }
 
     public static GetClassDescriptor(includeInherited: boolean) : NcClassDescriptor
@@ -338,104 +337,6 @@ export enum NcPropertyChangeType
     SequenceItemAdded = 1,
     SequenceItemChanged = 2,
     SequenceItemRemoved = 3
-}
-
-export enum NcIoDirection
-{
-    Undefined = 0,
-    Input = 1,
-    Output = 2,
-    Bidirectional = 3
-}
-
-export class NcPort extends BaseType
-{
-    public role: string;
-
-    public direction: NcIoDirection;
-
-    public clockPath: string[] | null;
-
-    public constructor(
-        role: string,
-        direction: NcIoDirection,
-        clockPath: string[] | null)
-    {
-        super();
-
-        this.role = role;
-        this.direction = direction;
-        this.clockPath = clockPath;
-    }
-
-    public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor
-    {
-        return new NcDatatypeDescriptorStruct("NcPort", [
-            new NcFieldDescriptor("role", "NcString", false, false, null, "Unique within owning object"),
-            new NcFieldDescriptor("direction", "NcIoDirection", false, false, null, "Input (sink) or output (source) port"),
-            new NcFieldDescriptor("clockPath", "NcRolePath", true, false, null, "Role path of this port's sample clock or null if none")
-        ], null, null, "Port class");
-    }
-}
-
-export class NcPortReference extends BaseType
-{
-    public owner: string[];
-
-    public role: string;
-
-    public constructor(
-        owner: string[],
-        role: string)
-    {
-        super();
-
-        this.owner = owner;
-        this.role = role;
-    }
-
-    public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor
-    {
-        return new NcDatatypeDescriptorStruct("NcPortReference", [
-            new NcFieldDescriptor("owner", "NcRolePath", false, false, null, "Role path of owning object"),
-            new NcFieldDescriptor("role", "NcString", false, false, null, "Unique role of this port within the owning object")
-        ], null, null, "Device-unique port identifier");
-    }
-}
-
-export class NcSignalPath extends BaseType
-{
-    public role: string;
-
-    public label: string;
-
-    public source: NcPortReference;
-
-    public sink: NcPortReference;
-
-    public constructor(
-        role: string,
-        label: string,
-        source: NcPortReference,
-        sink: NcPortReference)
-    {
-        super();
-
-        this.role = role;
-        this.label = label;
-        this.source = source;
-        this.sink = sink;
-    }
-
-    public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor
-    {
-        return new NcDatatypeDescriptorStruct("NcSignalPath", [
-            new NcFieldDescriptor("role", "NcString", false, false, null, "Unique identifier of this signal path in this block"),
-            new NcFieldDescriptor("label", "NcString", true, false, null, "Optional label"),
-            new NcFieldDescriptor("source", "NcPortReference", false, false, null, "Source reference"),
-            new NcFieldDescriptor("sink", "NcPortReference", false, false, null, "Sink reference")
-        ], null, null, "Signal path descriptor");
-    }
 }
 
 export abstract class NcMethodResult extends BaseType
@@ -851,7 +752,6 @@ export class NcBlockMemberDescriptor extends BaseType
     public userLabel: string | null;
     public owner: number | null;
     public description: string;
-    public constraints: NcPropertyConstraints | null;
 
     constructor(
         role: string,
@@ -860,8 +760,7 @@ export class NcBlockMemberDescriptor extends BaseType
         classId: number[],
         userLabel: string | null,
         owner: number | null,
-        description: string,
-        constraints: NcPropertyConstraints | null)
+        description: string)
     {
         super();
 
@@ -872,7 +771,6 @@ export class NcBlockMemberDescriptor extends BaseType
         this.userLabel = userLabel;
         this.owner = owner;
         this.description = description;
-        this.constraints = constraints;
     }
 
     public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor
@@ -883,62 +781,8 @@ export class NcBlockMemberDescriptor extends BaseType
             new NcFieldDescriptor("constantOid", "NcBoolean", false, false, null, "TRUE iff member's OID is hardwired into device"),
             new NcFieldDescriptor("classId", "NcClassId", false, false, null, "Class ID"),
             new NcFieldDescriptor("userLabel", "NcString", true, false, null, "User label"),
-            new NcFieldDescriptor("owner", "NcOid", false, false, null, "Containing block's OID"),
-            new NcFieldDescriptor("constraints", "NcPropertyConstraints", true, true, null, "Constraints on this member or, for a block, its members")
-        ], "NcDescriptor", null, "Descriptor which is specific to a block member which is not a block");
-
-        if(includeInherited)
-        {
-            let baseDescriptor = super.GetTypeDescriptor(includeInherited);
-
-            let baseDescriptorStruct = baseDescriptor as NcDatatypeDescriptorStruct;
-            if(baseDescriptorStruct)
-                currentClassDescriptor.fields = currentClassDescriptor.fields.concat(baseDescriptorStruct.fields);
-        }
-
-        return currentClassDescriptor;
-    }
-
-    public ToJson()
-    {
-        return JSON.stringify(this, jsonIgnoreReplacer);
-    }
-}
-
-export class NcBlockDescriptor extends NcBlockMemberDescriptor
-{
-    public blockSpecId: string | null;
-
-    constructor(
-        blockSpecId: string | null,
-        role: string,
-        oid: number,
-        constantOid: boolean,
-        classId: number[],
-        userLabel: string | null,
-        owner: number | null,
-        description: string,
-        constraints: NcPropertyConstraints | null)
-    {
-        super(role, oid, constantOid, classId, userLabel, owner, description, constraints);
-
-        this.blockSpecId = blockSpecId;
-    }
-
-    public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor
-    {
-        let currentClassDescriptor = new NcDatatypeDescriptorStruct("NcBlockDescriptor", [
-            new NcFieldDescriptor("blockSpecId", "NcString", true, false, null, "ID of BlockSpec this block implements")
-        ], "NcBlockMemberDescriptor", null, "Descriptor which is specific to a block");
-
-        if(includeInherited)
-        {
-            let baseDescriptor = super.GetTypeDescriptor(includeInherited);
-
-            let baseDescriptorStruct = baseDescriptor as NcDatatypeDescriptorStruct;
-            if(baseDescriptorStruct)
-                currentClassDescriptor.fields = currentClassDescriptor.fields.concat(baseDescriptorStruct.fields);
-        }
+            new NcFieldDescriptor("owner", "NcOid", false, false, null, "Containing block's OID")
+        ], "NcDescriptor", null, "Descriptor which is specific to a block member");
 
         return currentClassDescriptor;
     }
@@ -1024,18 +868,15 @@ export class NcPropertyDescriptor extends NcDescriptor
 
 export class NcPropertyConstraints extends BaseType
 {
-    public path: string[] | null;
     public propertyId: NcElementId;
     public defaultValue: any | null;
 
     constructor(
-        path: string[] | null,
         propertyId: NcElementId,
         defaultValue: any | null)
     {
         super();
 
-        this.path = path;
         this.propertyId = propertyId;
         this.defaultValue = defaultValue;
     }
@@ -1043,9 +884,8 @@ export class NcPropertyConstraints extends BaseType
     public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor
     {
         return new NcDatatypeDescriptorStruct("NcPropertyConstraints", [
-            new NcFieldDescriptor("path", "NcRolePath", true, false, null, "relative path to member (null means current member)"),
-            new NcFieldDescriptor("propertyId", "NcPropertyId", false, false, null, "ID of property being constrained"),
-            new NcFieldDescriptor("defaultValue", null, true, false, null, "optional default value")
+            new NcFieldDescriptor("propertyId", "NcPropertyId", false, false, null, "The id of the property being constrained"),
+            new NcFieldDescriptor("defaultValue", null, true, false, null, "Optional default value")
         ], null, null, "Property constraints class");
     }
 
@@ -1062,14 +902,13 @@ export class NcPropertyConstraintsNumber extends NcPropertyConstraints
     public step: number;
 
     constructor(
-        path: string[] | null,
         propertyId: NcElementId,
         defaultValue: any | null,
         maximum: number,
         minimum: number,
         step: number)
     {
-        super(path, propertyId, defaultValue);
+        super(propertyId, defaultValue);
 
         this.maximum = maximum;
         this.minimum = minimum;
@@ -1108,13 +947,12 @@ export class NcPropertyConstraintsString extends NcPropertyConstraints
     public pattern: string;
 
     constructor(
-        path: string[] | null,
         propertyId: NcElementId,
         defaultValue: any | null,
         maxCharacters: number,
         pattern: string)
     {
-        super(path, propertyId, defaultValue);
+        super(propertyId, defaultValue);
         
         this.maxCharacters = maxCharacters;
         this.pattern = pattern;
@@ -1126,84 +964,6 @@ export class NcPropertyConstraintsString extends NcPropertyConstraints
             new NcFieldDescriptor("maxCharacters", "NcUint32", true, false, null, "maximum characters allowed"),
             new NcFieldDescriptor("pattern", "NcRegex", true, false, null, "regex pattern")
         ], "NcPropertyConstraints", null, "String property constraints class");
-
-        if(includeInherited)
-        {
-            let baseDescriptor = super.GetTypeDescriptor(includeInherited);
-
-            let baseDescriptorStruct = baseDescriptor as NcDatatypeDescriptorStruct;
-            if(baseDescriptorStruct)
-                currentClassDescriptor.fields = currentClassDescriptor.fields.concat(baseDescriptorStruct.fields);
-        }
-
-        return currentClassDescriptor;
-    }
-
-    public ToJson()
-    {
-        return JSON.stringify(this, jsonIgnoreReplacer);
-    }
-}
-
-export class NcPropertyConstraintsFixed extends NcPropertyConstraints
-{
-    public value: any | null;
-
-    constructor(
-        path: string[] | null,
-        propertyId: NcElementId,
-        defaultValue: any | null,
-        value: any | null)
-    {
-        super(path, propertyId, defaultValue);
-        
-        this.value = value;
-    }
-
-    public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor
-    {
-        let currentClassDescriptor = new NcDatatypeDescriptorStruct("NcPropertyConstraintsFixed", [
-            new NcFieldDescriptor("value", null, true, false, null, "Signals a fixed value for this property")
-        ], "NcPropertyConstraints", null, "Fixed property constraints class");
-
-        if(includeInherited)
-        {
-            let baseDescriptor = super.GetTypeDescriptor(includeInherited);
-
-            let baseDescriptorStruct = baseDescriptor as NcDatatypeDescriptorStruct;
-            if(baseDescriptorStruct)
-                currentClassDescriptor.fields = currentClassDescriptor.fields.concat(baseDescriptorStruct.fields);
-        }
-
-        return currentClassDescriptor;
-    }
-
-    public ToJson()
-    {
-        return JSON.stringify(this, jsonIgnoreReplacer);
-    }
-}
-
-export class NcPropertyConstraintsEnum extends NcPropertyConstraints
-{
-    public possibleValues: NcEnumItemDescriptor[];
-
-    constructor(
-        path: string[] | null,
-        propertyId: NcElementId,
-        defaultValue: any | null,
-        possibleValues: NcEnumItemDescriptor[])
-    {
-        super(path, propertyId, defaultValue);
-        
-        this.possibleValues = possibleValues;
-    }
-
-    public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor
-    {
-        let currentClassDescriptor = new NcDatatypeDescriptorStruct("NcPropertyConstraintsEnum", [
-            new NcFieldDescriptor("possibleValues", "NcEnumItemDescriptor", false, true, null, "Allowed values")
-        ], "NcPropertyConstraints", null, "Enum property constraints class");
 
         if(includeInherited)
         {
