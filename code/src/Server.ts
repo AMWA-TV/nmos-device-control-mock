@@ -102,10 +102,6 @@ try
         "The class manager offers access to control class and data type descriptors",
         sessionManager);
 
-    
-
-    
-
     const exampleControl = new ExampleControl(
         111,
         true,
