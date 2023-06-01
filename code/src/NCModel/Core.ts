@@ -167,7 +167,7 @@ export abstract class NcObject
 
     public GenerateMemberDescriptor() : NcBlockMemberDescriptor
     {
-        return new NcBlockMemberDescriptor(this.role, this.oid, this.constantOid, this.classID, this.userLabel, this.owner, this.description, null);
+        return new NcBlockMemberDescriptor(this.role, this.oid, this.constantOid, this.classID, this.userLabel, this.owner, this.description);
     }
 
     public static GetClassDescriptor(includeInherited: boolean) : NcClassDescriptor
@@ -175,7 +175,7 @@ export abstract class NcObject
         return new NcClassDescriptor(`${NcObject.name} class descriptor`,
             NcObject.staticClassID, NcObject.name, null,
             [ 
-                new NcPropertyDescriptor(new NcElementId(1, 1), "classId", "NcClassId", true, true, false, false, null, "Class identity"),
+                new NcPropertyDescriptor(new NcElementId(1, 1), "classId", "NcClassId", true, true, false, false, null, "Static value. All instances of the same class will have the same identity value"),
                 new NcPropertyDescriptor(new NcElementId(1, 2), "oid", "NcOid", true, true, false, false, null, "Object identifier"),
                 new NcPropertyDescriptor(new NcElementId(1, 3), "constantOid", "NcBoolean", true, true, false, false, null, "TRUE iff OID is hardwired into device"),
                 new NcPropertyDescriptor(new NcElementId(1, 4), "owner", "NcOid", true, true, true, false, null, "OID of containing block. Can only ever be null for the root block" ),
@@ -279,6 +279,99 @@ export class NcElementId extends BaseType
     }
 }
 
+export class NcPropertyId extends NcElementId
+{
+    constructor(
+        level: number,
+        index: number)
+    {
+        super(level, index);
+    }
+
+    public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor
+    {
+        let currentDescriptor = new NcDatatypeDescriptorStruct("NcPropertyId", [], "NcElementId", null, "Property id which contains the level and index");
+
+        if(includeInherited)
+        {
+            let baseDescriptor = super.GetTypeDescriptor(includeInherited);
+
+            let baseDescriptorStruct = baseDescriptor as NcDatatypeDescriptorStruct;
+            if(baseDescriptorStruct)
+                currentDescriptor.fields = currentDescriptor.fields.concat(baseDescriptorStruct.fields);
+        }
+
+        return currentDescriptor;
+    }
+
+    public ToJson()
+    {
+        return JSON.stringify(this, jsonIgnoreReplacer);
+    }
+}
+
+export class NcMethodId extends NcElementId
+{
+    constructor(
+        level: number,
+        index: number)
+    {
+        super(level, index);
+    }
+
+    public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor
+    {
+        let currentDescriptor = new NcDatatypeDescriptorStruct("NcMethodId", [], "NcElementId", null, "Method id which contains the level and index");
+
+        if(includeInherited)
+        {
+            let baseDescriptor = super.GetTypeDescriptor(includeInherited);
+
+            let baseDescriptorStruct = baseDescriptor as NcDatatypeDescriptorStruct;
+            if(baseDescriptorStruct)
+                currentDescriptor.fields = currentDescriptor.fields.concat(baseDescriptorStruct.fields);
+        }
+
+        return currentDescriptor;
+    }
+
+    public ToJson()
+    {
+        return JSON.stringify(this, jsonIgnoreReplacer);
+    }
+}
+
+export class NcEventId extends NcElementId
+{
+    constructor(
+        level: number,
+        index: number)
+    {
+        super(level, index);
+    }
+
+    public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor
+    {
+        let currentDescriptor = new NcDatatypeDescriptorStruct("NcEventId", [], "NcElementId", null, "Event id which contains the level and index");
+
+        if(includeInherited)
+        {
+            let baseDescriptor = super.GetTypeDescriptor(includeInherited);
+
+            let baseDescriptorStruct = baseDescriptor as NcDatatypeDescriptorStruct;
+            if(baseDescriptorStruct)
+                currentDescriptor.fields = currentDescriptor.fields.concat(baseDescriptorStruct.fields);
+        }
+
+        return currentDescriptor;
+    }
+
+    public ToJson()
+    {
+        return JSON.stringify(this, jsonIgnoreReplacer);
+    }
+}
+
 export enum NcMethodStatus
 {
     OK = 200,
@@ -309,101 +402,215 @@ export enum NcPropertyChangeType
     SequenceItemRemoved = 3
 }
 
-export enum NcIoDirection
+export abstract class NcMethodResult extends BaseType
 {
-    Undefined = 0,
-    Input = 1,
-    Output = 2,
-    Bidirectional = 3
-}
-
-export class NcPort extends BaseType
-{
-    public role: string;
-
-    public direction: NcIoDirection;
-
-    public clockPath: string[] | null;
+    public status: NcMethodStatus;
 
     public constructor(
-        role: string,
-        direction: NcIoDirection,
-        clockPath: string[] | null)
+        status: NcMethodStatus)
     {
         super();
 
-        this.role = role;
-        this.direction = direction;
-        this.clockPath = clockPath;
+        this.status = status;
     }
 
     public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor
     {
-        return new NcDatatypeDescriptorStruct("NcPort", [
-            new NcFieldDescriptor("role", "NcString", false, false, null, "Unique within owning object"),
-            new NcFieldDescriptor("direction", "NcIoDirection", false, false, null, "Input (sink) or output (source) port"),
-            new NcFieldDescriptor("clockPath", "NcRolePath", true, false, null, "Role path of this port's sample clock or null if none")
-        ], null, null, "Port class");
+        return new NcDatatypeDescriptorStruct("NcMethodResult", [
+            new NcFieldDescriptor("status", "NcMethodStatus", false, false, null, "Status for the invoked method")
+        ], null, null, "Base result of the invoked method");
     }
 }
 
-export class NcPortReference extends BaseType
+export class NcMethodResultError extends NcMethodResult
 {
-    public owner: string[];
-
-    public role: string;
+    public errorMessage: string;
 
     public constructor(
-        owner: string[],
-        role: string)
+        status: NcMethodStatus,
+        errorMessage: string)
     {
-        super();
+        super(status);
 
-        this.owner = owner;
-        this.role = role;
+        this.errorMessage = errorMessage;
     }
 
     public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor
     {
-        return new NcDatatypeDescriptorStruct("NcPortReference", [
-            new NcFieldDescriptor("owner", "NcRolePath", false, true, null, "Role path of owning object"),
-            new NcFieldDescriptor("role", "NcString", false, false, null, "Unique identifier of this port within the owning object")
-        ], null, null, "Device-unique port identifier");
+        let currentClassDescriptor = new NcDatatypeDescriptorStruct("NcMethodResultError", [
+            new NcFieldDescriptor("errorMessage", "NcString", false, false, null, "Optional error message"),
+        ], "NcMethodResult", null, "Error result - to be used when the method call encounters an error")
+
+        if(includeInherited)
+        {
+            let baseDescriptor = super.GetTypeDescriptor(includeInherited);
+
+            let baseDescriptorStruct = baseDescriptor as NcDatatypeDescriptorStruct;
+            if(baseDescriptorStruct)
+                currentClassDescriptor.fields = currentClassDescriptor.fields.concat(baseDescriptorStruct.fields);
+        }
+
+        return currentClassDescriptor;
     }
 }
 
-export class NcSignalPath extends BaseType
+export class NcMethodResultPropertyValue extends NcMethodResult
 {
-    public role: string;
-
-    public label: string;
-
-    public source: NcPortReference;
-
-    public sink: NcPortReference;
+    public value: any | null;
 
     public constructor(
-        role: string,
-        label: string,
-        source: NcPortReference,
-        sink: NcPortReference)
+        status: NcMethodStatus,
+        value: any | null)
     {
-        super();
+        super(status);
 
-        this.role = role;
-        this.label = label;
-        this.source = source;
-        this.sink = sink;
+        this.value = value;
     }
 
     public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor
     {
-        return new NcDatatypeDescriptorStruct("NcSignalPath", [
-            new NcFieldDescriptor("role", "NcString", false, false, null, "Unique identifier of this signal path in this block"),
-            new NcFieldDescriptor("label", "NcString", true, false, null, "Optional label"),
-            new NcFieldDescriptor("source", "NcPortReference", false, false, null, "Source reference"),
-            new NcFieldDescriptor("sink", "NcPortReference", false, false, null, "Sink reference")
-        ], null, null, "Signal path descriptor");
+        let currentClassDescriptor = new NcDatatypeDescriptorStruct("NcMethodResultPropertyValue", [
+            new NcFieldDescriptor("value", null, true, false, null, "Getter method value for the associated property")
+        ], "NcMethodResult", null, "Result when invoking the getter method associated with a property")
+
+        if(includeInherited)
+        {
+            let baseDescriptor = super.GetTypeDescriptor(includeInherited);
+
+            let baseDescriptorStruct = baseDescriptor as NcDatatypeDescriptorStruct;
+            if(baseDescriptorStruct)
+                currentClassDescriptor.fields = currentClassDescriptor.fields.concat(baseDescriptorStruct.fields);
+        }
+
+        return currentClassDescriptor;
+    }
+}
+
+export class NcMethodResultId extends NcMethodResult
+{
+    public value: number;
+
+    public constructor(
+        status: NcMethodStatus,
+        value: number)
+    {
+        super(status);
+
+        this.value = value;
+    }
+
+    public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor
+    {
+        let currentClassDescriptor = new NcDatatypeDescriptorStruct("NcMethodResultId", [
+            new NcFieldDescriptor("value", "NcId", false, false, null, "Id result value")
+        ], "NcMethodResult", null, "Id method result")
+
+        if(includeInherited)
+        {
+            let baseDescriptor = super.GetTypeDescriptor(includeInherited);
+
+            let baseDescriptorStruct = baseDescriptor as NcDatatypeDescriptorStruct;
+            if(baseDescriptorStruct)
+                currentClassDescriptor.fields = currentClassDescriptor.fields.concat(baseDescriptorStruct.fields);
+        }
+
+        return currentClassDescriptor;
+    }
+}
+
+export class NcMethodResultBlockMemberDescriptors extends NcMethodResult
+{
+    public value: NcBlockMemberDescriptor[];
+
+    public constructor(
+        status: NcMethodStatus,
+        value: NcBlockMemberDescriptor[])
+    {
+        super(status);
+
+        this.value = value;
+    }
+
+    public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor
+    {
+        let currentClassDescriptor = new NcDatatypeDescriptorStruct("NcMethodResultBlockMemberDescriptors", [
+            new NcFieldDescriptor("value", "NcBlockMemberDescriptor", false, true, null, "Block member descriptors method result value")
+        ], "NcMethodResult", null, "Method result containing block member descriptors as the value")
+
+        if(includeInherited)
+        {
+            let baseDescriptor = super.GetTypeDescriptor(includeInherited);
+
+            let baseDescriptorStruct = baseDescriptor as NcDatatypeDescriptorStruct;
+            if(baseDescriptorStruct)
+                currentClassDescriptor.fields = currentClassDescriptor.fields.concat(baseDescriptorStruct.fields);
+        }
+
+        return currentClassDescriptor;
+    }
+}
+
+export class NcMethodResultClassDescriptor extends NcMethodResult
+{
+    public value: NcClassDescriptor;
+
+    public constructor(
+        status: NcMethodStatus,
+        value: NcClassDescriptor)
+    {
+        super(status);
+
+        this.value = value;
+    }
+
+    public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor
+    {
+        let currentClassDescriptor = new NcDatatypeDescriptorStruct("NcMethodResultClassDescriptor", [
+            new NcFieldDescriptor("value", "NcClassDescriptor", false, false, null, "Class descriptor method result value")
+        ], "NcMethodResult", null, "Method result containing a class descriptor as the value")
+
+        if(includeInherited)
+        {
+            let baseDescriptor = super.GetTypeDescriptor(includeInherited);
+
+            let baseDescriptorStruct = baseDescriptor as NcDatatypeDescriptorStruct;
+            if(baseDescriptorStruct)
+                currentClassDescriptor.fields = currentClassDescriptor.fields.concat(baseDescriptorStruct.fields);
+        }
+
+        return currentClassDescriptor;
+    }
+}
+
+export class NcMethodResultDatatypeDescriptor extends NcMethodResult
+{
+    public value: NcDatatypeDescriptor;
+
+    public constructor(
+        status: NcMethodStatus,
+        value: NcDatatypeDescriptor)
+    {
+        super(status);
+
+        this.value = value;
+    }
+
+    public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor
+    {
+        let currentClassDescriptor = new NcDatatypeDescriptorStruct("NcMethodResultDatatypeDescriptor", [
+            new NcFieldDescriptor("value", "NcDatatypeDescriptor", false, false, null, "Datatype descriptor method result value")
+        ], "NcMethodResult", null, "Method result containing a datatype descriptor as the value")
+
+        if(includeInherited)
+        {
+            let baseDescriptor = super.GetTypeDescriptor(includeInherited);
+
+            let baseDescriptorStruct = baseDescriptor as NcDatatypeDescriptorStruct;
+            if(baseDescriptorStruct)
+                currentClassDescriptor.fields = currentClassDescriptor.fields.concat(baseDescriptorStruct.fields);
+        }
+
+        return currentClassDescriptor;
     }
 }
 
@@ -445,8 +652,41 @@ export class NcTouchpointResourceNmos extends NcTouchpointResource
     public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor
     {
         let currentClassDescriptor = new NcDatatypeDescriptorStruct("NcTouchpointResourceNmos", [
-            new NcFieldDescriptor("id", "NcUUID", false, false, null, "NMOS resource UUID")
+            new NcFieldDescriptor("id", "NcUuid", false, false, null, "NMOS resource UUID")
         ], "NcTouchpointResource", null, "Touchpoint resource class for NMOS resources");
+
+        if(includeInherited)
+        {
+            let baseDescriptor = super.GetTypeDescriptor(includeInherited);
+
+            let baseDescriptorStruct = baseDescriptor as NcDatatypeDescriptorStruct;
+            if(baseDescriptorStruct)
+                currentClassDescriptor.fields = currentClassDescriptor.fields.concat(baseDescriptorStruct.fields);
+        }
+
+        return currentClassDescriptor;
+    }
+}
+
+export class NcTouchpointResourceNmosChannelMapping extends NcTouchpointResourceNmos
+{
+    public ioId: string;
+
+    public constructor(
+        resourceType: string,
+        id: string,
+        ioId: string)
+    {
+        super(resourceType, id);
+
+        this.ioId = ioId;
+    }
+
+    public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor
+    {
+        let currentClassDescriptor = new NcDatatypeDescriptorStruct("NcTouchpointResourceNmosChannelMapping", [
+            new NcFieldDescriptor("ioId", "NcString", false, false, null, "IS-08 Audio Channel Mapping input or output ID")
+        ], "NcTouchpointResourceNmos", null, "Touchpoint resource class for NMOS resources");
 
         if(includeInherited)
         {
@@ -497,7 +737,7 @@ export class NcTouchpointNmos extends NcTouchpoint
     public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor
     {
         let currentClassDescriptor = new NcDatatypeDescriptorStruct("NcTouchpointNmos", [
-            new NcFieldDescriptor("resource", "NcTouchpointResourceNmos", false, false, null, "Context resource linked"),
+            new NcFieldDescriptor("resource", "NcTouchpointResourceNmos", false, false, null, "Context NMOS resource"),
         ], "NcTouchpoint", null, "Touchpoint class for NMOS resources");
 
         if(includeInherited)
@@ -513,14 +753,56 @@ export class NcTouchpointNmos extends NcTouchpoint
     }
 }
 
-export abstract class NcDescriptor
+export class NcTouchpointNmosChannelMapping extends NcTouchpoint
+{
+    constructor(
+        contextNamespace: string,
+        resource: NcTouchpointResourceNmosChannelMapping)
+    {
+        super(contextNamespace, resource);
+    }
+
+    public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor
+    {
+        let currentClassDescriptor = new NcDatatypeDescriptorStruct("NcTouchpointNmosChannelMapping", [
+            new NcFieldDescriptor("resource", "NcTouchpointResourceNmosChannelMapping", false, false, null, "Context Channel Mapping resource"),
+        ], "NcTouchpoint", null, "Touchpoint class for NMOS IS-08 resources");
+
+        if(includeInherited)
+        {
+            let baseDescriptor = super.GetTypeDescriptor(includeInherited);
+
+            let baseDescriptorStruct = baseDescriptor as NcDatatypeDescriptorStruct;
+            if(baseDescriptorStruct)
+                currentClassDescriptor.fields = currentClassDescriptor.fields.concat(baseDescriptorStruct.fields);
+        }
+
+        return currentClassDescriptor;
+    }
+}
+
+export abstract class NcDescriptor extends BaseType
 {
     public description: string;
 
     constructor(
         description: string)
     {
+        super();
+
         this.description = description;
+    }
+
+    public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor
+    {
+        return new NcDatatypeDescriptorStruct("NcDescriptor", [
+            new NcFieldDescriptor("description", "NcString", true, false, null, "Optional user facing description")
+        ], null, null, "Base descriptor");
+    }
+
+    public ToJson()
+    {
+        return JSON.stringify(this, jsonIgnoreReplacer);
     }
 }
 
@@ -533,7 +815,6 @@ export class NcBlockMemberDescriptor extends BaseType
     public userLabel: string | null;
     public owner: number | null;
     public description: string;
-    public constraints: NcPropertyConstraints | null;
 
     constructor(
         role: string,
@@ -542,8 +823,7 @@ export class NcBlockMemberDescriptor extends BaseType
         classId: number[],
         userLabel: string | null,
         owner: number | null,
-        description: string,
-        constraints: NcPropertyConstraints | null)
+        description: string)
     {
         super();
 
@@ -554,61 +834,18 @@ export class NcBlockMemberDescriptor extends BaseType
         this.userLabel = userLabel;
         this.owner = owner;
         this.description = description;
-        this.constraints = constraints;
     }
 
     public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor
     {
-        return new NcDatatypeDescriptorStruct("NcBlockMemberDescriptor", [
+        let currentClassDescriptor = new NcDatatypeDescriptorStruct("NcBlockMemberDescriptor", [
             new NcFieldDescriptor("role", "NcString", false, false, null, "Role of member in its containing block"),
             new NcFieldDescriptor("oid", "NcOid", false, false, null, "OID of member"),
             new NcFieldDescriptor("constantOid", "NcBoolean", false, false, null, "TRUE iff member's OID is hardwired into device"),
             new NcFieldDescriptor("classId", "NcClassId", false, false, null, "Class ID"),
             new NcFieldDescriptor("userLabel", "NcString", true, false, null, "User label"),
             new NcFieldDescriptor("owner", "NcOid", false, false, null, "Containing block's OID")
-        ], null, null, "Descriptor which is specific to a block member which is not a block");
-    }
-
-    public ToJson()
-    {
-        return JSON.stringify(this, jsonIgnoreReplacer);
-    }
-}
-
-export class NcBlockDescriptor extends NcBlockMemberDescriptor
-{
-    public blockSpecId: string | null;
-
-    constructor(
-        blockSpecId: string | null,
-        role: string,
-        oid: number,
-        constantOid: boolean,
-        classId: number[],
-        userLabel: string | null,
-        owner: number | null,
-        description: string,
-        constraints: NcPropertyConstraints | null)
-    {
-        super(role, oid, constantOid, classId, userLabel, owner, description, constraints);
-
-        this.blockSpecId = blockSpecId;
-    }
-
-    public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor
-    {
-        let currentClassDescriptor = new NcDatatypeDescriptorStruct("NcBlockDescriptor", [
-            new NcFieldDescriptor("blockSpecId", "NcString", false, false, null, "ID of BlockSpec this block implements")
-        ], "NcBlockMemberDescriptor", null, "Descriptor which is specific to a block");
-
-        if(includeInherited)
-        {
-            let baseDescriptor = super.GetTypeDescriptor(includeInherited);
-
-            let baseDescriptorStruct = baseDescriptor as NcDatatypeDescriptorStruct;
-            if(baseDescriptorStruct)
-                currentClassDescriptor.fields = currentClassDescriptor.fields.concat(baseDescriptorStruct.fields);
-        }
+        ], "NcDescriptor", null, "Descriptor which is specific to a block member");
 
         return currentClassDescriptor;
     }
@@ -629,6 +866,7 @@ export class NcPropertyDescriptor extends NcDescriptor
     public isNullable: boolean;
     public isSequence: boolean;
     public isDeprecated: boolean;
+    public isConstant: boolean;
     public constraints: NcParameterConstraints | null;
 
     constructor(
@@ -641,7 +879,8 @@ export class NcPropertyDescriptor extends NcDescriptor
         isSequence: boolean,
         constraints: NcParameterConstraints | null,
         description: string,
-        isDeprecated: boolean = false)
+        isDeprecated: boolean = false,
+        isConstant: boolean = false)
     {
         super(description);
 
@@ -654,6 +893,34 @@ export class NcPropertyDescriptor extends NcDescriptor
         this.isSequence = isSequence;
         this.constraints = constraints;
         this.isDeprecated = isDeprecated
+        this.isConstant = isConstant;
+    }
+
+    public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor
+    {
+        let currentClassDescriptor = new NcDatatypeDescriptorStruct("NcPropertyDescriptor", [
+            new NcFieldDescriptor("id", "NcPropertyId", false, false, null, "Property id with level and index"),
+            new NcFieldDescriptor("name", "NcName", false, false, null, "Name of property"),
+            new NcFieldDescriptor("typeName", "NcName", true, false, null, "Name of property's datatype. Can only ever be null if the type is any"),
+            new NcFieldDescriptor("isReadOnly", "NcBoolean", false, false, null, "TRUE iff property is read-only"),
+            new NcFieldDescriptor("isPersistent", "NcBoolean", false, false, null, "TRUE iff property value survives power-on reset"),
+            new NcFieldDescriptor("isNullable", "NcBoolean", false, false, null, "TRUE iff property is nullable"),
+            new NcFieldDescriptor("isSequence", "NcBoolean", false, false, null, "TRUE iff property is a sequence"),
+            new NcFieldDescriptor("isDeprecated", "NcBoolean", false, false, null, "TRUE iff property is marked as deprecated"),
+            new NcFieldDescriptor("isConstant", "NcBoolean", false, false, null, "TRUE iff property is readonly and constant (its value is never expected to change)"),
+            new NcFieldDescriptor("constraints", "NcParameterConstraints", true, false, null, "Optional constraints on top of the underlying data type")
+        ], "NcDescriptor", null, "Descriptor of a class property");
+
+        if(includeInherited)
+        {
+            let baseDescriptor = super.GetTypeDescriptor(includeInherited);
+
+            let baseDescriptorStruct = baseDescriptor as NcDatatypeDescriptorStruct;
+            if(baseDescriptorStruct)
+                currentClassDescriptor.fields = currentClassDescriptor.fields.concat(baseDescriptorStruct.fields);
+        }
+
+        return currentClassDescriptor;
     }
 
     public ToJson()
@@ -664,28 +931,24 @@ export class NcPropertyDescriptor extends NcDescriptor
 
 export class NcPropertyConstraints extends BaseType
 {
-    public path: string[] | null;
     public propertyId: NcElementId;
-    public value: any | null;
+    public defaultValue: any | null;
 
     constructor(
-        path: string[] | null,
         propertyId: NcElementId,
-        value: any | null)
+        defaultValue: any | null)
     {
         super();
 
-        this.path = path;
         this.propertyId = propertyId;
-        this.value = value;
+        this.defaultValue = defaultValue;
     }
 
     public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor
     {
         return new NcDatatypeDescriptorStruct("NcPropertyConstraints", [
-            new NcFieldDescriptor("path", "NcRolePath", true, false, null, "relative path to member (null means current member)"),
-            new NcFieldDescriptor("propertyId", "NcPropertyId", false, false, null, "ID of property being constrained"),
-            new NcFieldDescriptor("defaultValue", null, true, false, null, "optional default value")
+            new NcFieldDescriptor("propertyId", "NcPropertyId", false, false, null, "The id of the property being constrained"),
+            new NcFieldDescriptor("defaultValue", null, true, false, null, "Optional default value")
         ], null, null, "Property constraints class");
     }
 
@@ -702,14 +965,13 @@ export class NcPropertyConstraintsNumber extends NcPropertyConstraints
     public step: number;
 
     constructor(
-        path: string[] | null,
         propertyId: NcElementId,
-        value: any | null,
+        defaultValue: any | null,
         maximum: number,
         minimum: number,
         step: number)
     {
-        super(path, propertyId, value);
+        super(propertyId, defaultValue);
 
         this.maximum = maximum;
         this.minimum = minimum;
@@ -722,7 +984,7 @@ export class NcPropertyConstraintsNumber extends NcPropertyConstraints
             new NcFieldDescriptor("maximum", null, true, false, null, "optional maximum"),
             new NcFieldDescriptor("minimum", null, true, false, null, "optional minimum"),
             new NcFieldDescriptor("step", null, true, false, null, "optional step"),
-        ], null, null, "Number property constraints class");
+        ], "NcPropertyConstraints", null, "Number property constraints class");
 
         if(includeInherited)
         {
@@ -748,13 +1010,12 @@ export class NcPropertyConstraintsString extends NcPropertyConstraints
     public pattern: string;
 
     constructor(
-        path: string[] | null,
         propertyId: NcElementId,
-        value: any | null,
+        defaultValue: any | null,
         maxCharacters: number,
         pattern: string)
     {
-        super(path, propertyId, value);
+        super(propertyId, defaultValue);
         
         this.maxCharacters = maxCharacters;
         this.pattern = pattern;
@@ -765,7 +1026,7 @@ export class NcPropertyConstraintsString extends NcPropertyConstraints
         let currentClassDescriptor = new NcDatatypeDescriptorStruct("NcPropertyConstraintsString", [
             new NcFieldDescriptor("maxCharacters", "NcUint32", true, false, null, "maximum characters allowed"),
             new NcFieldDescriptor("pattern", "NcRegex", true, false, null, "regex pattern")
-        ], null, null, "String property constraints class");
+        ], "NcPropertyConstraints", null, "String property constraints class");
 
         if(includeInherited)
         {
@@ -785,8 +1046,25 @@ export class NcPropertyConstraintsString extends NcPropertyConstraints
     }
 }
 
-export abstract class NcParameterConstraints
+export abstract class NcParameterConstraints extends BaseType
 {
+    public defaultValue: any | null;
+
+    constructor(
+        defaultValue: any | null)
+    {
+        super();
+
+        this.defaultValue = defaultValue;
+    } 
+
+    public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor
+    {
+        return new NcDatatypeDescriptorStruct("NcParameterConstraints", [
+            new NcFieldDescriptor("defaultValue", null, true, false, null, "Default value")
+        ], null, null, "Abstract parameter constraints class");
+    }
+
     public ToJson()
     {
         return JSON.stringify(this, jsonIgnoreReplacer);
@@ -804,11 +1082,31 @@ export class NcParameterConstraintsNumber extends NcParameterConstraints
         minimum: number,
         step: number)
     {
-        super();
+        super(null);
 
         this.maximum = maximum;
         this.minimum = minimum;
         this.step = step;
+    }
+
+    public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor
+    {
+        let currentClassDescriptor = new NcDatatypeDescriptorStruct("NcParameterConstraintsNumber", [
+            new NcFieldDescriptor("maximum", null, true, false, null, "optional maximum"),
+            new NcFieldDescriptor("minimum", null, true, false, null, "optional minimum"),
+            new NcFieldDescriptor("step", null, true, false, null, "optional step"),
+        ], "NcParameterConstraints", null, "Number parameter constraints class");
+
+        if(includeInherited)
+        {
+            let baseDescriptor = super.GetTypeDescriptor(includeInherited);
+
+            let baseDescriptorStruct = baseDescriptor as NcDatatypeDescriptorStruct;
+            if(baseDescriptorStruct)
+                currentClassDescriptor.fields = currentClassDescriptor.fields.concat(baseDescriptorStruct.fields);
+        }
+
+        return currentClassDescriptor;
     }
 
     public ToJson()
@@ -826,10 +1124,29 @@ export class NcParameterConstraintsString extends NcParameterConstraints
         maxCharacters: number | null,
         pattern: string | null)
     {
-        super();
+        super(null);
         
         this.maxCharacters = maxCharacters;
         this.pattern = pattern;
+    }
+
+    public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor
+    {
+        let currentClassDescriptor = new NcDatatypeDescriptorStruct("NcParameterConstraintsString", [
+            new NcFieldDescriptor("maxCharacters", "NcUint32", true, false, null, "maximum characters allowed"),
+            new NcFieldDescriptor("pattern", "NcRegex", true, false, null, "regex pattern")
+        ], "NcParameterConstraints", null, "String parameter constraints class");
+
+        if(includeInherited)
+        {
+            let baseDescriptor = super.GetTypeDescriptor(includeInherited);
+
+            let baseDescriptorStruct = baseDescriptor as NcDatatypeDescriptorStruct;
+            if(baseDescriptorStruct)
+                currentClassDescriptor.fields = currentClassDescriptor.fields.concat(baseDescriptorStruct.fields);
+        }
+
+        return currentClassDescriptor;
     }
 
     public ToJson()
@@ -863,6 +1180,28 @@ export class NcParameterDescriptor extends NcDescriptor
         this.constraints = constraints;
     }
 
+    public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor
+    {
+        let currentClassDescriptor = new NcDatatypeDescriptorStruct("NcParameterDescriptor", [
+            new NcFieldDescriptor("name", "NcName", false, false, null, "Name of parameter"),
+            new NcFieldDescriptor("typeName", "NcName", true, false, null, "Name of parameter's datatype. Can only ever be null if the type is any"),
+            new NcFieldDescriptor("isNullable", "NcBoolean", false, false, null, "TRUE iff property is nullable"),
+            new NcFieldDescriptor("isSequence", "NcBoolean", false, false, null, "TRUE iff property is a sequence"),
+            new NcFieldDescriptor("constraints", "NcParameterConstraints", true, false, null, "Optional constraints on top of the underlying data type")
+        ], "NcDescriptor", null, "Descriptor of a method parameter");
+
+        if(includeInherited)
+        {
+            let baseDescriptor = super.GetTypeDescriptor(includeInherited);
+
+            let baseDescriptorStruct = baseDescriptor as NcDatatypeDescriptorStruct;
+            if(baseDescriptorStruct)
+                currentClassDescriptor.fields = currentClassDescriptor.fields.concat(baseDescriptorStruct.fields);
+        }
+
+        return currentClassDescriptor;
+    }
+
     public ToJson()
     {
         return JSON.stringify(this, jsonIgnoreReplacer);
@@ -894,6 +1233,28 @@ export class NcMethodDescriptor extends NcDescriptor
         this.isDeprecated = isDeprecated;
     }
 
+    public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor
+    {
+        let currentClassDescriptor = new NcDatatypeDescriptorStruct("NcMethodDescriptor", [
+            new NcFieldDescriptor("id", "NcMethodId", false, false, null, "Method id with level and index"),
+            new NcFieldDescriptor("name", "NcName", false, false, null, "Name of method"),
+            new NcFieldDescriptor("resultDatatype", "NcName", false, false, null, "Name of method result's datatype"),
+            new NcFieldDescriptor("parameters", "NcParameterDescriptor", false, true, null, "Parameter descriptors if any"),
+            new NcFieldDescriptor("isDeprecated", "NcBoolean", false, false, null, "TRUE iff property is marked as deprecated")
+        ], "NcDescriptor", null, "Descriptor of a class method");
+
+        if(includeInherited)
+        {
+            let baseDescriptor = super.GetTypeDescriptor(includeInherited);
+
+            let baseDescriptorStruct = baseDescriptor as NcDatatypeDescriptorStruct;
+            if(baseDescriptorStruct)
+                currentClassDescriptor.fields = currentClassDescriptor.fields.concat(baseDescriptorStruct.fields);
+        }
+
+        return currentClassDescriptor;
+    }
+
     public ToJson()
     {
         return JSON.stringify(this, jsonIgnoreReplacer);
@@ -920,6 +1281,27 @@ export class NcEventDescriptor extends NcDescriptor
         this.name = name;
         this.eventDatatype = eventDatatype;
         this.isDeprecated = isDeprecated;
+    }
+
+    public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor
+    {
+        let currentClassDescriptor = new NcDatatypeDescriptorStruct("NcEventDescriptor", [
+            new NcFieldDescriptor("id", "NcEventId", false, false, null, "Event id with level and index"),
+            new NcFieldDescriptor("name", "NcName", false, false, null, "Name of event"),
+            new NcFieldDescriptor("eventDatatype", "NcName", false, false, null, "Name of event data's datatype"),
+            new NcFieldDescriptor("isDeprecated", "NcBoolean", false, false, null, "TRUE iff property is marked as deprecated")
+        ], "NcDescriptor", null, "Descriptor of a class event");
+
+        if(includeInherited)
+        {
+            let baseDescriptor = super.GetTypeDescriptor(includeInherited);
+
+            let baseDescriptorStruct = baseDescriptor as NcDatatypeDescriptorStruct;
+            if(baseDescriptorStruct)
+                currentClassDescriptor.fields = currentClassDescriptor.fields.concat(baseDescriptorStruct.fields);
+        }
+
+        return currentClassDescriptor;
     }
 
     public ToJson()
@@ -954,6 +1336,29 @@ export class NcClassDescriptor extends NcDescriptor
         this.properties = properties;
         this.methods = methods;
         this.events = events;
+    }
+
+    public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor
+    {
+        let currentClassDescriptor = new NcDatatypeDescriptorStruct("NcClassDescriptor", [
+            new NcFieldDescriptor("identity", "NcClassId", false, false, null, "Identity of the class"),
+            new NcFieldDescriptor("name", "NcName", false, false, null, "Name of the class"),
+            new NcFieldDescriptor("fixedRole", "NcString", true, false, null, "Role if the class has fixed role (manager classes)"),
+            new NcFieldDescriptor("properties", "NcPropertyDescriptor", false, true, null, "Property descriptors"),
+            new NcFieldDescriptor("methods", "NcMethodDescriptor", false, true, null, "Method descriptors"),
+            new NcFieldDescriptor("events", "NcEventDescriptor", false, true, null, "Event descriptors")
+        ], "NcDescriptor", null, "Descriptor of a class");
+
+        if(includeInherited)
+        {
+            let baseDescriptor = super.GetTypeDescriptor(includeInherited);
+
+            let baseDescriptorStruct = baseDescriptor as NcDatatypeDescriptorStruct;
+            if(baseDescriptorStruct)
+                currentClassDescriptor.fields = currentClassDescriptor.fields.concat(baseDescriptorStruct.fields);
+        }
+
+        return currentClassDescriptor;
     }
 
     public ToJson()
@@ -995,6 +1400,28 @@ export class NcFieldDescriptor extends NcDescriptor
         this.constraints = constraints;
     }
 
+    public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor
+    {
+        let currentClassDescriptor = new NcDatatypeDescriptorStruct("NcFieldDescriptor", [
+            new NcFieldDescriptor("name", "NcName", false, false, null, "Name of field"),
+            new NcFieldDescriptor("typeName", "NcName", true, false, null, "Name of field's datatype. Can only ever be null if the type is any"),
+            new NcFieldDescriptor("isNullable", "NcBoolean", false, false, null, "TRUE iff field is nullable"),
+            new NcFieldDescriptor("isSequence", "NcBoolean", false, false, null, "TRUE iff field is a sequence"),
+            new NcFieldDescriptor("constraints", "NcParameterConstraints", true, false, null, "Optional constraints on top of the underlying data type")
+        ], "NcDescriptor", null, "Descriptor of a field of a struct");
+
+        if(includeInherited)
+        {
+            let baseDescriptor = super.GetTypeDescriptor(includeInherited);
+
+            let baseDescriptorStruct = baseDescriptor as NcDatatypeDescriptorStruct;
+            if(baseDescriptorStruct)
+                currentClassDescriptor.fields = currentClassDescriptor.fields.concat(baseDescriptorStruct.fields);
+        }
+
+        return currentClassDescriptor;
+    }
+
     public ToJson()
     {
         return JSON.stringify(this, jsonIgnoreReplacer);
@@ -1015,6 +1442,25 @@ export class NcEnumItemDescriptor extends NcDescriptor
 
         this.name = name;
         this.value = value;
+    }
+
+    public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor
+    {
+        let currentClassDescriptor = new NcDatatypeDescriptorStruct("NcEnumItemDescriptor", [
+            new NcFieldDescriptor("name", "NcName", false, false, null, "Name of option"),
+            new NcFieldDescriptor("value", "NcUint16", false, false, null, "Enum item numerical value")
+        ], "NcDescriptor", null, "Descriptor of an enum item");
+
+        if(includeInherited)
+        {
+            let baseDescriptor = super.GetTypeDescriptor(includeInherited);
+
+            let baseDescriptorStruct = baseDescriptor as NcDatatypeDescriptorStruct;
+            if(baseDescriptorStruct)
+                currentClassDescriptor.fields = currentClassDescriptor.fields.concat(baseDescriptorStruct.fields);
+        }
+
+        return currentClassDescriptor;
     }
 
     public ToJson()
@@ -1042,6 +1488,26 @@ export class NcDatatypeDescriptor extends NcDescriptor
         this.constraints = constraints;
     }
 
+    public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor
+    {
+        let currentClassDescriptor = new NcDatatypeDescriptorStruct("NcDatatypeDescriptor", [
+            new NcFieldDescriptor("name", "NcName", false, false, null, "Datatype name"),
+            new NcFieldDescriptor("type", "NcDatatypeType", false, false, null, "Type: Primitive, Typedef, Struct, Enum"),
+            new NcFieldDescriptor("constraints", "NcParameterConstraints", true, false, null, "Optional constraints on top of the underlying data type")
+        ], "NcDescriptor", null, "Base datatype descriptor");
+
+        if(includeInherited)
+        {
+            let baseDescriptor = super.GetTypeDescriptor(includeInherited);
+
+            let baseDescriptorStruct = baseDescriptor as NcDatatypeDescriptorStruct;
+            if(baseDescriptorStruct)
+                currentClassDescriptor.fields = currentClassDescriptor.fields.concat(baseDescriptorStruct.fields);
+        }
+
+        return currentClassDescriptor;
+    }
+
     public ToJson()
     {
         return JSON.stringify(this, jsonIgnoreReplacer);
@@ -1056,6 +1522,22 @@ export class NcDatatypeDescriptorPrimitive extends NcDatatypeDescriptor
         description: string)
     {
         super(name, NcDatatypeType.Primitive, constraints, description);
+    }
+
+    public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor
+    {
+        let currentClassDescriptor = new NcDatatypeDescriptorStruct("NcDatatypeDescriptorPrimitive", [], "NcDatatypeDescriptor", null, "Primitive datatype descriptor");
+
+        if(includeInherited)
+        {
+            let baseDescriptor = super.GetTypeDescriptor(includeInherited);
+
+            let baseDescriptorStruct = baseDescriptor as NcDatatypeDescriptorStruct;
+            if(baseDescriptorStruct)
+                currentClassDescriptor.fields = currentClassDescriptor.fields.concat(baseDescriptorStruct.fields);
+        }
+
+        return currentClassDescriptor;
     }
 
     public ToJson()
@@ -1080,6 +1562,25 @@ export class NcDatatypeDescriptorTypeDef extends NcDatatypeDescriptor
 
         this.parentType = parentType;
         this.isSequence = isSequence;
+    }
+
+    public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor
+    {
+        let currentClassDescriptor = new NcDatatypeDescriptorStruct("NcDatatypeDescriptorTypeDef", [
+            new NcFieldDescriptor("parentType", "NcName", false, false, null, "Original typedef datatype name"),
+            new NcFieldDescriptor("isSequence", "NcBoolean", false, false, null, "TRUE iff type is a typedef sequence of another type")
+        ], "NcDatatypeDescriptor", null, "Type def datatype descriptor");
+
+        if(includeInherited)
+        {
+            let baseDescriptor = super.GetTypeDescriptor(includeInherited);
+
+            let baseDescriptorStruct = baseDescriptor as NcDatatypeDescriptorStruct;
+            if(baseDescriptorStruct)
+                currentClassDescriptor.fields = currentClassDescriptor.fields.concat(baseDescriptorStruct.fields);
+        }
+
+        return currentClassDescriptor;
     }
 
     public ToJson()
@@ -1107,6 +1608,25 @@ export class NcDatatypeDescriptorStruct extends NcDatatypeDescriptor
         this.parentType = parentType;
     }
 
+    public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor
+    {
+        let currentClassDescriptor = new NcDatatypeDescriptorStruct("NcDatatypeDescriptorStruct", [
+            new NcFieldDescriptor("fields", "NcFieldDescriptor", false, true, null, "One item descriptor per field of the struct"),
+            new NcFieldDescriptor("parentType", "NcName", true, false, null, "Name of the parent type if any or null if it has no parent")
+        ], "NcDatatypeDescriptor", null, "Struct datatype descriptor");
+
+        if(includeInherited)
+        {
+            let baseDescriptor = super.GetTypeDescriptor(includeInherited);
+
+            let baseDescriptorStruct = baseDescriptor as NcDatatypeDescriptorStruct;
+            if(baseDescriptorStruct)
+                currentClassDescriptor.fields = currentClassDescriptor.fields.concat(baseDescriptorStruct.fields);
+        }
+
+        return currentClassDescriptor;
+    }
+
     public ToJson()
     {
         return JSON.stringify(this, jsonIgnoreReplacer);
@@ -1126,6 +1646,24 @@ export class NcDatatypeDescriptorEnum extends NcDatatypeDescriptor
         super(name, NcDatatypeType.Enum, constraints, description);
 
         this.items = items;
+    }
+
+    public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor
+    {
+        let currentClassDescriptor = new NcDatatypeDescriptorStruct("NcDatatypeDescriptorEnum", [
+            new NcFieldDescriptor("items", "NcEnumItemDescriptor", false, true, null, "One item descriptor per enum option")
+        ], "NcDatatypeDescriptor", null, "Enum datatype descriptor");
+
+        if(includeInherited)
+        {
+            let baseDescriptor = super.GetTypeDescriptor(includeInherited);
+
+            let baseDescriptorStruct = baseDescriptor as NcDatatypeDescriptorStruct;
+            if(baseDescriptorStruct)
+                currentClassDescriptor.fields = currentClassDescriptor.fields.concat(baseDescriptorStruct.fields);
+        }
+
+        return currentClassDescriptor;
     }
 
     public ToJson()

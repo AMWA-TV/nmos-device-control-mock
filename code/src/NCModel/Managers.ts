@@ -14,28 +14,42 @@ import {
     NcDatatypeDescriptorPrimitive,
     NcDatatypeDescriptorStruct,
     NcDatatypeDescriptorTypeDef,
+    NcDescriptor,
     NcElementId,
     NcEnumItemDescriptor,
+    NcEventDescriptor,
+    NcEventId,
     NcFieldDescriptor,
     NcMethodDescriptor,
+    NcMethodId,
+    NcMethodResult,
+    NcMethodResultBlockMemberDescriptors,
+    NcMethodResultClassDescriptor,
+    NcMethodResultDatatypeDescriptor,
+    NcMethodResultError,
+    NcMethodResultId,
+    NcMethodResultPropertyValue,
     NcMethodStatus,
     NcObject,
     NcObjectPropertiesHolder,
+    NcParameterConstraints,
+    NcParameterConstraintsNumber,
+    NcParameterConstraintsString,
     NcParameterDescriptor,
-    NcPort,
-    NcPortReference,
     NcPropertyChangeType,
     NcPropertyConstraints,
     NcPropertyConstraintsNumber,
     NcPropertyConstraintsString,
     NcPropertyDescriptor,
+    NcPropertyId,
     NcPropertyValueHolder,
-    NcSignalPath,
     NcTouchpoint,
     NcTouchpointNmos,
+    NcTouchpointNmosChannelMapping,
     NcTouchpointResource,
-    NcTouchpointResourceNmos } from './Core';
-import { DemoDataType, NcActuator, NcDemo, NcGain, NcIdentBeacon, NcReceiverMonitor, NcReceiverStatus, NcSignalWorker, NcWorker } from './Features';
+    NcTouchpointResourceNmos,
+    NcTouchpointResourceNmosChannelMapping} from './Core';
+import { ExampleDataType, ExampleControl, GainControl, NcIdentBeacon, NcReceiverMonitor, NcReceiverMonitorProtected, NcReceiverStatus, NcWorker } from './Features';
 
 export abstract class NcManager extends NcObject
 {
@@ -47,7 +61,7 @@ export abstract class NcManager extends NcObject
     public constructor(
         oid: number,
         constantOid: boolean,
-        owner: NcObject | null,
+        ownerObject: NcObject | null,
         role: string,
         userLabel: string,
         touchpoints: NcTouchpoint[] | null,
@@ -55,7 +69,7 @@ export abstract class NcManager extends NcObject
         description: string,
         notificationContext: INotificationContext)
     {
-        super(oid, constantOid, owner, role, userLabel, touchpoints, runtimePropertyConstraints, description, notificationContext);
+        super(oid, constantOid, ownerObject, role, userLabel, touchpoints, runtimePropertyConstraints, description, notificationContext);
     }
 
     public static override GetClassDescriptor(includeInherited: boolean): NcClassDescriptor
@@ -143,7 +157,7 @@ export class NcProduct extends BaseType
             new NcFieldDescriptor("key", "NcString", false, false, null, "Manufacturer's unique key to product - model number, SKU, etc"),
             new NcFieldDescriptor("revisionLevel", "NcString", false, false, null, "Manufacturer's product revision level code"),
             new NcFieldDescriptor("brandName", "NcString", true, false, null, "Brand name under which product is sold"),
-            new NcFieldDescriptor("uuid", "NcString", true, false, null, "Unique UUID of product (not product instance)"),
+            new NcFieldDescriptor("uuid", "NcUuid", true, false, null, "Unique UUID of product (not product instance)"),
             new NcFieldDescriptor("description", "NcString", true, false, null, "Text description of product"),
         ], null, null, "Product descriptor");
     }
@@ -244,14 +258,14 @@ export class NcDeviceManager extends NcManager
     public constructor(
         oid: number,
         constantOid: boolean,
-        owner: NcObject | null,
+        ownerObject: NcObject | null,
         userLabel: string,
         touchpoints: NcTouchpoint[] | null,
         runtimePropertyConstraints: NcPropertyConstraints[] | null,
         description: string,
         notificationContext: INotificationContext)
     {
-        super(oid, constantOid, owner, NcDeviceManager.staticRole, userLabel, touchpoints, runtimePropertyConstraints, description, notificationContext);
+        super(oid, constantOid, ownerObject, NcDeviceManager.staticRole, userLabel, touchpoints, runtimePropertyConstraints, description, notificationContext);
 
         this.manufacturer = new NcManufacturer("Mock manufacturer", "https://specs.amwa.tv/nmos/");
         this.product = new NcProduct("Mock device", "mock-001", "1.0.0", "Mock brand", "2dcd15f6-aecc-4f01-bf66-b1044c677ef4", "Mock device for testing and prototyping");
@@ -344,8 +358,8 @@ export class NcDeviceManager extends NcManager
             NcDeviceManager.staticClassID, NcDeviceManager.name, NcDeviceManager.staticRole,
             [
                 new NcPropertyDescriptor(new NcElementId(3, 1), "ncVersion", "NcVersionCode", true, true, false, false, null, "Version of nc this dev uses"),
-                new NcPropertyDescriptor(new NcElementId(3, 2), "manufacturer", "NcManufacturer", true, true, false, false, null, "Manufacturer descriptor"),
-                new NcPropertyDescriptor(new NcElementId(3, 3), "product", "NcProduct", true, true, false, false, null, "Product descriptor"),
+                new NcPropertyDescriptor(new NcElementId(3, 2), "manufacturer", "NcManufacturer", true, true, false, false, null, "Manufacturer descriptor", false, true),
+                new NcPropertyDescriptor(new NcElementId(3, 3), "product", "NcProduct", true, true, false, false, null, "Product descriptor", false, true),
                 new NcPropertyDescriptor(new NcElementId(3, 4), "serialNumber", "NcString", true, true, false, false, null, "Serial number"),
                 new NcPropertyDescriptor(new NcElementId(3, 5), "userInventoryCode", "NcString", false, true, true, false, null, "Asset tracking identifier (user specified)"),
                 new NcPropertyDescriptor(new NcElementId(3, 6), "deviceName", "NcString", false, true, true, false, null, "Name of this device in the application. Instance name, not product name."),
@@ -414,14 +428,14 @@ export class NcClassManager extends NcManager
     public constructor(
         oid: number,
         constantOid: boolean,
-        owner: NcObject | null,
+        ownerObject: NcObject | null,
         userLabel: string,
         touchpoints: NcTouchpoint[] | null,
         runtimePropertyConstraints: NcPropertyConstraints[] | null,
         description: string,
         notificationContext: INotificationContext)
     {
-        super(oid, constantOid, owner, NcClassManager.staticRole, userLabel, touchpoints, runtimePropertyConstraints, description, notificationContext);
+        super(oid, constantOid, ownerObject, NcClassManager.staticRole, userLabel, touchpoints, runtimePropertyConstraints, description, notificationContext);
 
         this.controlClassesRegister = this.GenerateClassDescriptors();
         this.controlClasses = Object.values(this.controlClassesRegister);
@@ -536,16 +550,18 @@ export class NcClassManager extends NcManager
         let currentClassDescriptor = new NcClassDescriptor(`${NcClassManager.name} class descriptor`,
             NcClassManager.staticClassID, NcClassManager.name, NcClassManager.staticRole,
             [ 
-                new NcPropertyDescriptor(new NcElementId(3, 1), "controlClasses", "NcClassDescriptor", true, true, false, true, null, "Descriptions of all control classes in the device"),
-                new NcPropertyDescriptor(new NcElementId(3, 2), "datatypes", "NcDatatypeDescriptor", true, true, false, true, null, "Descriptions of all data types in the device")
+                new NcPropertyDescriptor(new NcElementId(3, 1), "controlClasses", "NcClassDescriptor", true, true, false, true, null, "Descriptions of all control classes in the device (descriptors do not contain inherited elements)"),
+                new NcPropertyDescriptor(new NcElementId(3, 2), "datatypes", "NcDatatypeDescriptor", true, true, false, true, null, "Descriptions of all data types in the device (descriptors do not contain inherited elements)")
             ],
             [ 
                 new NcMethodDescriptor(new NcElementId(3, 1), "GetControlClass", "NcMethodResultClassDescriptor", [
-                    new NcParameterDescriptor("identity", "NcClassId", false, false, null, "class ID")
+                    new NcParameterDescriptor("identity", "NcClassId", false, false, null, "class ID"),
+                    new NcParameterDescriptor("includeInherited", "NcBoolean", false, false, null, "if set the descriptor would contain all inherited elements")
                 ], "Get a single class descriptor"),
                 new NcMethodDescriptor(new NcElementId(3, 2), "GetDatatype", "NcMethodResultDatatypeDescriptor", [
-                    new NcParameterDescriptor("name", "NcName", false, false, null, "name of datatype")
-                ], "Get descriptor of datatype and maybe its component datatypes")
+                    new NcParameterDescriptor("name", "NcName", false, false, null, "name of datatype"),
+                    new NcParameterDescriptor("includeInherited", "NcBoolean", false, false, null, "if set the descriptor would contain all inherited elements")
+                ], "Get a single datatype descriptor")
             ],
             []
         );
@@ -568,15 +584,14 @@ export class NcClassManager extends NcManager
             '1': NcObject.GetClassDescriptor(false),
             '1.1': NcBlock.GetClassDescriptor(false),
             '1.2': NcWorker.GetClassDescriptor(false),
-            '1.2.1': NcSignalWorker.GetClassDescriptor(false),
-            '1.2.1.1': NcActuator.GetClassDescriptor(false),
-            '1.3': NcManager.GetClassDescriptor(false),
-            '1.3.1': NcDeviceManager.GetClassDescriptor(false),
-            '1.3.2': NcClassManager.GetClassDescriptor(false),
-            '1.2.0.1': NcDemo.GetClassDescriptor(false),
+            '1.2.0.1': GainControl.GetClassDescriptor(false),
+            '1.2.0.2': ExampleControl.GetClassDescriptor(false),
             '1.2.2': NcIdentBeacon.GetClassDescriptor(false),
             '1.2.3': NcReceiverMonitor.GetClassDescriptor(false),
-            '1.2.1.1.1': NcGain.GetClassDescriptor(false)
+            '1.2.3.1': NcReceiverMonitorProtected.GetClassDescriptor(false),
+            '1.3': NcManager.GetClassDescriptor(false),
+            '1.3.1': NcDeviceManager.GetClassDescriptor(false),
+            '1.3.2': NcClassManager.GetClassDescriptor(false)
         };
 
         return register;
@@ -591,15 +606,14 @@ export class NcClassManager extends NcManager
             case '1': return NcObject.GetClassDescriptor(true);
             case '1.1': return NcBlock.GetClassDescriptor(true);
             case '1.2': return NcWorker.GetClassDescriptor(true);
-            case '1.2.1': return NcSignalWorker.GetClassDescriptor(true);
-            case '1.2.1.1': return NcActuator.GetClassDescriptor(true);
+            case '1.2.0.1': return GainControl.GetClassDescriptor(true);
+            case '1.2.0.2': return ExampleControl.GetClassDescriptor(true);
+            case '1.2.2': return NcIdentBeacon.GetClassDescriptor(true);
+            case '1.2.3': return NcReceiverMonitor.GetClassDescriptor(true);
+            case '1.2.3.1': return NcReceiverMonitorProtected.GetClassDescriptor(true);
             case '1.3': return NcManager.GetClassDescriptor(true);
             case '1.3.1': return NcDeviceManager.GetClassDescriptor(true);
             case '1.3.2': return NcClassManager.GetClassDescriptor(true);
-            case '1.2.0.1': return NcDemo.GetClassDescriptor(true);
-            case '1.2.2': return NcIdentBeacon.GetClassDescriptor(true);
-            case '1.2.3': return NcReceiverMonitor.GetClassDescriptor(true);
-            case '1.2.1.1.1': return NcGain.GetClassDescriptor(true);
             default: return null;
         }
     }
@@ -620,7 +634,7 @@ export class NcClassManager extends NcManager
             'NcClassId': new NcDatatypeDescriptorTypeDef("NcClassId", "NcInt32", true, null, "Sequence of class ID fields."),
             'NcVersionCode': new NcDatatypeDescriptorTypeDef("NcVersionCode", "NcString", false, null, "Version code in semantic versioning format"),
             'NcUri': new NcDatatypeDescriptorTypeDef("NcUri", "NcString", false, null, "Uniform resource identifier"),
-            'NcOrganizationId': new NcDatatypeDescriptorTypeDef("NcOrganizationId", "NcInt32", true, null, "Unique 24-bit organization ID"),
+            'NcOrganizationId': new NcDatatypeDescriptorTypeDef("NcOrganizationId", "NcInt32", false, null, "Unique 24-bit organization ID"),
             'NcManufacturer': NcManufacturer.GetTypeDescriptor(false),
             'NcProduct': NcProduct.GetTypeDescriptor(false),
             'NcDeviceGenericState': new NcDatatypeDescriptorEnum("NcDeviceGenericState", [
@@ -638,22 +652,46 @@ export class NcClassManager extends NcManager
                 new NcEnumItemDescriptor("Upgrade", 3, "Upgrade"),
                 new NcEnumItemDescriptor("ControllerRequest", 4, "Controller request"),
                 new NcEnumItemDescriptor("ManualReset", 5, "Manual request from the front panel")
-            ], null, "Device generic operational state"),
+            ], null, "Reset cause enum"),
             'NcDeviceOperationalState': NcDeviceOperationalState.GetTypeDescriptor(false),
             'NcOid': new NcDatatypeDescriptorTypeDef("NcOid", "NcUint32", false, null, "Object id"),
             'NcName': new NcDatatypeDescriptorTypeDef("NcName", "NcString", false, null, "Programmatically significant name, alphanumerics + underscore, no spaces"),
+            'NcUuid': new NcDatatypeDescriptorTypeDef("NcUuid", "NcString", false, null, "UUID"),
             'NcRolePath': new NcDatatypeDescriptorTypeDef("NcRolePath", "NcString", true, null, "Role path"),
             'NcId': new NcDatatypeDescriptorTypeDef("NcId", "NcUint32", false, null, "Identity handler"),
             'NcTimeInterval': new NcDatatypeDescriptorTypeDef("NcTimeInterval", "NcInt64", false, null, "Time interval described in nanoseconds"),
-            'NcDB': new NcDatatypeDescriptorTypeDef("NcDB", "NcFloat32", false, null, "A ratio expressed in dB."),
-            'NcPropertyId': new NcDatatypeDescriptorTypeDef("NcPropertyId", "NcElementId", false, null, "Class property id which contains the level and index"),
             'NcElementId': NcElementId.GetTypeDescriptor(false),
+            'NcPropertyId': NcPropertyId.GetTypeDescriptor(false),
+            'NcMethodId': NcMethodId.GetTypeDescriptor(false),
+            'NcEventId': NcEventId.GetTypeDescriptor(false),
+            'NcDescriptor': NcDescriptor.GetTypeDescriptor(false),
+            'NcDatatypeDescriptor': NcDatatypeDescriptor.GetTypeDescriptor(false),
+            'NcDatatypeDescriptorPrimitive': NcDatatypeDescriptorPrimitive.GetTypeDescriptor(false),
+            'NcDatatypeDescriptorTypeDef': NcDatatypeDescriptorTypeDef.GetTypeDescriptor(false),
+            'NcDatatypeDescriptorStruct': NcDatatypeDescriptorStruct.GetTypeDescriptor(false),
+            'NcDatatypeDescriptorEnum': NcDatatypeDescriptorEnum.GetTypeDescriptor(false),
+            'NcPropertyDescriptor': NcPropertyDescriptor.GetTypeDescriptor(false),
+            'NcFieldDescriptor': NcFieldDescriptor.GetTypeDescriptor(false),
+            'NcEnumItemDescriptor': NcEnumItemDescriptor.GetTypeDescriptor(false),
+            'NcParameterDescriptor': NcParameterDescriptor.GetTypeDescriptor(false),
+            'NcMethodDescriptor': NcMethodDescriptor.GetTypeDescriptor(false),
+            'NcEventDescriptor': NcEventDescriptor.GetTypeDescriptor(false),
+            'NcClassDescriptor': NcClassDescriptor.GetTypeDescriptor(false),
+            'NcParameterConstraints': NcParameterConstraints.GetTypeDescriptor(false),
+            'NcParameterConstraintsNumber': NcParameterConstraintsNumber.GetTypeDescriptor(false),
+            'NcParameterConstraintsString': NcParameterConstraintsString.GetTypeDescriptor(false),
             'NcPropertyChangeType': new NcDatatypeDescriptorEnum("NcPropertyChangeType", [
                 new NcEnumItemDescriptor("ValueChanged", 0, "Current value changed"),
                 new NcEnumItemDescriptor("SequenceItemAdded", 1, "Sequence item added"),
                 new NcEnumItemDescriptor("SequenceItemChanged", 2, "Sequence item changed"),
                 new NcEnumItemDescriptor("SequenceItemRemoved", 3, "Sequence item removed")
             ], null, "Type of property change"),
+            'NcDatatypeType': new NcDatatypeDescriptorEnum("NcDatatypeType", [
+                new NcEnumItemDescriptor("Primitive", 0, "Primitive datatype"),
+                new NcEnumItemDescriptor("Typedef", 1, "Simple alias of another datatype"),
+                new NcEnumItemDescriptor("Struct", 2, "Data structure"),
+                new NcEnumItemDescriptor("Enum", 3, "Enum datatype")
+            ], null, "Datatype type"),
             'NcPropertyChangedEventData': NcPropertyChangedEventData.GetTypeDescriptor(false),
             'NcMethodStatus': new NcDatatypeDescriptorEnum("NcMethodStatus", [
                 new NcEnumItemDescriptor("Ok", 200, "Method call was successful"),
@@ -675,38 +713,15 @@ export class NcClassManager extends NcManager
                 new NcEnumItemDescriptor("Timeout", 504, "Method call did not finish within the allotted time"),
                 new NcEnumItemDescriptor("ProtocolVersionError", 505, "Incompatible protocol version"),
             ], null, "Method invokation status"),
-            'NcMethodResult': new NcDatatypeDescriptorStruct("NcMethodResult", [
-                new NcFieldDescriptor("status", "NcMethodStatus", false, false, null, "Status for the invoked method"),
-                new NcFieldDescriptor("errorMessage", "NcString", true, false, null, "Optional error message")
-            ], null, null, "Result of the invoked method"),
-            'NcMethodResultPropertyValue': new NcDatatypeDescriptorStruct("NcMethodResultPropertyValue", [
-                new NcFieldDescriptor("status", "NcMethodStatus", false, false, null, "Status for the invoked method"),
-                new NcFieldDescriptor("errorMessage", "NcString", true, false, null, "Optional error message"),
-                new NcFieldDescriptor("value", null, true, false, null, "Getter method value for the associated property")
-            ], "NcMethodResult", null, "Result when invoking the getter method associated with a property"),
-            'NcMethodResultId': new NcDatatypeDescriptorStruct("NcMethodResultId", [
-                new NcFieldDescriptor("status", "NcMethodStatus", false, false, null, "Status for the invoked method"),
-                new NcFieldDescriptor("errorMessage", "NcString", true, false, null, "Optional error message"),
-                new NcFieldDescriptor("value", "NcId", false, false, null, "NcId method result value")
-            ], "NcMethodResult", null, "Method result containing an NcId value"),
+            'NcMethodResult': NcMethodResult.GetTypeDescriptor(false),
+            'NcMethodResultError': NcMethodResultError.GetTypeDescriptor(false),
+            'NcMethodResultPropertyValue': NcMethodResultPropertyValue.GetTypeDescriptor(false),
+            'NcMethodResultId': NcMethodResultId.GetTypeDescriptor(false),
             'NcBlockMemberDescriptor': NcBlockMemberDescriptor.GetTypeDescriptor(false),
-            'NcMethodResultBlockMemberDescriptors': new NcDatatypeDescriptorStruct("NcMethodResultBlockMemberDescriptors", [
-                new NcFieldDescriptor("status", "NcMethodStatus", false, false, null, "Status for the invoked method"),
-                new NcFieldDescriptor("errorMessage", "NcString", true, false, null, "Optional error message"),
-                new NcFieldDescriptor("value", "NcBlockMemberDescriptor", false, true, null, "Block member descriptors method result value")
-            ], "NcMethodResult", null, "Method result containing block member descriptors as the value"),
+            'NcMethodResultBlockMemberDescriptors': NcMethodResultBlockMemberDescriptors.GetTypeDescriptor(false),
+            'NcMethodResultClassDescriptor': NcMethodResultClassDescriptor.GetTypeDescriptor(false),
+            'NcMethodResultDatatypeDescriptor': NcMethodResultDatatypeDescriptor.GetTypeDescriptor(false),
             'NcReceiverStatus': NcReceiverStatus.GetTypeDescriptor(false),
-            'NcMethodResultReceiverStatus': new NcDatatypeDescriptorStruct("NcMethodResultReceiverStatus", [
-                new NcFieldDescriptor("status", "NcMethodStatus", false, false, null, "Status for the invoked method"),
-                new NcFieldDescriptor("errorMessage", "NcString", true, false, null, "Optional error message"),
-                new NcFieldDescriptor("value", "NcReceiverStatus", false, false, null, "Receiver status method result value")
-            ], "NcMethodResult", null, "Method result containing receiver status information as the value"),
-            'NcIoDirection': new NcDatatypeDescriptorEnum("NcIoDirection", [
-                new NcEnumItemDescriptor("Undefined", 0, "Not defined"),
-                new NcEnumItemDescriptor("Input", 1, "Input direction"),
-                new NcEnumItemDescriptor("Output", 2, "Output direction"),
-                new NcEnumItemDescriptor("Bidirectional", 3, "Bidirectional")
-            ], null, "Input and/or output direction"),
             'NcConnectionStatus': new NcDatatypeDescriptorEnum("NcConnectionStatus", [
                 new NcEnumItemDescriptor("Undefined", 0, "This is the value when there is no receiver"),
                 new NcEnumItemDescriptor("Connected", 1, "Connected to a stream"),
@@ -719,24 +734,23 @@ export class NcClassManager extends NcManager
                 new NcEnumItemDescriptor("PayloadFormatUnsupported", 2, "Payload is being received but is of an unsupported type"),
                 new NcEnumItemDescriptor("PayloadError", 3, "A payload error was encountered")
             ], null, "Payload status enum data type"),
-            'NcPort': NcPort.GetTypeDescriptor(false),
-            'NcPortReference': NcPortReference.GetTypeDescriptor(false),
-            'NcSignalPath': NcSignalPath.GetTypeDescriptor(false),
             'NcTouchpoint': NcTouchpoint.GetTypeDescriptor(false),
             'NcTouchpointResource': NcTouchpointResource.GetTypeDescriptor(false),
             'NcTouchpointNmos': NcTouchpointNmos.GetTypeDescriptor(false),
             'NcTouchpointResourceNmos': NcTouchpointResourceNmos.GetTypeDescriptor(false),
-            'NcDemoEnum': new NcDatatypeDescriptorEnum("NcDemoEnum", [
+            'NcTouchpointNmosChannelMapping': NcTouchpointNmosChannelMapping.GetTypeDescriptor(false),
+            'NcTouchpointResourceNmosChannelMapping': NcTouchpointResourceNmosChannelMapping.GetTypeDescriptor(false),
+            'ExampleEnum': new NcDatatypeDescriptorEnum("ExampleEnum", [
                 new NcEnumItemDescriptor("Undefined", 0, "Not defined option"),
                 new NcEnumItemDescriptor("Alpha", 1, "Alpha option"),
                 new NcEnumItemDescriptor("Beta", 2, "Beta option"),
                 new NcEnumItemDescriptor("Gamma", 3, "Gamma option")
-            ], null, "Demonstration enum data type"),
-            'DemoDataType': DemoDataType.GetTypeDescriptor(false),
+            ], null, "Example enum data type"),
+            'ExampleDataType': ExampleDataType.GetTypeDescriptor(false),
             'NcRegex': new NcDatatypeDescriptorTypeDef("NcRegex", "NcString", false, null, "Regex pattern"),
             'NcPropertyConstraints': NcPropertyConstraints.GetTypeDescriptor(false),
             'NcPropertyConstraintsNumber': NcPropertyConstraintsNumber.GetTypeDescriptor(false),
-            'NcPropertyConstraintsString': NcPropertyConstraintsString.GetTypeDescriptor(false),
+            'NcPropertyConstraintsString': NcPropertyConstraintsString.GetTypeDescriptor(false)
         };
 
         return register;
@@ -746,24 +760,36 @@ export class NcClassManager extends NcManager
     {
         switch (name)
         {
-            case 'NcManufacturer': return NcManufacturer.GetTypeDescriptor(true);
-            case 'NcProduct': return NcProduct.GetTypeDescriptor(true);
-            case 'NcDeviceOperationalState': return NcDeviceOperationalState.GetTypeDescriptor(true);
-            case 'NcElementId': return NcElementId.GetTypeDescriptor(true);
-            case 'NcPropertyChangedEventData': return NcPropertyChangedEventData.GetTypeDescriptor(true);
+            case 'NcPropertyId': return NcPropertyId.GetTypeDescriptor(true);
+            case 'NcMethodId': return NcMethodId.GetTypeDescriptor(true);
+            case 'NcEventId': return NcEventId.GetTypeDescriptor(true);
+            case 'NcDatatypeDescriptor': return NcDatatypeDescriptor.GetTypeDescriptor(true);
+            case 'NcDatatypeDescriptorPrimitive': return NcDatatypeDescriptorPrimitive.GetTypeDescriptor(true);
+            case 'NcDatatypeDescriptorTypeDef': return NcDatatypeDescriptorTypeDef.GetTypeDescriptor(true);
+            case 'NcDatatypeDescriptorStruct': return NcDatatypeDescriptorStruct.GetTypeDescriptor(true);
+            case 'NcDatatypeDescriptorEnum': return NcDatatypeDescriptorEnum.GetTypeDescriptor(true);
+            case 'NcPropertyDescriptor': return NcPropertyDescriptor.GetTypeDescriptor(true);
+            case 'NcFieldDescriptor': return NcFieldDescriptor.GetTypeDescriptor(true);
+            case 'NcEnumItemDescriptor': return NcEnumItemDescriptor.GetTypeDescriptor(true);
+            case 'NcParameterDescriptor': return NcParameterDescriptor.GetTypeDescriptor(true);
+            case 'NcMethodDescriptor': return NcMethodDescriptor.GetTypeDescriptor(true);
+            case 'NcEventDescriptor': return NcEventDescriptor.GetTypeDescriptor(true);
+            case 'NcClassDescriptor': return NcClassDescriptor.GetTypeDescriptor(true);
+            case 'NcParameterConstraintsNumber': return NcParameterConstraintsNumber.GetTypeDescriptor(true);
+            case 'NcParameterConstraintsString': return NcParameterConstraintsString.GetTypeDescriptor(true);
             case 'NcBlockMemberDescriptor': return NcBlockMemberDescriptor.GetTypeDescriptor(true);
-            case 'NcReceiverStatus': return NcReceiverStatus.GetTypeDescriptor(true);
-            case 'NcPort': return NcPort.GetTypeDescriptor(true);
-            case 'NcPortReference': return NcPortReference.GetTypeDescriptor(true);
-            case 'NcSignalPath': return NcSignalPath.GetTypeDescriptor(true);
-            case 'NcTouchpoint': return NcTouchpoint.GetTypeDescriptor(true);
-            case 'NcTouchpointResource': return NcTouchpointResource.GetTypeDescriptor(true);
             case 'NcTouchpointNmos': return NcTouchpointNmos.GetTypeDescriptor(true);
+            case 'NcTouchpointNmosChannelMapping': return NcTouchpointNmosChannelMapping.GetTypeDescriptor(true);
             case 'NcTouchpointResourceNmos': return NcTouchpointResourceNmos.GetTypeDescriptor(true);
-            case 'DemoDataType': return DemoDataType.GetTypeDescriptor(true);
-            case 'NcPropertyConstraints': return NcPropertyConstraints.GetTypeDescriptor(true);
+            case 'NcTouchpointResourceNmosChannelMapping': return NcTouchpointResourceNmosChannelMapping.GetTypeDescriptor(true);
             case 'NcPropertyConstraintsNumber': return NcPropertyConstraintsNumber.GetTypeDescriptor(true);
             case 'NcPropertyConstraintsString': return NcPropertyConstraintsString.GetTypeDescriptor(true);
+            case 'NcMethodResultError': return NcMethodResultError.GetTypeDescriptor(true);
+            case 'NcMethodResultPropertyValue': return NcMethodResultPropertyValue.GetTypeDescriptor(true);
+            case 'NcMethodResultBlockMemberDescriptors': return NcMethodResultBlockMemberDescriptors.GetTypeDescriptor(true);
+            case 'NcMethodResultClassDescriptor': return NcMethodResultClassDescriptor.GetTypeDescriptor(true);
+            case 'NcMethodResultDatatypeDescriptor': return NcMethodResultDatatypeDescriptor.GetTypeDescriptor(true);
+            case 'NcMethodResultId': return NcMethodResultId.GetTypeDescriptor(true);
             default: return this.dataTypesRegister[name];
         }
     }

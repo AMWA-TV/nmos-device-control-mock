@@ -17,7 +17,6 @@ import {
     NcParameterConstraintsNumber,
     NcParameterConstraintsString,
     NcParameterDescriptor,
-    NcPort,
     NcPropertyChangeType,
     NcPropertyConstraints,
     NcPropertyDescriptor,
@@ -37,7 +36,7 @@ export abstract class NcWorker extends NcObject
     public constructor(
         oid: number,
         constantOid: boolean,
-        owner: NcObject | null,
+        ownerObject: NcObject | null,
         role: string,
         userLabel: string,
         touchpoints: NcTouchpoint[],
@@ -46,7 +45,7 @@ export abstract class NcWorker extends NcObject
         description: string,
         notificationContext: INotificationContext)
     {
-        super(oid, constantOid, owner, role, userLabel, touchpoints, runtimePropertyConstraints, description, notificationContext);
+        super(oid, constantOid, ownerObject, role, userLabel, touchpoints, runtimePropertyConstraints, description, notificationContext);
 
         this.enabled = enabled;
     }
@@ -80,7 +79,9 @@ export abstract class NcWorker extends NcObject
             switch(key)
             {
                 case '2p1':
-                    return new CommandResponseError(handle, NcMethodStatus.Readonly, 'Property is readonly');
+                    this.enabled = value;
+                    this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.enabled, null);
+                    return new CommandResponseNoValue(handle, NcMethodStatus.OK);
                 default:
                     return super.Set(oid, id, value, handle);
             }
@@ -89,7 +90,7 @@ export abstract class NcWorker extends NcObject
         return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
     }
 
-    public static override GetClassDescriptor(includeInherited: boolean): NcClassDescriptor 
+    public static override GetClassDescriptor(includeInherited: boolean): NcClassDescriptor
     {
         let currentClassDescriptor = new NcClassDescriptor(`${NcWorker.name} class descriptor`,
             NcWorker.staticClassID, NcWorker.name, null,
@@ -126,188 +127,30 @@ export abstract class NcWorker extends NcObject
     }
 }
 
-export abstract class NcSignalWorker extends NcWorker
+export class GainControl extends NcWorker
 {
-    public static staticClassID: number[] = [ 1, 2, 1 ];
+    public static staticClassID: number[] = [ 1, 2, 0, 1 ];
 
     @myIdDecorator('1p1')
-    public override classID: number[] = NcSignalWorker.staticClassID;
+    public override classID: number[] = GainControl.staticClassID;
 
     @myIdDecorator('3p1')
-    public ports: NcPort[] | null;
-
-    @myIdDecorator('3p2')
-    public latency: number | null;
-
-    public constructor(
-        oid: number,
-        constantOid: boolean,
-        owner: NcObject | null,
-        role: string,
-        userLabel: string,
-        touchpoints: NcTouchpoint[],
-        runtimePropertyConstraints: NcPropertyConstraints[] | null,
-        enabled: boolean,
-        ports: NcPort[] | null,
-        latency: number | null,
-        description: string,
-        notificationContext: INotificationContext)
-    {
-        super(oid, constantOid, owner, role, userLabel, touchpoints, runtimePropertyConstraints, enabled, description, notificationContext);
-
-        this.ports = ports;
-        this.latency = latency;
-    }
-
-    //'1m1'
-    public override Get(oid: number, propertyId: NcElementId, handle: number) : CommandResponseNoValue
-    {
-        if(oid == this.oid)
-        {
-            let key: string = `${propertyId.level}p${propertyId.index}`;
-
-            switch(key)
-            {
-                case '3p1':
-                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.ports);
-                case '3p2':
-                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.latency);
-                default:
-                    return super.Get(oid, propertyId, handle);
-            }
-        }
-
-        return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
-    }
-
-    //'1m2'
-    public override Set(oid: number, id: NcElementId, value: any, handle: number) : CommandResponseNoValue
-    {
-        if(oid == this.oid)
-        {
-            let key: string = `${id.level}p${id.index}`;
-
-            switch(key)
-            {
-                case '3p1':
-                case '3p2':
-                    return new CommandResponseError(handle, NcMethodStatus.Readonly, 'Property is readonly');
-                default:
-                    return super.Set(oid, id, value, handle);
-            }
-        }
-
-        return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
-    }
-
-    public static override GetClassDescriptor(includeInherited: boolean): NcClassDescriptor 
-    {
-        let currentClassDescriptor = new NcClassDescriptor(`${NcSignalWorker.name} class descriptor`,
-            NcSignalWorker.staticClassID, NcSignalWorker.name, null,
-            [
-                new NcPropertyDescriptor(new NcElementId(3, 1), "ports", "NcPort", false, true, false, true, null, "The worker's signal ports"),
-                new NcPropertyDescriptor(new NcElementId(3, 2), "latency", "NcTimeInterval", true, true, true, false, null, "Processing latency of this object (null if not defined)")
-            ],
-            [],
-            []
-        );
-
-        if(includeInherited)
-        {
-            let baseDescriptor = super.GetClassDescriptor(includeInherited);
-
-            currentClassDescriptor.properties = currentClassDescriptor.properties.concat(baseDescriptor.properties);
-            currentClassDescriptor.methods = currentClassDescriptor.methods.concat(baseDescriptor.methods);
-            currentClassDescriptor.events = currentClassDescriptor.events.concat(baseDescriptor.events);
-        }
-
-        return currentClassDescriptor;
-    }
-
-    public override GetAllProperties(recurse: boolean) : NcObjectPropertiesHolder[]
-    {
-        let properties = [
-            new NcObjectPropertiesHolder(this.GetRolePath(), [
-                new NcPropertyValueHolder(new NcElementId(3, 1), "ports", this.ports),
-                new NcPropertyValueHolder(new NcElementId(3, 2), "latency", this.latency)
-            ])
-        ];
-
-        properties[0].propertiesValues = properties[0].propertiesValues.concat(super.GetAllProperties(recurse)[0].propertiesValues);
-
-        return properties;
-    }
-}
-
-export abstract class NcActuator extends NcSignalWorker
-{
-    public static staticClassID: number[] = [ 1, 2, 1, 1 ];
-
-    @myIdDecorator('1p1')
-    public override classID: number[] = NcActuator.staticClassID;
-
-    public constructor(
-        oid: number,
-        constantOid: boolean,
-        owner: NcObject | null,
-        role: string,
-        userLabel: string,
-        touchpoints: NcTouchpoint[],
-        runtimePropertyConstraints: NcPropertyConstraints[] | null,
-        enabled: boolean,
-        ports: NcPort[] | null,
-        latency: number | null,
-        description: string,
-        notificationContext: INotificationContext)
-    {
-        super(oid, constantOid, owner, role, userLabel, touchpoints, runtimePropertyConstraints, enabled, ports, latency, description, notificationContext);
-    }
-
-    public static override GetClassDescriptor(includeInherited: boolean): NcClassDescriptor 
-    {
-        let currentClassDescriptor = new NcClassDescriptor(`${NcActuator.name} class descriptor`,
-            NcActuator.staticClassID, NcActuator.name, null,
-        [], [], []);
-
-        if(includeInherited)
-        {
-            let baseDescriptor = super.GetClassDescriptor(includeInherited);
-
-            currentClassDescriptor.properties = currentClassDescriptor.properties.concat(baseDescriptor.properties);
-            currentClassDescriptor.methods = currentClassDescriptor.methods.concat(baseDescriptor.methods);
-            currentClassDescriptor.events = currentClassDescriptor.events.concat(baseDescriptor.events);
-        }
-
-        return currentClassDescriptor;
-    }
-}
-
-export class NcGain extends NcActuator
-{
-    public static staticClassID: number[] = [ 1, 2, 1, 1, 1 ];
-
-    @myIdDecorator('1p1')
-    public override classID: number[] = NcGain.staticClassID;
-
-    @myIdDecorator('5p1')
     public gainValue: number;
 
     public constructor(
         oid: number,
         constantOid: boolean,
-        owner: NcObject | null,
+        ownerObject: NcObject | null,
         role: string,
         userLabel: string,
         touchpoints: NcTouchpoint[],
         runtimePropertyConstraints: NcPropertyConstraints[] | null,
         enabled: boolean,
-        ports: NcPort[] | null,
-        latency: number | null,
         gainValue: number,
         description: string,
         notificationContext: INotificationContext)
     {
-        super(oid, constantOid, owner, role, userLabel, touchpoints, runtimePropertyConstraints, enabled, ports, latency, description, notificationContext);
+        super(oid, constantOid, ownerObject, role, userLabel, touchpoints, runtimePropertyConstraints, enabled, description, notificationContext);
 
         this.gainValue = gainValue;
     }
@@ -321,7 +164,7 @@ export class NcGain extends NcActuator
 
             switch(key)
             {
-                case '5p1':
+                case '3p1':
                     return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.gainValue);
                 default:
                     return super.Get(oid, propertyId, handle);
@@ -340,7 +183,7 @@ export class NcGain extends NcActuator
 
             switch(key)
             {
-                case '5p1':
+                case '3p1':
                     this.gainValue = value;
                     this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.gainValue, null);
                     return new CommandResponseNoValue(handle, NcMethodStatus.OK);
@@ -352,40 +195,12 @@ export class NcGain extends NcActuator
         return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
     }
 
-    public override InvokeMethod(oid: number, methodId: NcElementId, args: { [key: string]: any; } | null, handle: number): CommandResponseNoValue
-    {
-        if(oid == this.oid)
-        {
-            let key: string = `${methodId.level}m${methodId.index}`;
-
-            switch(key)
-            {
-                case '1m7':
-                    {
-                        if(args != null)
-                        {
-                            let recurse = args['recurse'] as boolean;
-
-                            if(recurse)
-                                return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.GetAllProperties(true));
-                            else
-                                return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.GetAllProperties(false));
-                        }
-                        else
-                            return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid arguments provided');
-                    }
-            }
-        }
-
-        return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
-    }
-
     public static override GetClassDescriptor(includeInherited: boolean): NcClassDescriptor 
     {
-        let currentClassDescriptor = new NcClassDescriptor(`${NcGain.name} class descriptor`,
-            NcGain.staticClassID, NcGain.name, null,
+        let currentClassDescriptor = new NcClassDescriptor(`${GainControl.name} class descriptor`,
+            GainControl.staticClassID, GainControl.name, null,
             [
-                new NcPropertyDescriptor(new NcElementId(5, 1), "gainValue", "NcDB", false, false, false, false, null, "Gain value")
+                new NcPropertyDescriptor(new NcElementId(3, 1), "gainValue", "NcFloat32", false, false, false, false, null, "Gain value")
             ],
             [],
             []
@@ -407,7 +222,7 @@ export class NcGain extends NcActuator
     {
         let properties = [
             new NcObjectPropertiesHolder(this.GetRolePath(), [
-                new NcPropertyValueHolder(new NcElementId(5, 1), "gainValue", this.gainValue)
+                new NcPropertyValueHolder(new NcElementId(3, 1), "gainValue", this.gainValue)
             ])
         ];
 
@@ -430,7 +245,7 @@ export class NcIdentBeacon extends NcWorker
     public constructor(
         oid: number,
         constantOid: boolean,
-        owner: NcObject | null,
+        ownerObject: NcObject | null,
         role: string,
         userLabel: string,
         touchpoints: NcTouchpoint[],
@@ -440,7 +255,7 @@ export class NcIdentBeacon extends NcWorker
         description: string,
         notificationContext: INotificationContext)
     {
-        super(oid, constantOid, owner, role, userLabel, touchpoints, runtimePropertyConstraints, enabled, description, notificationContext);
+        super(oid, constantOid, ownerObject, role, userLabel, touchpoints, runtimePropertyConstraints, enabled, description, notificationContext);
 
         this.active = active;
     }
@@ -589,7 +404,7 @@ export class NcReceiverMonitor extends NcWorker
     public constructor(
         oid: number,
         constantOid: boolean,
-        owner: NcObject | null,
+        ownerObject: NcObject | null,
         role: string,
         userLabel: string,
         touchpoints: NcTouchpoint[],
@@ -598,7 +413,7 @@ export class NcReceiverMonitor extends NcWorker
         description: string,
         notificationContext: INotificationContext)
     {
-        super(oid, constantOid, owner, role, userLabel, touchpoints, runtimePropertyConstraints, enabled, description, notificationContext);
+        super(oid, constantOid, ownerObject, role, userLabel, touchpoints, runtimePropertyConstraints, enabled, description, notificationContext);
 
         this.connectionStatus = NcConnectionStatus.Undefined;
         this.connectionStatusMessage = null;
@@ -678,24 +493,6 @@ export class NcReceiverMonitor extends NcWorker
         return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
     }
 
-    public override InvokeMethod(oid: number, methodId: NcElementId, args: { [key: string]: any; } | null, handle: number): CommandResponseNoValue 
-    {
-        if(oid == this.oid)
-        {
-            let key: string = `${methodId.level}m${methodId.index}`;
-
-            switch(key)
-            {
-                case '3m1':
-                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, new NcReceiverStatus(this.connectionStatus, this.payloadStatus));
-                default:
-                    return super.InvokeMethod(oid, methodId, args, handle);
-            }
-        }
-
-        return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
-    }
-
     public static override GetClassDescriptor(includeInherited: boolean): NcClassDescriptor 
     {
         let currentClassDescriptor = new NcClassDescriptor(`${NcReceiverMonitor.name} class descriptor`,
@@ -706,9 +503,7 @@ export class NcReceiverMonitor extends NcWorker
                 new NcPropertyDescriptor(new NcElementId(3, 3), "payloadStatus", "NcPayloadStatus", true, false, false, false, null, "Payload status property"),
                 new NcPropertyDescriptor(new NcElementId(3, 4), "payloadStatusMessage", "NcString", true, false, true, false, null, "Payload status message property")
             ],
-            [
-                new NcMethodDescriptor(new NcElementId(3, 1), "GetStatus", "NcMethodResultReceiverStatus", [], "Method to retrieve both connection status and payload status in one call")
-            ],
+            [],
             []
         );
 
@@ -741,7 +536,139 @@ export class NcReceiverMonitor extends NcWorker
     }
 }
 
-enum NcDemoEnum
+export class NcReceiverMonitorProtected extends NcReceiverMonitor
+{
+    public static staticClassID: number[] = [ 1, 2, 3, 1 ];
+
+    @myIdDecorator('1p1')
+    public override classID: number[] = NcReceiverMonitorProtected.staticClassID;
+
+    @myIdDecorator('4p1')
+    public signalProtectionStatus: boolean;
+
+    public constructor(
+        oid: number,
+        constantOid: boolean,
+        ownerObject: NcObject | null,
+        role: string,
+        userLabel: string,
+        touchpoints: NcTouchpoint[],
+        runtimePropertyConstraints: NcPropertyConstraints[] | null,
+        enabled: boolean,
+        description: string,
+        notificationContext: INotificationContext)
+    {
+        super(oid, constantOid, ownerObject, role, userLabel, touchpoints, runtimePropertyConstraints, enabled, description, notificationContext);
+
+        this.connectionStatus = NcConnectionStatus.Undefined;
+        this.connectionStatusMessage = null;
+        
+        this.payloadStatus = NcPayloadStatus.Undefined;
+        this.payloadStatusMessage = null;
+
+        this.signalProtectionStatus = false;
+    }
+
+    public Connected()
+    {
+        this.connectionStatus = NcConnectionStatus.Connected;
+        this.payloadStatus = NcPayloadStatus.PayloadOK;
+
+        this.connectionStatusMessage = null;
+        this.payloadStatusMessage = null;
+
+        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 1), NcPropertyChangeType.ValueChanged, this.connectionStatus, null);
+        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 3), NcPropertyChangeType.ValueChanged, this.payloadStatus, null);
+    }
+
+    public Disconnected()
+    {
+        this.connectionStatus = NcConnectionStatus.Undefined;
+        this.payloadStatus = NcPayloadStatus.Undefined;
+
+        this.connectionStatusMessage = null;
+        this.payloadStatusMessage = null;
+
+        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 1), NcPropertyChangeType.ValueChanged, this.connectionStatus, null);
+        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 3), NcPropertyChangeType.ValueChanged, this.payloadStatus, null);
+    }
+
+    //'1m1'
+    public override Get(oid: number, id: NcElementId, handle: number) : CommandResponseNoValue
+    {
+        if(oid == this.oid)
+        {
+            let key: string = `${id.level}p${id.index}`;
+
+            switch(key)
+            {
+                case '4p1':
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.signalProtectionStatus);
+                default:
+                    return super.Get(oid, id, handle);
+            }
+        }
+
+        return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
+    }
+
+    //'1m2'
+    public override Set(oid: number, id: NcElementId, value: any, handle: number) : CommandResponseNoValue
+    {
+        if(oid == this.oid)
+        {
+            let key: string = `${id.level}p${id.index}`;
+
+            switch(key)
+            {
+                case '4p1':
+                    return new CommandResponseError(handle, NcMethodStatus.Readonly, 'Property is readonly');
+                default:
+                    return super.Set(oid, id, value, handle);
+            }
+        }
+
+        return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
+    }
+
+    public static override GetClassDescriptor(includeInherited: boolean): NcClassDescriptor 
+    {
+        let currentClassDescriptor = new NcClassDescriptor(`${NcReceiverMonitorProtected.name} class descriptor`,
+            NcReceiverMonitorProtected.staticClassID, NcReceiverMonitorProtected.name, null,
+            [
+                new NcPropertyDescriptor(new NcElementId(4, 1), "signalProtectionStatus", "NcBoolean", true, false, false, false, null, "Indicates if signal protection is active"),
+            ],
+            [],
+            []
+        );
+
+        if(includeInherited)
+        {
+            let baseDescriptor = super.GetClassDescriptor(includeInherited);
+
+            currentClassDescriptor.properties = currentClassDescriptor.properties.concat(baseDescriptor.properties);
+            currentClassDescriptor.methods = currentClassDescriptor.methods.concat(baseDescriptor.methods);
+            currentClassDescriptor.events = currentClassDescriptor.events.concat(baseDescriptor.events);
+        }
+
+        return currentClassDescriptor;
+    }
+
+    public override GetAllProperties(recurse: boolean) : NcObjectPropertiesHolder[]
+    {
+        let properties = [
+            new NcObjectPropertiesHolder(this.GetRolePath(), [
+                new NcPropertyValueHolder(new NcElementId(4, 1), "signalProtectionStatus", this.signalProtectionStatus)
+            ])
+        ];
+
+        properties[0].propertiesValues = properties[0].propertiesValues.concat(super.GetAllProperties(recurse)[0].propertiesValues);
+
+        return properties;
+    }
+}
+
+enum ExampleEnum
 {
     Undefined = 0,
     Alpha = 1,
@@ -749,15 +676,15 @@ enum NcDemoEnum
     Gamma = 3
 }
 
-export class DemoDataType extends BaseType
+export class ExampleDataType extends BaseType
 {
-    public enumProperty: NcDemoEnum;
+    public enumProperty: ExampleEnum;
     public stringProperty: string | null;
     public numberProperty: number;
     public booleanProperty: boolean;
 
     constructor(
-        enumProperty: NcDemoEnum,
+        enumProperty: ExampleEnum,
         stringProperty: string | null,
         numberProperty: number,
         booleanProperty: boolean) 
@@ -772,12 +699,12 @@ export class DemoDataType extends BaseType
 
     public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor
     {
-        return new NcDatatypeDescriptorStruct("DemoDataType", [
-            new NcFieldDescriptor("enumProperty", "NcDemoEnum", false, false, null, "Enum property demo"),
-            new NcFieldDescriptor("stringProperty", "NcString", false, false, new NcParameterConstraintsString(10, null), "String property demo"),
-            new NcFieldDescriptor("numberProperty", "NcUint64", false, false, new NcParameterConstraintsNumber(1000, 0, 1), "Number property demo"),
-            new NcFieldDescriptor("booleanProperty", "NcBoolean", false, false, null, "Boolean property demo")
-        ], null, null, "Demo data type");
+        return new NcDatatypeDescriptorStruct("ExampleDataType", [
+            new NcFieldDescriptor("enumProperty", "ExampleEnum", false, false, null, "Enum property example"),
+            new NcFieldDescriptor("stringProperty", "NcString", false, false, new NcParameterConstraintsString(10, null), "String property example"),
+            new NcFieldDescriptor("numberProperty", "NcUint64", false, false, new NcParameterConstraintsNumber(1000, 0, 1), "Number property example"),
+            new NcFieldDescriptor("booleanProperty", "NcBoolean", false, false, null, "Boolean property example")
+        ], null, null, "Example data type");
     }
 
     public ToJson()
@@ -786,15 +713,15 @@ export class DemoDataType extends BaseType
     }
 }
 
-export class NcDemo extends NcWorker
+export class ExampleControl extends NcWorker
 {
-    public static staticClassID: number[] = [ 1, 2, 0, 1 ];
+    public static staticClassID: number[] = [ 1, 2, 0, 2 ];
 
     @myIdDecorator('1p1')
-    public override classID: number[] = NcDemo.staticClassID;
+    public override classID: number[] = ExampleControl.staticClassID;
 
     @myIdDecorator('3p1')
-    public enumProperty: NcDemoEnum;
+    public enumProperty: ExampleEnum;
 
     @myIdDecorator('3p2')
     public stringProperty: string | null;
@@ -806,7 +733,7 @@ export class NcDemo extends NcWorker
     public booleanProperty: boolean;
 
     @myIdDecorator('3p5')
-    public objectProperty: DemoDataType;
+    public objectProperty: ExampleDataType;
 
     @myIdDecorator('3p6')
     public methodNoArgsCount: number;
@@ -824,18 +751,18 @@ export class NcDemo extends NcWorker
     public booleanSequence: boolean[];
 
     @myIdDecorator('3p11')
-    public enumSequence: NcDemoEnum[];
+    public enumSequence: ExampleEnum[];
 
     @myIdDecorator('3p12')
     public numberSequence: number[];
 
     @myIdDecorator('3p13')
-    public objectSequence: DemoDataType[];
+    public objectSequence: ExampleDataType[];
 
     public constructor(
         oid: number,
         constantOid: boolean,
-        owner: NcObject | null,
+        ownerObject: NcObject | null,
         role: string,
         userLabel: string,
         touchpoints: NcTouchpoint[],
@@ -844,21 +771,21 @@ export class NcDemo extends NcWorker
         description: string,
         notificationContext: INotificationContext)
     {
-        super(oid, constantOid, owner, role, userLabel, touchpoints, runtimePropertyConstraints, enabled, description, notificationContext);
+        super(oid, constantOid, ownerObject, role, userLabel, touchpoints, runtimePropertyConstraints, enabled, description, notificationContext);
 
-        this.enumProperty = NcDemoEnum.Undefined;
+        this.enumProperty = ExampleEnum.Undefined;
         this.stringProperty = "test";
         this.numberProperty = 3;
         this.booleanProperty = false;
-        this.objectProperty = new DemoDataType(NcDemoEnum.Undefined, "default", 5, false);
+        this.objectProperty = new ExampleDataType(ExampleEnum.Undefined, "default", 5, false);
         this.methodNoArgsCount = 0;
         this.methodSimpleArgsCount = 0;
         this.methodObjectArgCount = 0;
         this.stringSequence = [ "red", "blue", "green" ];
         this.booleanSequence = [ true, false];
-        this.enumSequence = [ NcDemoEnum.Alpha, NcDemoEnum.Gamma ];
+        this.enumSequence = [ ExampleEnum.Alpha, ExampleEnum.Gamma ];
         this.numberSequence = [ 0, 50, 88];
-        this.objectSequence = [ new DemoDataType(NcDemoEnum.Alpha, "demo", 50, false), new DemoDataType(NcDemoEnum.Gamma, "different", 75, true) ];
+        this.objectSequence = [ new ExampleDataType(ExampleEnum.Alpha, "example", 50, false), new ExampleDataType(ExampleEnum.Gamma, "different", 75, true) ];
     }
 
     //'1m1'
@@ -1101,7 +1028,7 @@ export class NcDemo extends NcWorker
                                             {
                                                 if (this.enumSequence[index] !== undefined) 
                                                 {
-                                                    let value = args['value'] as NcDemoEnum;
+                                                    let value = args['value'] as ExampleEnum;
                                                     if(value !== undefined)
                                                     {
                                                         this.enumSequence[index] = value;
@@ -1137,7 +1064,7 @@ export class NcDemo extends NcWorker
                                             {
                                                 if (this.objectSequence[index] !== undefined) 
                                                 {
-                                                    let value = args['value'] as DemoDataType;
+                                                    let value = args['value'] as ExampleDataType;
                                                     if(value !== undefined)
                                                     {
                                                         this.objectSequence[index] = value;
@@ -1210,7 +1137,7 @@ export class NcDemo extends NcWorker
                                         }
                                     case '3p11':
                                         {
-                                            let value = args['value'] as NcDemoEnum;
+                                            let value = args['value'] as ExampleEnum;
                                             if(value !== undefined)
                                             {
                                                 this.enumSequence.push(value);
@@ -1240,7 +1167,7 @@ export class NcDemo extends NcWorker
                                         }
                                     case '3p13':
                                         {
-                                            let value = args['value'] as DemoDataType;
+                                            let value = args['value'] as ExampleDataType;
                                             if(value !== undefined)
                                             {
                                                 this.objectSequence.push(value);
@@ -1391,12 +1318,12 @@ export class NcDemo extends NcWorker
                             'numberArg' in args &&
                             'booleanArg' in args)
                         {
-                            let enumArg = args['enumArg'] as NcDemoEnum;
+                            let enumArg = args['enumArg'] as ExampleEnum;
                             let stringArg = args['stringArg'] as string;
                             let numberArg = args['numberArg'] as number;
                             let booleanArg = args['booleanArg'] as boolean;
 
-                            if(enumArg in NcDemoEnum)
+                            if(enumArg in ExampleEnum)
                             {
                                 if(stringArg)
                                 {
@@ -1428,7 +1355,7 @@ export class NcDemo extends NcWorker
                         if(args != null &&
                             'objArg' in args)
                         {
-                            let objArg = args['objArg'] as DemoDataType;
+                            let objArg = args['objArg'] as ExampleDataType;
                             if(objArg)
                             {
                                 this.methodObjectArgCount = this.methodObjectArgCount + 1;
@@ -1451,37 +1378,37 @@ export class NcDemo extends NcWorker
 
     public static override GetClassDescriptor(includeInherited: boolean): NcClassDescriptor 
     {
-        let currentClassDescriptor = new NcClassDescriptor(`${NcDemo.name} class descriptor`,
-            NcDemo.staticClassID, NcDemo.name, null,
+        let currentClassDescriptor = new NcClassDescriptor(`${ExampleControl.name} class descriptor`,
+            ExampleControl.staticClassID, ExampleControl.name, null,
             [
-                new NcPropertyDescriptor(new NcElementId(3, 1), "enumProperty", "NcDemoEnum", false, false, false, false, null, "Demo enum property"),
+                new NcPropertyDescriptor(new NcElementId(3, 1), "enumProperty", "ExampleEnum", false, false, false, false, null, "Example enum property"),
                 new NcPropertyDescriptor(new NcElementId(3, 2), "stringProperty", "NcString", false, false, false, false, new NcParameterConstraintsString(10, null),
-                    "Demo string property"),
+                    "Example string property"),
                 new NcPropertyDescriptor(new NcElementId(3, 3), "numberProperty", "NcUint64", false, false, false, false, new NcParameterConstraintsNumber(1000, 0, 1),
-                    "Demo numeric property"),
-                new NcPropertyDescriptor(new NcElementId(3, 4), "booleanProperty", "NcBoolean", false, false, false, false, null, "Demo boolean property"),
-                new NcPropertyDescriptor(new NcElementId(3, 5), "objectProperty", "DemoDataType", false, false, false, false, null, "Demo object property"),
+                    "Example numeric property"),
+                new NcPropertyDescriptor(new NcElementId(3, 4), "booleanProperty", "NcBoolean", false, false, false, false, null, "Example boolean property"),
+                new NcPropertyDescriptor(new NcElementId(3, 5), "objectProperty", "ExampleDataType", false, false, false, false, null, "Example object property"),
                 new NcPropertyDescriptor(new NcElementId(3, 6), "methodNoArgsCount", "NcUint64", true, false, false, false, null, "Method no args invoke counter"),
                 new NcPropertyDescriptor(new NcElementId(3, 7), "methodSimpleArgsCount", "NcUint64", true, false, false, false, null, "Method simple args invoke counter"),
                 new NcPropertyDescriptor(new NcElementId(3, 8), "methodObjectArgCount", "NcUint64", true, false, false, false, null, "Method obj arg invoke counter"),
-                new NcPropertyDescriptor(new NcElementId(3, 9), "stringSequence", "NcString", false, false, false, true, null, "Demo string sequence property"),
-                new NcPropertyDescriptor(new NcElementId(3, 10), "booleanSequence", "NcBoolean", false, false, false, true, null, "Demo boolean sequence property"),
-                new NcPropertyDescriptor(new NcElementId(3, 11), "enumSequence", "NcDemoEnum", false, false, false, true, null, "Demo enum sequence property"),
-                new NcPropertyDescriptor(new NcElementId(3, 12), "numberSequence", "NcUint64", false, false, false, true, null, "Demo number sequence property"),
-                new NcPropertyDescriptor(new NcElementId(3, 13), "objectSequence", "DemoDataType", false, false, false, true, null, "Demo object sequence property")
+                new NcPropertyDescriptor(new NcElementId(3, 9), "stringSequence", "NcString", false, false, false, true, null, "Example string sequence property"),
+                new NcPropertyDescriptor(new NcElementId(3, 10), "booleanSequence", "NcBoolean", false, false, false, true, null, "Example boolean sequence property"),
+                new NcPropertyDescriptor(new NcElementId(3, 11), "enumSequence", "ExampleEnum", false, false, false, true, null, "Example enum sequence property"),
+                new NcPropertyDescriptor(new NcElementId(3, 12), "numberSequence", "NcUint64", false, false, false, true, null, "Example number sequence property"),
+                new NcPropertyDescriptor(new NcElementId(3, 13), "objectSequence", "ExampleDataType", false, false, false, true, null, "Example object sequence property")
             ],
             [
-                new NcMethodDescriptor(new NcElementId(3, 1), "MethodNoArgs", "NcMethodResult", [], "Demo method with no arguments"),
+                new NcMethodDescriptor(new NcElementId(3, 1), "MethodNoArgs", "NcMethodResult", [], "Example method with no arguments"),
                 new NcMethodDescriptor(new NcElementId(3, 2), "MethodSimpleArgs", "NcMethodResult", [
-                    new NcParameterDescriptor("enumArg", "NcDemoEnum", false, false, null, "Enum demo argument"),
-                    new NcParameterDescriptor("stringArg", "NcString", false, false, new NcParameterConstraintsString(10, null), "String demo argument"),
+                    new NcParameterDescriptor("enumArg", "ExampleEnum", false, false, null, "Enum example argument"),
+                    new NcParameterDescriptor("stringArg", "NcString", false, false, new NcParameterConstraintsString(10, null), "String example argument"),
                     new NcParameterDescriptor("numberArg", "NcUint64", false, false, new NcParameterConstraintsNumber(1000, 0, 1),
-                    "Number demo argument"),
-                    new NcParameterDescriptor("booleanArg", "NcBoolean", false, false, null, "Boolean demo argument")
-                ], "Demo method with simple arguments"),
+                    "Number example argument"),
+                    new NcParameterDescriptor("booleanArg", "NcBoolean", false, false, null, "Boolean example argument")
+                ], "Example method with simple arguments"),
                 new NcMethodDescriptor(new NcElementId(3, 3), "MethodObjectArg", "NcMethodResult", [
-                    new NcParameterDescriptor("objArg", "DemoDataType", false, false, null, "Object demo argument")
-                ], "Demo method with object argument")
+                    new NcParameterDescriptor("objArg", "ExampleDataType", false, false, null, "Object example argument")
+                ], "Example method with object argument")
             ],
             []
         );
