@@ -34,7 +34,7 @@ export abstract class NcWorker extends NcObject
     public constructor(
         oid: number,
         constantOid: boolean,
-        owner: number | null,
+        ownerObject: NcObject | null,
         role: string,
         userLabel: string,
         touchpoints: NcTouchpoint[],
@@ -43,7 +43,7 @@ export abstract class NcWorker extends NcObject
         description: string,
         notificationContext: INotificationContext)
     {
-        super(oid, constantOid, owner, role, userLabel, touchpoints, runtimePropertyConstraints, description, notificationContext);
+        super(oid, constantOid, ownerObject, role, userLabel, touchpoints, runtimePropertyConstraints, description, notificationContext);
 
         this.enabled = enabled;
     }
@@ -125,7 +125,7 @@ export class GainControl extends NcWorker
     public constructor(
         oid: number,
         constantOid: boolean,
-        owner: number | null,
+        ownerObject: NcObject | null,
         role: string,
         userLabel: string,
         touchpoints: NcTouchpoint[],
@@ -135,7 +135,7 @@ export class GainControl extends NcWorker
         description: string,
         notificationContext: INotificationContext)
     {
-        super(oid, constantOid, owner, role, userLabel, touchpoints, runtimePropertyConstraints, enabled, description, notificationContext);
+        super(oid, constantOid, ownerObject, role, userLabel, touchpoints, runtimePropertyConstraints, enabled, description, notificationContext);
 
         this.gainValue = gainValue;
     }
@@ -217,7 +217,7 @@ export class NcIdentBeacon extends NcWorker
     public constructor(
         oid: number,
         constantOid: boolean,
-        owner: number | null,
+        ownerObject: NcObject | null,
         role: string,
         userLabel: string,
         touchpoints: NcTouchpoint[],
@@ -227,7 +227,7 @@ export class NcIdentBeacon extends NcWorker
         description: string,
         notificationContext: INotificationContext)
     {
-        super(oid, constantOid, owner, role, userLabel, touchpoints, runtimePropertyConstraints, enabled, description, notificationContext);
+        super(oid, constantOid, ownerObject, role, userLabel, touchpoints, runtimePropertyConstraints, enabled, description, notificationContext);
 
         this.active = active;
     }
@@ -363,7 +363,7 @@ export class NcReceiverMonitor extends NcWorker
     public constructor(
         oid: number,
         constantOid: boolean,
-        owner: number | null,
+        ownerObject: NcObject | null,
         role: string,
         userLabel: string,
         touchpoints: NcTouchpoint[],
@@ -372,7 +372,7 @@ export class NcReceiverMonitor extends NcWorker
         description: string,
         notificationContext: INotificationContext)
     {
-        super(oid, constantOid, owner, role, userLabel, touchpoints, runtimePropertyConstraints, enabled, description, notificationContext);
+        super(oid, constantOid, ownerObject, role, userLabel, touchpoints, runtimePropertyConstraints, enabled, description, notificationContext);
 
         this.connectionStatus = NcConnectionStatus.Undefined;
         this.connectionStatusMessage = null;
@@ -492,7 +492,7 @@ export class NcReceiverMonitorProtected extends NcReceiverMonitor
     public constructor(
         oid: number,
         constantOid: boolean,
-        owner: number | null,
+        ownerObject: NcObject | null,
         role: string,
         userLabel: string,
         touchpoints: NcTouchpoint[],
@@ -501,7 +501,7 @@ export class NcReceiverMonitorProtected extends NcReceiverMonitor
         description: string,
         notificationContext: INotificationContext)
     {
-        super(oid, constantOid, owner, role, userLabel, touchpoints, runtimePropertyConstraints, enabled, description, notificationContext);
+        super(oid, constantOid, ownerObject, role, userLabel, touchpoints, runtimePropertyConstraints, enabled, description, notificationContext);
 
         this.connectionStatus = NcConnectionStatus.Undefined;
         this.connectionStatusMessage = null;
@@ -692,7 +692,7 @@ export class ExampleControl extends NcWorker
     public constructor(
         oid: number,
         constantOid: boolean,
-        owner: number | null,
+        ownerObject: NcObject | null,
         role: string,
         userLabel: string,
         touchpoints: NcTouchpoint[],
@@ -701,7 +701,7 @@ export class ExampleControl extends NcWorker
         description: string,
         notificationContext: INotificationContext)
     {
-        super(oid, constantOid, owner, role, userLabel, touchpoints, runtimePropertyConstraints, enabled, description, notificationContext);
+        super(oid, constantOid, ownerObject, role, userLabel, touchpoints, runtimePropertyConstraints, enabled, description, notificationContext);
 
         this.enumProperty = ExampleEnum.Undefined;
         this.stringProperty = "test";

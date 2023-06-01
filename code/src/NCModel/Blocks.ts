@@ -34,7 +34,7 @@ export class NcBlock extends NcObject
     public constructor(
         oid: number,
         constantOid: boolean,
-        owner: number | null,
+        ownerObject: NcObject | null,
         role: string,
         userLabel: string,
         touchpoints: NcTouchpoint[] | null,
@@ -44,7 +44,7 @@ export class NcBlock extends NcObject
         description: string,
         notificationContext: INotificationContext)
     {
-        super(oid, constantOid, owner, role, userLabel, touchpoints, runtimePropertyConstraints, description, notificationContext);
+        super(oid, constantOid, ownerObject, role, userLabel, touchpoints, runtimePropertyConstraints, description, notificationContext);
 
         this.enabled = enabled;
         this.memberObjects = memberObjects;
@@ -270,6 +270,12 @@ export class NcBlock extends NcObject
         return currentClassDescriptor;
     }
 
+    public UpdateMembers(memberObjects: NcObject[])
+    {
+        this.memberObjects = memberObjects;
+        this.members = this.memberObjects.map(x => x.GenerateMemberDescriptor());
+    }
+
     public GenerateMemberDescriptors(recurse: boolean) : NcBlockMemberDescriptor[]
     {
         if(this.memberObjects != null)
@@ -411,7 +417,7 @@ export class RootBlock extends NcBlock
     public constructor(
         oid: number,
         constantOid: boolean,
-        owner: number | null,
+        ownerObject: NcObject | null,
         role: string,
         userLabel: string,
         touchpoints: NcTouchpoint[] | null,
@@ -424,7 +430,7 @@ export class RootBlock extends NcBlock
         super(
             oid,
             constantOid,
-            owner,
+            ownerObject,
             role,
             userLabel,
             touchpoints,

@@ -59,7 +59,7 @@ export abstract class NcManager extends NcObject
     public constructor(
         oid: number,
         constantOid: boolean,
-        owner: number | null,
+        ownerObject: NcObject | null,
         role: string,
         userLabel: string,
         touchpoints: NcTouchpoint[] | null,
@@ -67,7 +67,7 @@ export abstract class NcManager extends NcObject
         description: string,
         notificationContext: INotificationContext)
     {
-        super(oid, constantOid, owner, role, userLabel, touchpoints, runtimePropertyConstraints, description, notificationContext);
+        super(oid, constantOid, ownerObject, role, userLabel, touchpoints, runtimePropertyConstraints, description, notificationContext);
     }
 
     public static override GetClassDescriptor(includeInherited: boolean): NcClassDescriptor
@@ -256,14 +256,14 @@ export class NcDeviceManager extends NcManager
     public constructor(
         oid: number,
         constantOid: boolean,
-        owner: number | null,
+        ownerObject: NcObject | null,
         userLabel: string,
         touchpoints: NcTouchpoint[] | null,
         runtimePropertyConstraints: NcPropertyConstraints[] | null,
         description: string,
         notificationContext: INotificationContext)
     {
-        super(oid, constantOid, owner, NcDeviceManager.staticRole, userLabel, touchpoints, runtimePropertyConstraints, description, notificationContext);
+        super(oid, constantOid, ownerObject, NcDeviceManager.staticRole, userLabel, touchpoints, runtimePropertyConstraints, description, notificationContext);
 
         this.manufacturer = new NcManufacturer("Mock manufacturer", "https://specs.amwa.tv/nmos/");
         this.product = new NcProduct("Mock device", "mock-001", "1.0.0", "Mock brand", "2dcd15f6-aecc-4f01-bf66-b1044c677ef4", "Mock device for testing and prototyping");
@@ -404,14 +404,14 @@ export class NcClassManager extends NcManager
     public constructor(
         oid: number,
         constantOid: boolean,
-        owner: number | null,
+        ownerObject: NcObject | null,
         userLabel: string,
         touchpoints: NcTouchpoint[] | null,
         runtimePropertyConstraints: NcPropertyConstraints[] | null,
         description: string,
         notificationContext: INotificationContext)
     {
-        super(oid, constantOid, owner, NcClassManager.staticRole, userLabel, touchpoints, runtimePropertyConstraints, description, notificationContext);
+        super(oid, constantOid, ownerObject, NcClassManager.staticRole, userLabel, touchpoints, runtimePropertyConstraints, description, notificationContext);
 
         this.controlClassesRegister = this.GenerateClassDescriptors();
         this.controlClasses = Object.values(this.controlClassesRegister);
