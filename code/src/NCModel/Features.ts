@@ -1290,20 +1290,6 @@ export class ExampleControl extends NcWorker
                         else
                             return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid arguments provided');
                     }
-                case '1m7':
-                    {
-                        if(args != null)
-                        {
-                            let recurse = args['recurse'] as boolean;
-
-                            if(recurse)
-                                return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.GetAllProperties(true));
-                            else
-                                return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.GetAllProperties(false));
-                        }
-                        else
-                            return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid arguments provided');
-                    }
                 case '3m1':
                     {
                         this.methodNoArgsCount = this.methodNoArgsCount + 1;

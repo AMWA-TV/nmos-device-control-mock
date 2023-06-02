@@ -103,20 +103,6 @@ export class NcBlock extends NcObject
 
             switch(key)
             {
-                case '1m7':
-                    {
-                        if(args != null)
-                        {
-                            let recurse = args['recurse'] as boolean;
-
-                            if(recurse)
-                                return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.GetAllProperties(true));
-                            else
-                                return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.GetAllProperties(false));
-                        }
-                        else
-                            return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid arguments provided');
-                    }
                 case '2m1':
                     {
                         if(args != null)
@@ -414,7 +400,7 @@ export class NcBlock extends NcObject
     {
         let holders = [
             new NcObjectPropertiesHolder(this.GetRolePath(), [
-                new NcPropertyValueHolder(new NcElementId(2, 2), "enabled", this.enabled),
+                new NcPropertyValueHolder(new NcElementId(2, 1), "enabled", this.enabled),
                 new NcPropertyValueHolder(new NcElementId(2, 2), "members", this.members)
             ])
         ];
