@@ -310,7 +310,7 @@ try
         if(request.url)
         {
             console.log(`Request url ${request.url}`);
-            if (request.url === '/x-nmos/ncp/v1.0/connect')
+            if (request.url.trim().replace(/\/+$/, '') === '/x-nmos/ncp/v1.0/connect')
             {
                 webSocketServer.handleUpgrade(request, socket as Socket, head, function done(ws) {
                     webSocketServer.emit('connection', ws, request);
