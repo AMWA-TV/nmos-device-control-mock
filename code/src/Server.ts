@@ -69,86 +69,6 @@ try
 
     const sessionManager = new SessionManager(config.notify_without_subscriptions);
 
-    const deviceManager = new NcDeviceManager(
-        2,
-        true,
-        1,
-        'Device manager',
-        null,
-        null,
-        "The device manager offers information about the product this device is representing",
-        sessionManager);
-
-    const classManager = new NcClassManager(
-        3,
-        true,
-        1,
-        'Class manager',
-        null,
-        null,
-        "The class manager offers access to control class and data type descriptors",
-        sessionManager);
-
-    const receiverMonitorAgent = new NcReceiverMonitor(
-        11,
-        true,
-        1,
-        'ReceiverMonitor_01',
-        'Receiver monitor 01',
-        [ new NcTouchpointNmos('x-nmos', new NcTouchpointResourceNmos('receiver', myVideoReceiver.id)) ],
-        null,
-        true,
-        "Receiver monitor worker",
-        sessionManager);
-
-    myVideoReceiver.AttachMonitoringAgent(receiverMonitorAgent);
-
-    const exampleControl = new ExampleControl(
-        111,
-        true,
-        1,
-        'ExampleControl',
-        'Example control worker',
-        [],
-        null,
-        true,
-        "Example control worker",
-        sessionManager);
-
-    const channelGainBlock = new NcBlock(
-        21,
-        true,
-        31,
-        'channel-gain',
-        'Channel gain',
-        null,
-        null,
-        true,
-        [
-            new GainControl(22, true, 21, "left-gain", "Left gain", [], null, true, 0, "Left channel gain", sessionManager),
-            new GainControl(23, true, 21, "right-gain", "Right gain", [], null, true, 0, "Right channel gain", sessionManager)
-        ],
-        "Channel gain block",
-        sessionManager);
-
-    const stereoGainBlock = new NcBlock(
-        31,
-        true,
-        1,
-        'stereo-gain',
-        'Stereo gain',
-        null,
-        null,
-        true,
-        [
-            channelGainBlock,
-            new GainControl(24, true, 31, "master-gain", "Master gain", [], null, true, 0, "Master gain", sessionManager)
-        ],
-        "Stereo gain block",
-        sessionManager);
-
-    const identBeacon = new NcIdentBeacon(51, true, 1, "IdentBeacon", "Identification beacon", [], null, true, false, "Identification beacon", sessionManager);
-
     const rootBlock = new RootBlock(
         1,
         true,
@@ -158,9 +78,109 @@ try
         null,
         null,
         true,
-        [ deviceManager, classManager, receiverMonitorAgent, stereoGainBlock, exampleControl, identBeacon ],
+        [],
         "Root block",
         sessionManager);
+
+    const deviceManager = new NcDeviceManager(
+        2,
+        true,
+        rootBlock,
+        'Device manager',
+        null,
+        null,
+        "The device manager offers information about the product this device is representing",
+        sessionManager);
+
+    const classManager = new NcClassManager(
+        3,
+        true,
+        rootBlock,
+        'Class manager',
+        null,
+        null,
+        "The class manager offers access to control class and data type descriptors",
+        sessionManager);
+
+    const exampleControl = new ExampleControl(
+        111,
+        true,
+        rootBlock,
+        'ExampleControl',
+        'Example control worker',
+        [],
+        null,
+        true,
+        "Example control worker",
+        sessionManager);
+
+    const stereoGainBlock = new NcBlock(
+        31,
+        true,
+        rootBlock,
+        'stereo-gain',
+        'Stereo gain',
+        null,
+        null,
+        true,
+        [],
+        "Stereo gain block",
+        sessionManager);
+
+    const channelGainBlock = new NcBlock(
+        21,
+        true,
+        stereoGainBlock,
+        'channel-gain',
+        'Channel gain',
+        null,
+        null,
+        true,
+        [],
+        "Channel gain block",
+        sessionManager);
+
+    let leftGain = new GainControl(22, true, channelGainBlock, "left-gain", "Left gain", [], null, true, 0, "Left channel gain", sessionManager);
+    let rightGain = new GainControl(23, true, channelGainBlock, "right-gain", "Right gain", [], null, true, 0, "Right channel gain", sessionManager);
+
+    channelGainBlock.UpdateMembers([ leftGain, rightGain ]);
+
+    let masterGain = new GainControl(24, true, stereoGainBlock, "master-gain", "Master gain", [], null, true, 0, "Master gain", sessionManager);
+
+    stereoGainBlock.UpdateMembers([ channelGainBlock, masterGain ]);
+
+    const receiversBlock = new NcBlock(
+        10,
+        true,
+        rootBlock,
+        'receivers',
+        'Receivers',
+        null,
+        null,
+        true,
+        [],
+        "Receivers block",
+        sessionManager);
+    
+    const receiverMonitor = new NcReceiverMonitor(
+        11,
+        true,
+        receiversBlock,
+        'monitor-01',
+        'Receiver monitor 01',
+        [ new NcTouchpointNmos('x-nmos', new NcTouchpointResourceNmos('receiver', myVideoReceiver.id)) ],
+        null,
+        true,
+        "Receiver monitor worker",
+        sessionManager);
+
+    myVideoReceiver.AttachMonitoringAgent(receiverMonitor);
+
+    receiversBlock.UpdateMembers([ receiverMonitor ]);
+
+    const identBeacon = new NcIdentBeacon(51, true, rootBlock, "IdentBeacon", "Identification beacon", [], null, true, false, "Identification beacon", sessionManager);
+
+    rootBlock.UpdateMembers([ deviceManager, classManager, receiversBlock, stereoGainBlock, exampleControl, identBeacon ]);
 
     async function doAsync () {
         await registrationClient.RegisterOrUpdateResource('node', myNode);

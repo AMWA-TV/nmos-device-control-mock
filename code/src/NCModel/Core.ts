@@ -47,10 +47,12 @@ export abstract class NcObject
 
     public description: string;
 
+    public ownerObject: NcObject | null;
+
     public constructor(
         oid: number,
         constantOid: boolean,
-        owner: number | null,
+        ownerObject: NcObject | null,
         role: string,
         userLabel: string | null,
         touchpoints: NcTouchpoint[] | null,
@@ -60,7 +62,8 @@ export abstract class NcObject
     {
         this.oid = oid;
         this.constantOid = constantOid;
-        this.owner = owner;
+        this.ownerObject = ownerObject;
+        this.owner = ownerObject?.oid ?? null;
         this.role = role;
         this.userLabel = userLabel;
         this.touchpoints = touchpoints;
@@ -184,6 +187,18 @@ export abstract class NcObject
             ],
             [ new NcEventDescriptor(new NcElementId(1, 1), "PropertyChanged", "NcPropertyChangedEventData", "Property changed event") ]
         );
+    }
+
+    public GetRolePath(): string[]
+    {
+        let rolePath: string[] = [];
+
+        if(this.ownerObject != null)
+            rolePath = rolePath.concat(this.ownerObject.GetRolePath())
+
+        rolePath = rolePath.concat([ this.role ]);
+
+        return rolePath;
     }
 }
 
