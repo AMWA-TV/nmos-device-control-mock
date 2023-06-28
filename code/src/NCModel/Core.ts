@@ -818,7 +818,7 @@ export class NcPropertyDescriptor extends NcDescriptor
     public isNullable: boolean;
     public isSequence: boolean;
     public isDeprecated: boolean;
-    public isConstant: boolean;
+    public isConstant: boolean | null;
     public constraints: NcParameterConstraints | null;
 
     constructor(
@@ -859,7 +859,7 @@ export class NcPropertyDescriptor extends NcDescriptor
             new NcFieldDescriptor("isNullable", "NcBoolean", false, false, null, "TRUE iff property is nullable"),
             new NcFieldDescriptor("isSequence", "NcBoolean", false, false, null, "TRUE iff property is a sequence"),
             new NcFieldDescriptor("isDeprecated", "NcBoolean", false, false, null, "TRUE iff property is marked as deprecated"),
-            new NcFieldDescriptor("isConstant", "NcBoolean", false, false, null, "TRUE iff property is readonly and constant (its value is never expected to change)"),
+            new NcFieldDescriptor("isConstant", "NcBoolean", true, false, null, "Optional flag which indicates if the property is readonly and constant (the device has no means to change the value)"),
             new NcFieldDescriptor("constraints", "NcParameterConstraints", true, false, null, "Optional constraints on top of the underlying data type")
         ], "NcDescriptor", null, "Descriptor of a class property");
 
