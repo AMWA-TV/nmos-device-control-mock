@@ -76,7 +76,7 @@ export class ProtocolCommand extends ProtocolWrapper
     public constructor(
         commands: CommandMsg[])
     {
-        super('1.0.0', MessageType.Command);
+        super(MessageType.Command);
 
         this.commands = commands;
     }
@@ -94,7 +94,7 @@ export class ProtocolCommandResponse extends ProtocolWrapper
     public constructor(
         responses: CommandResponseNoValue[])
     {
-        super('1.0.0', MessageType.CommandResponse);
+        super(MessageType.CommandResponse);
 
         this.responses = responses;
     }
@@ -117,7 +117,7 @@ export class ProtocolSubscription extends ProtocolWrapper
     public constructor(
         subscriptions: number[])
     {
-        super('1.0.0', MessageType.Subscription);
+        super(MessageType.Subscription);
 
         this.subscriptions = subscriptions;
     }
@@ -135,7 +135,7 @@ export class ProtocolSubscriptionResponse extends ProtocolWrapper
     public constructor(
         subscriptions: number[])
     {
-        super('1.0.0', MessageType.SubscriptionResponse);
+        super(MessageType.SubscriptionResponse);
 
         this.subscriptions = subscriptions;
     }
@@ -156,7 +156,7 @@ export class ProtocolError extends ProtocolWrapper
         status: NcMethodStatus,
         errorMessage: string)
     {
-        super('1.0.0', MessageType.Error);
+        super(MessageType.Error);
 
         this.status = status;
         this.errorMessage = errorMessage;

@@ -183,7 +183,10 @@ export abstract class NcObject
                 new NcMethodDescriptor(new NcElementId(1, 6), "RemoveSequenceItem", "NcMethodResult", [
                     new NcParameterDescriptor("id", "NcPropertyId", false, false, null, "Property id"),
                     new NcParameterDescriptor("index", "NcId", false, false, null, "Index of item in the sequence"),
-                ], "Delete sequence item")
+                ], "Delete sequence item"),
+                new NcMethodDescriptor(new NcElementId(1, 7), "GetSequenceLength", "NcMethodResultLength", [
+                    new NcParameterDescriptor("id", "NcPropertyId", false, false, null, "Property id")
+                ], "Get sequence length")
             ],
             [ new NcEventDescriptor(new NcElementId(1, 1), "PropertyChanged", "NcPropertyChangedEventData", "Property changed event") ]
         );
@@ -336,14 +339,14 @@ export enum NcMethodStatus
     InvalidRequest = 406,
     Conflict = 409,
     BufferOverflow = 413,
+    IndexOutOfBounds = 414,
     ParameterError = 417,
     Locked = 423,
     DeviceError = 500,
     MethodNotImplemented = 501,
     PropertyNotImplemented = 502,
     NotReady = 503,
-    Timeout = 504,
-    ProtocolVersionError = 505
+    Timeout = 504
 }
 
 export enum NcPropertyChangeType
@@ -456,6 +459,38 @@ export class NcMethodResultId extends NcMethodResult
         let currentClassDescriptor = new NcDatatypeDescriptorStruct("NcMethodResultId", [
             new NcFieldDescriptor("value", "NcId", false, false, null, "Id result value")
         ], "NcMethodResult", null, "Id method result")
+
+        if(includeInherited)
+        {
+            let baseDescriptor = super.GetTypeDescriptor(includeInherited);
+
+            let baseDescriptorStruct = baseDescriptor as NcDatatypeDescriptorStruct;
+            if(baseDescriptorStruct)
+                currentClassDescriptor.fields = currentClassDescriptor.fields.concat(baseDescriptorStruct.fields);
+        }
+
+        return currentClassDescriptor;
+    }
+}
+
+export class NcMethodResultLength extends NcMethodResult
+{
+    public value: number;
+
+    public constructor(
+        status: NcMethodStatus,
+        value: number)
+    {
+        super(status);
+
+        this.value = value;
+    }
+
+    public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor
+    {
+        let currentClassDescriptor = new NcDatatypeDescriptorStruct("NcMethodResultLength", [
+            new NcFieldDescriptor("value", "NcUint32", false, false, null, "Length result value")
+        ], "NcMethodResult", null, "Length method result")
 
         if(includeInherited)
         {
@@ -1032,9 +1067,10 @@ export class NcParameterConstraintsNumber extends NcParameterConstraints
     constructor(
         maximum: number,
         minimum: number,
-        step: number)
+        step: number,
+        defaultValue: any | null = null)
     {
-        super(null);
+        super(defaultValue);
 
         this.maximum = maximum;
         this.minimum = minimum;
@@ -1264,7 +1300,7 @@ export class NcEventDescriptor extends NcDescriptor
 
 export class NcClassDescriptor extends NcDescriptor
 {
-    public identity: number[];
+    public classId: number[];
     public name: string;
     public fixedRole: string | null;
     public properties: NcPropertyDescriptor[];
@@ -1273,7 +1309,7 @@ export class NcClassDescriptor extends NcDescriptor
 
     constructor(
         description: string,
-        identity: number[],
+        classId: number[],
         name: string,
         fixedRole: string | null,
         properties: NcPropertyDescriptor[],
@@ -1282,7 +1318,7 @@ export class NcClassDescriptor extends NcDescriptor
     {
         super(description);
 
-        this.identity = identity;
+        this.classId = classId;
         this.name = name;
         this.fixedRole = fixedRole;
         this.properties = properties;
@@ -1293,7 +1329,7 @@ export class NcClassDescriptor extends NcDescriptor
     public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor
     {
         let currentClassDescriptor = new NcDatatypeDescriptorStruct("NcClassDescriptor", [
-            new NcFieldDescriptor("identity", "NcClassId", false, false, null, "Identity of the class"),
+            new NcFieldDescriptor("classId", "NcClassId", false, false, null, "Identity of the class"),
             new NcFieldDescriptor("name", "NcName", false, false, null, "Name of the class"),
             new NcFieldDescriptor("fixedRole", "NcString", true, false, null, "Role if the class has fixed role (manager classes)"),
             new NcFieldDescriptor("properties", "NcPropertyDescriptor", false, true, null, "Property descriptors"),

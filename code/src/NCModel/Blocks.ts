@@ -166,14 +166,14 @@ export class NcBlock extends NcObject
                             {
                                 if('includeDerived' in args)
                                 {
-                                    let id = args['id'] as number[];
+                                    let classId = args['id'] as number[];
                                     let includeDerived = args['includeDerived'] as boolean;
                                     let recurse = args['recurse'] as boolean;
 
                                     if(recurse)
-                                        return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.GenerateMemberDescriptorsByClassId(id, includeDerived, true));
+                                        return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.GenerateMemberDescriptorsByClassId(classId, includeDerived, true));
                                     else
-                                        return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.GenerateMemberDescriptorsByClassId(id, includeDerived, false));
+                                        return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.GenerateMemberDescriptorsByClassId(classId, includeDerived, false));
                                 }
                                 else
                                     return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'No includeDerived argument provided');
@@ -250,7 +250,7 @@ export class NcBlock extends NcObject
                     new NcParameterDescriptor("recurse", "NcBoolean", false,  false, null, "TRUE to search nested blocks")
                 ], "Finds members with given role name or fragment"),
                 new NcMethodDescriptor(new NcElementId(2, 4), "FindMembersByClassId", "NcMethodResultBlockMemberDescriptors", [
-                    new NcParameterDescriptor("id", "NcClassId", false, false, null, "Class id to search for"),
+                    new NcParameterDescriptor("classId", "NcClassId", false, false, null, "Class id to search for"),
                     new NcParameterDescriptor("includeDerived", "NcBoolean", false,  false, null, "If TRUE it will also include derived class descriptors"),
                     new NcParameterDescriptor("recurse", "NcBoolean", false,  false, null, "TRUE to search nested blocks")
                 ], "Finds members with given class id")
