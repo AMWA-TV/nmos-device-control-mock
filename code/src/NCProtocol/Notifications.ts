@@ -68,7 +68,7 @@ export class ProtocolNotification extends ProtocolWrapper
     public constructor(
         notifications: NcNotification[])
     {
-        super('1.0.0', MessageType.Notification);
+        super(MessageType.Notification);
 
         this.notifications = notifications;
     }
