@@ -162,11 +162,11 @@ export class NcBlock extends NcObject
                     {
                         if(args != null)
                         {
-                            if('id' in args)
+                            if('classId' in args)
                             {
                                 if('includeDerived' in args)
                                 {
-                                    let classId = args['id'] as number[];
+                                    let classId = args['classId'] as number[];
                                     let includeDerived = args['includeDerived'] as boolean;
                                     let recurse = args['recurse'] as boolean;
 

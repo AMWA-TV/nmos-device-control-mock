@@ -452,11 +452,11 @@ export class NcClassManager extends NcManager
             {
                 case '3m1':
                     {
-                        if(args != null && 'identity' in args)
+                        if(args != null && 'classId' in args)
                         {
                             if('includeInherited' in args)
                             {
-                                let classId = args['identity'] as number[];
+                                let classId = args['classId'] as number[];
                                 let includeInherited = args['includeInherited'] as boolean;
 
                                 if(includeInherited)
