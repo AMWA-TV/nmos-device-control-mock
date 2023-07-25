@@ -230,36 +230,27 @@ try
 
                 if(message)
                 {
-                    if(message.protocolVersion == "1.0.0")
+                    switch(message.messageType)
                     {
-                        switch(message.messageType)
+                        case MessageType.Command:
                         {
-                            case MessageType.Command:
-                            {
-                                rootBlock.ProcessMessage(msg, extWs);
-                                isMessageValid = true;
-                            }
-                            break;
-                            case MessageType.Subscription:
-                            {
-                                let message = JSON.parse(msg) as ProtocolSubscription;
-                                sessionManager.ModifySubscription(extWs, message);
-                                isMessageValid = true;
-                            }
-                            break;
-                            default:
-                            {
-                                isMessageValid = false;
-                                errorMessage = `Invalid message type received: ${message.messageType}`;
-                            }
-                            break;
+                            rootBlock.ProcessMessage(msg, extWs);
+                            isMessageValid = true;
                         }
-                    }
-                    else
-                    {
-                        isMessageValid = false;
-                        errorMessage = `Unsupported protocol version`;
-                        status = NcMethodStatus.ProtocolVersionError;
+                        break;
+                        case MessageType.Subscription:
+                        {
+                            let message = JSON.parse(msg) as ProtocolSubscription;
+                            sessionManager.ModifySubscription(extWs, message);
+                            isMessageValid = true;
+                        }
+                        break;
+                        default:
+                        {
+                            isMessageValid = false;
+                            errorMessage = `Invalid message type received: ${message.messageType}`;
+                        }
+                        break;
                     }
                 }
                 else

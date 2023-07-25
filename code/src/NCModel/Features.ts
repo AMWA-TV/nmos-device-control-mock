@@ -1220,6 +1220,57 @@ export class ExampleControl extends NcWorker
                         else
                             return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid arguments provided');
                     }
+                case '1m7': //GetSequenceLength
+                    {
+                        if(args != null &&
+                            'id' in args)
+                        {
+                            let propertyId = args['id'] as NcElementId;
+                            if(propertyId)
+                            {
+                                let propertyKey: string = `${propertyId.level}p${propertyId.index}`;
+                                switch(propertyKey)
+                                {
+                                    case '3p9':
+                                        {
+                                            let length = this.stringSequence.length;
+
+                                            return new CommandResponseWithValue(handle, NcMethodStatus.OK, length);
+                                        }
+                                    case '3p10':
+                                        {
+                                            let length = this.booleanSequence.length;
+
+                                            return new CommandResponseWithValue(handle, NcMethodStatus.OK, length);
+                                        }
+                                    case '3p11':
+                                        {
+                                            let length = this.enumSequence.length;
+
+                                            return new CommandResponseWithValue(handle, NcMethodStatus.OK, length);
+                                        }
+                                    case '3p12':
+                                        {
+                                            let length = this.numberSequence.length;
+
+                                            return new CommandResponseWithValue(handle, NcMethodStatus.OK, length);
+                                        }
+                                    case '3p13':
+                                        {
+                                            let length = this.objectSequence.length;
+
+                                            return new CommandResponseWithValue(handle, NcMethodStatus.OK, length);
+                                        }
+                                    default:
+                                        return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Property could not be found');
+                                }
+                            }
+                            else
+                                return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid id argument provided');
+                        }
+                        else
+                            return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid arguments provided');
+                    }
                 case '3m1':
                     {
                         this.methodNoArgsCount = this.methodNoArgsCount + 1;
@@ -1300,7 +1351,7 @@ export class ExampleControl extends NcWorker
                 new NcPropertyDescriptor(new NcElementId(3, 1), "enumProperty", "ExampleEnum", false, false, false, false, null, "Example enum property"),
                 new NcPropertyDescriptor(new NcElementId(3, 2), "stringProperty", "NcString", false, false, false, false, new NcParameterConstraintsString(10, null),
                     "Example string property"),
-                new NcPropertyDescriptor(new NcElementId(3, 3), "numberProperty", "NcUint64", false, false, false, false, new NcParameterConstraintsNumber(1000, 0, 1),
+                new NcPropertyDescriptor(new NcElementId(3, 3), "numberProperty", "NcUint64", false, false, false, false, new NcParameterConstraintsNumber(1000, 0, 1, 3),
                     "Example numeric property"),
                 new NcPropertyDescriptor(new NcElementId(3, 4), "booleanProperty", "NcBoolean", false, false, false, false, null, "Example boolean property"),
                 new NcPropertyDescriptor(new NcElementId(3, 5), "objectProperty", "ExampleDataType", false, false, false, false, null, "Example object property"),

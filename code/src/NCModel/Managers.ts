@@ -28,6 +28,7 @@ import {
     NcMethodResultDatatypeDescriptor,
     NcMethodResultError,
     NcMethodResultId,
+    NcMethodResultLength,
     NcMethodResultPropertyValue,
     NcMethodStatus,
     NcObject,
@@ -222,7 +223,7 @@ export class NcDeviceManager extends NcManager
     public override classID: number[] = NcDeviceManager.staticClassID;
 
     @myIdDecorator('3p1')
-    public ncVersion: string = "1.0.0";
+    public ncVersion: string = "v1.0.0";
 
     @myIdDecorator('3p2')
     public manufacturer: NcManufacturer;
@@ -451,16 +452,16 @@ export class NcClassManager extends NcManager
             {
                 case '3m1':
                     {
-                        if(args != null && 'identity' in args)
+                        if(args != null && 'classId' in args)
                         {
                             if('includeInherited' in args)
                             {
-                                let identity = args['identity'] as number[];
+                                let classId = args['classId'] as number[];
                                 let includeInherited = args['includeInherited'] as boolean;
 
                                 if(includeInherited)
                                 {
-                                    let descriptor = this.GetClassDescriptor(identity, true);
+                                    let descriptor = this.GetClassDescriptor(classId, true);
                                     if(descriptor)
                                         return new CommandResponseWithValue(handle, NcMethodStatus.OK, descriptor);
                                     else
@@ -468,7 +469,7 @@ export class NcClassManager extends NcManager
                                 }
                                 else
                                 {
-                                    let descriptor = this.GetClassDescriptor(identity, false);
+                                    let descriptor = this.GetClassDescriptor(classId, false);
                                     if(descriptor)
                                         return new CommandResponseWithValue(handle, NcMethodStatus.OK, descriptor);
                                     else
@@ -531,7 +532,7 @@ export class NcClassManager extends NcManager
             ],
             [ 
                 new NcMethodDescriptor(new NcElementId(3, 1), "GetControlClass", "NcMethodResultClassDescriptor", [
-                    new NcParameterDescriptor("identity", "NcClassId", false, false, null, "class ID"),
+                    new NcParameterDescriptor("classId", "NcClassId", false, false, null, "class ID"),
                     new NcParameterDescriptor("includeInherited", "NcBoolean", false, false, null, "if set the descriptor would contain all inherited elements")
                 ], "Get a single class descriptor"),
                 new NcMethodDescriptor(new NcElementId(3, 2), "GetDatatype", "NcMethodResultDatatypeDescriptor", [
@@ -680,19 +681,20 @@ export class NcClassManager extends NcManager
                 new NcEnumItemDescriptor("InvalidRequest", 406, "Method call is invalid in current operating context"),
                 new NcEnumItemDescriptor("Conflict", 409, "There is a conflict with the current state of the device"),
                 new NcEnumItemDescriptor("BufferOverflow", 413, "Something was too big"),
+                new NcEnumItemDescriptor("IndexOutOfBounds", 414, "Index is outside the available range"),
                 new NcEnumItemDescriptor("ParameterError", 417, "Method parameter does not meet expectations"),
                 new NcEnumItemDescriptor("Locked", 423, "Addressed object is locked"),
                 new NcEnumItemDescriptor("DeviceError", 500, "Internal device error"),
                 new NcEnumItemDescriptor("MethodNotImplemented", 501, "Addressed method is not implemented by the addressed object"),
                 new NcEnumItemDescriptor("PropertyNotImplemented", 502, "Addressed property is not implemented by the addressed object"),
                 new NcEnumItemDescriptor("NotReady", 503, "The device is not ready to handle any commands"),
-                new NcEnumItemDescriptor("Timeout", 504, "Method call did not finish within the allotted time"),
-                new NcEnumItemDescriptor("ProtocolVersionError", 505, "Incompatible protocol version"),
+                new NcEnumItemDescriptor("Timeout", 504, "Method call did not finish within the allotted time")
             ], null, "Method invokation status"),
             'NcMethodResult': NcMethodResult.GetTypeDescriptor(false),
             'NcMethodResultError': NcMethodResultError.GetTypeDescriptor(false),
             'NcMethodResultPropertyValue': NcMethodResultPropertyValue.GetTypeDescriptor(false),
             'NcMethodResultId': NcMethodResultId.GetTypeDescriptor(false),
+            'NcMethodResultLength': NcMethodResultLength.GetTypeDescriptor(false),
             'NcBlockMemberDescriptor': NcBlockMemberDescriptor.GetTypeDescriptor(false),
             'NcMethodResultBlockMemberDescriptors': NcMethodResultBlockMemberDescriptors.GetTypeDescriptor(false),
             'NcMethodResultClassDescriptor': NcMethodResultClassDescriptor.GetTypeDescriptor(false),
@@ -766,6 +768,7 @@ export class NcClassManager extends NcManager
             case 'NcMethodResultClassDescriptor': return NcMethodResultClassDescriptor.GetTypeDescriptor(true);
             case 'NcMethodResultDatatypeDescriptor': return NcMethodResultDatatypeDescriptor.GetTypeDescriptor(true);
             case 'NcMethodResultId': return NcMethodResultId.GetTypeDescriptor(true);
+            case 'NcMethodResultLength': return NcMethodResultLength.GetTypeDescriptor(true);
             default: return this.dataTypesRegister[name];
         }
     }
