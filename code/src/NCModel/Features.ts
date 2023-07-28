@@ -64,7 +64,7 @@ export abstract class NcWorker extends NcObject
             }
         }
 
-        return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
+        return new CommandResponseError(handle, NcMethodStatus.BadOid, 'OID could not be found');
     }
 
     //'1m2'
@@ -85,7 +85,7 @@ export abstract class NcWorker extends NcObject
             }
         }
 
-        return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
+        return new CommandResponseError(handle, NcMethodStatus.BadOid, 'OID could not be found');
     }
 
     public static override GetClassDescriptor(includeInherited: boolean): NcClassDescriptor
@@ -156,7 +156,7 @@ export class GainControl extends NcWorker
             }
         }
 
-        return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
+        return new CommandResponseError(handle, NcMethodStatus.BadOid, 'OID could not be found');
     }
 
     //'1m2'
@@ -177,7 +177,7 @@ export class GainControl extends NcWorker
             }
         }
 
-        return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
+        return new CommandResponseError(handle, NcMethodStatus.BadOid, 'OID could not be found');
     }
 
     public static override GetClassDescriptor(includeInherited: boolean): NcClassDescriptor 
@@ -248,7 +248,7 @@ export class NcIdentBeacon extends NcWorker
             }
         }
 
-        return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
+        return new CommandResponseError(handle, NcMethodStatus.BadOid, 'OID could not be found');
     }
 
     //'1m2'
@@ -269,7 +269,7 @@ export class NcIdentBeacon extends NcWorker
             }
         }
 
-        return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
+        return new CommandResponseError(handle, NcMethodStatus.BadOid, 'OID could not be found');
     }
 
     public static override GetClassDescriptor(includeInherited: boolean): NcClassDescriptor 
@@ -427,7 +427,7 @@ export class NcReceiverMonitor extends NcWorker
             }
         }
 
-        return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
+        return new CommandResponseError(handle, NcMethodStatus.BadOid, 'OID could not be found');
     }
 
     //'1m2'
@@ -449,7 +449,7 @@ export class NcReceiverMonitor extends NcWorker
             }
         }
 
-        return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
+        return new CommandResponseError(handle, NcMethodStatus.BadOid, 'OID could not be found');
     }
 
     public static override GetClassDescriptor(includeInherited: boolean): NcClassDescriptor 
@@ -552,7 +552,7 @@ export class NcReceiverMonitorProtected extends NcReceiverMonitor
             }
         }
 
-        return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
+        return new CommandResponseError(handle, NcMethodStatus.BadOid, 'OID could not be found');
     }
 
     //'1m2'
@@ -571,7 +571,7 @@ export class NcReceiverMonitorProtected extends NcReceiverMonitor
             }
         }
 
-        return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
+        return new CommandResponseError(handle, NcMethodStatus.BadOid, 'OID could not be found');
     }
 
     public static override GetClassDescriptor(includeInherited: boolean): NcClassDescriptor 
@@ -758,7 +758,7 @@ export class ExampleControl extends NcWorker
             }
         }
 
-        return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
+        return new CommandResponseError(handle, NcMethodStatus.BadOid, 'OID could not be found');
     }
 
     //'1m2'
@@ -819,7 +819,7 @@ export class ExampleControl extends NcWorker
             }
         }
 
-        return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
+        return new CommandResponseError(handle, NcMethodStatus.BadOid, 'OID could not be found');
     }
 
     public override InvokeMethod(socket: WebSocketConnection, oid: number, methodId: NcElementId, args: { [key: string]: any; } | null, handle: number): CommandResponseNoValue 
@@ -853,15 +853,15 @@ export class ExampleControl extends NcWorker
                                                 if(itemValue)
                                                     return new CommandResponseWithValue(handle, NcMethodStatus.OK, itemValue);
                                                 else
-                                                    return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Index could not be found');
+                                                    return new CommandResponseError(handle, NcMethodStatus.IndexOutOfBounds, 'Index could not be found');
                                             }
                                         case '3p10':
                                             {
                                                 let itemValue = this.booleanSequence[index];
-                                                if(itemValue)
-                                                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, itemValue);
+                                                if( typeof itemValue === 'undefined' || itemValue === null )
+                                                    return new CommandResponseError(handle, NcMethodStatus.IndexOutOfBounds, 'Index could not be found');
                                                 else
-                                                    return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Index could not be found');
+                                                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, itemValue);
                                             }
                                         case '3p11':
                                             {
@@ -869,7 +869,7 @@ export class ExampleControl extends NcWorker
                                                 if(itemValue)
                                                     return new CommandResponseWithValue(handle, NcMethodStatus.OK, itemValue);
                                                 else
-                                                    return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Index could not be found');
+                                                    return new CommandResponseError(handle, NcMethodStatus.IndexOutOfBounds, 'Index could not be found');
                                             }
                                         case '3p12':
                                             {
@@ -877,7 +877,7 @@ export class ExampleControl extends NcWorker
                                                 if(itemValue !== undefined)
                                                     return new CommandResponseWithValue(handle, NcMethodStatus.OK, itemValue);
                                                 else
-                                                    return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Index could not be found');
+                                                    return new CommandResponseError(handle, NcMethodStatus.IndexOutOfBounds, 'Index could not be found');
                                             }
                                         case '3p13':
                                             {
@@ -885,10 +885,10 @@ export class ExampleControl extends NcWorker
                                                 if(itemValue)
                                                     return new CommandResponseWithValue(handle, NcMethodStatus.OK, itemValue);
                                                 else
-                                                    return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Index could not be found');
+                                                    return new CommandResponseError(handle, NcMethodStatus.IndexOutOfBounds, 'Index could not be found');
                                             }
                                         default:
-                                            return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Property could not be found');
+                                            return new CommandResponseError(handle, NcMethodStatus.PropertyNotImplemented, 'Property could not be found');
                                     }
                                 }
                                 else
@@ -934,7 +934,7 @@ export class ExampleControl extends NcWorker
                                                         return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid value argument provided');
                                                 }
                                                 else
-                                                    return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Index could not be found');
+                                                    return new CommandResponseError(handle, NcMethodStatus.IndexOutOfBounds, 'Index could not be found');
                                             }
                                         case '3p10':
                                             {
@@ -952,7 +952,7 @@ export class ExampleControl extends NcWorker
                                                         return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid value argument provided');
                                                 }
                                                 else
-                                                    return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Index could not be found');
+                                                    return new CommandResponseError(handle, NcMethodStatus.IndexOutOfBounds, 'Index could not be found');
                                             }
                                         case '3p11':
                                             {
@@ -970,7 +970,7 @@ export class ExampleControl extends NcWorker
                                                         return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid value argument provided');
                                                 }
                                                 else
-                                                    return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Index could not be found');
+                                                    return new CommandResponseError(handle, NcMethodStatus.IndexOutOfBounds, 'Index could not be found');
                                             }
                                         case '3p12':
                                             {
@@ -988,7 +988,7 @@ export class ExampleControl extends NcWorker
                                                         return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid value argument provided');
                                                 }
                                                 else
-                                                    return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Index could not be found');
+                                                    return new CommandResponseError(handle, NcMethodStatus.IndexOutOfBounds, 'Index could not be found');
                                             }
                                         case '3p13':
                                             {
@@ -1006,10 +1006,10 @@ export class ExampleControl extends NcWorker
                                                         return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid value argument provided');
                                                 }
                                                 else
-                                                    return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Index could not be found');
+                                                    return new CommandResponseError(handle, NcMethodStatus.IndexOutOfBounds, 'Index could not be found');
                                             }
                                         default:
-                                            return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Property could not be found');
+                                            return new CommandResponseError(handle, NcMethodStatus.PropertyNotImplemented, 'Property could not be found');
                                     }
                                 }
                                 else
@@ -1111,7 +1111,7 @@ export class ExampleControl extends NcWorker
                                                 return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid value argument provided');
                                         }
                                     default:
-                                        return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Property could not be found');
+                                        return new CommandResponseError(handle, NcMethodStatus.PropertyNotImplemented, 'Property could not be found');
                                 }
                             }
                             else
@@ -1149,7 +1149,7 @@ export class ExampleControl extends NcWorker
                                                     return new CommandResponseNoValue(handle, NcMethodStatus.OK);
                                                 }
                                                 else
-                                                    return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Index could not be found');
+                                                    return new CommandResponseError(handle, NcMethodStatus.IndexOutOfBounds, 'Index could not be found');
                                             }
                                         case '3p10':
                                             {
@@ -1163,7 +1163,7 @@ export class ExampleControl extends NcWorker
                                                     return new CommandResponseNoValue(handle, NcMethodStatus.OK);
                                                 }
                                                 else
-                                                    return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Index could not be found');
+                                                    return new CommandResponseError(handle, NcMethodStatus.IndexOutOfBounds, 'Index could not be found');
                                             }
                                         case '3p11':
                                             {
@@ -1177,7 +1177,7 @@ export class ExampleControl extends NcWorker
                                                     return new CommandResponseNoValue(handle, NcMethodStatus.OK);
                                                 }
                                                 else
-                                                    return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Index could not be found');
+                                                    return new CommandResponseError(handle, NcMethodStatus.IndexOutOfBounds, 'Index could not be found');
                                             }
                                         case '3p12':
                                             {
@@ -1191,7 +1191,7 @@ export class ExampleControl extends NcWorker
                                                     return new CommandResponseNoValue(handle, NcMethodStatus.OK);
                                                 }
                                                 else
-                                                    return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Index could not be found');
+                                                    return new CommandResponseError(handle, NcMethodStatus.IndexOutOfBounds, 'Index could not be found');
                                             }
                                         case '3p13':
                                             {
@@ -1205,10 +1205,10 @@ export class ExampleControl extends NcWorker
                                                     return new CommandResponseNoValue(handle, NcMethodStatus.OK);
                                                 }
                                                 else
-                                                    return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Index could not be found');
+                                                    return new CommandResponseError(handle, NcMethodStatus.IndexOutOfBounds, 'Index could not be found');
                                             }
                                         default:
-                                            return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Property could not be found');
+                                            return new CommandResponseError(handle, NcMethodStatus.PropertyNotImplemented, 'Property could not be found');
                                     }
                                 }
                                 else
@@ -1262,7 +1262,7 @@ export class ExampleControl extends NcWorker
                                             return new CommandResponseWithValue(handle, NcMethodStatus.OK, length);
                                         }
                                     default:
-                                        return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Property could not be found');
+                                        return new CommandResponseError(handle, NcMethodStatus.PropertyNotImplemented, 'Property could not be found');
                                 }
                             }
                             else
@@ -1340,7 +1340,7 @@ export class ExampleControl extends NcWorker
             }
         }
 
-        return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
+        return new CommandResponseError(handle, NcMethodStatus.BadOid, 'OID could not be found');
     }
 
     public static override GetClassDescriptor(includeInherited: boolean): NcClassDescriptor 
