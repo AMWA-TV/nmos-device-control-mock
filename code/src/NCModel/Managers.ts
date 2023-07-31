@@ -356,16 +356,16 @@ export class NcDeviceManager extends NcManager
         let currentClassDescriptor = new NcClassDescriptor(`${NcDeviceManager.name} class descriptor`,
             NcDeviceManager.staticClassID, NcDeviceManager.name, NcDeviceManager.staticRole,
             [
-                new NcPropertyDescriptor(new NcElementId(3, 1), "ncVersion", "NcVersionCode", true, true, false, false, null, "Version of nc this dev uses"),
-                new NcPropertyDescriptor(new NcElementId(3, 2), "manufacturer", "NcManufacturer", true, true, false, false, null, "Manufacturer descriptor", false, true),
-                new NcPropertyDescriptor(new NcElementId(3, 3), "product", "NcProduct", true, true, false, false, null, "Product descriptor", false, true),
-                new NcPropertyDescriptor(new NcElementId(3, 4), "serialNumber", "NcString", true, true, false, false, null, "Serial number"),
-                new NcPropertyDescriptor(new NcElementId(3, 5), "userInventoryCode", "NcString", false, true, true, false, null, "Asset tracking identifier (user specified)"),
-                new NcPropertyDescriptor(new NcElementId(3, 6), "deviceName", "NcString", false, true, true, false, null, "Name of this device in the application. Instance name, not product name."),
-                new NcPropertyDescriptor(new NcElementId(3, 7), "deviceRole", "NcString", false, true, true, false, null, "Role of this device in the application."),
-                new NcPropertyDescriptor(new NcElementId(3, 8), "operationalState", "NcDeviceOperationalState", true, true, false, false, null, "Device operational state"),
-                new NcPropertyDescriptor(new NcElementId(3, 9), "resetCause", "NcResetCause", true, true, false, false, null, "Reason for most recent reset"),
-                new NcPropertyDescriptor(new NcElementId(3, 10), "message", "NcString", true, true, true, false, null, "Arbitrary message from dev to controller"),
+                new NcPropertyDescriptor(new NcElementId(3, 1), "ncVersion", "NcVersionCode", true, false, false, null, "Version of nc this dev uses"),
+                new NcPropertyDescriptor(new NcElementId(3, 2), "manufacturer", "NcManufacturer", true, false, false, null, "Manufacturer descriptor", false),
+                new NcPropertyDescriptor(new NcElementId(3, 3), "product", "NcProduct", true, false, false, null, "Product descriptor", false),
+                new NcPropertyDescriptor(new NcElementId(3, 4), "serialNumber", "NcString", true, false, false, null, "Serial number"),
+                new NcPropertyDescriptor(new NcElementId(3, 5), "userInventoryCode", "NcString", false, true, false, null, "Asset tracking identifier (user specified)"),
+                new NcPropertyDescriptor(new NcElementId(3, 6), "deviceName", "NcString", false, true, false, null, "Name of this device in the application. Instance name, not product name."),
+                new NcPropertyDescriptor(new NcElementId(3, 7), "deviceRole", "NcString", false, true, false, null, "Role of this device in the application."),
+                new NcPropertyDescriptor(new NcElementId(3, 8), "operationalState", "NcDeviceOperationalState", true, false, false, null, "Device operational state"),
+                new NcPropertyDescriptor(new NcElementId(3, 9), "resetCause", "NcResetCause", true, false, false, null, "Reason for most recent reset"),
+                new NcPropertyDescriptor(new NcElementId(3, 10), "message", "NcString", true, true, false, null, "Arbitrary message from dev to controller"),
             ],
             [],
             []
@@ -660,8 +660,8 @@ export class NcClassManager extends NcManager
         let currentClassDescriptor = new NcClassDescriptor(`${NcClassManager.name} class descriptor`,
             NcClassManager.staticClassID, NcClassManager.name, NcClassManager.staticRole,
             [ 
-                new NcPropertyDescriptor(new NcElementId(3, 1), "controlClasses", "NcClassDescriptor", true, true, false, true, null, "Descriptions of all control classes in the device (descriptors do not contain inherited elements)"),
-                new NcPropertyDescriptor(new NcElementId(3, 2), "datatypes", "NcDatatypeDescriptor", true, true, false, true, null, "Descriptions of all data types in the device (descriptors do not contain inherited elements)")
+                new NcPropertyDescriptor(new NcElementId(3, 1), "controlClasses", "NcClassDescriptor", true, false, true, null, "Descriptions of all control classes in the device (descriptors do not contain inherited elements)"),
+                new NcPropertyDescriptor(new NcElementId(3, 2), "datatypes", "NcDatatypeDescriptor", true, false, true, null, "Descriptions of all data types in the device (descriptors do not contain inherited elements)")
             ],
             [ 
                 new NcMethodDescriptor(new NcElementId(3, 1), "GetControlClass", "NcMethodResultClassDescriptor", [

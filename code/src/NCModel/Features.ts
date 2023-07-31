@@ -93,7 +93,7 @@ export abstract class NcWorker extends NcObject
         let currentClassDescriptor = new NcClassDescriptor(`${NcWorker.name} class descriptor`,
             NcWorker.staticClassID, NcWorker.name, null,
             [
-                new NcPropertyDescriptor(new NcElementId(2, 1), "enabled", "NcBoolean", false, true, false, false, null, "TRUE iff worker is enabled")
+                new NcPropertyDescriptor(new NcElementId(2, 1), "enabled", "NcBoolean", false, false, false, null, "TRUE iff worker is enabled")
             ],
             [],
             []
@@ -185,7 +185,7 @@ export class GainControl extends NcWorker
         let currentClassDescriptor = new NcClassDescriptor(`${GainControl.name} class descriptor`,
             GainControl.staticClassID, GainControl.name, null,
             [
-                new NcPropertyDescriptor(new NcElementId(3, 1), "gainValue", "NcFloat32", false, false, false, false, null, "Gain value")
+                new NcPropertyDescriptor(new NcElementId(3, 1), "gainValue", "NcFloat32", false, false, false, null, "Gain value")
             ],
             [],
             []
@@ -277,7 +277,7 @@ export class NcIdentBeacon extends NcWorker
         let currentClassDescriptor = new NcClassDescriptor(`${NcIdentBeacon.name} class descriptor`,
             NcIdentBeacon.staticClassID, NcIdentBeacon.name, null,
             [
-                new NcPropertyDescriptor(new NcElementId(3, 1), "active", "NcBoolean", false, false, false, false, null, "Indicator active state")
+                new NcPropertyDescriptor(new NcElementId(3, 1), "active", "NcBoolean", false, false, false, null, "Indicator active state")
             ],
             [],
             []
@@ -457,10 +457,10 @@ export class NcReceiverMonitor extends NcWorker
         let currentClassDescriptor = new NcClassDescriptor(`${NcReceiverMonitor.name} class descriptor`,
             NcReceiverMonitor.staticClassID, NcReceiverMonitor.name, null,
             [
-                new NcPropertyDescriptor(new NcElementId(3, 1), "connectionStatus", "NcConnectionStatus", true, false, false, false, null, "Connection status property"),
-                new NcPropertyDescriptor(new NcElementId(3, 2), "connectionStatusMessage", "NcString", true, false, true, false, null, "Connection status message property"),
-                new NcPropertyDescriptor(new NcElementId(3, 3), "payloadStatus", "NcPayloadStatus", true, false, false, false, null, "Payload status property"),
-                new NcPropertyDescriptor(new NcElementId(3, 4), "payloadStatusMessage", "NcString", true, false, true, false, null, "Payload status message property")
+                new NcPropertyDescriptor(new NcElementId(3, 1), "connectionStatus", "NcConnectionStatus", true, false, false, null, "Connection status property"),
+                new NcPropertyDescriptor(new NcElementId(3, 2), "connectionStatusMessage", "NcString", true, true, false, null, "Connection status message property"),
+                new NcPropertyDescriptor(new NcElementId(3, 3), "payloadStatus", "NcPayloadStatus", true, false, false, null, "Payload status property"),
+                new NcPropertyDescriptor(new NcElementId(3, 4), "payloadStatusMessage", "NcString", true, true, false, null, "Payload status message property")
             ],
             [],
             []
@@ -579,7 +579,7 @@ export class NcReceiverMonitorProtected extends NcReceiverMonitor
         let currentClassDescriptor = new NcClassDescriptor(`${NcReceiverMonitorProtected.name} class descriptor`,
             NcReceiverMonitorProtected.staticClassID, NcReceiverMonitorProtected.name, null,
             [
-                new NcPropertyDescriptor(new NcElementId(4, 1), "signalProtectionStatus", "NcBoolean", true, false, false, false, null, "Indicates if signal protection is active"),
+                new NcPropertyDescriptor(new NcElementId(4, 1), "signalProtectionStatus", "NcBoolean", true, false, false, null, "Indicates if signal protection is active"),
             ],
             [],
             []
@@ -1348,21 +1348,21 @@ export class ExampleControl extends NcWorker
         let currentClassDescriptor = new NcClassDescriptor(`${ExampleControl.name} class descriptor`,
             ExampleControl.staticClassID, ExampleControl.name, null,
             [
-                new NcPropertyDescriptor(new NcElementId(3, 1), "enumProperty", "ExampleEnum", false, false, false, false, null, "Example enum property"),
-                new NcPropertyDescriptor(new NcElementId(3, 2), "stringProperty", "NcString", false, false, false, false, new NcParameterConstraintsString(10, null),
+                new NcPropertyDescriptor(new NcElementId(3, 1), "enumProperty", "ExampleEnum", false, false, false, null, "Example enum property"),
+                new NcPropertyDescriptor(new NcElementId(3, 2), "stringProperty", "NcString", false, false, false, new NcParameterConstraintsString(10, null),
                     "Example string property"),
-                new NcPropertyDescriptor(new NcElementId(3, 3), "numberProperty", "NcUint64", false, false, false, false, new NcParameterConstraintsNumber(1000, 0, 1, 3),
+                new NcPropertyDescriptor(new NcElementId(3, 3), "numberProperty", "NcUint64", false, false, false, new NcParameterConstraintsNumber(1000, 0, 1, 3),
                     "Example numeric property"),
-                new NcPropertyDescriptor(new NcElementId(3, 4), "booleanProperty", "NcBoolean", false, false, false, false, null, "Example boolean property"),
-                new NcPropertyDescriptor(new NcElementId(3, 5), "objectProperty", "ExampleDataType", false, false, false, false, null, "Example object property"),
-                new NcPropertyDescriptor(new NcElementId(3, 6), "methodNoArgsCount", "NcUint64", true, false, false, false, null, "Method no args invoke counter"),
-                new NcPropertyDescriptor(new NcElementId(3, 7), "methodSimpleArgsCount", "NcUint64", true, false, false, false, null, "Method simple args invoke counter"),
-                new NcPropertyDescriptor(new NcElementId(3, 8), "methodObjectArgCount", "NcUint64", true, false, false, false, null, "Method obj arg invoke counter"),
-                new NcPropertyDescriptor(new NcElementId(3, 9), "stringSequence", "NcString", false, false, false, true, null, "Example string sequence property"),
-                new NcPropertyDescriptor(new NcElementId(3, 10), "booleanSequence", "NcBoolean", false, false, false, true, null, "Example boolean sequence property"),
-                new NcPropertyDescriptor(new NcElementId(3, 11), "enumSequence", "ExampleEnum", false, false, false, true, null, "Example enum sequence property"),
-                new NcPropertyDescriptor(new NcElementId(3, 12), "numberSequence", "NcUint64", false, false, false, true, null, "Example number sequence property"),
-                new NcPropertyDescriptor(new NcElementId(3, 13), "objectSequence", "ExampleDataType", false, false, false, true, null, "Example object sequence property")
+                new NcPropertyDescriptor(new NcElementId(3, 4), "booleanProperty", "NcBoolean", false, false, false, null, "Example boolean property"),
+                new NcPropertyDescriptor(new NcElementId(3, 5), "objectProperty", "ExampleDataType", false, false, false, null, "Example object property"),
+                new NcPropertyDescriptor(new NcElementId(3, 6), "methodNoArgsCount", "NcUint64", true, false, false, null, "Method no args invoke counter"),
+                new NcPropertyDescriptor(new NcElementId(3, 7), "methodSimpleArgsCount", "NcUint64", true, false, false, null, "Method simple args invoke counter"),
+                new NcPropertyDescriptor(new NcElementId(3, 8), "methodObjectArgCount", "NcUint64", true, false, false, null, "Method obj arg invoke counter"),
+                new NcPropertyDescriptor(new NcElementId(3, 9), "stringSequence", "NcString", false, false, true, null, "Example string sequence property"),
+                new NcPropertyDescriptor(new NcElementId(3, 10), "booleanSequence", "NcBoolean", false, false, true, null, "Example boolean sequence property"),
+                new NcPropertyDescriptor(new NcElementId(3, 11), "enumSequence", "ExampleEnum", false, false, true, null, "Example enum sequence property"),
+                new NcPropertyDescriptor(new NcElementId(3, 12), "numberSequence", "NcUint64", false, false, true, null, "Example number sequence property"),
+                new NcPropertyDescriptor(new NcElementId(3, 13), "objectSequence", "ExampleDataType", false, false, true, null, "Example object sequence property")
             ],
             [
                 new NcMethodDescriptor(new NcElementId(3, 1), "MethodNoArgs", "NcMethodResult", [], "Example method with no arguments"),

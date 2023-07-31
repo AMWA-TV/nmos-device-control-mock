@@ -352,8 +352,8 @@ export class NcBlock extends NcObject
         let currentClassDescriptor = new NcClassDescriptor(`${NcBlock.name} class descriptor`,
             NcBlock.staticClassID, NcBlock.name, null,
             [
-                new NcPropertyDescriptor(new NcElementId(2, 1), "enabled", "NcBoolean", true, true, false, false, null, "TRUE if block is functional"),
-                new NcPropertyDescriptor(new NcElementId(2, 2), "members", "NcBlockMemberDescriptor", true, true, false, true, null, "Descriptors of this block's members"),
+                new NcPropertyDescriptor(new NcElementId(2, 1), "enabled", "NcBoolean", true, false, false, null, "TRUE if block is functional"),
+                new NcPropertyDescriptor(new NcElementId(2, 2), "members", "NcBlockMemberDescriptor", true, false, true, null, "Descriptors of this block's members"),
             ],
             [ 
                 new NcMethodDescriptor(new NcElementId(2, 1), "GetMemberDescriptors", "NcMethodResultBlockMemberDescriptors",

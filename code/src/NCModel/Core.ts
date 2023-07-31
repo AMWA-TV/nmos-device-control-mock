@@ -301,14 +301,14 @@ export abstract class NcObject
         return new NcClassDescriptor(`${NcObject.name} class descriptor`,
             NcObject.staticClassID, NcObject.name, null,
             [ 
-                new NcPropertyDescriptor(new NcElementId(1, 1), "classId", "NcClassId", true, true, false, false, null, "Static value. All instances of the same class will have the same identity value"),
-                new NcPropertyDescriptor(new NcElementId(1, 2), "oid", "NcOid", true, true, false, false, null, "Object identifier"),
-                new NcPropertyDescriptor(new NcElementId(1, 3), "constantOid", "NcBoolean", true, true, false, false, null, "TRUE iff OID is hardwired into device"),
-                new NcPropertyDescriptor(new NcElementId(1, 4), "owner", "NcOid", true, true, true, false, null, "OID of containing block. Can only ever be null for the root block" ),
-                new NcPropertyDescriptor(new NcElementId(1, 5), "role", "NcString", true, true, false, false, null, "role of obj in containing block"),
-                new NcPropertyDescriptor(new NcElementId(1, 6), "userLabel", "NcString", false, true, true, false, null, "Scribble strip"),
-                new NcPropertyDescriptor(new NcElementId(1, 7), "touchpoints", "NcTouchpoint", true, true, true, true, null, "Touchpoints to other contexts"),
-                new NcPropertyDescriptor(new NcElementId(1, 8), "runtimePropertyConstraints", "NcPropertyConstraints", true, true, true, true, null, "Runtime property constraints"),
+                new NcPropertyDescriptor(new NcElementId(1, 1), "classId", "NcClassId", true, false, false, null, "Static value. All instances of the same class will have the same identity value"),
+                new NcPropertyDescriptor(new NcElementId(1, 2), "oid", "NcOid", true, false, false, null, "Object identifier"),
+                new NcPropertyDescriptor(new NcElementId(1, 3), "constantOid", "NcBoolean", true, false, false, null, "TRUE iff OID is hardwired into device"),
+                new NcPropertyDescriptor(new NcElementId(1, 4), "owner", "NcOid", true, true, false, null, "OID of containing block. Can only ever be null for the root block" ),
+                new NcPropertyDescriptor(new NcElementId(1, 5), "role", "NcString", true, false, false, null, "role of obj in containing block"),
+                new NcPropertyDescriptor(new NcElementId(1, 6), "userLabel", "NcString", false, true, false, null, "Scribble strip"),
+                new NcPropertyDescriptor(new NcElementId(1, 7), "touchpoints", "NcTouchpoint", true, true, true, null, "Touchpoints to other contexts"),
+                new NcPropertyDescriptor(new NcElementId(1, 8), "runtimePropertyConstraints", "NcPropertyConstraints", true, true, true, null, "Runtime property constraints"),
             ],
             [ 
                 new NcMethodDescriptor(new NcElementId(1, 1), "Get", "NcMethodResultPropertyValue", [
@@ -1000,11 +1000,9 @@ export class NcPropertyDescriptor extends NcDescriptor
     public name: string;
     public typeName: string | null;
     public isReadOnly: boolean;
-    public isPersistent: boolean;
     public isNullable: boolean;
     public isSequence: boolean;
     public isDeprecated: boolean;
-    public isConstant: boolean | null;
     public constraints: NcParameterConstraints | null;
 
     constructor(
@@ -1012,13 +1010,11 @@ export class NcPropertyDescriptor extends NcDescriptor
         name: string,
         typeName: string | null,
         isReadOnly: boolean,
-        isPersistent: boolean,
         isNullable: boolean,
         isSequence: boolean,
         constraints: NcParameterConstraints | null,
         description: string,
-        isDeprecated: boolean = false,
-        isConstant: boolean = false)
+        isDeprecated: boolean = false)
     {
         super(description);
 
@@ -1026,12 +1022,10 @@ export class NcPropertyDescriptor extends NcDescriptor
         this.name = name;
         this.typeName = typeName;
         this.isReadOnly = isReadOnly;
-        this.isPersistent = isPersistent;
         this.isNullable = isNullable;
         this.isSequence = isSequence;
         this.constraints = constraints;
-        this.isDeprecated = isDeprecated
-        this.isConstant = isConstant;
+        this.isDeprecated = isDeprecated;
     }
 
     public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor
