@@ -102,7 +102,7 @@ export abstract class NcObject
             }
         }
 
-        return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
+        return new CommandResponseError(handle, NcMethodStatus.BadOid, 'OID could not be found');
     }
 
     //'1m2'
@@ -132,11 +132,162 @@ export abstract class NcObject
             }
         }
 
-        return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
+        return new CommandResponseError(handle, NcMethodStatus.BadOid, 'OID could not be found');
     }
 
     public InvokeMethod(socket: WebSocketConnection, oid: number, methodId: NcElementId, args: { [key: string]: any } | null, handle: number) : CommandResponseNoValue
     {
+        if(oid == this.oid)
+        {
+            let key: string = `${methodId.level}m${methodId.index}`;
+            switch(key)
+            {
+                case '1m3': //GetSequenceItem
+                    {
+                        if(args != null &&
+                            'id' in args &&
+                            'index' in args)
+                        {
+                            let propertyId = args['id'] as NcElementId;
+                            let index = args['index'] as number;
+
+                            if(propertyId)
+                            {
+                                if(index >= 0)
+                                {
+                                    let propertyKey: string = `${propertyId.level}p${propertyId.index}`;
+                                    switch(propertyKey)
+                                    {
+                                        case '1p7':
+                                            {
+                                                if(this.touchpoints != null)
+                                                {
+                                                    let itemValue = this.touchpoints[index];
+                                                    if(itemValue)
+                                                        return new CommandResponseWithValue(handle, NcMethodStatus.OK, itemValue);
+                                                    else
+                                                        return new CommandResponseError(handle, NcMethodStatus.IndexOutOfBounds, 'Index could not be found');
+                                                }
+                                                else
+                                                    return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Property is null');
+                                            }
+                                        case '1p8':
+                                            {
+                                                if(this.runtimePropertyConstraints != null)
+                                                {
+                                                    let itemValue = this.runtimePropertyConstraints[index];
+                                                    if(itemValue)
+                                                        return new CommandResponseWithValue(handle, NcMethodStatus.OK, itemValue);
+                                                    else
+                                                        return new CommandResponseError(handle, NcMethodStatus.IndexOutOfBounds, 'Index could not be found');
+                                                }
+                                                else
+                                                    return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Property is null');
+                                            }
+                                        default:
+                                            return new CommandResponseError(handle, NcMethodStatus.PropertyNotImplemented, 'Property could not be found');
+                                    }
+                                }
+                                else
+                                    return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid index argument provided');
+                            }
+                            else
+                                return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid id argument provided');
+                        }
+                        else
+                            return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid arguments provided');
+                    }
+                case '1m4': //SetSequenceItem
+                    {
+                        if(args != null &&
+                            'id' in args &&
+                            'index' in args &&
+                            'value' in args)
+                        {
+                            let propertyId = args['id'] as NcElementId;
+                            if(propertyId)
+                            {
+                                let propertyKey: string = `${propertyId.level}p${propertyId.index}`;
+                                return new CommandResponseError(handle, NcMethodStatus.Readonly, `Property ${propertyKey} is readonly`);
+                            }
+                            else
+                                return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid id argument provided');
+                        }
+                        else
+                            return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid arguments provided');
+                    }
+                case '1m5': //AddSequenceItem
+                    {
+                        if(args != null &&
+                            'id' in args &&
+                            'value' in args)
+                        {
+                            let propertyId = args['id'] as NcElementId;
+                            if(propertyId)
+                            {
+                                let propertyKey: string = `${propertyId.level}p${propertyId.index}`;
+                                return new CommandResponseError(handle, NcMethodStatus.Readonly, `Property ${propertyKey} is readonly`);
+                            }
+                            else
+                                return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid id argument provided');
+                        }
+                        else
+                            return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid arguments provided');
+                    }
+                case '1m6': //RemoveSequenceItem
+                    {
+                        if(args != null &&
+                            'id' in args &&
+                            'index' in args)
+                        {
+                            let propertyId = args['id'] as NcElementId;
+                            if(propertyId)
+                            {
+                                let propertyKey: string = `${propertyId.level}p${propertyId.index}`;
+                                return new CommandResponseError(handle, NcMethodStatus.Readonly, `Property ${propertyKey} is readonly`);
+                            }
+                            else
+                                return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid id argument provided');
+                        }
+                        else
+                            return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid arguments provided');
+                    }
+                case '1m7': //GetSequenceLength
+                    {
+                        if(args != null &&
+                            'id' in args)
+                        {
+                            let propertyId = args['id'] as NcElementId;
+                            if(propertyId)
+                            {
+                                let propertyKey: string = `${propertyId.level}p${propertyId.index}`;
+                                switch(propertyKey)
+                                {
+                                    case '1p7':
+                                        {
+                                            let length = this.touchpoints?.length ?? 0;
+
+                                            return new CommandResponseWithValue(handle, NcMethodStatus.OK, length);
+                                        }
+                                    case '1p8':
+                                        {
+                                            let length = this.runtimePropertyConstraints?.length ?? 0;
+
+                                            return new CommandResponseWithValue(handle, NcMethodStatus.OK, length);
+                                        }
+                                    default:
+                                        return new CommandResponseError(handle, NcMethodStatus.PropertyNotImplemented, 'Property could not be found');
+                                }
+                            }
+                            else
+                                return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid id argument provided');
+                        }
+                        else
+                            return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid arguments provided');
+                    }
+            }
+        }
+
         return new CommandResponseError(handle, NcMethodStatus.MethodNotImplemented, 'Method does not exist in object');
     }
 
@@ -150,14 +301,14 @@ export abstract class NcObject
         return new NcClassDescriptor(`${NcObject.name} class descriptor`,
             NcObject.staticClassID, NcObject.name, null,
             [ 
-                new NcPropertyDescriptor(new NcElementId(1, 1), "classId", "NcClassId", true, true, false, false, null, "Static value. All instances of the same class will have the same identity value"),
-                new NcPropertyDescriptor(new NcElementId(1, 2), "oid", "NcOid", true, true, false, false, null, "Object identifier"),
-                new NcPropertyDescriptor(new NcElementId(1, 3), "constantOid", "NcBoolean", true, true, false, false, null, "TRUE iff OID is hardwired into device"),
-                new NcPropertyDescriptor(new NcElementId(1, 4), "owner", "NcOid", true, true, true, false, null, "OID of containing block. Can only ever be null for the root block" ),
-                new NcPropertyDescriptor(new NcElementId(1, 5), "role", "NcString", true, true, false, false, null, "role of obj in containing block"),
-                new NcPropertyDescriptor(new NcElementId(1, 6), "userLabel", "NcString", false, true, true, false, null, "Scribble strip"),
-                new NcPropertyDescriptor(new NcElementId(1, 7), "touchpoints", "NcTouchpoint", true, true, true, true, null, "Touchpoints to other contexts"),
-                new NcPropertyDescriptor(new NcElementId(1, 8), "runtimePropertyConstraints", "NcPropertyConstraints", true, true, true, true, null, "Runtime property constraints"),
+                new NcPropertyDescriptor(new NcElementId(1, 1), "classId", "NcClassId", true, false, false, null, "Static value. All instances of the same class will have the same identity value"),
+                new NcPropertyDescriptor(new NcElementId(1, 2), "oid", "NcOid", true, false, false, null, "Object identifier"),
+                new NcPropertyDescriptor(new NcElementId(1, 3), "constantOid", "NcBoolean", true, false, false, null, "TRUE iff OID is hardwired into device"),
+                new NcPropertyDescriptor(new NcElementId(1, 4), "owner", "NcOid", true, true, false, null, "OID of containing block. Can only ever be null for the root block" ),
+                new NcPropertyDescriptor(new NcElementId(1, 5), "role", "NcString", true, false, false, null, "role of obj in containing block"),
+                new NcPropertyDescriptor(new NcElementId(1, 6), "userLabel", "NcString", false, true, false, null, "Scribble strip"),
+                new NcPropertyDescriptor(new NcElementId(1, 7), "touchpoints", "NcTouchpoint", true, true, true, null, "Touchpoints to other contexts"),
+                new NcPropertyDescriptor(new NcElementId(1, 8), "runtimePropertyConstraints", "NcPropertyConstraints", true, true, true, null, "Runtime property constraints"),
             ],
             [ 
                 new NcMethodDescriptor(new NcElementId(1, 1), "Get", "NcMethodResultPropertyValue", [
@@ -793,7 +944,7 @@ export abstract class NcDescriptor extends BaseType
     }
 }
 
-export class NcBlockMemberDescriptor extends BaseType
+export class NcBlockMemberDescriptor extends NcDescriptor
 {
     public role: string;
     public oid: number;
@@ -801,7 +952,6 @@ export class NcBlockMemberDescriptor extends BaseType
     public classId: number[];
     public userLabel: string | null;
     public owner: number | null;
-    public description: string;
 
     constructor(
         role: string,
@@ -812,7 +962,7 @@ export class NcBlockMemberDescriptor extends BaseType
         owner: number | null,
         description: string)
     {
-        super();
+        super(description);
 
         this.role = role;
         this.oid = oid;
@@ -834,6 +984,15 @@ export class NcBlockMemberDescriptor extends BaseType
             new NcFieldDescriptor("owner", "NcOid", false, false, null, "Containing block's OID")
         ], "NcDescriptor", null, "Descriptor which is specific to a block member");
 
+        if(includeInherited)
+        {
+            let baseDescriptor = super.GetTypeDescriptor(includeInherited);
+
+            let baseDescriptorStruct = baseDescriptor as NcDatatypeDescriptorStruct;
+            if(baseDescriptorStruct)
+                currentClassDescriptor.fields = currentClassDescriptor.fields.concat(baseDescriptorStruct.fields);
+        }
+
         return currentClassDescriptor;
     }
 
@@ -849,11 +1008,9 @@ export class NcPropertyDescriptor extends NcDescriptor
     public name: string;
     public typeName: string | null;
     public isReadOnly: boolean;
-    public isPersistent: boolean;
     public isNullable: boolean;
     public isSequence: boolean;
     public isDeprecated: boolean;
-    public isConstant: boolean | null;
     public constraints: NcParameterConstraints | null;
 
     constructor(
@@ -861,13 +1018,11 @@ export class NcPropertyDescriptor extends NcDescriptor
         name: string,
         typeName: string | null,
         isReadOnly: boolean,
-        isPersistent: boolean,
         isNullable: boolean,
         isSequence: boolean,
         constraints: NcParameterConstraints | null,
         description: string,
-        isDeprecated: boolean = false,
-        isConstant: boolean = false)
+        isDeprecated: boolean = false)
     {
         super(description);
 
@@ -875,12 +1030,10 @@ export class NcPropertyDescriptor extends NcDescriptor
         this.name = name;
         this.typeName = typeName;
         this.isReadOnly = isReadOnly;
-        this.isPersistent = isPersistent;
         this.isNullable = isNullable;
         this.isSequence = isSequence;
         this.constraints = constraints;
-        this.isDeprecated = isDeprecated
-        this.isConstant = isConstant;
+        this.isDeprecated = isDeprecated;
     }
 
     public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor

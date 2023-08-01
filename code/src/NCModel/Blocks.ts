@@ -70,7 +70,7 @@ export class NcBlock extends NcObject
             }
         }
 
-        return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
+        return new CommandResponseError(handle, NcMethodStatus.BadOid, 'OID could not be found');
     }
 
     //'1m2'
@@ -90,7 +90,7 @@ export class NcBlock extends NcObject
             }
         }
 
-        return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
+        return new CommandResponseError(handle, NcMethodStatus.BadOid, 'OID could not be found');
     }
 
     public override InvokeMethod(socket: WebSocketConnection, oid: number, methodId: NcElementId, args: { [key: string]: any; } | null, handle: number): CommandResponseNoValue 
@@ -98,9 +98,127 @@ export class NcBlock extends NcObject
         if(oid == this.oid)
         {
             let key: string = `${methodId.level}m${methodId.index}`;
-
             switch(key)
             {
+                case '1m3': //GetSequenceItem
+                    {
+                        if(args != null &&
+                            'id' in args &&
+                            'index' in args)
+                        {
+                            let propertyId = args['id'] as NcElementId;
+                            let index = args['index'] as number;
+
+                            if(propertyId)
+                            {
+                                if(index >= 0)
+                                {
+                                    let propertyKey: string = `${propertyId.level}p${propertyId.index}`;
+                                    switch(propertyKey)
+                                    {
+                                        case '2p2':
+                                            {
+                                                let itemValue = this.members[index];
+                                                if(itemValue)
+                                                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, itemValue);
+                                                else
+                                                    return new CommandResponseError(handle, NcMethodStatus.IndexOutOfBounds, 'Index could not be found');
+                                            }
+                                        default:
+                                            return new CommandResponseError(handle, NcMethodStatus.PropertyNotImplemented, 'Property could not be found');
+                                    }
+                                }
+                                else
+                                    return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid index argument provided');
+                            }
+                            else
+                                return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid id argument provided');
+                        }
+                        else
+                            return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid arguments provided');
+                    }
+                case '1m4': //SetSequenceItem
+                    {
+                        if(args != null &&
+                            'id' in args &&
+                            'index' in args &&
+                            'value' in args)
+                        {
+                            let propertyId = args['id'] as NcElementId;
+                            if(propertyId)
+                            {
+                                let propertyKey: string = `${propertyId.level}p${propertyId.index}`;
+                                return new CommandResponseError(handle, NcMethodStatus.Readonly, `Property ${propertyKey} is readonly`);
+                            }
+                            else
+                                return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid id argument provided');
+                        }
+                        else
+                            return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid arguments provided');
+                    }
+                case '1m5': //AddSequenceItem
+                    {
+                        if(args != null &&
+                            'id' in args &&
+                            'value' in args)
+                        {
+                            let propertyId = args['id'] as NcElementId;
+                            if(propertyId)
+                            {
+                                let propertyKey: string = `${propertyId.level}p${propertyId.index}`;
+                                return new CommandResponseError(handle, NcMethodStatus.Readonly, `Property ${propertyKey} is readonly`);
+                            }
+                            else
+                                return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid id argument provided');
+                        }
+                        else
+                            return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid arguments provided');
+                    }
+                case '1m6': //RemoveSequenceItem
+                    {
+                        if(args != null &&
+                            'id' in args &&
+                            'index' in args)
+                        {
+                            let propertyId = args['id'] as NcElementId;
+                            if(propertyId)
+                            {
+                                let propertyKey: string = `${propertyId.level}p${propertyId.index}`;
+                                return new CommandResponseError(handle, NcMethodStatus.Readonly, `Property ${propertyKey} is readonly`);
+                            }
+                            else
+                                return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid id argument provided');
+                        }
+                        else
+                            return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid arguments provided');
+                    }
+                case '1m7': //GetSequenceLength
+                    {
+                        if(args != null &&
+                            'id' in args)
+                        {
+                            let propertyId = args['id'] as NcElementId;
+                            if(propertyId)
+                            {
+                                let propertyKey: string = `${propertyId.level}p${propertyId.index}`;
+                                switch(propertyKey)
+                                {
+                                    case '2p2':
+                                        {
+                                            let length = this.members.length;
+
+                                            return new CommandResponseWithValue(handle, NcMethodStatus.OK, length);
+                                        }
+                                    default:
+                                        return new CommandResponseError(handle, NcMethodStatus.PropertyNotImplemented, 'Property could not be found');
+                                }
+                            }
+                            else
+                                return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid id argument provided');
+                        }
+                        else
+                            return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid arguments provided');
+                    }
                 case '2m1':
                     {
                         if(args != null)
@@ -189,7 +307,7 @@ export class NcBlock extends NcObject
             }
         }
 
-        return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
+        return new CommandResponseError(handle, NcMethodStatus.BadOid, 'OID could not be found');
     }
 
     public override GenerateMemberDescriptor() : NcBlockMemberDescriptor
@@ -234,8 +352,8 @@ export class NcBlock extends NcObject
         let currentClassDescriptor = new NcClassDescriptor(`${NcBlock.name} class descriptor`,
             NcBlock.staticClassID, NcBlock.name, null,
             [
-                new NcPropertyDescriptor(new NcElementId(2, 1), "enabled", "NcBoolean", true, true, false, false, null, "TRUE if block is functional"),
-                new NcPropertyDescriptor(new NcElementId(2, 2), "members", "NcBlockMemberDescriptor", true, true, false, true, null, "Descriptors of this block's members"),
+                new NcPropertyDescriptor(new NcElementId(2, 1), "enabled", "NcBoolean", true, false, false, null, "TRUE if block is functional"),
+                new NcPropertyDescriptor(new NcElementId(2, 2), "members", "NcBlockMemberDescriptor", true, false, true, null, "Descriptors of this block's members"),
             ],
             [ 
                 new NcMethodDescriptor(new NcElementId(2, 1), "GetMemberDescriptors", "NcMethodResultBlockMemberDescriptors",
@@ -456,8 +574,18 @@ export class RootBlock extends NcBlock
                 case MessageType.Command:
                 {
                     let msgCommand = JSON.parse(msg) as ProtocolCommand;
-                    socket.send(this.ProcessCommand(msgCommand, socket).ToJson());
-                    isMessageValid = true;
+
+                    let invalidCommands = msgCommand.commands.filter(x => isNaN(+x.handle));
+                    if(invalidCommands.length > 0)
+                    {
+                        isMessageValid = false;
+                        errorMessage = `One of the commands has an invalid handle`;
+                    }
+                    else
+                    {
+                        socket.send(this.ProcessCommand(msgCommand, socket).ToJson());
+                        isMessageValid = true;
+                    }
                 }
                 break;
                 default:
@@ -511,11 +639,11 @@ export class RootBlock extends NcBlock
                     if(member)
                         return member.Get(commandMsg.oid, propertyId, commandMsg.handle);
                     else
-                        return new CommandResponseError(commandMsg.handle, NcMethodStatus.InvalidRequest, "OID could not be found");
+                        return new CommandResponseError(commandMsg.handle, NcMethodStatus.BadOid, "OID could not be found");
                 }
             }
             else
-                return new CommandResponseError(commandMsg.handle, NcMethodStatus.InvalidRequest, "OID could not be found");
+                return new CommandResponseError(commandMsg.handle, NcMethodStatus.BadOid, "OID could not be found");
         }
         else if (this.IsGenericSetter(commandMsg.methodId))
         {
@@ -532,11 +660,11 @@ export class RootBlock extends NcBlock
                     if(member)
                         return member.Set(commandMsg.oid, propertyId, propertyValue, commandMsg.handle);
                     else
-                        return new CommandResponseError(commandMsg.handle, NcMethodStatus.InvalidRequest, "OID could not be found");
+                        return new CommandResponseError(commandMsg.handle, NcMethodStatus.BadOid, "OID could not be found");
                 }
             }
             else
-                return new CommandResponseError(commandMsg.handle, NcMethodStatus.InvalidRequest, "OID could not be found");
+                return new CommandResponseError(commandMsg.handle, NcMethodStatus.BadOid, "OID could not be found");
         }
         else
         {
@@ -548,11 +676,11 @@ export class RootBlock extends NcBlock
                 if(member)
                     return member.InvokeMethod(socket, commandMsg.oid, commandMsg.methodId, commandMsg.arguments, commandMsg.handle);
                 else
-                    return new CommandResponseError(commandMsg.handle, NcMethodStatus.InvalidRequest, "OID could not be found");
+                    return new CommandResponseError(commandMsg.handle, NcMethodStatus.BadOid, "OID could not be found");
             }
         }
 
-        return new CommandResponseError(commandMsg.handle, NcMethodStatus.InvalidRequest, "OID could not be found");
+        return new CommandResponseError(commandMsg.handle, NcMethodStatus.BadOid, "OID could not be found");
     }
 
     public IsGenericGetter(propertyId: NcElementId) : boolean
