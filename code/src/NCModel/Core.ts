@@ -265,13 +265,13 @@ export abstract class NcObject
                                 {
                                     case '1p7':
                                         {
-                                            let length = this.touchpoints?.length ?? 0;
+                                            let length = this.touchpoints?.length ?? null;
 
                                             return new CommandResponseWithValue(handle, NcMethodStatus.OK, length);
                                         }
                                     case '1p8':
                                         {
-                                            let length = this.runtimePropertyConstraints?.length ?? 0;
+                                            let length = this.runtimePropertyConstraints?.length ?? null;
 
                                             return new CommandResponseWithValue(handle, NcMethodStatus.OK, length);
                                         }
@@ -626,11 +626,11 @@ export class NcMethodResultId extends NcMethodResult
 
 export class NcMethodResultLength extends NcMethodResult
 {
-    public value: number;
+    public value: number | null;
 
     public constructor(
         status: NcMethodStatus,
-        value: number)
+        value: number | null)
     {
         super(status);
 
@@ -640,7 +640,7 @@ export class NcMethodResultLength extends NcMethodResult
     public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor
     {
         let currentClassDescriptor = new NcDatatypeDescriptorStruct("NcMethodResultLength", [
-            new NcFieldDescriptor("value", "NcUint32", false, false, null, "Length result value")
+            new NcFieldDescriptor("value", "NcUint32", true, false, null, "Length result value")
         ], "NcMethodResult", null, "Length method result")
 
         if(includeInherited)
