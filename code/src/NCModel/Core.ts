@@ -944,7 +944,7 @@ export abstract class NcDescriptor extends BaseType
     }
 }
 
-export class NcBlockMemberDescriptor extends BaseType
+export class NcBlockMemberDescriptor extends NcDescriptor
 {
     public role: string;
     public oid: number;
@@ -952,7 +952,6 @@ export class NcBlockMemberDescriptor extends BaseType
     public classId: number[];
     public userLabel: string | null;
     public owner: number | null;
-    public description: string;
 
     constructor(
         role: string,
@@ -963,7 +962,7 @@ export class NcBlockMemberDescriptor extends BaseType
         owner: number | null,
         description: string)
     {
-        super();
+        super(description);
 
         this.role = role;
         this.oid = oid;
@@ -984,6 +983,15 @@ export class NcBlockMemberDescriptor extends BaseType
             new NcFieldDescriptor("userLabel", "NcString", true, false, null, "User label"),
             new NcFieldDescriptor("owner", "NcOid", false, false, null, "Containing block's OID")
         ], "NcDescriptor", null, "Descriptor which is specific to a block member");
+
+        if(includeInherited)
+        {
+            let baseDescriptor = super.GetTypeDescriptor(includeInherited);
+
+            let baseDescriptorStruct = baseDescriptor as NcDatatypeDescriptorStruct;
+            if(baseDescriptorStruct)
+                currentClassDescriptor.fields = currentClassDescriptor.fields.concat(baseDescriptorStruct.fields);
+        }
 
         return currentClassDescriptor;
     }
