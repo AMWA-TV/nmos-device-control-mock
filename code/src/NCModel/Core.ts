@@ -1043,11 +1043,9 @@ export class NcPropertyDescriptor extends NcDescriptor
             new NcFieldDescriptor("name", "NcName", false, false, null, "Name of property"),
             new NcFieldDescriptor("typeName", "NcName", true, false, null, "Name of property's datatype. Can only ever be null if the type is any"),
             new NcFieldDescriptor("isReadOnly", "NcBoolean", false, false, null, "TRUE iff property is read-only"),
-            new NcFieldDescriptor("isPersistent", "NcBoolean", false, false, null, "TRUE iff property value survives power-on reset"),
             new NcFieldDescriptor("isNullable", "NcBoolean", false, false, null, "TRUE iff property is nullable"),
             new NcFieldDescriptor("isSequence", "NcBoolean", false, false, null, "TRUE iff property is a sequence"),
             new NcFieldDescriptor("isDeprecated", "NcBoolean", false, false, null, "TRUE iff property is marked as deprecated"),
-            new NcFieldDescriptor("isConstant", "NcBoolean", true, false, null, "Optional flag which indicates if the property is readonly and constant (the device has no means to change the value)"),
             new NcFieldDescriptor("constraints", "NcParameterConstraints", true, false, null, "Optional constraints on top of the underlying data type")
         ], "NcDescriptor", null, "Descriptor of a class property");
 
