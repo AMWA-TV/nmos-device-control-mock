@@ -583,8 +583,17 @@ export class RootBlock extends NcBlock
                     }
                     else
                     {
-                        socket.send(this.ProcessCommand(msgCommand, socket).ToJson());
-                        isMessageValid = true;
+                        let invalidCommands = msgCommand.commands.filter(x => x.handle <= 0 || x.handle > 65535);
+                        if(invalidCommands.length > 0)
+                        {
+                            isMessageValid = false;
+                            errorMessage = `One of the commands has an invalid handle`;
+                        }
+                        else
+                        {
+                            socket.send(this.ProcessCommand(msgCommand, socket).ToJson());
+                            isMessageValid = true;
+                        }
                     }
                 }
                 break;
