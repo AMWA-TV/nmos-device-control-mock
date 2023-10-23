@@ -312,7 +312,7 @@ export class NcBlock extends NcObject
                             if(holders)
                                 return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.SetPropertiesHolders(holders));
                             else
-                            return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid arguments provided');
+                                return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid arguments provided');
                         }
                         else
                             return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid arguments provided');
@@ -386,7 +386,10 @@ export class NcBlock extends NcObject
                     new NcParameterDescriptor("classId", "NcClassId", false, false, null, "Class id to search for"),
                     new NcParameterDescriptor("includeDerived", "NcBoolean", false,  false, null, "If TRUE it will also include derived class descriptors"),
                     new NcParameterDescriptor("recurse", "NcBoolean", false,  false, null, "TRUE to search nested blocks")
-                ], "Finds members with given class id")
+                ], "Finds members with given class id"),
+                new NcMethodDescriptor(new NcElementId(2, 5), "SetPropertiesByPath", "NcMethodResult", [
+                    new NcParameterDescriptor("holders", "NcPropertyValueHolder", false, true, null, "Sequence of properties holders")
+                ], "Set properties by path")
             ],
             []
         );

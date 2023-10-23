@@ -285,13 +285,7 @@ export abstract class NcObject
                         else
                             return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid arguments provided');
                     }
-            }
-        }
-
-
-            switch(key)
-            {
-                case '1m7':
+                    case '1m8': //GetAllProperties
                     {
                         if(args != null)
                         {
@@ -305,12 +299,23 @@ export abstract class NcObject
                         else
                             return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid arguments provided');
                     }
-                default:
-                    return new CommandResponseError(handle, NcMethodStatus.MethodNotImplemented, 'Method does not exist in object');
+                    case '1m9': //SetProperties
+                    {
+                        if(args != null)
+                        {
+                            let properties = args['properties'] as NcPropertyValueHolder[];
+                            if(properties)
+                                return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.SetProperties(properties));
+                            else
+                                return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.SetProperties(properties));
+                        }
+                        else
+                            return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid arguments provided');
+                    }
             }
         }
 
-        return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
+        return new CommandResponseError(handle, NcMethodStatus.MethodNotImplemented, 'Method does not exist in object');
     }
 
     public GenerateMemberDescriptor() : NcBlockMemberDescriptor
@@ -359,7 +364,13 @@ export abstract class NcObject
                 ], "Delete sequence item"),
                 new NcMethodDescriptor(new NcElementId(1, 7), "GetSequenceLength", "NcMethodResultLength", [
                     new NcParameterDescriptor("id", "NcPropertyId", false, false, null, "Property id")
-                ], "Get sequence length")
+                ], "Get sequence length"),
+                new NcMethodDescriptor(new NcElementId(1, 8), "GetAllProperties", "NcMethodResultObjectPropertiesHolder", [
+                    new NcParameterDescriptor("recurse", "NcBoolean", false, false, null, "Should method recurse")
+                ], "Get sequence length"),
+                new NcMethodDescriptor(new NcElementId(1, 9), "SetProperties", "NcMethodResult", [
+                    new NcParameterDescriptor("properties", "NcPropertyValueHolder", false, true, null, "Sequence of properties to set")
+                ], "Set properties method")
             ],
             [ new NcEventDescriptor(new NcElementId(1, 1), "PropertyChanged", "NcPropertyChangedEventData", "Property changed event") ]
         );
