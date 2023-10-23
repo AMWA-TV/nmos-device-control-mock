@@ -53,7 +53,6 @@ These are the configuration keys which can be specified in the configuration fil
 * [AMWA IS-12 NMOS Control Protocol](https://specs.amwa.tv/is-12)
 * [MS-05-01 NMOS Control Architecture](https://specs.amwa.tv/ms-05-01)
 * [MS-05-02 NMOS Control Framework](https://specs.amwa.tv/ms-05-02)
-* [MS-05-03 NMOS Control Block Specifications](https://specs.amwa.tv/ms-05-03)
 * [BCP-002-02 NMOS Asset Distinguishing Information](https://specs.amwa.tv/bcp-002-02)
 
 <!-- INTRO-END -->

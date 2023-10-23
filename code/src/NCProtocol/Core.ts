@@ -11,14 +11,11 @@ export enum MessageType {
 
 export abstract class ProtocolWrapper
 {
-    public protocolVersion: string;
     public messageType: MessageType;
 
     public constructor(
-        protocolVersion: string,
         messageType: MessageType)
     {
-        this.protocolVersion = protocolVersion;
         this.messageType = messageType;
     }
 }

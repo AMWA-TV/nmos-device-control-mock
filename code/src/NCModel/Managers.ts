@@ -28,6 +28,7 @@ import {
     NcMethodResultDatatypeDescriptor,
     NcMethodResultError,
     NcMethodResultId,
+    NcMethodResultLength,
     NcMethodResultPropertyValue,
     NcMethodStatus,
     NcObject,
@@ -224,7 +225,7 @@ export class NcDeviceManager extends NcManager
     public override classID: number[] = NcDeviceManager.staticClassID;
 
     @myIdDecorator('3p1')
-    public ncVersion: string = "1.0.0";
+    public ncVersion: string = "v1.0.0";
 
     @myIdDecorator('3p2')
     public manufacturer: NcManufacturer;
@@ -312,7 +313,7 @@ export class NcDeviceManager extends NcManager
             }
         }
 
-        return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
+        return new CommandResponseError(handle, NcMethodStatus.BadOid, 'OID could not be found');
     }
 
     //'1m2'
@@ -349,7 +350,7 @@ export class NcDeviceManager extends NcManager
             }
         }
 
-        return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
+        return new CommandResponseError(handle, NcMethodStatus.BadOid, 'OID could not be found');
     }
 
     public static override GetClassDescriptor(includeInherited: boolean): NcClassDescriptor
@@ -357,16 +358,16 @@ export class NcDeviceManager extends NcManager
         let currentClassDescriptor = new NcClassDescriptor(`${NcDeviceManager.name} class descriptor`,
             NcDeviceManager.staticClassID, NcDeviceManager.name, NcDeviceManager.staticRole,
             [
-                new NcPropertyDescriptor(new NcElementId(3, 1), "ncVersion", "NcVersionCode", true, true, false, false, null, "Version of nc this dev uses"),
-                new NcPropertyDescriptor(new NcElementId(3, 2), "manufacturer", "NcManufacturer", true, true, false, false, null, "Manufacturer descriptor", false, true),
-                new NcPropertyDescriptor(new NcElementId(3, 3), "product", "NcProduct", true, true, false, false, null, "Product descriptor", false, true),
-                new NcPropertyDescriptor(new NcElementId(3, 4), "serialNumber", "NcString", true, true, false, false, null, "Serial number"),
-                new NcPropertyDescriptor(new NcElementId(3, 5), "userInventoryCode", "NcString", false, true, true, false, null, "Asset tracking identifier (user specified)"),
-                new NcPropertyDescriptor(new NcElementId(3, 6), "deviceName", "NcString", false, true, true, false, null, "Name of this device in the application. Instance name, not product name."),
-                new NcPropertyDescriptor(new NcElementId(3, 7), "deviceRole", "NcString", false, true, true, false, null, "Role of this device in the application."),
-                new NcPropertyDescriptor(new NcElementId(3, 8), "operationalState", "NcDeviceOperationalState", true, true, false, false, null, "Device operational state"),
-                new NcPropertyDescriptor(new NcElementId(3, 9), "resetCause", "NcResetCause", true, true, false, false, null, "Reason for most recent reset"),
-                new NcPropertyDescriptor(new NcElementId(3, 10), "message", "NcString", true, true, true, false, null, "Arbitrary message from dev to controller"),
+                new NcPropertyDescriptor(new NcElementId(3, 1), "ncVersion", "NcVersionCode", true, false, false, null, "Version of nc this dev uses"),
+                new NcPropertyDescriptor(new NcElementId(3, 2), "manufacturer", "NcManufacturer", true, false, false, null, "Manufacturer descriptor", false),
+                new NcPropertyDescriptor(new NcElementId(3, 3), "product", "NcProduct", true, false, false, null, "Product descriptor", false),
+                new NcPropertyDescriptor(new NcElementId(3, 4), "serialNumber", "NcString", true, false, false, null, "Serial number"),
+                new NcPropertyDescriptor(new NcElementId(3, 5), "userInventoryCode", "NcString", false, true, false, null, "Asset tracking identifier (user specified)"),
+                new NcPropertyDescriptor(new NcElementId(3, 6), "deviceName", "NcString", false, true, false, null, "Name of this device in the application. Instance name, not product name."),
+                new NcPropertyDescriptor(new NcElementId(3, 7), "deviceRole", "NcString", false, true, false, null, "Role of this device in the application."),
+                new NcPropertyDescriptor(new NcElementId(3, 8), "operationalState", "NcDeviceOperationalState", true, false, false, null, "Device operational state"),
+                new NcPropertyDescriptor(new NcElementId(3, 9), "resetCause", "NcResetCause", true, false, false, null, "Reason for most recent reset"),
+                new NcPropertyDescriptor(new NcElementId(3, 10), "message", "NcString", true, true, false, null, "Arbitrary message from dev to controller"),
             ],
             [],
             []
@@ -462,7 +463,7 @@ export class NcClassManager extends NcManager
             }
         }
 
-        return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
+        return new CommandResponseError(handle, NcMethodStatus.BadOid, 'OID could not be found');
     }
 
     public override InvokeMethod(oid: number, methodId: NcElementId, args: { [key: string]: any; } | null, handle: number): CommandResponseNoValue 
@@ -473,18 +474,151 @@ export class NcClassManager extends NcManager
 
             switch(key)
             {
+                case '1m3': //GetSequenceItem
+                    {
+                        if(args != null &&
+                            'id' in args &&
+                            'index' in args)
+                        {
+                            let propertyId = args['id'] as NcElementId;
+                            let index = args['index'] as number;
+
+                            if(propertyId)
+                            {
+                                if(index >= 0)
+                                {
+                                    let propertyKey: string = `${propertyId.level}p${propertyId.index}`;
+                                    switch(propertyKey)
+                                    {
+                                        case '3p1':
+                                            {
+                                                let itemValue = this.controlClasses[index];
+                                                if(itemValue)
+                                                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, itemValue);
+                                                else
+                                                    return new CommandResponseError(handle, NcMethodStatus.IndexOutOfBounds, 'Index could not be found');
+                                            }
+                                        case '3p2':
+                                            {
+                                                let itemValue = this.dataTypes[index];
+                                                if(itemValue)
+                                                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, itemValue);
+                                                else
+                                                    return new CommandResponseError(handle, NcMethodStatus.IndexOutOfBounds, 'Index could not be found');
+                                            }
+                                        default:
+                                            return new CommandResponseError(handle, NcMethodStatus.PropertyNotImplemented, 'Property could not be found');
+                                    }
+                                }
+                                else
+                                    return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid index argument provided');
+                            }
+                            else
+                                return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid id argument provided');
+                        }
+                        else
+                            return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid arguments provided');
+                    }
+                case '1m4': //SetSequenceItem
+                    {
+                        if(args != null &&
+                            'id' in args &&
+                            'index' in args &&
+                            'value' in args)
+                        {
+                            let propertyId = args['id'] as NcElementId;
+                            if(propertyId)
+                            {
+                                let propertyKey: string = `${propertyId.level}p${propertyId.index}`;
+                                return new CommandResponseError(handle, NcMethodStatus.Readonly, `Property ${propertyKey} is readonly`);
+                            }
+                            else
+                                return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid id argument provided');
+                        }
+                        else
+                            return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid arguments provided');
+                    }
+                case '1m5': //AddSequenceItem
+                    {
+                        if(args != null &&
+                            'id' in args &&
+                            'value' in args)
+                        {
+                            let propertyId = args['id'] as NcElementId;
+                            if(propertyId)
+                            {
+                                let propertyKey: string = `${propertyId.level}p${propertyId.index}`;
+                                return new CommandResponseError(handle, NcMethodStatus.Readonly, `Property ${propertyKey} is readonly`);
+                            }
+                            else
+                                return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid id argument provided');
+                        }
+                        else
+                            return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid arguments provided');
+                    }
+                case '1m6': //RemoveSequenceItem
+                    {
+                        if(args != null &&
+                            'id' in args &&
+                            'index' in args)
+                        {
+                            let propertyId = args['id'] as NcElementId;
+                            if(propertyId)
+                            {
+                                let propertyKey: string = `${propertyId.level}p${propertyId.index}`;
+                                return new CommandResponseError(handle, NcMethodStatus.Readonly, `Property ${propertyKey} is readonly`);
+                            }
+                            else
+                                return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid id argument provided');
+                        }
+                        else
+                            return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid arguments provided');
+                    }
+                case '1m7': //GetSequenceLength
+                    {
+                        if(args != null &&
+                            'id' in args)
+                        {
+                            let propertyId = args['id'] as NcElementId;
+                            if(propertyId)
+                            {
+                                let propertyKey: string = `${propertyId.level}p${propertyId.index}`;
+                                switch(propertyKey)
+                                {
+                                    case '3p1':
+                                        {
+                                            let length = this.controlClasses.length;
+
+                                            return new CommandResponseWithValue(handle, NcMethodStatus.OK, length);
+                                        }
+                                    case '3p2':
+                                        {
+                                            let length = this.dataTypes.length;
+
+                                            return new CommandResponseWithValue(handle, NcMethodStatus.OK, length);
+                                        }
+                                    default:
+                                        return new CommandResponseError(handle, NcMethodStatus.PropertyNotImplemented, 'Property could not be found');
+                                }
+                            }
+                            else
+                                return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid id argument provided');
+                        }
+                        else
+                            return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid arguments provided');
+                    }
                 case '3m1':
                     {
-                        if(args != null && 'identity' in args)
+                        if(args != null && 'classId' in args)
                         {
                             if('includeInherited' in args)
                             {
-                                let identity = args['identity'] as number[];
+                                let classId = args['classId'] as number[];
                                 let includeInherited = args['includeInherited'] as boolean;
 
                                 if(includeInherited)
                                 {
-                                    let descriptor = this.GetClassDescriptor(identity, true);
+                                    let descriptor = this.GetClassDescriptor(classId, true);
                                     if(descriptor)
                                         return new CommandResponseWithValue(handle, NcMethodStatus.OK, descriptor);
                                     else
@@ -492,7 +626,7 @@ export class NcClassManager extends NcManager
                                 }
                                 else
                                 {
-                                    let descriptor = this.GetClassDescriptor(identity, false);
+                                    let descriptor = this.GetClassDescriptor(classId, false);
                                     if(descriptor)
                                         return new CommandResponseWithValue(handle, NcMethodStatus.OK, descriptor);
                                     else
@@ -542,7 +676,7 @@ export class NcClassManager extends NcManager
             }
         }
 
-        return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'OID could not be found');
+        return new CommandResponseError(handle, NcMethodStatus.BadOid, 'OID could not be found');
     }
 
     public static override GetClassDescriptor(includeInherited: boolean): NcClassDescriptor 
@@ -550,12 +684,12 @@ export class NcClassManager extends NcManager
         let currentClassDescriptor = new NcClassDescriptor(`${NcClassManager.name} class descriptor`,
             NcClassManager.staticClassID, NcClassManager.name, NcClassManager.staticRole,
             [ 
-                new NcPropertyDescriptor(new NcElementId(3, 1), "controlClasses", "NcClassDescriptor", true, true, false, true, null, "Descriptions of all control classes in the device (descriptors do not contain inherited elements)"),
-                new NcPropertyDescriptor(new NcElementId(3, 2), "datatypes", "NcDatatypeDescriptor", true, true, false, true, null, "Descriptions of all data types in the device (descriptors do not contain inherited elements)")
+                new NcPropertyDescriptor(new NcElementId(3, 1), "controlClasses", "NcClassDescriptor", true, false, true, null, "Descriptions of all control classes in the device (descriptors do not contain inherited elements)"),
+                new NcPropertyDescriptor(new NcElementId(3, 2), "datatypes", "NcDatatypeDescriptor", true, false, true, null, "Descriptions of all data types in the device (descriptors do not contain inherited elements)")
             ],
             [ 
                 new NcMethodDescriptor(new NcElementId(3, 1), "GetControlClass", "NcMethodResultClassDescriptor", [
-                    new NcParameterDescriptor("identity", "NcClassId", false, false, null, "class ID"),
+                    new NcParameterDescriptor("classId", "NcClassId", false, false, null, "class ID"),
                     new NcParameterDescriptor("includeInherited", "NcBoolean", false, false, null, "if set the descriptor would contain all inherited elements")
                 ], "Get a single class descriptor"),
                 new NcMethodDescriptor(new NcElementId(3, 2), "GetDatatype", "NcMethodResultDatatypeDescriptor", [
@@ -704,19 +838,20 @@ export class NcClassManager extends NcManager
                 new NcEnumItemDescriptor("InvalidRequest", 406, "Method call is invalid in current operating context"),
                 new NcEnumItemDescriptor("Conflict", 409, "There is a conflict with the current state of the device"),
                 new NcEnumItemDescriptor("BufferOverflow", 413, "Something was too big"),
+                new NcEnumItemDescriptor("IndexOutOfBounds", 414, "Index is outside the available range"),
                 new NcEnumItemDescriptor("ParameterError", 417, "Method parameter does not meet expectations"),
                 new NcEnumItemDescriptor("Locked", 423, "Addressed object is locked"),
                 new NcEnumItemDescriptor("DeviceError", 500, "Internal device error"),
                 new NcEnumItemDescriptor("MethodNotImplemented", 501, "Addressed method is not implemented by the addressed object"),
                 new NcEnumItemDescriptor("PropertyNotImplemented", 502, "Addressed property is not implemented by the addressed object"),
                 new NcEnumItemDescriptor("NotReady", 503, "The device is not ready to handle any commands"),
-                new NcEnumItemDescriptor("Timeout", 504, "Method call did not finish within the allotted time"),
-                new NcEnumItemDescriptor("ProtocolVersionError", 505, "Incompatible protocol version"),
+                new NcEnumItemDescriptor("Timeout", 504, "Method call did not finish within the allotted time")
             ], null, "Method invokation status"),
             'NcMethodResult': NcMethodResult.GetTypeDescriptor(false),
             'NcMethodResultError': NcMethodResultError.GetTypeDescriptor(false),
             'NcMethodResultPropertyValue': NcMethodResultPropertyValue.GetTypeDescriptor(false),
             'NcMethodResultId': NcMethodResultId.GetTypeDescriptor(false),
+            'NcMethodResultLength': NcMethodResultLength.GetTypeDescriptor(false),
             'NcBlockMemberDescriptor': NcBlockMemberDescriptor.GetTypeDescriptor(false),
             'NcMethodResultBlockMemberDescriptors': NcMethodResultBlockMemberDescriptors.GetTypeDescriptor(false),
             'NcMethodResultClassDescriptor': NcMethodResultClassDescriptor.GetTypeDescriptor(false),
@@ -790,6 +925,7 @@ export class NcClassManager extends NcManager
             case 'NcMethodResultClassDescriptor': return NcMethodResultClassDescriptor.GetTypeDescriptor(true);
             case 'NcMethodResultDatatypeDescriptor': return NcMethodResultDatatypeDescriptor.GetTypeDescriptor(true);
             case 'NcMethodResultId': return NcMethodResultId.GetTypeDescriptor(true);
+            case 'NcMethodResultLength': return NcMethodResultLength.GetTypeDescriptor(true);
             default: return this.dataTypesRegister[name];
         }
     }
