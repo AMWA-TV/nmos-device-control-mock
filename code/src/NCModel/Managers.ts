@@ -48,7 +48,7 @@ import {
     NcTouchpointResource,
     NcTouchpointResourceNmos,
     NcTouchpointResourceNmosChannelMapping} from './Core';
-import { ExampleDataType, ExampleControl, GainControl, NcIdentBeacon, NcReceiverMonitor, NcReceiverMonitorProtected, NcReceiverStatus, NcWorker } from './Features';
+import { ExampleDataType, ExampleControl, GainControl, NcIdentBeacon, NcReceiverMonitor, NcWorker, NcStatusMonitor } from './Features';
 
 export abstract class NcManager extends NcObject
 {
@@ -696,9 +696,9 @@ export class NcClassManager extends NcManager
             '1.2': NcWorker.GetClassDescriptor(false),
             '1.2.0.1': GainControl.GetClassDescriptor(false),
             '1.2.0.2': ExampleControl.GetClassDescriptor(false),
-            '1.2.2': NcIdentBeacon.GetClassDescriptor(false),
-            '1.2.3': NcReceiverMonitor.GetClassDescriptor(false),
-            '1.2.3.1': NcReceiverMonitorProtected.GetClassDescriptor(false),
+            '1.2.1': NcIdentBeacon.GetClassDescriptor(false),
+            '1.2.2': NcStatusMonitor.GetClassDescriptor(false),
+            '1.2.2.1': NcReceiverMonitor.GetClassDescriptor(false),
             '1.3': NcManager.GetClassDescriptor(false),
             '1.3.1': NcDeviceManager.GetClassDescriptor(false),
             '1.3.2': NcClassManager.GetClassDescriptor(false)
@@ -718,9 +718,9 @@ export class NcClassManager extends NcManager
             case '1.2': return NcWorker.GetClassDescriptor(true);
             case '1.2.0.1': return GainControl.GetClassDescriptor(true);
             case '1.2.0.2': return ExampleControl.GetClassDescriptor(true);
-            case '1.2.2': return NcIdentBeacon.GetClassDescriptor(true);
-            case '1.2.3': return NcReceiverMonitor.GetClassDescriptor(true);
-            case '1.2.3.1': return NcReceiverMonitorProtected.GetClassDescriptor(true);
+            case '1.2.1': return NcIdentBeacon.GetClassDescriptor(true);
+            case '1.2.2': return NcStatusMonitor.GetClassDescriptor(true);
+            case '1.2.2.1': return NcReceiverMonitor.GetClassDescriptor(true);
             case '1.3': return NcManager.GetClassDescriptor(true);
             case '1.3.1': return NcDeviceManager.GetClassDescriptor(true);
             case '1.3.2': return NcClassManager.GetClassDescriptor(true);
@@ -832,19 +832,37 @@ export class NcClassManager extends NcManager
             'NcMethodResultBlockMemberDescriptors': NcMethodResultBlockMemberDescriptors.GetTypeDescriptor(false),
             'NcMethodResultClassDescriptor': NcMethodResultClassDescriptor.GetTypeDescriptor(false),
             'NcMethodResultDatatypeDescriptor': NcMethodResultDatatypeDescriptor.GetTypeDescriptor(false),
-            'NcReceiverStatus': NcReceiverStatus.GetTypeDescriptor(false),
+            'NcOverallStatus': new NcDatatypeDescriptorEnum("NcOverallStatus", [
+                new NcEnumItemDescriptor("Inactive", 0, "Inactive"),
+                new NcEnumItemDescriptor("Healthy", 1, "Active and healthy"),
+                new NcEnumItemDescriptor("PartiallyHealthy", 2, "Active and partially healthy"),
+                new NcEnumItemDescriptor("Unhealthy", 3, "Active and unhealthy")
+            ], null, "Overall monitor status enum data type"),
+            'NcLinkStatus': new NcDatatypeDescriptorEnum("NcLinkStatus", [
+                new NcEnumItemDescriptor("AllDown", 1, "All the associated network interfaces are down"),
+                new NcEnumItemDescriptor("SomeDown", 2, "Some of the associated network interfaces are down"),
+                new NcEnumItemDescriptor("AllUp", 3, "All the associated network interfaces are up")
+            ], null, "Link status enum data type"),
             'NcConnectionStatus': new NcDatatypeDescriptorEnum("NcConnectionStatus", [
-                new NcEnumItemDescriptor("Undefined", 0, "This is the value when there is no receiver"),
-                new NcEnumItemDescriptor("Connected", 1, "Connected to a stream"),
-                new NcEnumItemDescriptor("Disconnected", 2, "Not connected to a stream"),
-                new NcEnumItemDescriptor("ConnectionError", 3, "A connection error was encountered")
+                new NcEnumItemDescriptor("Inactive", 0, "Inactive"),
+                new NcEnumItemDescriptor("Healthy", 1, "Active and healthy"),
+                new NcEnumItemDescriptor("PartiallyHealthy", 2, "Active and partially healthy"),
+                new NcEnumItemDescriptor("Unhealthy", 3, "Active and unhealthy")
             ], null, "Connection status enum data type"),
-            'NcPayloadStatus': new NcDatatypeDescriptorEnum("NcPayloadStatus", [
-                new NcEnumItemDescriptor("Undefined", 0, "This is the value when there's no connection."),
-                new NcEnumItemDescriptor("PayloadOK", 1, "Payload is being received without errors and is the correct type"),
-                new NcEnumItemDescriptor("PayloadFormatUnsupported", 2, "Payload is being received but is of an unsupported type"),
-                new NcEnumItemDescriptor("PayloadError", 3, "A payload error was encountered")
-            ], null, "Payload status enum data type"),
+            'NcSynchronizationStatus': new NcDatatypeDescriptorEnum("NcSynchronizationStatus", [
+                new NcEnumItemDescriptor("NotUsed", 0, "Feature not in use"),
+                new NcEnumItemDescriptor("BasebandLocked", 1, "Locked from baseband"),
+                new NcEnumItemDescriptor("BasebandPartiallyLocked", 2, "Partially locked from baseband"),
+                new NcEnumItemDescriptor("NetworkLocked", 3, "Locked from network"),
+                new NcEnumItemDescriptor("NetworkPartiallyLocked", 4, "Partially locked from network"),
+                new NcEnumItemDescriptor("NotLocked", 5, "Not locked"),
+            ], null, "Synchronization status enum data type"),
+            'NcStreamStatus': new NcDatatypeDescriptorEnum("NcStreamStatus", [
+                new NcEnumItemDescriptor("Inactive", 0, "Inactive"),
+                new NcEnumItemDescriptor("Healthy", 1, "Active and healthy"),
+                new NcEnumItemDescriptor("PartiallyHealthy", 2, "Active and partially healthy"),
+                new NcEnumItemDescriptor("Unhealthy", 3, "Active and unhealthy")
+            ], null, "Stream status enum data type"),
             'NcTouchpoint': NcTouchpoint.GetTypeDescriptor(false),
             'NcTouchpointResource': NcTouchpointResource.GetTypeDescriptor(false),
             'NcTouchpointNmos': NcTouchpointNmos.GetTypeDescriptor(false),
