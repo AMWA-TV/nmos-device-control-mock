@@ -317,6 +317,9 @@ export class NcStatusMonitor extends NcWorker
     @myIdDecorator('3p2')
     public overallStatusMessage: string | null;
 
+    @myIdDecorator('3p3')
+    public overallStatusReportingDelay: number;
+
     public constructor(
         oid: number,
         constantOid: boolean,
@@ -333,24 +336,7 @@ export class NcStatusMonitor extends NcWorker
 
         this.overallStatus = NcOverallStatus.Inactive;
         this.overallStatusMessage = "Receiver is inactive";
-    }
-
-    public Connected()
-    {
-        this.overallStatus = NcOverallStatus.Healthy;
-        this.overallStatusMessage = "Receiver is connected and healthy";
-
-        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 1), NcPropertyChangeType.ValueChanged, this.overallStatus, null);
-        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 3), NcPropertyChangeType.ValueChanged, this.overallStatusMessage, null);
-    }
-
-    public Disconnected()
-    {
-        this.overallStatus = NcOverallStatus.Inactive;
-        this.overallStatusMessage = "Receiver is inactive";
-
-        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 1), NcPropertyChangeType.ValueChanged, this.overallStatus, null);
-        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 3), NcPropertyChangeType.ValueChanged, this.overallStatusMessage, null);
+        this.overallStatusReportingDelay = 5;
     }
 
     //'1m1'
@@ -366,6 +352,8 @@ export class NcStatusMonitor extends NcWorker
                     return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.overallStatus);
                 case '3p2':
                     return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.overallStatusMessage);
+                case '3p3':
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.overallStatusReportingDelay);
                 default:
                     return super.Get(oid, id, handle);
             }
@@ -386,6 +374,10 @@ export class NcStatusMonitor extends NcWorker
                 case '3p1':
                 case '3p2':
                     return new CommandResponseError(handle, NcMethodStatus.Readonly, 'Property is readonly');
+                case '3p3':
+                    this.overallStatusReportingDelay = value;
+                    this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.overallStatusReportingDelay, null);
+                    return new CommandResponseNoValue(handle, NcMethodStatus.OK);
                 default:
                     return super.Set(oid, id, value, handle);
             }
@@ -401,6 +393,7 @@ export class NcStatusMonitor extends NcWorker
             [
                 new NcPropertyDescriptor(new NcElementId(3, 1), "overallStatus", "NcOverallStatus", true, false, false, null, "Overall status property"),
                 new NcPropertyDescriptor(new NcElementId(3, 2), "overallStatusMessage", "NcString", true, true, false, null, "Overall status message property"),
+                new NcPropertyDescriptor(new NcElementId(3, 3), "overallStatusReportingDelay", "NcUint32", false, false, false, null, "Overall status reporting delay property (in seconds, default is 5s and 0 means no delay)"),
             ],
             [],
             []
@@ -437,11 +430,9 @@ enum NcConnectionStatus
 enum NcSynchronizationStatus
 {
     NotUsed = 0,
-    BasebandLocked = 1,
-    BasebandPartiallyLocked = 2,
-    NetworkLocked = 3,
-    NetworkPartiallyLocked = 4,
-    NotLocked = 5
+    Healthy = 1,
+    PartiallyHealthy = 2,
+    Unhealthy = 3
 }
 
 enum NcStreamStatus
@@ -478,7 +469,7 @@ export class NcReceiverMonitor extends NcStatusMonitor
     public synchronizationStatusMessage: string | null;
 
     @myIdDecorator('4p7')
-    public grandMasterClockId: string | null;
+    public synchronizationSourceId: string | null;
 
     @myIdDecorator('4p8')
     public streamStatus: NcStreamStatus;
@@ -506,9 +497,9 @@ export class NcReceiverMonitor extends NcStatusMonitor
         this.connectionStatus = NcConnectionStatus.Inactive;
         this.connectionStatusMessage = "Receiver is inactive";
         
-        this.synchronizationStatus = NcSynchronizationStatus.NetworkLocked;
+        this.synchronizationStatus = NcSynchronizationStatus.Healthy;
         this.synchronizationStatusMessage = "Locked to grandmaster";
-        this.grandMasterClockId = "0xD4:AD:71:FF:FE:6F:E2:80";
+        this.synchronizationSourceId = "0xD4:AD:71:FF:FE:6F:E2:80";
 
         this.streamStatus = NcStreamStatus.Inactive;
         this.streamStatusMessage = "Receiver is inactive";
@@ -526,7 +517,7 @@ export class NcReceiverMonitor extends NcStatusMonitor
         this.streamStatusMessage = "Receiver is connected and stream is healthy";
 
         this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 1), NcPropertyChangeType.ValueChanged, this.overallStatus, null);
-        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 3), NcPropertyChangeType.ValueChanged, this.overallStatusMessage, null);
+        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 2), NcPropertyChangeType.ValueChanged, this.overallStatusMessage, null);
 
         this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 3), NcPropertyChangeType.ValueChanged, this.connectionStatus, null);
         this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 4), NcPropertyChangeType.ValueChanged, this.connectionStatusMessage, null);
@@ -547,7 +538,7 @@ export class NcReceiverMonitor extends NcStatusMonitor
         this.streamStatusMessage = "Receiver is inactive";
 
         this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 1), NcPropertyChangeType.ValueChanged, this.overallStatus, null);
-        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 3), NcPropertyChangeType.ValueChanged, this.overallStatusMessage, null);
+        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 2), NcPropertyChangeType.ValueChanged, this.overallStatusMessage, null);
 
         this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 3), NcPropertyChangeType.ValueChanged, this.connectionStatus, null);
         this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 4), NcPropertyChangeType.ValueChanged, this.connectionStatusMessage, null);
@@ -578,7 +569,7 @@ export class NcReceiverMonitor extends NcStatusMonitor
                 case '4p6':
                     return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.synchronizationStatusMessage);
                 case '4p7':
-                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.grandMasterClockId);
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.synchronizationSourceId);
                 case '4p8':
                     return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.streamStatus);
                 case '4p9':
@@ -629,7 +620,7 @@ export class NcReceiverMonitor extends NcStatusMonitor
                 new NcPropertyDescriptor(new NcElementId(4, 4), "connectionStatusMessage", "NcString", true, true, false, null, "Connection status message property"),
                 new NcPropertyDescriptor(new NcElementId(4, 5), "synchronizationStatus", "NcSynchronizationStatus", true, false, false, null, "Synchronization status property"),
                 new NcPropertyDescriptor(new NcElementId(4, 6), "synchronizationStatusMessage", "NcString", true, true, false, null, "Synchronization status message property"),
-                new NcPropertyDescriptor(new NcElementId(4, 7), "grandMasterClockId", "NcString", true, true, false, null, "Grand master clock id property"),
+                new NcPropertyDescriptor(new NcElementId(4, 7), "synchronizationSourceId", "NcString", true, true, false, null, "Synchronization source id property"),
                 new NcPropertyDescriptor(new NcElementId(4, 8), "streamStatus", "NcStreamStatus", true, false, false, null, "Stream status property"),
                 new NcPropertyDescriptor(new NcElementId(4, 9), "streamStatusMessage", "NcString", true, true, false, null, "Stream status message property")
             ],

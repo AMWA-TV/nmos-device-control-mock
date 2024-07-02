@@ -851,11 +851,9 @@ export class NcClassManager extends NcManager
             ], null, "Connection status enum data type"),
             'NcSynchronizationStatus': new NcDatatypeDescriptorEnum("NcSynchronizationStatus", [
                 new NcEnumItemDescriptor("NotUsed", 0, "Feature not in use"),
-                new NcEnumItemDescriptor("BasebandLocked", 1, "Locked from baseband"),
-                new NcEnumItemDescriptor("BasebandPartiallyLocked", 2, "Partially locked from baseband"),
-                new NcEnumItemDescriptor("NetworkLocked", 3, "Locked from network"),
-                new NcEnumItemDescriptor("NetworkPartiallyLocked", 4, "Partially locked from network"),
-                new NcEnumItemDescriptor("NotLocked", 5, "Not locked"),
+                new NcEnumItemDescriptor("Healthy", 1, "Locked to a synchronization source"),
+                new NcEnumItemDescriptor("PartiallyHealthy", 2, "Partially locked to a synchronization source"),
+                new NcEnumItemDescriptor("Unhealthy", 3, "Not locked to a synchronization source")
             ], null, "Synchronization status enum data type"),
             'NcStreamStatus': new NcDatatypeDescriptorEnum("NcStreamStatus", [
                 new NcEnumItemDescriptor("Inactive", 0, "Inactive"),
