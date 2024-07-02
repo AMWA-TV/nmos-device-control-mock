@@ -443,6 +443,11 @@ enum NcStreamStatus
     Unhealthy = 3
 }
 
+function DelayTask(timeMs: number | undefined) 
+{
+    return new Promise(resolve => setTimeout(resolve, timeMs));
+}
+
 export class NcReceiverMonitor extends NcStatusMonitor
 {
     public static staticClassID: number[] = [ 1, 2, 2, 1 ];
@@ -524,6 +529,46 @@ export class NcReceiverMonitor extends NcStatusMonitor
 
         this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 8), NcPropertyChangeType.ValueChanged, this.streamStatus, null);
         this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 9), NcPropertyChangeType.ValueChanged, this.streamStatusMessage, null);
+
+        DelayTask(5000).then(() => this.StreamBroken());
+    }
+
+    public StreamBroken()
+    {
+        if(this.overallStatus != NcOverallStatus.Inactive)
+        {
+            this.overallStatus = NcOverallStatus.Unhealthy;
+            this.overallStatusMessage = "Receiver stream status is unhealthy";
+    
+            this.streamStatus = NcStreamStatus.Unhealthy;
+            this.streamStatusMessage = "Stream cannot be decoded";
+    
+            this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 1), NcPropertyChangeType.ValueChanged, this.overallStatus, null);
+            this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 2), NcPropertyChangeType.ValueChanged, this.overallStatusMessage, null);
+    
+            this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 8), NcPropertyChangeType.ValueChanged, this.streamStatus, null);
+            this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 9), NcPropertyChangeType.ValueChanged, this.streamStatusMessage, null);
+
+            DelayTask(2000).then(() => this.StreamFixed());
+        }
+    }
+
+    public StreamFixed()
+    {
+        if(this.overallStatus != NcOverallStatus.Inactive)
+        {
+            this.overallStatus = NcOverallStatus.Healthy;
+            this.overallStatusMessage = "Receiver is connected and healthy";
+    
+            this.streamStatus = NcStreamStatus.Healthy;
+            this.streamStatusMessage = "Receiver is connected and stream is healthy";
+    
+            this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 1), NcPropertyChangeType.ValueChanged, this.overallStatus, null);
+            this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 2), NcPropertyChangeType.ValueChanged, this.overallStatusMessage, null);
+    
+            this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 8), NcPropertyChangeType.ValueChanged, this.streamStatus, null);
+            this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 9), NcPropertyChangeType.ValueChanged, this.streamStatusMessage, null);
+        }
     }
 
     public Disconnected()
