@@ -48,7 +48,7 @@ import {
     NcTouchpointResource,
     NcTouchpointResourceNmos,
     NcTouchpointResourceNmosChannelMapping} from './Core';
-import { ExampleDataType, ExampleControl, GainControl, NcIdentBeacon, NcReceiverMonitor, NcWorker, NcStatusMonitor } from './Features';
+import { ExampleDataType, ExampleControl, GainControl, NcIdentBeacon, NcReceiverMonitor, NcWorker, NcStatusMonitor, NcMethodResultCounters, NcCounter } from './Features';
 
 export abstract class NcManager extends NcObject
 {
@@ -790,6 +790,7 @@ export class NcClassManager extends NcManager
             'NcParameterConstraints': NcParameterConstraints.GetTypeDescriptor(false),
             'NcParameterConstraintsNumber': NcParameterConstraintsNumber.GetTypeDescriptor(false),
             'NcParameterConstraintsString': NcParameterConstraintsString.GetTypeDescriptor(false),
+            'NcCounter': NcCounter.GetTypeDescriptor(false),
             'NcPropertyChangeType': new NcDatatypeDescriptorEnum("NcPropertyChangeType", [
                 new NcEnumItemDescriptor("ValueChanged", 0, "Current value changed"),
                 new NcEnumItemDescriptor("SequenceItemAdded", 1, "Sequence item added"),
@@ -832,6 +833,7 @@ export class NcClassManager extends NcManager
             'NcMethodResultBlockMemberDescriptors': NcMethodResultBlockMemberDescriptors.GetTypeDescriptor(false),
             'NcMethodResultClassDescriptor': NcMethodResultClassDescriptor.GetTypeDescriptor(false),
             'NcMethodResultDatatypeDescriptor': NcMethodResultDatatypeDescriptor.GetTypeDescriptor(false),
+            'NcMethodResultCounters': NcMethodResultCounters.GetTypeDescriptor(false),
             'NcOverallStatus': new NcDatatypeDescriptorEnum("NcOverallStatus", [
                 new NcEnumItemDescriptor("Inactive", 0, "Inactive"),
                 new NcEnumItemDescriptor("Healthy", 1, "Active and healthy"),
@@ -839,9 +841,9 @@ export class NcClassManager extends NcManager
                 new NcEnumItemDescriptor("Unhealthy", 3, "Active and unhealthy")
             ], null, "Overall monitor status enum data type"),
             'NcLinkStatus': new NcDatatypeDescriptorEnum("NcLinkStatus", [
-                new NcEnumItemDescriptor("AllDown", 1, "All the associated network interfaces are down"),
+                new NcEnumItemDescriptor("AllUp", 1, "All the associated network interfaces are down"),
                 new NcEnumItemDescriptor("SomeDown", 2, "Some of the associated network interfaces are down"),
-                new NcEnumItemDescriptor("AllUp", 3, "All the associated network interfaces are up")
+                new NcEnumItemDescriptor("AllDown", 3, "All the associated network interfaces are up")
             ], null, "Link status enum data type"),
             'NcConnectionStatus': new NcDatatypeDescriptorEnum("NcConnectionStatus", [
                 new NcEnumItemDescriptor("Inactive", 0, "Inactive"),
@@ -904,6 +906,7 @@ export class NcClassManager extends NcManager
             case 'NcClassDescriptor': return NcClassDescriptor.GetTypeDescriptor(true);
             case 'NcParameterConstraintsNumber': return NcParameterConstraintsNumber.GetTypeDescriptor(true);
             case 'NcParameterConstraintsString': return NcParameterConstraintsString.GetTypeDescriptor(true);
+            case 'NcCounter': return NcCounter.GetTypeDescriptor(true);
             case 'NcBlockMemberDescriptor': return NcBlockMemberDescriptor.GetTypeDescriptor(true);
             case 'NcTouchpointNmos': return NcTouchpointNmos.GetTypeDescriptor(true);
             case 'NcTouchpointNmosChannelMapping': return NcTouchpointNmosChannelMapping.GetTypeDescriptor(true);
@@ -918,6 +921,7 @@ export class NcClassManager extends NcManager
             case 'NcMethodResultDatatypeDescriptor': return NcMethodResultDatatypeDescriptor.GetTypeDescriptor(true);
             case 'NcMethodResultId': return NcMethodResultId.GetTypeDescriptor(true);
             case 'NcMethodResultLength': return NcMethodResultLength.GetTypeDescriptor(true);
+            case 'NcMethodResultCounters': return NcMethodResultCounters.GetTypeDescriptor(true);
             default: return this.dataTypesRegister[name];
         }
     }
