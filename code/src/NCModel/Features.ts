@@ -647,8 +647,11 @@ export class NcReceiverMonitor extends NcStatusMonitor
         if(this.overallStatus != NcOverallStatus.Inactive)
         {
             this.overallStatus = NcOverallStatus.Unhealthy;
-            this.overallStatusMessage = "Receiver stream status is unhealthy";
+            this.overallStatusMessage = "Receiver connectivity is experiencing severe issues";
     
+            this.connectionStatus = NcConnectionStatus.Unhealthy;
+            this.connectionStatusMessage = "Significant packet loss detected";
+
             this.streamStatus = NcStreamStatus.Unhealthy;
             this.streamStatusMessage = "Stream cannot be decoded";
 
@@ -657,6 +660,9 @@ export class NcReceiverMonitor extends NcStatusMonitor
     
             this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 1), NcPropertyChangeType.ValueChanged, this.overallStatus, null);
             this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 2), NcPropertyChangeType.ValueChanged, this.overallStatusMessage, null);
+
+            this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 3), NcPropertyChangeType.ValueChanged, this.connectionStatus, null);
+            this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 4), NcPropertyChangeType.ValueChanged, this.connectionStatusMessage, null);
     
             this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 9), NcPropertyChangeType.ValueChanged, this.streamStatus, null);
             this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 10), NcPropertyChangeType.ValueChanged, this.streamStatusMessage, null);
@@ -671,6 +677,9 @@ export class NcReceiverMonitor extends NcStatusMonitor
         {
             this.overallStatus = NcOverallStatus.Healthy;
             this.overallStatusMessage = "Receiver is connected and healthy";
+
+            this.connectionStatus = NcConnectionStatus.Healthy;
+            this.connectionStatusMessage = "Receiver is connected and connection is healthy";
     
             this.streamStatus = NcStreamStatus.Healthy;
             this.streamStatusMessage = "Receiver is connected and stream is healthy";
@@ -678,6 +687,9 @@ export class NcReceiverMonitor extends NcStatusMonitor
             this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 1), NcPropertyChangeType.ValueChanged, this.overallStatus, null);
             this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 2), NcPropertyChangeType.ValueChanged, this.overallStatusMessage, null);
     
+            this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 3), NcPropertyChangeType.ValueChanged, this.connectionStatus, null);
+            this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 4), NcPropertyChangeType.ValueChanged, this.connectionStatusMessage, null);
+
             this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 9), NcPropertyChangeType.ValueChanged, this.streamStatus, null);
             this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 10), NcPropertyChangeType.ValueChanged, this.streamStatusMessage, null);
         }
