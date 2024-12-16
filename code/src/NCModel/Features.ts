@@ -11,6 +11,7 @@ import {
     NcElementId,
     NcFieldDescriptor,
     NcMethodDescriptor,
+    NcMethodResult,
     NcMethodStatus,
     NcObject,
     NcParameterConstraintsNumber,
@@ -318,7 +319,7 @@ export class NcStatusMonitor extends NcWorker
     public overallStatusMessage: string | null;
 
     @myIdDecorator('3p3')
-    public overallStatusReportingDelay: number;
+    public statusReportingDelay: number;
 
     public constructor(
         oid: number,
@@ -336,7 +337,7 @@ export class NcStatusMonitor extends NcWorker
 
         this.overallStatus = NcOverallStatus.Inactive;
         this.overallStatusMessage = "Receiver is inactive";
-        this.overallStatusReportingDelay = 5;
+        this.statusReportingDelay = 3;
     }
 
     //'1m1'
@@ -353,7 +354,7 @@ export class NcStatusMonitor extends NcWorker
                 case '3p2':
                     return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.overallStatusMessage);
                 case '3p3':
-                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.overallStatusReportingDelay);
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.statusReportingDelay);
                 default:
                     return super.Get(oid, id, handle);
             }
@@ -375,8 +376,8 @@ export class NcStatusMonitor extends NcWorker
                 case '3p2':
                     return new CommandResponseError(handle, NcMethodStatus.Readonly, 'Property is readonly');
                 case '3p3':
-                    this.overallStatusReportingDelay = value;
-                    this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.overallStatusReportingDelay, null);
+                    this.statusReportingDelay = value;
+                    this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.statusReportingDelay, null);
                     return new CommandResponseNoValue(handle, NcMethodStatus.OK);
                 default:
                     return super.Set(oid, id, value, handle);
@@ -393,7 +394,7 @@ export class NcStatusMonitor extends NcWorker
             [
                 new NcPropertyDescriptor(new NcElementId(3, 1), "overallStatus", "NcOverallStatus", true, false, false, null, "Overall status property"),
                 new NcPropertyDescriptor(new NcElementId(3, 2), "overallStatusMessage", "NcString", true, true, false, null, "Overall status message property"),
-                new NcPropertyDescriptor(new NcElementId(3, 3), "overallStatusReportingDelay", "NcUint32", false, false, false, null, "Overall status reporting delay property (in seconds, default is 5s and 0 means no delay)"),
+                new NcPropertyDescriptor(new NcElementId(3, 3), "statusReportingDelay", "NcUint32", false, false, false, null, "Status reporting delay property (in seconds, default is 3s and 0 means no delay)"),
             ],
             [],
             []
@@ -414,9 +415,9 @@ export class NcStatusMonitor extends NcWorker
 
 enum NcLinkStatus
 {
-    AllDown = 1,
+    AllUp = 1,
     SomeDown = 2,
-    AllUp = 3
+    AllDown = 3
 }
 
 enum NcConnectionStatus
@@ -448,6 +449,81 @@ function DelayTask(timeMs: number | undefined)
     return new Promise(resolve => setTimeout(resolve, timeMs));
 }
 
+export class NcCounter extends BaseType
+{
+    public name: string;
+    public value: number;
+    public description: string | null;
+
+    constructor(
+        name: string,
+        value: number,
+        description: string | null) 
+    {
+        super();
+
+        this.name = name;
+        this.value = value;
+        this.description = description;
+    }
+
+    public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor
+    {
+        return new NcDatatypeDescriptorStruct("NcElementId", [
+            new NcFieldDescriptor("name", "NcString", false, false, null, "Counter name"),
+            new NcFieldDescriptor("value", "NcUint64", false, false, null, "Counter value"),
+            new NcFieldDescriptor("description", "NcString", true, false, null, "Optional counter description")
+        ], null, null, "Counter data type");
+    }
+
+    public Increment()
+    {
+        this.value++;
+    }
+
+    public Reset()
+    {
+        this.value = 0;
+    }
+
+    public ToJson()
+    {
+        return JSON.stringify(this, jsonIgnoreReplacer);
+    }
+}
+
+export class NcMethodResultCounters extends NcMethodResult
+{
+    public value: NcCounter[];
+
+    public constructor(
+        status: NcMethodStatus,
+        value: NcCounter[])
+    {
+        super(status);
+
+        this.value = value;
+    }
+
+    public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor
+    {
+        let currentClassDescriptor = new NcDatatypeDescriptorStruct("NcMethodResultCounters", [
+            new NcFieldDescriptor("value", "NcCounter", false, true, null, "Counters")
+        ], "NcMethodResult", null, "Counters method result")
+
+        if(includeInherited)
+        {
+            let baseDescriptor = super.GetTypeDescriptor(includeInherited);
+
+            let baseDescriptorStruct = baseDescriptor as NcDatatypeDescriptorStruct;
+            if(baseDescriptorStruct)
+                currentClassDescriptor.fields = currentClassDescriptor.fields.concat(baseDescriptorStruct.fields);
+        }
+
+        return currentClassDescriptor;
+    }
+}
+
 export class NcReceiverMonitor extends NcStatusMonitor
 {
     public static staticClassID: number[] = [ 1, 2, 2, 1 ];
@@ -468,19 +544,28 @@ export class NcReceiverMonitor extends NcStatusMonitor
     public connectionStatusMessage: string | null;
 
     @myIdDecorator('4p5')
-    public synchronizationStatus: NcSynchronizationStatus;
+    public externalSynchronizationStatus: NcSynchronizationStatus;
 
     @myIdDecorator('4p6')
-    public synchronizationStatusMessage: string | null;
+    public externalSynchronizationStatusMessage: string | null;
 
     @myIdDecorator('4p7')
     public synchronizationSourceId: string | null;
 
     @myIdDecorator('4p8')
-    public streamStatus: NcStreamStatus;
+    public synchronizationSourceChanges: number;
 
     @myIdDecorator('4p9')
+    public streamStatus: NcStreamStatus;
+
+    @myIdDecorator('4p10')
     public streamStatusMessage: string | null;
+
+    @myIdDecorator('4p11')
+    public autoResetPacketCounters: boolean;
+
+    private lostPacketCounters: NcCounter[];
+    private latePacketCounters: NcCounter[];
 
     public constructor(
         oid: number,
@@ -501,13 +586,26 @@ export class NcReceiverMonitor extends NcStatusMonitor
 
         this.connectionStatus = NcConnectionStatus.Inactive;
         this.connectionStatusMessage = "Receiver is inactive";
+
+        this.lostPacketCounters = [
+            new NcCounter("Nic_1", 0, "Lost packets on Nic 1"),
+            new NcCounter("Nic_2", 0, "Lost packets on Nic 2"),
+        ];
+
+        this.latePacketCounters = [
+            new NcCounter("Nic_1", 0, "Late packets on Nic 1"),
+            new NcCounter("Nic_2", 0, "Late packets on Nic 2"),
+        ];
         
-        this.synchronizationStatus = NcSynchronizationStatus.Healthy;
-        this.synchronizationStatusMessage = "Locked to grandmaster";
+        this.externalSynchronizationStatus = NcSynchronizationStatus.Healthy;
+        this.externalSynchronizationStatusMessage = "Locked to grandmaster";
         this.synchronizationSourceId = "0xD4:AD:71:FF:FE:6F:E2:80";
+        this.synchronizationSourceChanges = 0;
 
         this.streamStatus = NcStreamStatus.Inactive;
         this.streamStatusMessage = "Receiver is inactive";
+
+        this.autoResetPacketCounters = true;
     }
 
     public Connected()
@@ -521,14 +619,25 @@ export class NcReceiverMonitor extends NcStatusMonitor
         this.streamStatus = NcStreamStatus.Healthy;
         this.streamStatusMessage = "Receiver is connected and stream is healthy";
 
+        if(this.autoResetPacketCounters)
+        {
+            this.lostPacketCounters.forEach(counter => {
+                counter.Reset();
+            });
+
+            this.latePacketCounters.forEach(counter => {
+                counter.Reset();
+            });
+        }
+
         this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 1), NcPropertyChangeType.ValueChanged, this.overallStatus, null);
         this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 2), NcPropertyChangeType.ValueChanged, this.overallStatusMessage, null);
 
         this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 3), NcPropertyChangeType.ValueChanged, this.connectionStatus, null);
         this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 4), NcPropertyChangeType.ValueChanged, this.connectionStatusMessage, null);
 
-        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 8), NcPropertyChangeType.ValueChanged, this.streamStatus, null);
-        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 9), NcPropertyChangeType.ValueChanged, this.streamStatusMessage, null);
+        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 9), NcPropertyChangeType.ValueChanged, this.streamStatus, null);
+        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 10), NcPropertyChangeType.ValueChanged, this.streamStatusMessage, null);
 
         DelayTask(5000).then(() => this.StreamBroken());
     }
@@ -542,12 +651,15 @@ export class NcReceiverMonitor extends NcStatusMonitor
     
             this.streamStatus = NcStreamStatus.Unhealthy;
             this.streamStatusMessage = "Stream cannot be decoded";
+
+            this.lostPacketCounters.find(c => c.name === 'Nic_1')?.Increment();
+            this.latePacketCounters.find(c => c.name === 'Nic_2')?.Increment();
     
             this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 1), NcPropertyChangeType.ValueChanged, this.overallStatus, null);
             this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 2), NcPropertyChangeType.ValueChanged, this.overallStatusMessage, null);
     
-            this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 8), NcPropertyChangeType.ValueChanged, this.streamStatus, null);
-            this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 9), NcPropertyChangeType.ValueChanged, this.streamStatusMessage, null);
+            this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 9), NcPropertyChangeType.ValueChanged, this.streamStatus, null);
+            this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 10), NcPropertyChangeType.ValueChanged, this.streamStatusMessage, null);
 
             DelayTask(2000).then(() => this.StreamFixed());
         }
@@ -566,8 +678,8 @@ export class NcReceiverMonitor extends NcStatusMonitor
             this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 1), NcPropertyChangeType.ValueChanged, this.overallStatus, null);
             this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 2), NcPropertyChangeType.ValueChanged, this.overallStatusMessage, null);
     
-            this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 8), NcPropertyChangeType.ValueChanged, this.streamStatus, null);
-            this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 9), NcPropertyChangeType.ValueChanged, this.streamStatusMessage, null);
+            this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 9), NcPropertyChangeType.ValueChanged, this.streamStatus, null);
+            this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 10), NcPropertyChangeType.ValueChanged, this.streamStatusMessage, null);
         }
     }
 
@@ -588,8 +700,8 @@ export class NcReceiverMonitor extends NcStatusMonitor
         this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 3), NcPropertyChangeType.ValueChanged, this.connectionStatus, null);
         this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 4), NcPropertyChangeType.ValueChanged, this.connectionStatusMessage, null);
 
-        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 8), NcPropertyChangeType.ValueChanged, this.streamStatus, null);
-        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 9), NcPropertyChangeType.ValueChanged, this.streamStatusMessage, null);
+        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 9), NcPropertyChangeType.ValueChanged, this.streamStatus, null);
+        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 10), NcPropertyChangeType.ValueChanged, this.streamStatusMessage, null);
     }
 
     //'1m1'
@@ -610,15 +722,19 @@ export class NcReceiverMonitor extends NcStatusMonitor
                 case '4p4':
                     return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.connectionStatusMessage);
                 case '4p5':
-                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.synchronizationStatus);
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.externalSynchronizationStatus);
                 case '4p6':
-                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.synchronizationStatusMessage);
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.externalSynchronizationStatusMessage);
                 case '4p7':
                     return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.synchronizationSourceId);
                 case '4p8':
-                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.streamStatus);
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.synchronizationSourceChanges);
                 case '4p9':
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.streamStatus);
+                case '4p10':
                     return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.streamStatusMessage);
+                case '4p11':
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.autoResetPacketCounters);
                 default:
                     return super.Get(oid, id, handle);
             }
@@ -645,13 +761,62 @@ export class NcReceiverMonitor extends NcStatusMonitor
                 case '4p7':
                 case '4p8':
                 case '4p9':
+                case '4p10':
                     return new CommandResponseError(handle, NcMethodStatus.Readonly, 'Property is readonly');
+                case '4p11':
+                    this.autoResetPacketCounters = value;
+                    this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.autoResetPacketCounters, null);
+                    return new CommandResponseNoValue(handle, NcMethodStatus.OK);
                 default:
                     return super.Set(oid, id, value, handle);
             }
         }
 
         return new CommandResponseError(handle, NcMethodStatus.BadOid, 'OID could not be found');
+    }
+
+    public override InvokeMethod(socket: WebSocketConnection, oid: number, methodId: NcElementId, args: { [key: string]: any; } | null, handle: number): CommandResponseNoValue 
+    {
+        if(oid == this.oid)
+        {
+            let key: string = `${methodId.level}m${methodId.index}`;
+
+            switch(key)
+            {
+                case '4m1':
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.lostPacketCounters);
+                case '4m2':
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.latePacketCounters);
+                case '4m3':
+                    this.ResetPacketCounters();
+                    return new CommandResponseNoValue(handle, NcMethodStatus.OK);
+                case '4m4':
+                    this.ResetSynchronizationSourceChanges();
+                    return new CommandResponseNoValue(handle, NcMethodStatus.OK);
+                default:
+                    return super.InvokeMethod(socket, oid, methodId, args, handle);
+
+            }
+        }
+
+        return new CommandResponseError(handle, NcMethodStatus.BadOid, 'OID could not be found');
+    }
+
+    private ResetPacketCounters()
+    {
+        this.lostPacketCounters.forEach(counter => {
+            counter.Reset();
+        });
+
+        this.latePacketCounters.forEach(counter => {
+            counter.Reset();
+        });
+    }
+
+    private ResetSynchronizationSourceChanges()
+    {
+        this.synchronizationSourceChanges = 0;
+        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 8), NcPropertyChangeType.ValueChanged, this.synchronizationSourceChanges, null);
     }
 
     public static override GetClassDescriptor(includeInherited: boolean): NcClassDescriptor 
@@ -663,13 +828,20 @@ export class NcReceiverMonitor extends NcStatusMonitor
                 new NcPropertyDescriptor(new NcElementId(4, 2), "linkStatusMessage", "NcString", true, true, false, null, "Link status message property"),
                 new NcPropertyDescriptor(new NcElementId(4, 3), "connectionStatus", "NcConnectionStatus", true, false, false, null, "Connection status property"),
                 new NcPropertyDescriptor(new NcElementId(4, 4), "connectionStatusMessage", "NcString", true, true, false, null, "Connection status message property"),
-                new NcPropertyDescriptor(new NcElementId(4, 5), "synchronizationStatus", "NcSynchronizationStatus", true, false, false, null, "Synchronization status property"),
-                new NcPropertyDescriptor(new NcElementId(4, 6), "synchronizationStatusMessage", "NcString", true, true, false, null, "Synchronization status message property"),
+                new NcPropertyDescriptor(new NcElementId(4, 5), "externalSynchronizationStatus", "NcSynchronizationStatus", true, false, false, null, "External synchronization status property"),
+                new NcPropertyDescriptor(new NcElementId(4, 6), "externalSynchronizationStatusMessage", "NcString", true, true, false, null, "External synchronization status message property"),
                 new NcPropertyDescriptor(new NcElementId(4, 7), "synchronizationSourceId", "NcString", true, true, false, null, "Synchronization source id property"),
-                new NcPropertyDescriptor(new NcElementId(4, 8), "streamStatus", "NcStreamStatus", true, false, false, null, "Stream status property"),
-                new NcPropertyDescriptor(new NcElementId(4, 9), "streamStatusMessage", "NcString", true, true, false, null, "Stream status message property")
+                new NcPropertyDescriptor(new NcElementId(4, 8), "synchronizationSourceChanges", "NcUint64", true, false, false, null, "Synchronization source changes counter"),
+                new NcPropertyDescriptor(new NcElementId(4, 9), "streamStatus", "NcStreamStatus", true, false, false, null, "Stream status property"),
+                new NcPropertyDescriptor(new NcElementId(4, 10), "streamStatusMessage", "NcString", true, true, false, null, "Stream status message property"),
+                new NcPropertyDescriptor(new NcElementId(4, 11), "autoResetPacketCounters", "NcBoolean", false, false, false, null, "Automatic reset packet counters property (default: true)")
             ],
-            [],
+            [
+                new NcMethodDescriptor(new NcElementId(4, 1), "GetLostPacketCounters", "NcMethodResultCounters", [], "Gets the lost packet counters"),
+                new NcMethodDescriptor(new NcElementId(4, 2), "GetLatePacketCounters", "NcMethodResultCounters", [], "Gets the late packet counters"),
+                new NcMethodDescriptor(new NcElementId(4, 3), "ResetPacketCounters", "NcMethodResult", [], "Resets the packet counters"),
+                new NcMethodDescriptor(new NcElementId(4, 4), "ResetSynchronizationSourceChanges", "NcMethodResult", [], "Resets the synchronization source changes counter property")
+            ],
             []
         );
 
