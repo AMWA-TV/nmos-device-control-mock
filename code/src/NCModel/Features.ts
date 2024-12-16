@@ -639,7 +639,7 @@ export class NcReceiverMonitor extends NcStatusMonitor
         this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 9), NcPropertyChangeType.ValueChanged, this.streamStatus, null);
         this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 10), NcPropertyChangeType.ValueChanged, this.streamStatusMessage, null);
 
-        DelayTask(5000).then(() => this.StreamBroken());
+        DelayTask(1000 * this.statusReportingDelay).then(() => this.StreamBroken());
     }
 
     public StreamBroken()
@@ -661,7 +661,7 @@ export class NcReceiverMonitor extends NcStatusMonitor
             this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 9), NcPropertyChangeType.ValueChanged, this.streamStatus, null);
             this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 10), NcPropertyChangeType.ValueChanged, this.streamStatusMessage, null);
 
-            DelayTask(2000).then(() => this.StreamFixed());
+            DelayTask(1000 * this.statusReportingDelay).then(() => this.StreamFixed());
         }
     }
 
