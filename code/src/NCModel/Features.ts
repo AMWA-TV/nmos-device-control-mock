@@ -752,6 +752,11 @@ export class NcReceiverMonitor extends NcStatusMonitor
 
             switch(key)
             {
+                case '2p1':
+                    if(value === true)
+                        return new CommandResponseNoValue(handle, NcMethodStatus.OK);
+                    else
+                        return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, "Receiver monitors cannot be disabled");
                 case '4p1':
                 case '4p2':
                 case '4p3':
