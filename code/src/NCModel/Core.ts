@@ -440,6 +440,24 @@ export class NcElementId extends BaseType
         ], null, null, "Class element id which contains the level and index");
     }
 
+    public static ToPropertyId(id: string) : NcPropertyId | null
+    {
+        let split = id.split('p');
+        if(split.length == 2)
+            return new NcPropertyId(Number(split[0] || 0), Number(split[1] || 0));
+        else
+            return null;
+    }
+
+    public static ToMethodId(id: string) : NcMethodId | null
+    {
+        let split = id.split('m');
+        if(split.length == 2)
+            return new NcMethodId(Number(split[0] || 0), Number(split[1] || 0));
+        else
+            return null;
+    }
+
     public ToJson()
     {
         return JSON.stringify(this, jsonIgnoreReplacer);
