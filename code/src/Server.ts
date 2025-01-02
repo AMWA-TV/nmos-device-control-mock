@@ -14,9 +14,9 @@ import { NmosReceiverActiveRtp } from './NmosReceiverActiveRtp';
 import { SessionManager } from './SessionManager';
 import { NcBlock, RootBlock } from './NCModel/Blocks';
 import { NcClassManager, NcDeviceManager } from './NCModel/Managers';
-import { NcElementId, NcMethodStatus, NcTouchpointNmos, NcTouchpointResourceNmos } from './NCModel/Core';
+import { NcBulkValuesHolder, NcElementId, NcMethodResultBulkValuesHolder, NcMethodStatus, NcTouchpointNmos, NcTouchpointResourceNmos } from './NCModel/Core';
 import { ExampleControl, GainControl, NcIdentBeacon, NcReceiverMonitor } from './NCModel/Features';
-import { CommandResponseWithValue, ConfigApiCommand, ConfigApiValue, ProtocolError, ProtocolSubscription } from './NCProtocol/Commands';
+import { CommandResponseWithValue, ConfigApiArguments, ConfigApiCommand, ConfigApiValue, ProtocolError, ProtocolSubscription } from './NCProtocol/Commands';
 import { MessageType, ProtocolWrapper } from './NCProtocol/Core';
 
 export interface WebSocketConnection extends WebSocket {
@@ -495,7 +495,206 @@ try
             res.sendStatus(404);
     })
 
-    app.get('/x-nmos/config/:version/root*', function (req, res) {
+    app.get('/x-nmos/configuration/:version', function (req, res) {
+        res.setHeader('Content-Type', 'application/json');
+        res.send(JSON.stringify([ 
+            'rolePaths/'
+        ]));
+    })
+
+    app.get('/x-nmos/configuration/:version/rolePaths', function (req, res) {
+        res.setHeader('Content-Type', 'application/json');
+
+        let response = rootBlock.GetRolePathUrls();
+
+        res.send(JSON.stringify(response.sort((a, b) => (a > b ? -1 : 1))));
+    })
+
+    app.get('/x-nmos/configuration/:version/rolePaths/:rolePath', function (req, res) {
+        res.setHeader('Content-Type', 'application/json');
+
+        let rolePath = req.params.rolePath.split('.');
+
+        let member = rootBlock.FindMemberByRolePath(rolePath);
+        if(member)
+        {
+            res.send(JSON.stringify([ 
+                'bulkProperties/',
+                'descriptor/',
+                'methods/',
+                'properties/'
+            ]));
+        }
+        else
+            res.sendStatus(404);
+    })
+
+    app.get('/x-nmos/configuration/:version/rolePaths/:rolePath/descriptor/', function (req, res) {
+        res.setHeader('Content-Type', 'application/json');
+
+        let rolePath = req.params.rolePath.split('.');
+
+        let member = rootBlock.FindMemberByRolePath(rolePath);
+        if(member)
+        {
+            res.send(JSON.stringify(classManager.GetClassDescriptor(member.classID, true), jsonIgnoreReplacer));
+        }
+        else
+            res.sendStatus(404);
+    })
+
+    app.get('/x-nmos/configuration/:version/rolePaths/:rolePath/methods/', function (req, res) {
+        res.setHeader('Content-Type', 'application/json');
+
+        let rolePath = req.params.rolePath.split('.');
+
+        let member = rootBlock.FindMemberByRolePath(rolePath);
+        if(member)
+        {
+            res.send(JSON.stringify(classManager.GetClassDescriptor(member.classID, true)?.methods.map(({ id }) => `${id.level}m${id.index}/`).sort((a, b) => (a > b ? 1 : -1)), jsonIgnoreReplacer));
+        }
+        else
+            res.sendStatus(404);
+    })
+
+    app.get('/x-nmos/configuration/:version/rolePaths/:rolePath/properties/', function (req, res) {
+        res.setHeader('Content-Type', 'application/json');
+
+        let rolePath = req.params.rolePath.split('.');
+
+        let member = rootBlock.FindMemberByRolePath(rolePath);
+        if(member)
+        {
+            res.send(JSON.stringify(classManager.GetClassDescriptor(member.classID, true)?.properties.map(({ id }) => `${id.level}p${id.index}/`).sort((a, b) => (a > b ? 1 : -1)), jsonIgnoreReplacer));
+        }
+        else
+            res.sendStatus(404);
+    })
+
+    app.get('/x-nmos/configuration/:version/rolePaths/:rolePath/properties/:propertyId', function (req, res) {
+        res.setHeader('Content-Type', 'application/json');
+
+        let rolePath = req.params.rolePath.split('.');
+
+        let member = rootBlock.FindMemberByRolePath(rolePath);
+        if(member)
+        {
+            let property = classManager.GetClassDescriptor(member.classID, true)?.properties.find(f => req.params.propertyId == `${f.id.level}p${f.id.index}`);
+            if(property)
+                res.send(JSON.stringify([ 
+                    'descriptor/',
+                    'value/'
+                ]));
+            else
+                res.sendStatus(404);
+        }
+        else
+            res.sendStatus(404);
+    })
+
+    app.get('/x-nmos/configuration/:version/rolePaths/:rolePath/properties/:propertyId/descriptor', function (req, res) {
+        res.setHeader('Content-Type', 'application/json');
+
+        let rolePath = req.params.rolePath.split('.');
+
+        let member = rootBlock.FindMemberByRolePath(rolePath);
+        if(member)
+        {
+            let property = classManager.GetClassDescriptor(member.classID, true)?.properties.find(f => req.params.propertyId == `${f.id.level}p${f.id.index}`);
+            if(property?.typeName)
+                res.send(JSON.stringify(classManager.GetTypeDescriptor(property.typeName, true), jsonIgnoreReplacer));
+            else
+                res.sendStatus(404);
+        }
+        else
+            res.sendStatus(404);
+    })
+
+    app.get('/x-nmos/configuration/:version/rolePaths/:rolePath/properties/:propertyId/value', function (req, res) {
+        res.setHeader('Content-Type', 'application/json');
+
+        let rolePath = req.params.rolePath.split('.');
+
+        let member = rootBlock.FindMemberByRolePath(rolePath);
+        if(member)
+        {
+            let property = classManager.GetClassDescriptor(member.classID, true)?.properties.find(f => req.params.propertyId == `${f.id.level}p${f.id.index}`);
+            if(property)
+                res.send(JSON.stringify(member.Get(member.oid, property.id, 0).result, jsonIgnoreReplacer));
+            else
+                res.sendStatus(404);
+        }
+        else
+            res.sendStatus(404);
+    })
+
+    app.put('/x-nmos/configuration/:version/rolePaths/:rolePath/properties/:propertyId/value', function (req, res) {
+        res.setHeader('Content-Type', 'application/json');
+
+        let apiValue = req.body as ConfigApiValue;
+
+        console.log(`Property PUT ${req.url}`);
+
+        let rolePath = req.params.rolePath.split('.');
+
+        let member = rootBlock.FindMemberByRolePath(rolePath);
+        if(member)
+        {
+            let property = classManager.GetClassDescriptor(member.classID, true)?.properties.find(f => req.params.propertyId == `${f.id.level}p${f.id.index}`);
+            if(property)
+                res.send(JSON.stringify(member.Set(member.oid, property.id, apiValue.value, 0).result, jsonIgnoreReplacer));
+            else
+                res.sendStatus(404);
+        }
+        else
+            res.sendStatus(404);
+    });
+
+    app.patch('/x-nmos/configuration/:version/rolePaths/:rolePath/methods/:methodId', function (req, res) {
+        res.setHeader('Content-Type', 'application/json');
+
+        let apiArguments = req.body as ConfigApiArguments;
+
+        console.log(`Method PATCH ${req.url}`);
+
+        let rolePath = req.params.rolePath.split('.');
+
+        let member = rootBlock.FindMemberByRolePath(rolePath);
+        if(member)
+        {
+            let method = classManager.GetClassDescriptor(member.classID, true)?.methods.find(f => req.params.methodId == `${f.id.level}m${f.id.index}`);
+            if(method)
+                res.send(JSON.stringify(member.InvokeMethod(member.oid, method.id, apiArguments.arguments, 0).result, jsonIgnoreReplacer));
+            else
+                res.sendStatus(404);
+        }
+        else
+            res.sendStatus(404);
+    })
+
+    app.get('/x-nmos/configuration/:version/rolePaths/:rolePath/bulkProperties', function (req, res) {
+        res.setHeader('Content-Type', 'application/json');
+
+        let recurse: boolean = Boolean(req.query.recurse) || true;
+
+        console.log(`BulkProperties GET ${req.url}, recurse: ${recurse}`);
+
+        let rolePath = req.params.rolePath.split('.');
+
+        let member = rootBlock.FindMemberByRolePath(rolePath);
+        if(member)
+        {
+            let response = new NcMethodResultBulkValuesHolder(
+                NcMethodStatus.OK, new NcBulkValuesHolder("AMWA NMOS Device Control Mock Application|v1.0",
+                member.GetAllProperties(recurse)));
+
+            res.send(JSON.stringify(response, jsonIgnoreReplacer));
+        }
+        else
+            res.sendStatus(404);
+    })
+
+    app.get('/x-nmos/configuration/:version/root*', function (req, res) {
         res.setHeader('Content-Type', 'application/json');
 
         console.log(`Config API GET ${req.url}, level: ${req.query.level}, index: ${req.query.index}`);
