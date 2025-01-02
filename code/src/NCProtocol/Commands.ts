@@ -193,3 +193,14 @@ export class ConfigApiValue
         this.value = value;
     }
 }
+
+export class ConfigApiArguments
+{
+    public arguments: { [key: string]: any } | null;
+
+    constructor(
+        commandArguments: { [key: string]: any } | null)
+    {
+        this.arguments = commandArguments;
+    }
+}

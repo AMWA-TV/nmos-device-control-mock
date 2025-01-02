@@ -118,10 +118,10 @@ export abstract class NcWorker extends NcObject
         let properties = [
             new NcObjectPropertiesHolder(this.GetRolePath(), [
                 new NcPropertyValueHolder(new NcElementId(2, 1), "enabled", this.enabled)
-            ])
+            ], false)
         ];
 
-        properties[0].propertiesValues = properties[0].propertiesValues.concat(super.GetAllProperties(recurse)[0].propertiesValues);
+        properties[0].values = properties[0].values.concat(super.GetAllProperties(recurse)[0].values);
 
         return properties;
     }
@@ -223,10 +223,10 @@ export class GainControl extends NcWorker
         let properties = [
             new NcObjectPropertiesHolder(this.GetRolePath(), [
                 new NcPropertyValueHolder(new NcElementId(3, 1), "gainValue", this.gainValue)
-            ])
+            ], false)
         ];
 
-        properties[0].propertiesValues = properties[0].propertiesValues.concat(super.GetAllProperties(recurse)[0].propertiesValues);
+        properties[0].values = properties[0].values.concat(super.GetAllProperties(recurse)[0].values);
 
         return properties;
     }
@@ -328,10 +328,10 @@ export class NcIdentBeacon extends NcWorker
         let properties = [
             new NcObjectPropertiesHolder(this.GetRolePath(), [
                 new NcPropertyValueHolder(new NcElementId(3, 1), "active", this.active)
-            ])
+            ], false)
         ];
 
-        properties[0].propertiesValues = properties[0].propertiesValues.concat(super.GetAllProperties(recurse)[0].propertiesValues);
+        properties[0].values = properties[0].values.concat(super.GetAllProperties(recurse)[0].values);
 
         return properties;
     }
@@ -527,10 +527,10 @@ export class NcReceiverMonitor extends NcWorker
                 new NcPropertyValueHolder(new NcElementId(3, 2), "connectionStatusMessage", this.connectionStatusMessage),
                 new NcPropertyValueHolder(new NcElementId(3, 3), "payloadStatus", this.payloadStatus),
                 new NcPropertyValueHolder(new NcElementId(3, 4), "payloadStatusMessage", this.payloadStatusMessage),
-            ])
+            ], false)
         ];
 
-        properties[0].propertiesValues = properties[0].propertiesValues.concat(super.GetAllProperties(recurse)[0].propertiesValues);
+        properties[0].values = properties[0].values.concat(super.GetAllProperties(recurse)[0].values);
 
         return properties;
     }
@@ -659,10 +659,10 @@ export class NcReceiverMonitorProtected extends NcReceiverMonitor
         let properties = [
             new NcObjectPropertiesHolder(this.GetRolePath(), [
                 new NcPropertyValueHolder(new NcElementId(4, 1), "signalProtectionStatus", this.signalProtectionStatus)
-            ])
+            ], false)
         ];
 
-        properties[0].propertiesValues = properties[0].propertiesValues.concat(super.GetAllProperties(recurse)[0].propertiesValues);
+        properties[0].values = properties[0].values.concat(super.GetAllProperties(recurse)[0].values);
 
         return properties;
     }
@@ -1479,10 +1479,10 @@ export class ExampleControl extends NcWorker
                 new NcPropertyValueHolder(new NcElementId(3, 11), "enumSequence", this.enumSequence),
                 new NcPropertyValueHolder(new NcElementId(3, 12), "numberSequence", this.numberSequence),
                 new NcPropertyValueHolder(new NcElementId(3, 13), "objectSequence", this.objectSequence),
-            ])
+            ], false)
         ];
 
-        properties[0].propertiesValues = properties[0].propertiesValues.concat(super.GetAllProperties(recurse)[0].propertiesValues);
+        properties[0].values = properties[0].values.concat(super.GetAllProperties(recurse)[0].values);
 
         return properties;
     }

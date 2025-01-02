@@ -523,10 +523,10 @@ export class NcBlock extends NcObject
             new NcObjectPropertiesHolder(this.GetRolePath(), [
                 new NcPropertyValueHolder(new NcElementId(2, 1), "enabled", this.enabled),
                 new NcPropertyValueHolder(new NcElementId(2, 2), "members", this.members)
-            ])
+            ], false)
         ];
 
-        holders[0].propertiesValues = holders[0].propertiesValues.concat(super.GetAllProperties(recurse)[0].propertiesValues);
+        holders[0].values = holders[0].values.concat(super.GetAllProperties(recurse)[0].values);
 
         if(recurse)
         {
@@ -541,9 +541,9 @@ export class NcBlock extends NcObject
     public SetPropertiesHolders(holders: NcObjectPropertiesHolder[])
     {
         holders.forEach(holder => {
-            let member = this.FindMemberByRolePath(holder.rolePath);
+            let member = this.FindMemberByRolePath(holder.path);
             if(member)
-                member.SetProperties(holder.propertiesValues);
+                member.SetProperties(holder.values);
         });
     }
 

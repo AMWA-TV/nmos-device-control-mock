@@ -1897,24 +1897,84 @@ export class NcPropertyValueHolder extends BaseType
 
 export class NcObjectPropertiesHolder extends BaseType
 {
-    public rolePath: string[];
-    public propertiesValues: NcPropertyValueHolder[];
+    public path: string[];
+    public values: NcPropertyValueHolder[];
+    public isRebuildable: boolean;
 
     public constructor(
-        rolePath: string[],
-        propertiesValues: NcPropertyValueHolder[])
+        path: string[],
+        values: NcPropertyValueHolder[],
+        isRebuildable: boolean)
     {
         super();
 
-        this.rolePath = rolePath;
-        this.propertiesValues = propertiesValues;
+        this.path = path;
+        this.values = values;
+        this.isRebuildable = isRebuildable;
     }
 
     public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor
     {
         return new NcDatatypeDescriptorStruct("NcObjectPropertiesHolder", [
-            new NcFieldDescriptor("rolePath", "NcRolePath", false, false, null, "Object role path"),
-            new NcFieldDescriptor("propertiesValues", "NcPropertyValueHolder", false, true, null, "Object properties values"),
+            new NcFieldDescriptor("path", "NcRolePath", false, false, null, "Object role path"),
+            new NcFieldDescriptor("values", "NcPropertyValueHolder", false, true, null, "Object properties values"),
+            new NcFieldDescriptor("isRebuildable", "NcBoolean", false, false, null, "Describes if the object is rebuildable"),
         ], null, null, "Object properties holder descriptor");
+    }
+}
+
+export class NcBulkValuesHolder extends BaseType
+{
+    public validationFingerprint: string | null;
+    public values: NcObjectPropertiesHolder[];
+
+    public constructor(
+        validationFingerprint: string | null,
+        values: NcObjectPropertiesHolder[])
+    {
+        super();
+
+        this.validationFingerprint = validationFingerprint;
+        this.values = values;
+    }
+
+    public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor
+    {
+        return new NcDatatypeDescriptorStruct("NcBulkValuesHolder", [
+            new NcFieldDescriptor("validationFingerprint", "NcString", true, false, null, "Optional vendor specific fingerprinting mechanism used for validation purposes"),
+            new NcFieldDescriptor("values", "NcObjectPropertiesHolder", false, true, null, "Values by rolePath")
+        ], null, null, "Bulk values holder descriptor");
+    }
+}
+
+export class NcMethodResultBulkValuesHolder extends NcMethodResult
+{
+    public value: NcBulkValuesHolder;
+
+    public constructor(
+        status: NcMethodStatus,
+        value: NcBulkValuesHolder)
+    {
+        super(status);
+
+        this.value = value;
+    }
+
+    public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor
+    {
+        let currentClassDescriptor = new NcDatatypeDescriptorStruct("NcMethodResultBulkValuesHolder", [
+            new NcFieldDescriptor("value", "NcBulkValuesHolder", false, false, null, "Bulk values holder value")
+        ], "NcMethodResult", null, "Bulk values holder result")
+
+        if(includeInherited)
+        {
+            let baseDescriptor = super.GetTypeDescriptor(includeInherited);
+
+            let baseDescriptorStruct = baseDescriptor as NcDatatypeDescriptorStruct;
+            if(baseDescriptorStruct)
+                currentClassDescriptor.fields = currentClassDescriptor.fields.concat(baseDescriptorStruct.fields);
+        }
+
+        return currentClassDescriptor;
     }
 }
