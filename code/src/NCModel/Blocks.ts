@@ -612,6 +612,22 @@ export class NcBlock extends NcObject
         else
             return new Array<NcBlockMemberDescriptor>()
     }
+
+    public GetRolePathUrls(): string[]
+    {
+        let urls = new Array<string>();
+
+        urls = urls.concat(this.GetRolePathUrl());
+
+        this.memberObjects.forEach(member => {
+            if(member instanceof NcBlock)
+                urls = urls.concat(member.GetRolePathUrls());
+            else
+                urls = urls.concat(member.GetRolePathUrl());
+        });
+
+        return urls;
+    }
 }
 
 export class RootBlock extends NcBlock

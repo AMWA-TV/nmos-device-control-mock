@@ -410,6 +410,11 @@ export abstract class NcObject
 
         return rolePath;
     }
+
+    public GetRolePathUrl(): string
+    {
+        return this.GetRolePath().join('.') + "/";
+    }
 }
 
 export class NcElementId extends BaseType
