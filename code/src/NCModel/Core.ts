@@ -142,6 +142,35 @@ export abstract class NcObject
             let key: string = `${methodId.level}m${methodId.index}`;
             switch(key)
             {
+                case '1m1': //Get
+                    {
+                        if(args != null &&
+                            'id' in args)
+                        {
+                            let propertyId = args['id'] as NcElementId;
+                            if(propertyId)
+                                return this.Get(this.oid, propertyId, handle);
+                            else
+                                return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid id argument provided');
+                        }
+                        else
+                            return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid arguments provided');
+                    }
+                case '1m2': //Set
+                    {
+                        if(args != null &&
+                            'id' in args &&
+                            'value' in args)
+                        {
+                            let propertyId = args['id'] as NcElementId;
+                            if(propertyId)
+                                return this.Set(this.oid, propertyId, args['value'], handle);
+                            else
+                                return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid id argument provided');
+                        }
+                        else
+                            return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid arguments provided');
+                    }
                 case '1m3': //GetSequenceItem
                     {
                         if(args != null &&
@@ -388,7 +417,7 @@ export abstract class NcObject
                 new NcPropertyValueHolder(new NcElementId(1, 6), "userLabel", this.userLabel),
                 new NcPropertyValueHolder(new NcElementId(1, 7), "touchpoints", this.touchpoints),
                 new NcPropertyValueHolder(new NcElementId(1, 8), "runtimePropertyConstraints", this.runtimePropertyConstraints),
-            ])
+            ], false)
         ];
     }
 
