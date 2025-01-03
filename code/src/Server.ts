@@ -695,106 +695,49 @@ try
             res.sendStatus(404);
     })
 
-    app.get('/x-nmos/configuration/:version/root*', function (req, res) {
+    app.patch('/x-nmos/configuration/:version/rolePaths/:rolePath/bulkProperties', function (req, res) {
         res.setHeader('Content-Type', 'application/json');
 
-        console.log(`Config API GET ${req.url}, level: ${req.query.level}, index: ${req.query.index}`);
+        let restore = req.body as RestoreBody;
 
-        let urlPath: string = req.path;
+        console.log(`BulkProperties PATCH ${req.url}`);
 
-        let propertyLevel;
-        let propertyIndex
-
-        if(req.query.level)
-            propertyLevel = parseInt(req.query.level.toString());
-
-        if(req.query.index)
-            propertyIndex = parseInt(req.query.index.toString());
-
-        urlPath = urlPath.replace('/x-nmos/config/v1.0/', '');
-        let rolePath = urlPath.split('/');
+        let rolePath = req.params.rolePath.split('.');
 
         let member = rootBlock.FindMemberByRolePath(rolePath);
         if(member)
         {
-            if(member instanceof NcBlock)
-            {
-                res.send(JSON.stringify(member.members, jsonIgnoreReplacer));
-            }
-            else
-            {
-                if(propertyLevel && propertyIndex)
-                {
-                    let commandResponse = member.Get(member.oid, new NcElementId(propertyLevel, propertyIndex), 1);
-                    if(commandResponse instanceof CommandResponseWithValue)
-                    {
-                        let payload: { [key: string]: any } = {};
-                        payload['value'] = commandResponse.result['value'];
-                        res.send(JSON.stringify(payload, jsonIgnoreReplacer));
-                    }
-                    else
-                        res.sendStatus(404);
-                }
-                else
-                    res.send(JSON.stringify(classManager.GetClassDescriptor(member.classID, true), jsonIgnoreReplacer));
-            }
+            let response = new NcMethodResultObjectPropertiesSetValidation(
+                NcMethodStatus.OK,
+                member.Restore(restore.arguments, false));
+
+            res.send(JSON.stringify(response, jsonIgnoreReplacer));
         }
         else
             res.sendStatus(404);
-    });
+    })
 
-    app.patch('/x-nmos/config/:version/root*', function (req, res) {
+    app.put('/x-nmos/configuration/:version/rolePaths/:rolePath/bulkProperties', function (req, res) {
         res.setHeader('Content-Type', 'application/json');
 
-        let apiCommand = req.body as ConfigApiCommand;
+        let restore = req.body as RestoreBody;
 
-        console.log(`Config API PATCH ${req.url}`);
+        console.log(`BulkProperties PUT ${req.url}`);
 
-        let urlPath: string = req.path;
-
-        urlPath = urlPath.replace('/x-nmos/config/v1.0/', '');
-        let rolePath = urlPath.split('/');
+        let rolePath = req.params.rolePath.split('.');
 
         let member = rootBlock.FindMemberByRolePath(rolePath);
         if(member)
         {
-            let response = member.InvokeMethod(member.oid, apiCommand.methodId, apiCommand.arguments, 1);
-            res.send(JSON.stringify(response.result));
+            let response = new NcMethodResultObjectPropertiesSetValidation(
+                NcMethodStatus.OK,
+                member.Restore(restore.arguments, true));
+
+            res.send(JSON.stringify(response, jsonIgnoreReplacer));
         }
         else
             res.sendStatus(404);
-    });
-
-    app.put('/x-nmos/config/:version/root*', function (req, res) {
-        res.setHeader('Content-Type', 'application/json');
-
-        let propertyValue = req.body as ConfigApiValue;
-
-        console.log(`Config API PUT ${req.url}`);
-
-        let propertyLevel;
-        let propertyIndex
-
-        if(req.query.level)
-            propertyLevel = parseInt(req.query.level.toString());
-
-        if(req.query.index)
-            propertyIndex = parseInt(req.query.index.toString());
-
-        let urlPath: string = req.path;
-
-        urlPath = urlPath.replace('/x-nmos/config/v1.0/', '');
-        let rolePath = urlPath.split('/');
-
-        let member = rootBlock.FindMemberByRolePath(rolePath);
-        if(member)
-        {
-            let response = member.Set(member.oid, new NcElementId(propertyLevel, propertyIndex), propertyValue.value, 1);
-            res.sendStatus(response.result['status']);
-        }
-        else
-            res.sendStatus(404);
-    });
+    })
     
     //start our server
     server.listen(config.port, () => {
