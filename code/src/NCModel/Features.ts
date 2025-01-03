@@ -117,7 +117,7 @@ export abstract class NcWorker extends NcObject
     {
         let properties = [
             new NcObjectPropertiesHolder(this.GetRolePath(), [
-                new NcPropertyValueHolder(new NcElementId(2, 1), "enabled", this.enabled)
+                new NcPropertyValueHolder(new NcPropertyId(2, 1), "enabled", this.enabled)
             ], false)
         ];
 
@@ -222,7 +222,7 @@ export class GainControl extends NcWorker
     {
         let properties = [
             new NcObjectPropertiesHolder(this.GetRolePath(), [
-                new NcPropertyValueHolder(new NcElementId(3, 1), "gainValue", this.gainValue)
+                new NcPropertyValueHolder(new NcPropertyId(3, 1), "gainValue", this.gainValue)
             ], false)
         ];
 
@@ -327,7 +327,7 @@ export class NcIdentBeacon extends NcWorker
     {
         let properties = [
             new NcObjectPropertiesHolder(this.GetRolePath(), [
-                new NcPropertyValueHolder(new NcElementId(3, 1), "active", this.active)
+                new NcPropertyValueHolder(new NcPropertyId(3, 1), "active", this.active)
             ], false)
         ];
 
@@ -523,10 +523,10 @@ export class NcReceiverMonitor extends NcWorker
     {
         let properties = [
             new NcObjectPropertiesHolder(this.GetRolePath(), [
-                new NcPropertyValueHolder(new NcElementId(3, 1), "connectionStatus", this.connectionStatus),
-                new NcPropertyValueHolder(new NcElementId(3, 2), "connectionStatusMessage", this.connectionStatusMessage),
-                new NcPropertyValueHolder(new NcElementId(3, 3), "payloadStatus", this.payloadStatus),
-                new NcPropertyValueHolder(new NcElementId(3, 4), "payloadStatusMessage", this.payloadStatusMessage),
+                new NcPropertyValueHolder(new NcPropertyId(3, 1), "connectionStatus", this.connectionStatus),
+                new NcPropertyValueHolder(new NcPropertyId(3, 2), "connectionStatusMessage", this.connectionStatusMessage),
+                new NcPropertyValueHolder(new NcPropertyId(3, 3), "payloadStatus", this.payloadStatus),
+                new NcPropertyValueHolder(new NcPropertyId(3, 4), "payloadStatusMessage", this.payloadStatusMessage),
             ], false)
         ];
 
@@ -658,7 +658,7 @@ export class NcReceiverMonitorProtected extends NcReceiverMonitor
     {
         let properties = [
             new NcObjectPropertiesHolder(this.GetRolePath(), [
-                new NcPropertyValueHolder(new NcElementId(4, 1), "signalProtectionStatus", this.signalProtectionStatus)
+                new NcPropertyValueHolder(new NcPropertyId(4, 1), "signalProtectionStatus", this.signalProtectionStatus)
             ], false)
         ];
 
@@ -1466,19 +1466,19 @@ export class ExampleControl extends NcWorker
     {
         let properties = [
             new NcObjectPropertiesHolder(this.GetRolePath(), [
-                new NcPropertyValueHolder(new NcElementId(3, 1), "enumProperty", this.enumProperty),
-                new NcPropertyValueHolder(new NcElementId(3, 2), "stringProperty", this.stringProperty),
-                new NcPropertyValueHolder(new NcElementId(3, 3), "numberProperty", this.numberProperty),
-                new NcPropertyValueHolder(new NcElementId(3, 4), "booleanProperty", this.booleanProperty),
-                new NcPropertyValueHolder(new NcElementId(3, 5), "objectProperty", this.objectProperty),
-                new NcPropertyValueHolder(new NcElementId(3, 6), "methodNoArgsCount", this.methodNoArgsCount),
-                new NcPropertyValueHolder(new NcElementId(3, 7), "methodSimpleArgsCount", this.methodSimpleArgsCount),
-                new NcPropertyValueHolder(new NcElementId(3, 8), "methodObjectArgCount", this.methodObjectArgCount),
-                new NcPropertyValueHolder(new NcElementId(3, 9), "stringSequence", this.stringSequence),
-                new NcPropertyValueHolder(new NcElementId(3, 10), "booleanSequence", this.booleanSequence),
-                new NcPropertyValueHolder(new NcElementId(3, 11), "enumSequence", this.enumSequence),
-                new NcPropertyValueHolder(new NcElementId(3, 12), "numberSequence", this.numberSequence),
-                new NcPropertyValueHolder(new NcElementId(3, 13), "objectSequence", this.objectSequence),
+                new NcPropertyValueHolder(new NcPropertyId(3, 1), "enumProperty", this.enumProperty),
+                new NcPropertyValueHolder(new NcPropertyId(3, 2), "stringProperty", this.stringProperty),
+                new NcPropertyValueHolder(new NcPropertyId(3, 3), "numberProperty", this.numberProperty),
+                new NcPropertyValueHolder(new NcPropertyId(3, 4), "booleanProperty", this.booleanProperty),
+                new NcPropertyValueHolder(new NcPropertyId(3, 5), "objectProperty", this.objectProperty),
+                new NcPropertyValueHolder(new NcPropertyId(3, 6), "methodNoArgsCount", this.methodNoArgsCount),
+                new NcPropertyValueHolder(new NcPropertyId(3, 7), "methodSimpleArgsCount", this.methodSimpleArgsCount),
+                new NcPropertyValueHolder(new NcPropertyId(3, 8), "methodObjectArgCount", this.methodObjectArgCount),
+                new NcPropertyValueHolder(new NcPropertyId(3, 9), "stringSequence", this.stringSequence),
+                new NcPropertyValueHolder(new NcPropertyId(3, 10), "booleanSequence", this.booleanSequence),
+                new NcPropertyValueHolder(new NcPropertyId(3, 11), "enumSequence", this.enumSequence),
+                new NcPropertyValueHolder(new NcPropertyId(3, 12), "numberSequence", this.numberSequence),
+                new NcPropertyValueHolder(new NcPropertyId(3, 13), "objectSequence", this.objectSequence),
             ], false)
         ];
 

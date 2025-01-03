@@ -409,14 +409,14 @@ export abstract class NcObject
     {
         return [
             new NcObjectPropertiesHolder(this.GetRolePath(), [
-                new NcPropertyValueHolder(new NcElementId(1, 1), "classId", this.classID),
-                new NcPropertyValueHolder(new NcElementId(1, 2), "oid", this.oid),
-                new NcPropertyValueHolder(new NcElementId(1, 3), "constantOid", this.constantOid),
-                new NcPropertyValueHolder(new NcElementId(1, 4), "owner", this.owner),
-                new NcPropertyValueHolder(new NcElementId(1, 5), "role", this.role),
-                new NcPropertyValueHolder(new NcElementId(1, 6), "userLabel", this.userLabel),
-                new NcPropertyValueHolder(new NcElementId(1, 7), "touchpoints", this.touchpoints),
-                new NcPropertyValueHolder(new NcElementId(1, 8), "runtimePropertyConstraints", this.runtimePropertyConstraints),
+                new NcPropertyValueHolder(new NcPropertyId(1, 1), "classId", this.classID),
+                new NcPropertyValueHolder(new NcPropertyId(1, 2), "oid", this.oid),
+                new NcPropertyValueHolder(new NcPropertyId(1, 3), "constantOid", this.constantOid),
+                new NcPropertyValueHolder(new NcPropertyId(1, 4), "owner", this.owner),
+                new NcPropertyValueHolder(new NcPropertyId(1, 5), "role", this.role),
+                new NcPropertyValueHolder(new NcPropertyId(1, 6), "userLabel", this.userLabel),
+                new NcPropertyValueHolder(new NcPropertyId(1, 7), "touchpoints", this.touchpoints),
+                new NcPropertyValueHolder(new NcPropertyId(1, 8), "runtimePropertyConstraints", this.runtimePropertyConstraints),
             ], false)
         ];
     }
@@ -1921,12 +1921,12 @@ export class NcDatatypeDescriptorEnum extends NcDatatypeDescriptor
 
 export class NcPropertyValueHolder extends BaseType
 {
-    public propertyId: NcElementId;
+    public propertyId: NcPropertyId;
     public propertyName: string;
     public value: any;
 
     public constructor(
-        propertyId: NcElementId,
+        propertyId: NcPropertyId,
         propertyName: string,
         value: any)
     {

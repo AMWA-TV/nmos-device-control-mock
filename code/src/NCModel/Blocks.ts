@@ -511,8 +511,8 @@ export class NcBlock extends NcObject
     {
         let holders = [
             new NcObjectPropertiesHolder(this.GetRolePath(), [
-                new NcPropertyValueHolder(new NcElementId(2, 1), "enabled", this.enabled),
-                new NcPropertyValueHolder(new NcElementId(2, 2), "members", this.members)
+                new NcPropertyValueHolder(new NcPropertyId(2, 1), "enabled", this.enabled),
+                new NcPropertyValueHolder(new NcPropertyId(2, 2), "members", this.members)
             ], false)
         ];
 
