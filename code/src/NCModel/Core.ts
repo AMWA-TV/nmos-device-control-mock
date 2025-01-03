@@ -448,6 +448,16 @@ export class NcElementId extends BaseType
             return null;
     }
 
+    public static ToPropertyString(id: NcElementId) : string
+    {
+        return `${id.level}p${id.index}`;
+    }
+
+    public static ToMethodString(id: NcElementId) : string
+    {
+        return `${id.level}m${id.index}`;
+    }
+
     public ToJson()
     {
         return JSON.stringify(this, jsonIgnoreReplacer);
