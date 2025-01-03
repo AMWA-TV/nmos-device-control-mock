@@ -193,7 +193,8 @@ try
 
     //initialize the Express HTTP listener
     const app = application();
-    app.use(application.json());
+    app.use(application.json({ limit: '50mb' }));
+    app.use(application.urlencoded({ extended: true }));
     
     //initialize server
     const server = http.createServer(application);
