@@ -12,11 +12,17 @@ import {
     NcMethodStatus,
     NcObject,
     NcObjectPropertiesHolder,
+    NcObjectPropertiesSetValidation,
     NcParameterDescriptor,
     NcPropertyConstraints,
     NcPropertyDescriptor,
+    NcPropertyId,
+    NcPropertyRestoreNotice,
+    NcPropertyRestoreNoticeType,
     NcPropertyValueHolder,
-    NcTouchpoint } from './Core';
+    NcRestoreValidationStatus,
+    NcTouchpoint, 
+    RestoreArguments } from './Core';
 
 export class NcBlock extends NcObject
 {
@@ -304,19 +310,6 @@ export class NcBlock extends NcObject
                         else
                             return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid arguments provided');
                     }
-                case '2m5':
-                    {
-                        if(args != null)
-                        {
-                            let holders = args['holders'] as NcObjectPropertiesHolder[];
-                            if(holders)
-                                return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.SetPropertiesHolders(holders));
-                            else
-                                return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid arguments provided');
-                        }
-                        else
-                            return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid arguments provided');
-                    }
                 default:
                     return super.InvokeMethod(oid, methodId, args, handle);
             }
@@ -386,10 +379,7 @@ export class NcBlock extends NcObject
                     new NcParameterDescriptor("classId", "NcClassId", false, false, null, "Class id to search for"),
                     new NcParameterDescriptor("includeDerived", "NcBoolean", false,  false, null, "If TRUE it will also include derived class descriptors"),
                     new NcParameterDescriptor("recurse", "NcBoolean", false,  false, null, "TRUE to search nested blocks")
-                ], "Finds members with given class id"),
-                new NcMethodDescriptor(new NcElementId(2, 5), "SetPropertiesByPath", "NcMethodResult", [
-                    new NcParameterDescriptor("holders", "NcPropertyValueHolder", false, true, null, "Sequence of properties holders")
-                ], "Set properties by path")
+                ], "Finds members with given class id")
             ],
             []
         );
@@ -536,15 +526,6 @@ export class NcBlock extends NcObject
         }
 
         return holders
-    }
-
-    public SetPropertiesHolders(holders: NcObjectPropertiesHolder[])
-    {
-        holders.forEach(holder => {
-            let member = this.FindMemberByRolePath(holder.path);
-            if(member)
-                member.SetProperties(holder.values);
-        });
     }
 
     public GenerateMemberDescriptorsByRole(role: string, caseSensitive: boolean, matchWholeString: boolean, recurse: boolean) : NcBlockMemberDescriptor[]
