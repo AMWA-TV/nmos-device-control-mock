@@ -676,7 +676,7 @@ try
     app.get('/x-nmos/configuration/:version/rolePaths/:rolePath/bulkProperties', function (req, res) {
         res.setHeader('Content-Type', 'application/json');
 
-        let recurse: boolean = Boolean(req.query.recurse) || true;
+        let recurse: boolean = req.query.recurse === 'false' ? false : true;
 
         console.log(`BulkProperties GET ${req.url}, recurse: ${recurse}`);
 
