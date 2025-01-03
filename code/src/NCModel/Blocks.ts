@@ -20,6 +20,7 @@ import {
     NcPropertyRestoreNotice,
     NcPropertyRestoreNoticeType,
     NcPropertyValueHolder,
+    NcRestoreMode,
     NcRestoreValidationStatus,
     NcTouchpoint, 
     RestoreArguments } from './Core';
@@ -39,6 +40,8 @@ export class NcBlock extends NcObject
 
     public memberObjects: NcObject[];
 
+    private maxMembers: number | null;
+
     public constructor(
         oid: number,
         constantOid: boolean,
@@ -50,9 +53,13 @@ export class NcBlock extends NcObject
         enabled: boolean,
         memberObjects: NcObject[],
         description: string,
-        notificationContext: INotificationContext)
+        notificationContext: INotificationContext,
+        maxMembers: number | null = null,
+        isRebuildable: boolean = false)
     {
-        super(oid, constantOid, ownerObject, role, userLabel, touchpoints, runtimePropertyConstraints, description, notificationContext);
+        super(oid, constantOid, ownerObject, role, userLabel, touchpoints, runtimePropertyConstraints, description, notificationContext, isRebuildable);
+
+        this.maxMembers = maxMembers;
 
         this.enabled = enabled;
         this.memberObjects = memberObjects;
@@ -619,17 +626,48 @@ export class NcBlock extends NcObject
         {
             let myNotices = new Array<NcPropertyRestoreNotice>();
 
-            myRestoreData.values.forEach(propertyData => {
-                if(NcElementId.ToPropertyString(propertyData.propertyId) != '1p6')
-                    myNotices.push(new NcPropertyRestoreNotice(
-                        propertyData.propertyId,
-                        propertyData.propertyName,
-                        NcPropertyRestoreNoticeType.Warning,
-                        "Property cannot be changed and will be left untouched"));
-                else if(applyChanges)
+            myRestoreData.values.forEach(propertyData => 
+            {
+                let propertyId = NcElementId.ToPropertyString(propertyData.propertyId);
+
+                if(restoreArguments.restoreMode == NcRestoreMode.Rebuild)
                 {
-                    //Perform further validation
-                    this.Set(this.oid, propertyData.propertyId, propertyData.value, 0);
+                    if(propertyId != '1p6' && propertyId != '2p2')
+                        myNotices.push(new NcPropertyRestoreNotice(
+                            propertyData.propertyId,
+                            propertyData.propertyName,
+                            NcPropertyRestoreNoticeType.Warning,
+                            "Property cannot be changed and will be left untouched"));
+                    else if(applyChanges)
+                    {
+                        //Perform further validation
+                        if(propertyId == '2p2')
+                        {
+                            //Structural changes to the members
+                        }
+                        else
+                            this.Set(this.oid, propertyData.propertyId, propertyData.value, 0);
+                    }
+                }
+                else
+                {
+                    if(propertyId == '2p2')
+                        myNotices.push(new NcPropertyRestoreNotice(
+                            propertyData.propertyId,
+                            propertyData.propertyName,
+                            NcPropertyRestoreNoticeType.Warning,
+                            "Property cannot be changed and will be left untouched unless restoreMode is changed to Rebuild"));
+                    else if(propertyId != '1p6')
+                        myNotices.push(new NcPropertyRestoreNotice(
+                            propertyData.propertyId,
+                            propertyData.propertyName,
+                            NcPropertyRestoreNoticeType.Warning,
+                            "Property cannot be changed and will be left untouched"));
+                    else if(applyChanges)
+                    {
+                        //Perform further validation
+                        this.Set(this.oid, propertyData.propertyId, propertyData.value, 0);
+                    }
                 }
             });
 
@@ -660,7 +698,8 @@ export class RootBlock extends NcBlock
         enabled: boolean,
         memberObjects: NcObject[],
         description: string,
-        notificationContext: INotificationContext)
+        notificationContext: INotificationContext,
+        maxMembers: number | null = null)
     {
         super(
             oid,
@@ -673,7 +712,8 @@ export class RootBlock extends NcBlock
             enabled,
             memberObjects,
             description,
-            notificationContext);
+            notificationContext,
+            maxMembers);
     }
 
     public ProcessMessage(msg: string, socket: WebSocketConnection)
