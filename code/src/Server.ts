@@ -14,9 +14,9 @@ import { NmosReceiverActiveRtp } from './NmosReceiverActiveRtp';
 import { SessionManager } from './SessionManager';
 import { NcBlock, RootBlock } from './NCModel/Blocks';
 import { NcClassManager, NcDeviceManager } from './NCModel/Managers';
-import { NcBulkValuesHolder, NcElementId, NcMethodResultBulkValuesHolder, NcMethodStatus, NcTouchpointNmos, NcTouchpointResourceNmos } from './NCModel/Core';
+import { ConfigApiArguments, ConfigApiValue, NcBulkValuesHolder, NcMethodResultBulkValuesHolder, NcMethodResultObjectPropertiesSetValidation, NcMethodStatus, NcTouchpointNmos, NcTouchpointResourceNmos, RestoreBody } from './NCModel/Core';
 import { ExampleControl, GainControl, NcIdentBeacon, NcReceiverMonitor } from './NCModel/Features';
-import { CommandResponseWithValue, ConfigApiArguments, ConfigApiCommand, ConfigApiValue, ProtocolError, ProtocolSubscription } from './NCProtocol/Commands';
+import { ProtocolError, ProtocolSubscription } from './NCProtocol/Commands';
 import { MessageType, ProtocolWrapper } from './NCProtocol/Core';
 
 export interface WebSocketConnection extends WebSocket {

@@ -1,7 +1,6 @@
 import { jsonIgnoreReplacer, jsonIgnore } from 'json-ignore';
 import { CommandResponseError, CommandResponseNoValue, CommandResponseWithValue } from '../NCProtocol/Commands';
 import { NcPropertyChangedEventData } from '../NCProtocol/Notifications';
-import { WebSocketConnection } from '../Server';
 import { INotificationContext } from '../SessionManager';
 import { NcBlock } from './Blocks';
 import {
@@ -33,6 +32,7 @@ import {
     NcMethodStatus,
     NcObject,
     NcObjectPropertiesHolder,
+    NcObjectPropertiesSetValidation,
     NcParameterConstraints,
     NcParameterConstraintsNumber,
     NcParameterConstraintsString,
@@ -43,13 +43,17 @@ import {
     NcPropertyConstraintsString,
     NcPropertyDescriptor,
     NcPropertyId,
+    NcPropertyRestoreNotice,
+    NcPropertyRestoreNoticeType,
     NcPropertyValueHolder,
+    NcRestoreValidationStatus,
     NcTouchpoint,
     NcTouchpointNmos,
     NcTouchpointNmosChannelMapping,
     NcTouchpointResource,
     NcTouchpointResourceNmos,
-    NcTouchpointResourceNmosChannelMapping} from './Core';
+    NcTouchpointResourceNmosChannelMapping,
+    RestoreArguments} from './Core';
 import { ExampleDataType, ExampleControl, GainControl, NcIdentBeacon, NcReceiverMonitor, NcReceiverMonitorProtected, NcReceiverStatus, NcWorker } from './Features';
 
 export abstract class NcManager extends NcObject

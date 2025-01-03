@@ -1,6 +1,5 @@
 import { jsonIgnoreReplacer, jsonIgnore } from 'json-ignore';
 import { CommandResponseError, CommandResponseNoValue, CommandResponseWithValue } from '../NCProtocol/Commands';
-import { WebSocketConnection } from '../Server';
 import { INotificationContext } from '../SessionManager';
 import {
     BaseType,
@@ -14,14 +13,20 @@ import {
     NcMethodStatus,
     NcObject,
     NcObjectPropertiesHolder,
+    NcObjectPropertiesSetValidation,
     NcParameterConstraintsNumber,
     NcParameterConstraintsString,
     NcParameterDescriptor,
     NcPropertyChangeType,
     NcPropertyConstraints,
     NcPropertyDescriptor,
+    NcPropertyId,
+    NcPropertyRestoreNotice,
+    NcPropertyRestoreNoticeType,
     NcPropertyValueHolder,
-    NcTouchpoint } from './Core';
+    NcRestoreValidationStatus,
+    NcTouchpoint, 
+    RestoreArguments} from './Core';
 
 export abstract class NcWorker extends NcObject
 {
