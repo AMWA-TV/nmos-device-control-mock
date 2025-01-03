@@ -102,18 +102,6 @@ try
         "The class manager offers access to control class and data type descriptors",
         sessionManager);
 
-    const exampleControl = new ExampleControl(
-        111,
-        true,
-        rootBlock,
-        'ExampleControl',
-        'Example control worker',
-        [],
-        null,
-        true,
-        "Example control worker",
-        sessionManager);
-
     const stereoGainBlock = new NcBlock(
         31,
         true,
@@ -180,7 +168,37 @@ try
 
     const identBeacon = new NcIdentBeacon(51, true, rootBlock, "IdentBeacon", "Identification beacon", [], null, true, false, "Identification beacon", sessionManager);
 
-    rootBlock.UpdateMembers([ deviceManager, classManager, receiversBlock, stereoGainBlock, exampleControl, identBeacon ]);
+    const exampleControlsBlock = new NcBlock(
+        100,
+        true,
+        rootBlock,
+        'example-controls',
+        'Example controls',
+        null,
+        null,
+        true,
+        [],
+        "Example controls block",
+        sessionManager,
+        2,
+        true);
+
+    const exampleControl = new ExampleControl(
+        101,
+        true,
+        exampleControlsBlock,
+        'example-control-01',
+        'Example control worker 01',
+        [],
+        null,
+        true,
+        "Example control worker",
+        sessionManager,
+        true);
+
+        exampleControlsBlock.UpdateMembers([ exampleControl ]);
+
+    rootBlock.UpdateMembers([ deviceManager, classManager, receiversBlock, stereoGainBlock, exampleControlsBlock, identBeacon ]);
 
     async function doAsync () {
         await registrationClient.RegisterOrUpdateResource('node', myNode);
