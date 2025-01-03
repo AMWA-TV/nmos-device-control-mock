@@ -1989,3 +1989,169 @@ export class NcMethodResultBulkValuesHolder extends NcMethodResult
         return currentClassDescriptor;
     }
 }
+
+export class ConfigApiValue
+{
+    public value: any;
+
+    constructor(
+        value: any)
+    {
+        this.value = value;
+    }
+}
+
+export class ConfigApiArguments
+{
+    public arguments: { [key: string]: any } | null;
+
+    constructor(
+        configArguments: { [key: string]: any } | null)
+    {
+        this.arguments = configArguments;
+    }
+}
+
+export class RestoreBody
+{
+    public arguments: RestoreArguments;
+
+    constructor(
+        restoreArguments: RestoreArguments)
+    {
+        this.arguments = restoreArguments;
+    }
+}
+
+export enum NcRestoreMode
+{
+    Modify = 0,
+    Rebuild = 1
+}
+
+export class RestoreArguments
+{
+    public dataSet: NcBulkValuesHolder;
+    public recurse: boolean;
+    public restoreMode: NcRestoreMode;
+
+    constructor(
+        dataSet: NcBulkValuesHolder,
+        recurse: boolean,
+        restoreMode: NcRestoreMode)
+    {
+        this.dataSet = dataSet;
+        this.recurse = recurse;
+        this.restoreMode = restoreMode;
+    }
+}
+
+export enum NcRestoreValidationStatus
+{
+    Ok = 200,
+    Failed = 400,
+    NotFound = 404,
+    DeviceError = 500
+}
+
+export enum NcPropertyRestoreNoticeType
+{
+    Warning = 300,
+    Error = 400
+}
+
+export class NcPropertyRestoreNotice extends BaseType
+{
+    public id: NcPropertyId;
+    public name: string;
+    public noticeType: NcPropertyRestoreNoticeType;
+    public noticeMessage: string;
+
+    public constructor(
+        id: NcPropertyId,
+        name: string,
+        noticeType: NcPropertyRestoreNoticeType,
+        noticeMessage: string)
+    {
+        super();
+
+        this.id = id;
+        this.name = name;
+        this.noticeType = noticeType;
+        this.noticeMessage = noticeMessage;
+    }
+
+    public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor
+    {
+        return new NcDatatypeDescriptorStruct("NcPropertyRestoreNotice", [
+            new NcFieldDescriptor("id", "NcPropertyId", false, false, null, "Property id"),
+            new NcFieldDescriptor("name", "NcName", false, false, null, "Property name"),
+            new NcFieldDescriptor("noticeType", "NcPropertyRestoreNoticeType", false, false, null, "Property restore notice type"),
+            new NcFieldDescriptor("noticeMessage", "NcString", false, false, null, "Property restore notice message")
+        ], null, null, "Property restore notice descriptor");
+    }
+}
+
+export class NcObjectPropertiesSetValidation extends BaseType
+{
+    public path: string[];
+    public status: NcRestoreValidationStatus;
+    public notices: NcPropertyRestoreNotice[];
+    public statusMessage: string | null;
+
+    public constructor(
+        path: string[],
+        status: NcRestoreValidationStatus,
+        notices: NcPropertyRestoreNotice[],
+        statusMessage: string | null)
+    {
+        super();
+
+        this.path = path;
+        this.status = status;
+        this.notices = notices;
+        this.statusMessage = statusMessage;
+    }
+
+    public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor
+    {
+        return new NcDatatypeDescriptorStruct("NcBulkValuesHolder", [
+            new NcFieldDescriptor("path", "NcRolePath", false, false, null, "Object role path"),
+            new NcFieldDescriptor("status", "NcRestoreValidationStatus", false, false, null, "Validation status"),
+            new NcFieldDescriptor("notices", "NcPropertyRestoreNotice", false, true, null, "Validation property notices"),
+            new NcFieldDescriptor("statusMessage", "NcString", true, false, null, "Validation status message"),
+        ], null, null, "Object properties bulk set validation");
+    }
+}
+
+export class NcMethodResultObjectPropertiesSetValidation extends NcMethodResult
+{
+    public value: NcObjectPropertiesSetValidation[];
+
+    public constructor(
+        status: NcMethodStatus,
+        value: NcObjectPropertiesSetValidation[])
+    {
+        super(status);
+
+        this.value = value;
+    }
+
+    public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor
+    {
+        let currentClassDescriptor = new NcDatatypeDescriptorStruct("NcMethodResultObjectPropertiesSetValidation", [
+            new NcFieldDescriptor("value", "NcObjectPropertiesSetValidation", false, true, null, "Object properties set path validations")
+        ], "NcMethodResult", null, "Object properties bulk set validation result")
+
+        if(includeInherited)
+        {
+            let baseDescriptor = super.GetTypeDescriptor(includeInherited);
+
+            let baseDescriptorStruct = baseDescriptor as NcDatatypeDescriptorStruct;
+            if(baseDescriptorStruct)
+                currentClassDescriptor.fields = currentClassDescriptor.fields.concat(baseDescriptorStruct.fields);
+        }
+
+        return currentClassDescriptor;
+    }
+}
