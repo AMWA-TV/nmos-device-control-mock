@@ -235,6 +235,36 @@ export class GainControl extends NcWorker
 
         return properties;
     }
+
+    public override Restore(restoreArguments: RestoreArguments, applyChanges: Boolean) : NcObjectPropertiesSetValidation[]
+    {
+        let validationEntries = new Array<NcObjectPropertiesSetValidation>();
+
+        let myRestoreData = restoreArguments.dataSet.values.find(f => f.path.join('.') == this.GetRolePath().join('.'))
+        if(myRestoreData)
+        {
+            let myNotices = new Array<NcPropertyRestoreNotice>();
+
+            myRestoreData.values.forEach(propertyData => {
+                let propertyId = NcElementId.ToPropertyString(propertyData.propertyId);
+                if(propertyId != '1p6' && propertyId != '3p1')
+                    myNotices.push(new NcPropertyRestoreNotice(
+                        propertyData.propertyId,
+                        propertyData.propertyName,
+                        NcPropertyRestoreNoticeType.Warning,
+                        "Property cannot be changed and will be left untouched"));
+                else if(applyChanges)
+                {
+                    //Perform further validation
+                    this.Set(this.oid, propertyData.propertyId, propertyData.value, 0);
+                }
+            });
+
+            validationEntries.push(new NcObjectPropertiesSetValidation(this.GetRolePath(), NcRestoreValidationStatus.Ok, myNotices, myNotices.length > 0 ? 'Some properties have notices' : null));
+        }
+
+        return validationEntries;
+    }
 }
 
 export class NcIdentBeacon extends NcWorker
@@ -339,6 +369,36 @@ export class NcIdentBeacon extends NcWorker
         properties[0].values = properties[0].values.concat(super.GetAllProperties(recurse)[0].values);
 
         return properties;
+    }
+
+    public override Restore(restoreArguments: RestoreArguments, applyChanges: Boolean) : NcObjectPropertiesSetValidation[]
+    {
+        let validationEntries = new Array<NcObjectPropertiesSetValidation>();
+
+        let myRestoreData = restoreArguments.dataSet.values.find(f => f.path.join('.') == this.GetRolePath().join('.'))
+        if(myRestoreData)
+        {
+            let myNotices = new Array<NcPropertyRestoreNotice>();
+
+            myRestoreData.values.forEach(propertyData => {
+                let propertyId = NcElementId.ToPropertyString(propertyData.propertyId);
+                if(propertyId != '1p6' && propertyId != '3p1')
+                    myNotices.push(new NcPropertyRestoreNotice(
+                        propertyData.propertyId,
+                        propertyData.propertyName,
+                        NcPropertyRestoreNoticeType.Warning,
+                        "Property cannot be changed and will be left untouched"));
+                else if(applyChanges)
+                {
+                    //Perform further validation
+                    this.Set(this.oid, propertyData.propertyId, propertyData.value, 0);
+                }
+            });
+
+            validationEntries.push(new NcObjectPropertiesSetValidation(this.GetRolePath(), NcRestoreValidationStatus.Ok, myNotices, myNotices.length > 0 ? 'Some properties have notices' : null));
+        }
+
+        return validationEntries;
     }
 }
 
@@ -538,6 +598,35 @@ export class NcReceiverMonitor extends NcWorker
         properties[0].values = properties[0].values.concat(super.GetAllProperties(recurse)[0].values);
 
         return properties;
+    }
+
+    public override Restore(restoreArguments: RestoreArguments, applyChanges: Boolean) : NcObjectPropertiesSetValidation[]
+    {
+        let validationEntries = new Array<NcObjectPropertiesSetValidation>();
+
+        let myRestoreData = restoreArguments.dataSet.values.find(f => f.path.join('.') == this.GetRolePath().join('.'))
+        if(myRestoreData)
+        {
+            let myNotices = new Array<NcPropertyRestoreNotice>();
+
+            myRestoreData.values.forEach(propertyData => {
+                if(NcElementId.ToPropertyString(propertyData.propertyId) != '1p6')
+                    myNotices.push(new NcPropertyRestoreNotice(
+                        propertyData.propertyId,
+                        propertyData.propertyName,
+                        NcPropertyRestoreNoticeType.Warning,
+                        "Property cannot be changed and will be left untouched"));
+                else if(applyChanges)
+                {
+                    //Perform further validation
+                    this.Set(this.oid, propertyData.propertyId, propertyData.value, 0);
+                }
+            });
+
+            validationEntries.push(new NcObjectPropertiesSetValidation(this.GetRolePath(), NcRestoreValidationStatus.Ok, myNotices, myNotices.length > 0 ? 'Some properties have notices' : null));
+        }
+
+        return validationEntries;
     }
 }
 
@@ -1490,5 +1579,36 @@ export class ExampleControl extends NcWorker
         properties[0].values = properties[0].values.concat(super.GetAllProperties(recurse)[0].values);
 
         return properties;
+    }
+
+    public override Restore(restoreArguments: RestoreArguments, applyChanges: Boolean) : NcObjectPropertiesSetValidation[]
+    {
+        let validationEntries = new Array<NcObjectPropertiesSetValidation>();
+
+        let myRestoreData = restoreArguments.dataSet.values.find(f => f.path.join('.') == this.GetRolePath().join('.'))
+        if(myRestoreData)
+        {
+            let myNotices = new Array<NcPropertyRestoreNotice>();
+
+            myRestoreData.values.forEach(propertyData => {
+                let propertyId = NcElementId.ToPropertyString(propertyData.propertyId);
+                if(propertyId != '1p6' && propertyId != '3p1' && propertyId != '3p2' && propertyId != '3p3' && propertyId != '3p4' && propertyId != '3p5' &&
+                    propertyId != '3p9' && propertyId != '3p10' && propertyId != '3p11' && propertyId != '3p12' && propertyId != '3p13')
+                    myNotices.push(new NcPropertyRestoreNotice(
+                        propertyData.propertyId,
+                        propertyData.propertyName,
+                        NcPropertyRestoreNoticeType.Warning,
+                        "Property cannot be changed and will be left untouched"));
+                else if(applyChanges)
+                {
+                    //Perform further validation
+                    this.Set(this.oid, propertyData.propertyId, propertyData.value, 0);
+                }
+            });
+
+            validationEntries.push(new NcObjectPropertiesSetValidation(this.GetRolePath(), NcRestoreValidationStatus.Ok, myNotices, myNotices.length > 0 ? 'Some properties have notices' : null));
+        }
+
+        return validationEntries;
     }
 }

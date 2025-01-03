@@ -403,6 +403,8 @@ export abstract class NcObject
     {
         return this.GetRolePath().join('.') + "/";
     }
+
+    public abstract Restore(restoreArguments: RestoreArguments, applyChanges: Boolean) : NcObjectPropertiesSetValidation[]
 }
 
 export class NcElementId extends BaseType

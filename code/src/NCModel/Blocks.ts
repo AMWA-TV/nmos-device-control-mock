@@ -609,6 +609,42 @@ export class NcBlock extends NcObject
 
         return urls;
     }
+
+    public override Restore(restoreArguments: RestoreArguments, applyChanges: Boolean) : NcObjectPropertiesSetValidation[]
+    {
+        let validationEntries = new Array<NcObjectPropertiesSetValidation>();
+
+        let myRestoreData = restoreArguments.dataSet.values.find(f => f.path.join('.') == this.GetRolePath().join('.'))
+        if(myRestoreData)
+        {
+            let myNotices = new Array<NcPropertyRestoreNotice>();
+
+            myRestoreData.values.forEach(propertyData => {
+                if(NcElementId.ToPropertyString(propertyData.propertyId) != '1p6')
+                    myNotices.push(new NcPropertyRestoreNotice(
+                        propertyData.propertyId,
+                        propertyData.propertyName,
+                        NcPropertyRestoreNoticeType.Warning,
+                        "Property cannot be changed and will be left untouched"));
+                else if(applyChanges)
+                {
+                    //Perform further validation
+                    this.Set(this.oid, propertyData.propertyId, propertyData.value, 0);
+                }
+            });
+
+            validationEntries.push(new NcObjectPropertiesSetValidation(this.GetRolePath(), NcRestoreValidationStatus.Ok, myNotices, myNotices.length > 0 ? 'Some properties have notices' : null));
+        }
+
+        if(restoreArguments.recurse)
+        {
+            this.memberObjects.forEach(member => {
+                validationEntries = validationEntries.concat(member.Restore(restoreArguments, applyChanges));
+            });
+        }
+
+        return validationEntries;
+    }
 }
 
 export class RootBlock extends NcBlock
