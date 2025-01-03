@@ -520,7 +520,7 @@ export class NcBlock extends NcObject
             new NcObjectPropertiesHolder(this.GetRolePath(), [
                 new NcPropertyValueHolder(new NcPropertyId(2, 1), "enabled", this.enabled),
                 new NcPropertyValueHolder(new NcPropertyId(2, 2), "members", this.members)
-            ], false)
+            ], this.isRebuildable)
         ];
 
         holders[0].values = holders[0].values.concat(super.GetAllProperties(recurse)[0].values);

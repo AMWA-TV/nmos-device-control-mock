@@ -403,7 +403,7 @@ export class NcDeviceManager extends NcManager
                 new NcPropertyValueHolder(new NcPropertyId(3, 8), "operationalState", this.operationalState),
                 new NcPropertyValueHolder(new NcPropertyId(3, 9), "resetCause", this.resetCause),
                 new NcPropertyValueHolder(new NcPropertyId(3, 10), "message", this.message),
-            ], false)
+            ], this.isRebuildable)
         ];
 
         properties[0].values = properties[0].values.concat(super.GetAllProperties(recurse)[0].values);
@@ -990,7 +990,7 @@ export class NcClassManager extends NcManager
             new NcObjectPropertiesHolder(this.GetRolePath(), [
                 new NcPropertyValueHolder(new NcPropertyId(3, 1), "controlClasses", this.controlClasses),
                 new NcPropertyValueHolder(new NcPropertyId(3, 2), "dataTypes", this.dataTypes)
-            ], false)
+            ], this.isRebuildable)
         ];
 
         properties[0].values = properties[0].values.concat(super.GetAllProperties(recurse)[0].values);

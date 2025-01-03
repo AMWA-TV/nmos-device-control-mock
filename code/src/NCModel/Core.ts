@@ -48,6 +48,8 @@ export abstract class NcObject
 
     public ownerObject: NcObject | null;
 
+    protected isRebuildable: boolean;
+
     public constructor(
         oid: number,
         constantOid: boolean,
@@ -57,7 +59,8 @@ export abstract class NcObject
         touchpoints: NcTouchpoint[] | null,
         runtimePropertyConstraints: NcPropertyConstraints[] | null,
         description: string,
-        notificationContext: INotificationContext)
+        notificationContext: INotificationContext,
+        isRebuildable: boolean = false)
     {
         this.oid = oid;
         this.constantOid = constantOid;
@@ -69,6 +72,8 @@ export abstract class NcObject
         this.runtimePropertyConstraints = runtimePropertyConstraints;
         this.description = description;
         this.notificationContext = notificationContext;
+
+        this.isRebuildable = isRebuildable;
     }
 
     //'1m1'
@@ -383,7 +388,7 @@ export abstract class NcObject
                 new NcPropertyValueHolder(new NcPropertyId(1, 6), "userLabel", this.userLabel),
                 new NcPropertyValueHolder(new NcPropertyId(1, 7), "touchpoints", this.touchpoints),
                 new NcPropertyValueHolder(new NcPropertyId(1, 8), "runtimePropertyConstraints", this.runtimePropertyConstraints),
-            ], false)
+            ], this.isRebuildable)
         ];
     }
 

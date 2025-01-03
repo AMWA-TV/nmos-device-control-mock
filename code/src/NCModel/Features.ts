@@ -48,9 +48,10 @@ export abstract class NcWorker extends NcObject
         runtimePropertyConstraints: NcPropertyConstraints[] | null,
         enabled: boolean,
         description: string,
-        notificationContext: INotificationContext)
+        notificationContext: INotificationContext,
+        isRebuildable: boolean = false)
     {
-        super(oid, constantOid, ownerObject, role, userLabel, touchpoints, runtimePropertyConstraints, description, notificationContext);
+        super(oid, constantOid, ownerObject, role, userLabel, touchpoints, runtimePropertyConstraints, description, notificationContext, isRebuildable);
 
         this.enabled = enabled;
     }
@@ -123,7 +124,7 @@ export abstract class NcWorker extends NcObject
         let properties = [
             new NcObjectPropertiesHolder(this.GetRolePath(), [
                 new NcPropertyValueHolder(new NcPropertyId(2, 1), "enabled", this.enabled)
-            ], false)
+            ], this.isRebuildable)
         ];
 
         properties[0].values = properties[0].values.concat(super.GetAllProperties(recurse)[0].values);
@@ -228,7 +229,7 @@ export class GainControl extends NcWorker
         let properties = [
             new NcObjectPropertiesHolder(this.GetRolePath(), [
                 new NcPropertyValueHolder(new NcPropertyId(3, 1), "gainValue", this.gainValue)
-            ], false)
+            ], this.isRebuildable)
         ];
 
         properties[0].values = properties[0].values.concat(super.GetAllProperties(recurse)[0].values);
@@ -363,7 +364,7 @@ export class NcIdentBeacon extends NcWorker
         let properties = [
             new NcObjectPropertiesHolder(this.GetRolePath(), [
                 new NcPropertyValueHolder(new NcPropertyId(3, 1), "active", this.active)
-            ], false)
+            ], this.isRebuildable)
         ];
 
         properties[0].values = properties[0].values.concat(super.GetAllProperties(recurse)[0].values);
@@ -592,7 +593,7 @@ export class NcReceiverMonitor extends NcWorker
                 new NcPropertyValueHolder(new NcPropertyId(3, 2), "connectionStatusMessage", this.connectionStatusMessage),
                 new NcPropertyValueHolder(new NcPropertyId(3, 3), "payloadStatus", this.payloadStatus),
                 new NcPropertyValueHolder(new NcPropertyId(3, 4), "payloadStatusMessage", this.payloadStatusMessage),
-            ], false)
+            ], this.isRebuildable)
         ];
 
         properties[0].values = properties[0].values.concat(super.GetAllProperties(recurse)[0].values);
@@ -753,7 +754,7 @@ export class NcReceiverMonitorProtected extends NcReceiverMonitor
         let properties = [
             new NcObjectPropertiesHolder(this.GetRolePath(), [
                 new NcPropertyValueHolder(new NcPropertyId(4, 1), "signalProtectionStatus", this.signalProtectionStatus)
-            ], false)
+            ], this.isRebuildable)
         ];
 
         properties[0].values = properties[0].values.concat(super.GetAllProperties(recurse)[0].values);
@@ -863,9 +864,10 @@ export class ExampleControl extends NcWorker
         runtimePropertyConstraints: NcPropertyConstraints[] | null,
         enabled: boolean,
         description: string,
-        notificationContext: INotificationContext)
+        notificationContext: INotificationContext,
+        isRebuildable: boolean = false)
     {
-        super(oid, constantOid, ownerObject, role, userLabel, touchpoints, runtimePropertyConstraints, enabled, description, notificationContext);
+        super(oid, constantOid, ownerObject, role, userLabel, touchpoints, runtimePropertyConstraints, enabled, description, notificationContext, isRebuildable);
 
         this.enumProperty = ExampleEnum.Undefined;
         this.stringProperty = "test";
@@ -1573,7 +1575,7 @@ export class ExampleControl extends NcWorker
                 new NcPropertyValueHolder(new NcPropertyId(3, 11), "enumSequence", this.enumSequence),
                 new NcPropertyValueHolder(new NcPropertyId(3, 12), "numberSequence", this.numberSequence),
                 new NcPropertyValueHolder(new NcPropertyId(3, 13), "objectSequence", this.objectSequence),
-            ], false)
+            ], this.isRebuildable)
         ];
 
         properties[0].values = properties[0].values.concat(super.GetAllProperties(recurse)[0].values);
