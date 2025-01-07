@@ -652,11 +652,20 @@ export class NcBlock extends NcObject
                 else
                 {
                     if(propertyId == '2p2')
-                        myNotices.push(new NcPropertyRestoreNotice(
-                            propertyData.propertyId,
-                            propertyData.propertyName,
-                            NcPropertyRestoreNoticeType.Warning,
-                            "Property cannot be changed and will be left untouched unless restoreMode is changed to Rebuild"));
+                    {
+                        if(this.isRebuildable)
+                            myNotices.push(new NcPropertyRestoreNotice(
+                                propertyData.propertyId,
+                                propertyData.propertyName,
+                                NcPropertyRestoreNoticeType.Warning,
+                                "Property cannot be changed and will be left untouched unless restoreMode is changed to Rebuild"));
+                        else
+                            myNotices.push(new NcPropertyRestoreNotice(
+                                propertyData.propertyId,
+                                propertyData.propertyName,
+                                NcPropertyRestoreNoticeType.Warning,
+                                "Property cannot be changed and will be left untouched"));
+                    }
                     else if(propertyId != '1p6')
                         myNotices.push(new NcPropertyRestoreNotice(
                             propertyData.propertyId,
