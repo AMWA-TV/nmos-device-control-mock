@@ -6,6 +6,7 @@ import { INotificationContext } from '../SessionManager';
 import {
     myIdDecorator,
     NcBlockMemberDescriptor,
+    NcBulkValuesHolder,
     NcClassDescriptor,
     NcElementId,
     NcMethodDescriptor,
@@ -14,6 +15,7 @@ import {
     NcObjectPropertiesHolder,
     NcObjectPropertiesSetValidation,
     NcParameterDescriptor,
+    NcPropertyChangeType,
     NcPropertyConstraints,
     NcPropertyDescriptor,
     NcPropertyId,
@@ -24,10 +26,13 @@ import {
     NcRestoreValidationStatus,
     NcTouchpoint, 
     RestoreArguments } from './Core';
+import { ExampleControl } from './Features';
 
 export class NcBlock extends NcObject
 {
     public static staticClassID: number[] = [ 1, 1 ];
+
+    public static readonly RootOid: number = 1;
 
     @myIdDecorator('1p1')
     public override classID: number[] = NcBlock.staticClassID;
@@ -40,7 +45,9 @@ export class NcBlock extends NcObject
 
     public memberObjects: NcObject[];
 
-    private maxMembers: number | null;
+    protected maxMembers: number | null;
+
+    protected rootContext: IRootContext | null;
 
     public constructor(
         oid: number,
@@ -54,12 +61,15 @@ export class NcBlock extends NcObject
         memberObjects: NcObject[],
         description: string,
         notificationContext: INotificationContext,
+        rootContext: IRootContext | null,
         maxMembers: number | null = null,
         isRebuildable: boolean = false)
     {
         super(oid, constantOid, ownerObject, role, userLabel, touchpoints, runtimePropertyConstraints, description, notificationContext, isRebuildable);
 
         this.maxMembers = maxMembers;
+
+        this.rootContext = rootContext;
 
         this.enabled = enabled;
         this.memberObjects = memberObjects;
@@ -403,10 +413,13 @@ export class NcBlock extends NcObject
         return currentClassDescriptor;
     }
 
-    public UpdateMembers(memberObjects: NcObject[])
+    public UpdateMembers(memberObjects: NcObject[], notify: boolean = false)
     {
         this.memberObjects = memberObjects;
         this.members = this.memberObjects.map(x => x.GenerateMemberDescriptor());
+
+        if(notify)
+            this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(2, 2), NcPropertyChangeType.ValueChanged, this.members, null);
     }
 
     public GenerateMemberDescriptors(recurse: boolean) : NcBlockMemberDescriptor[]
@@ -617,6 +630,16 @@ export class NcBlock extends NcObject
         return urls;
     }
 
+    public GetRolePathForMember(role: string): string[]
+    {
+        return this.GetRolePath().concat(role);
+    }
+
+    public ReconstructMembers(members: NcBlockMemberDescriptor[], dataSet: NcBulkValuesHolder)
+    {
+        //Left intentionally empty as "virtual" so that rebuildable blocks MUST override this with the desired behaviour
+    }
+
     public override Restore(restoreArguments: RestoreArguments, applyChanges: Boolean) : NcObjectPropertiesSetValidation[]
     {
         let validationEntries = new Array<NcObjectPropertiesSetValidation>();
@@ -644,6 +667,11 @@ export class NcBlock extends NcObject
                         if(propertyId == '2p2')
                         {
                             //Structural changes to the members
+                            let membersData = propertyData.value as NcBlockMemberDescriptor[];
+                            if(membersData)
+                                this.ReconstructMembers(membersData, restoreArguments.dataSet);
+                            else
+                                console.log(`Cannot reconstruct members because the members data is null`);
                         }
                         else
                             this.Set(this.oid, propertyData.propertyId, propertyData.value, 0);
@@ -694,10 +722,16 @@ export class NcBlock extends NcObject
     }
 }
 
-export class RootBlock extends NcBlock
+export interface IRootContext
 {
+    AllocateOid(path: string) : number
+}
+
+export class RootBlock extends NcBlock implements IRootContext
+{
+    private oidAllocations: { [id: number] : string; } = {};
+
     public constructor(
-        oid: number,
         constantOid: boolean,
         ownerObject: NcObject | null,
         role: string,
@@ -711,7 +745,7 @@ export class RootBlock extends NcBlock
         maxMembers: number | null = null)
     {
         super(
-            oid,
+            NcBlock.RootOid,
             constantOid,
             ownerObject,
             role,
@@ -722,7 +756,18 @@ export class RootBlock extends NcBlock
             memberObjects,
             description,
             notificationContext,
+            null,
             maxMembers);
+
+        this.oidAllocations[NcBlock.RootOid] = this.GetRolePathUrl();
+    }
+
+    public AllocateOid(path: string) : number
+    {
+        //Generate new oid
+        let newOid = Object.keys(this.oidAllocations).length + 1;
+        this.oidAllocations[newOid] = path;
+        return newOid;
     }
 
     public ProcessMessage(msg: string, socket: WebSocketConnection)
@@ -870,5 +915,107 @@ export class RootBlock extends NcBlock
         if(propertyId.level == 1 && propertyId.index == 2)
             return true;
         return false;
+    }
+}
+
+export class ExampleControlsBlock extends NcBlock
+{
+    public constructor(
+        oid: number,
+        constantOid: boolean,
+        ownerObject: NcObject | null,
+        role: string,
+        userLabel: string,
+        touchpoints: NcTouchpoint[] | null,
+        runtimePropertyConstraints: NcPropertyConstraints[] | null,
+        enabled: boolean,
+        memberObjects: NcObject[],
+        description: string,
+        notificationContext: INotificationContext,
+        rootContext: IRootContext | null,
+        maxMembers: number | null = null,
+        isRebuildable: boolean)
+    {
+        super(
+            oid,
+            constantOid,
+            ownerObject,
+            role,
+            userLabel,
+            touchpoints,
+            runtimePropertyConstraints,
+            enabled,
+            memberObjects,
+            description,
+            notificationContext,
+            rootContext,
+            maxMembers,
+            isRebuildable);
+    }
+
+    public override ReconstructMembers(members: NcBlockMemberDescriptor[], dataSet: NcBulkValuesHolder)
+    {
+        //TODO: Need to feedback statuses and notices
+
+        console.log(`Reconstructing members, count: ${members.length}`);
+
+        let controlMembers: ExampleControl[] = [];
+
+        members.forEach(member => {
+            if(member.classId.join() == ExampleControl.staticClassID.join())
+            {
+                if(this.maxMembers != null)
+                {
+                    if(controlMembers.length < this.maxMembers)
+                    {
+                        if(this.rootContext != null)
+                        {
+                            const exampleControl = new ExampleControl(
+                                this.rootContext.AllocateOid(this.GetRolePath().join('.') + '.' + member.role),
+                                true,
+                                this,
+                                member.role,
+                                member.userLabel ?? member.role,
+                                [],
+                                null,
+                                true,
+                                "Example control worker",
+                                this.notificationContext,
+                                true);
+
+                            controlMembers.push(exampleControl);
+                        }
+                    }
+                    else
+                        console.log(`Member can't be constructed because it goes over the maximum limit of ${this.maxMembers}`);
+                }
+                else
+                {
+                    if(this.rootContext != null)
+                    {
+                        const exampleControl = new ExampleControl(
+                            this.rootContext.AllocateOid(this.GetRolePath().join('.') + '.' + member.role),
+                            true,
+                            this,
+                            member.role,
+                            member.userLabel ?? member.role,
+                            [],
+                            null,
+                            true,
+                            "Example control worker",
+                            this.notificationContext,
+                            true);
+
+                        //TODO: Need to pass the dataSet chunk so we can construct an ExampleControl with the desired state
+
+                        controlMembers.push(exampleControl);
+                    }
+                }
+            }
+            else
+            console.log(`Member can't be constructed because it has an invalid classId of ${member.classId.join('.')}`);
+        });
+        
+        this.UpdateMembers(controlMembers, true);
     }
 }

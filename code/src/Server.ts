@@ -12,7 +12,7 @@ import { RegistrationClient } from './RegistrationClient';
 import { NmosReceiverVideo } from './NmosReceiverVideo';
 import { NmosReceiverActiveRtp } from './NmosReceiverActiveRtp';
 import { SessionManager } from './SessionManager';
-import { NcBlock, RootBlock } from './NCModel/Blocks';
+import { ExampleControlsBlock, NcBlock, RootBlock } from './NCModel/Blocks';
 import { NcClassManager, NcDeviceManager } from './NCModel/Managers';
 import { ConfigApiArguments, ConfigApiValue, NcBulkValuesHolder, NcMethodResultBulkValuesHolder, NcMethodResultObjectPropertiesSetValidation, NcMethodStatus, NcTouchpointNmos, NcTouchpointResourceNmos, RestoreBody } from './NCModel/Core';
 import { ExampleControl, GainControl, NcIdentBeacon, NcReceiverMonitor } from './NCModel/Features';
@@ -70,7 +70,6 @@ try
     const sessionManager = new SessionManager(config.notify_without_subscriptions);
 
     const rootBlock = new RootBlock(
-        1,
         true,
         null,
         'root',
@@ -83,7 +82,7 @@ try
         sessionManager);
 
     const deviceManager = new NcDeviceManager(
-        2,
+        rootBlock.AllocateOid(rootBlock.GetRolePathForMember(NcDeviceManager.staticRole).join('.')),
         true,
         rootBlock,
         'Device manager',
@@ -93,7 +92,7 @@ try
         sessionManager);
 
     const classManager = new NcClassManager(
-        3,
+        rootBlock.AllocateOid(rootBlock.GetRolePathForMember(NcClassManager.staticRole).join('.')),
         true,
         rootBlock,
         'Class manager',
@@ -103,7 +102,7 @@ try
         sessionManager);
 
     const stereoGainBlock = new NcBlock(
-        31,
+        rootBlock.AllocateOid(rootBlock.GetRolePathForMember('stereo-gain').join('.')),
         true,
         rootBlock,
         'stereo-gain',
@@ -113,10 +112,11 @@ try
         true,
         [],
         "Stereo gain block",
-        sessionManager);
+        sessionManager,
+        rootBlock);
 
     const channelGainBlock = new NcBlock(
-        21,
+        rootBlock.AllocateOid(stereoGainBlock.GetRolePathForMember('channel-gain').join('.')),
         true,
         stereoGainBlock,
         'channel-gain',
@@ -126,19 +126,20 @@ try
         true,
         [],
         "Channel gain block",
-        sessionManager);
+        sessionManager,
+        rootBlock);
 
-    let leftGain = new GainControl(22, true, channelGainBlock, "left-gain", "Left gain", [], null, true, 0, "Left channel gain", sessionManager);
-    let rightGain = new GainControl(23, true, channelGainBlock, "right-gain", "Right gain", [], null, true, 0, "Right channel gain", sessionManager);
+    let leftGain = new GainControl(rootBlock.AllocateOid(channelGainBlock.GetRolePathForMember('left-gain').join('.')), true, channelGainBlock, 'left-gain', 'Left gain', [], null, true, 0, 'Left channel gain', sessionManager);
+    let rightGain = new GainControl(rootBlock.AllocateOid(channelGainBlock.GetRolePathForMember('right-gain').join('.')), true, channelGainBlock, 'right-gain', 'Right gain', [], null, true, 0, 'Right channel gain', sessionManager);
 
     channelGainBlock.UpdateMembers([ leftGain, rightGain ]);
 
-    let masterGain = new GainControl(24, true, stereoGainBlock, "master-gain", "Master gain", [], null, true, 0, "Master gain", sessionManager);
+    let masterGain = new GainControl(rootBlock.AllocateOid(stereoGainBlock.GetRolePathForMember('master-gain').join('.')), true, stereoGainBlock, 'master-gain', 'Master gain', [], null, true, 0, 'Master gain', sessionManager);
 
     stereoGainBlock.UpdateMembers([ channelGainBlock, masterGain ]);
 
     const receiversBlock = new NcBlock(
-        10,
+        rootBlock.AllocateOid(rootBlock.GetRolePathForMember('receivers').join('.')),
         true,
         rootBlock,
         'receivers',
@@ -148,10 +149,11 @@ try
         true,
         [],
         "Receivers block",
-        sessionManager);
+        sessionManager,
+        rootBlock);
     
     const receiverMonitor = new NcReceiverMonitor(
-        11,
+        rootBlock.AllocateOid(receiversBlock.GetRolePathForMember('monitor-01').join('.')),
         true,
         receiversBlock,
         'monitor-01',
@@ -166,10 +168,10 @@ try
 
     receiversBlock.UpdateMembers([ receiverMonitor ]);
 
-    const identBeacon = new NcIdentBeacon(51, true, rootBlock, "IdentBeacon", "Identification beacon", [], null, true, false, "Identification beacon", sessionManager);
+    const identBeacon = new NcIdentBeacon(rootBlock.AllocateOid(rootBlock.GetRolePathForMember('IdentBeacon').join('.')), true, rootBlock, 'IdentBeacon', 'Identification beacon', [], null, true, false, 'Identification beacon', sessionManager);
 
-    const exampleControlsBlock = new NcBlock(
-        100,
+    const exampleControlsBlock = new ExampleControlsBlock(
+        rootBlock.AllocateOid(rootBlock.GetRolePathForMember('example-controls').join('.')),
         true,
         rootBlock,
         'example-controls',
@@ -180,11 +182,12 @@ try
         [],
         "Example controls block",
         sessionManager,
+        rootBlock,
         2,
         true);
 
     const exampleControl = new ExampleControl(
-        101,
+        rootBlock.AllocateOid(exampleControlsBlock.GetRolePathForMember('example-control-01').join('.')),
         true,
         exampleControlsBlock,
         'example-control-01',
@@ -196,7 +199,7 @@ try
         sessionManager,
         true);
 
-        exampleControlsBlock.UpdateMembers([ exampleControl ]);
+    exampleControlsBlock.UpdateMembers([ exampleControl ]);
 
     rootBlock.UpdateMembers([ deviceManager, classManager, receiversBlock, stereoGainBlock, exampleControlsBlock, identBeacon ]);
 
