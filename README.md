@@ -1,11 +1,17 @@
-# \[Work In Progress\] AMWA NMOS Device Control Mock Application
+# AMWA NMOS Device Control Mock Application
 
 [![Lint Status](https://github.com/AMWA-TV/nmos-device-control-mock/workflows/Lint/badge.svg)](https://github.com/AMWA-TV/nmos-device-control-mock/actions?query=workflow%3ALint)
 [![Render Status](https://github.com/AMWA-TV/nmos-device-control-mock/workflows/Render/badge.svg)](https://github.com/AMWA-TV/nmos-device-control-mock/actions?query=workflow%3ARender)
 
 <!-- INTRO-START -->
 
-This is a mock NMOS device written in Typescript and running on the NodeJS stack. It has support for the NMOS Modeling suite (MS-05-02 and IS-12 in particular).
+This is a mock NMOS device written in Typescript and running on the NodeJS stack.
+
+It has support for the NMOS Control & Monitoring suite:
+
+* MS-05-02
+* IS-12
+* BCP-008-01
 
 It also has support for IS-04 and IS-05 with some limitations:
 
@@ -54,5 +60,6 @@ These are the configuration keys which can be specified in the configuration fil
 * [MS-05-01 NMOS Control Architecture](https://specs.amwa.tv/ms-05-01)
 * [MS-05-02 NMOS Control Framework](https://specs.amwa.tv/ms-05-02)
 * [BCP-002-02 NMOS Asset Distinguishing Information](https://specs.amwa.tv/bcp-002-02)
+* [BCP-008-01 NMOS Receiver Status](https://specs.amwa.tv/bcp-008-01/)
 
 <!-- INTRO-END -->
