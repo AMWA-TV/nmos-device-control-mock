@@ -635,9 +635,10 @@ export class NcBlock extends NcObject
         return this.GetRolePath().concat(role);
     }
 
-    public ReconstructMembers(members: NcBlockMemberDescriptor[], dataSet: NcBulkValuesHolder)
+    public ReconstructMembers(members: NcBlockMemberDescriptor[], dataSet: NcBulkValuesHolder) : [NcPropertyRestoreNotice | null, NcObjectPropertiesSetValidation[]]
     {
         //Left intentionally empty as "virtual" so that rebuildable blocks MUST override this with the desired behaviour
+        return [null, []];
     }
 
     public override Restore(restoreArguments: RestoreArguments, applyChanges: Boolean) : NcObjectPropertiesSetValidation[]
@@ -669,9 +670,24 @@ export class NcBlock extends NcObject
                             //Structural changes to the members
                             let membersData = propertyData.value as NcBlockMemberDescriptor[];
                             if(membersData)
-                                this.ReconstructMembers(membersData, restoreArguments.dataSet);
+                            {
+                                //TODO: Might need to include the list of members in the outcomes of ReconstructMembers so that we can skip them from further restore actions because they would have already been applied when creating the member objects
+
+                                let outcomes = this.ReconstructMembers(membersData, restoreArguments.dataSet);
+                                if(outcomes[0] != null)
+                                    myNotices.push(outcomes[0]);
+
+                                validationEntries = validationEntries.concat(outcomes[1]);
+                            }
                             else
+                            {
+                                myNotices.push(new NcPropertyRestoreNotice(
+                                    propertyData.propertyId,
+                                    propertyData.propertyName,
+                                    NcPropertyRestoreNoticeType.Warning,
+                                    `Cannot reconstruct members because the members data is null`));
                                 console.log(`Cannot reconstruct members because the members data is null`);
+                            }
                         }
                         else
                             this.Set(this.oid, propertyData.propertyId, propertyData.value, 0);
@@ -702,7 +718,7 @@ export class NcBlock extends NcObject
                             "Property cannot be changed and will be left untouched"));
                     else if(applyChanges)
                     {
-                        //Perform further validation
+                        //Perform further validations
                         this.Set(this.oid, propertyData.propertyId, propertyData.value, 0);
                     }
                 }
@@ -953,9 +969,11 @@ export class ExampleControlsBlock extends NcBlock
             isRebuildable);
     }
 
-    public override ReconstructMembers(members: NcBlockMemberDescriptor[], dataSet: NcBulkValuesHolder)
+    public override ReconstructMembers(members: NcBlockMemberDescriptor[], dataSet: NcBulkValuesHolder) : [NcPropertyRestoreNotice | null, NcObjectPropertiesSetValidation[]]
     {
-        //TODO: Need to feedback statuses and notices
+        let blockMembersNotice: NcPropertyRestoreNotice | null = null;
+
+        let validationEntries = new Array<NcObjectPropertiesSetValidation>();
 
         console.log(`Reconstructing members, count: ${members.length}`);
 
@@ -970,8 +988,18 @@ export class ExampleControlsBlock extends NcBlock
                     {
                         if(this.rootContext != null)
                         {
+                            let memberRolepath = this.GetRolePathForMember(member.role);
+    
+                            let setValidation: NcObjectPropertiesSetValidation;
+    
+                            let memberRestoreData = dataSet.values.find(f => f.path.join('.') == memberRolepath.join('.'))
+                            if(memberRestoreData)
+                                setValidation = this.ValidateMemberDatasetChunk(memberRestoreData);
+                            else
+                                setValidation = new NcObjectPropertiesSetValidation(memberRolepath, NcRestoreValidationStatus.Ok, [], "No dataset information passed but object was created successfully with defaults")
+    
                             const exampleControl = new ExampleControl(
-                                this.rootContext.AllocateOid(this.GetRolePath().join('.') + '.' + member.role),
+                                this.rootContext.AllocateOid(memberRolepath.join('.')),
                                 true,
                                 this,
                                 member.role,
@@ -981,20 +1009,36 @@ export class ExampleControlsBlock extends NcBlock
                                 true,
                                 "Example control worker",
                                 this.notificationContext,
-                                true);
-
+                                true,
+                                memberRestoreData);
+    
+                            validationEntries = validationEntries.concat(setValidation);
+    
                             controlMembers.push(exampleControl);
                         }
                     }
                     else
-                        console.log(`Member can't be constructed because it goes over the maximum limit of ${this.maxMembers}`);
+                    {
+                        blockMembersNotice = new NcPropertyRestoreNotice(new NcPropertyId(2, 2), "members", NcPropertyRestoreNoticeType.Warning, `Member [${member.role}] can't be constructed because it goes over the maximum block members limit of ${this.maxMembers}`);
+                        console.log(`Member [${member.role}] can't be constructed because it goes over the maximum block members limit of ${this.maxMembers}`);
+                    }
                 }
                 else
                 {
                     if(this.rootContext != null)
                     {
+                        let memberRolepath = this.GetRolePathForMember(member.role);
+
+                        let setValidation: NcObjectPropertiesSetValidation;
+
+                        let memberRestoreData = dataSet.values.find(f => f.path.join('.') == memberRolepath.join('.'))
+                        if(memberRestoreData)
+                            setValidation = this.ValidateMemberDatasetChunk(memberRestoreData);
+                        else
+                            setValidation = new NcObjectPropertiesSetValidation(memberRolepath, NcRestoreValidationStatus.Ok, [], "No dataset information passed but object was created successfully with defaults")
+
                         const exampleControl = new ExampleControl(
-                            this.rootContext.AllocateOid(this.GetRolePath().join('.') + '.' + member.role),
+                            this.rootContext.AllocateOid(memberRolepath.join('.')),
                             true,
                             this,
                             member.role,
@@ -1004,18 +1048,56 @@ export class ExampleControlsBlock extends NcBlock
                             true,
                             "Example control worker",
                             this.notificationContext,
-                            true);
+                            true,
+                            memberRestoreData);
 
-                        //TODO: Need to pass the dataSet chunk so we can construct an ExampleControl with the desired state
+                        validationEntries = validationEntries.concat(setValidation);
 
                         controlMembers.push(exampleControl);
                     }
                 }
             }
             else
-            console.log(`Member can't be constructed because it has an invalid classId of ${member.classId.join('.')}`);
+            {
+                blockMembersNotice = new NcPropertyRestoreNotice(new NcPropertyId(2, 2), "members", NcPropertyRestoreNoticeType.Warning, `Member [${member.role}] can't be constructed because it has an invalid classId of ${member.classId.join('.')}`);
+                console.log(`Member [${member.role}] can't be constructed because it has an invalid classId of ${member.classId.join('.')}`);
+            }
         });
         
         this.UpdateMembers(controlMembers, true);
+
+        return [blockMembersNotice, validationEntries];
+    }
+
+    public ValidateMemberDatasetChunk(holder: NcObjectPropertiesHolder) : NcObjectPropertiesSetValidation
+    {
+        let myNotices = new Array<NcPropertyRestoreNotice>();
+
+        holder.values.forEach(propertyData => 
+        {
+            let propertyId = NcElementId.ToPropertyString(propertyData.propertyId);
+            switch(propertyId)
+            {
+                case '1p6':
+                case '2p1':
+                case '3p1':
+                case '3p2':
+                case '3p3':
+                case '3p4':
+                case '3p5':
+                case '3p9':
+                case '3p10':
+                case '3p11':
+                case '3p12':
+                case '3p13':
+                    {
+                        //TODO: Perform further validations
+                    }
+                default:
+                    myNotices.push(new NcPropertyRestoreNotice(propertyData.propertyId, propertyData.propertyName, NcPropertyRestoreNoticeType.Warning, "Property can't be changed and will receive a default value"));
+            }
+        });
+
+        return new NcObjectPropertiesSetValidation(holder.path, NcRestoreValidationStatus.Ok, myNotices, null)
     }
 }

@@ -1151,7 +1151,8 @@ export class ExampleControl extends NcWorker
         enabled: boolean,
         description: string,
         notificationContext: INotificationContext,
-        isRebuildable: boolean = false)
+        isRebuildable: boolean = false,
+        dataSet: NcObjectPropertiesHolder | null = null)
     {
         super(oid, constantOid, ownerObject, role, userLabel, touchpoints, runtimePropertyConstraints, enabled, description, notificationContext, isRebuildable);
 
@@ -1168,6 +1169,45 @@ export class ExampleControl extends NcWorker
         this.enumSequence = [ ExampleEnum.Alpha, ExampleEnum.Gamma ];
         this.numberSequence = [ 0, 50, 88];
         this.objectSequence = [ new ExampleDataType(ExampleEnum.Alpha, "example", 50, false), new ExampleDataType(ExampleEnum.Gamma, "different", 75, true) ];
+
+        if(dataSet != null)
+        {
+            this.InitialiseFromDataset(dataSet);
+            console.log(`ExampleControl object [${this.role}] constructed from a dataSet`);
+        }
+        else
+            console.log(`ExampleControl object [${this.role}] constructed with defaults`);
+    }
+
+    private InitialiseFromDataset(dataSet: NcObjectPropertiesHolder)
+    {
+        dataSet.values.forEach(propertyData => 
+        {
+            let propertyId = NcElementId.ToPropertyString(propertyData.propertyId);
+            switch(propertyId)
+            {
+                case '3p1':
+                    this.enumProperty = propertyData.value;
+                case '3p2':
+                    this.stringProperty = propertyData.value;
+                case '3p3':
+                    this.numberProperty = propertyData.value;
+                case '3p4':
+                    this.booleanProperty = propertyData.value;
+                case '3p5':
+                    this.objectProperty = propertyData.value;
+                case '3p9':
+                    this.stringSequence = propertyData.value;
+                case '3p10':
+                    this.booleanSequence = propertyData.value;
+                case '3p11':
+                    this.enumSequence = propertyData.value;
+                case '3p12':
+                    this.numberSequence = propertyData.value;
+                case '3p13':
+                    this.objectSequence = propertyData.value;
+            }
+        });
     }
 
     //'1m1'
