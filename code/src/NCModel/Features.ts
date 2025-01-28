@@ -620,7 +620,7 @@ export class NcCounter extends BaseType
 
     public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor
     {
-        return new NcDatatypeDescriptorStruct("NcElementId", [
+        return new NcDatatypeDescriptorStruct("NcCounter", [
             new NcFieldDescriptor("name", "NcString", false, false, null, "Counter name"),
             new NcFieldDescriptor("value", "NcUint64", false, false, null, "Counter value"),
             new NcFieldDescriptor("description", "NcString", true, false, null, "Optional counter description")
