@@ -395,7 +395,7 @@ export class NcDeviceManager extends NcManager
     public override GetAllProperties(recurse: boolean) : NcObjectPropertiesHolder[]
     {
         let properties = [
-            new NcObjectPropertiesHolder(this.GetRolePath(), [
+            new NcObjectPropertiesHolder(this.GetRolePath(), [], [
                 new NcPropertyValueHolder(new NcPropertyId(3, 1), "ncVersion", "NcVersionCode", true, this.ncVersion),
                 new NcPropertyValueHolder(new NcPropertyId(3, 2), "manufacturer", "NcManufacturer", true, this.manufacturer),
                 new NcPropertyValueHolder(new NcPropertyId(3, 3), "product", "NcProduct", true, this.product),
@@ -1040,7 +1040,7 @@ export class NcClassManager extends NcManager
     public override GetAllProperties(recurse: boolean) : NcObjectPropertiesHolder[]
     {
         let properties = [
-            new NcObjectPropertiesHolder(this.GetRolePath(), [
+            new NcObjectPropertiesHolder(this.GetRolePath(), [], [
                 new NcPropertyValueHolder(new NcPropertyId(3, 1), "controlClasses", "NcClassDescriptor", true, this.controlClasses),
                 new NcPropertyValueHolder(new NcPropertyId(3, 2), "dataTypes", "NcDatatypeDescriptor", true, this.dataTypes)
             ], this.isRebuildable)
@@ -1170,7 +1170,7 @@ export class NcBulkPropertiesManager extends NcManager
     public override GetAllProperties(recurse: boolean) : NcObjectPropertiesHolder[]
     {
         let properties = [
-            new NcObjectPropertiesHolder(this.GetRolePath(), [], this.isRebuildable)
+            new NcObjectPropertiesHolder(this.GetRolePath(), [], [], this.isRebuildable)
         ];
 
         properties[0].values = properties[0].values.concat(super.GetAllProperties(recurse)[0].values);

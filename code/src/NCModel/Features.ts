@@ -123,7 +123,7 @@ export abstract class NcWorker extends NcObject
     public override GetAllProperties(recurse: boolean) : NcObjectPropertiesHolder[]
     {
         let properties = [
-            new NcObjectPropertiesHolder(this.GetRolePath(), [
+            new NcObjectPropertiesHolder(this.GetRolePath(), [], [
                 new NcPropertyValueHolder(new NcPropertyId(2, 1), "enabled", "NcBoolean", false, this.enabled)
             ], this.isRebuildable)
         ];
@@ -228,7 +228,7 @@ export class GainControl extends NcWorker
     public override GetAllProperties(recurse: boolean) : NcObjectPropertiesHolder[]
     {
         let properties = [
-            new NcObjectPropertiesHolder(this.GetRolePath(), [
+            new NcObjectPropertiesHolder(this.GetRolePath(), [], [
                 new NcPropertyValueHolder(new NcPropertyId(3, 1), "gainValue", "NcFloat32", false, this.gainValue)
             ], this.isRebuildable)
         ];
@@ -363,7 +363,7 @@ export class NcIdentBeacon extends NcWorker
     public override GetAllProperties(recurse: boolean) : NcObjectPropertiesHolder[]
     {
         let properties = [
-            new NcObjectPropertiesHolder(this.GetRolePath(), [
+            new NcObjectPropertiesHolder(this.GetRolePath(), [], [
                 new NcPropertyValueHolder(new NcPropertyId(3, 1), "active", "NcBoolean", false, this.active)
             ], this.isRebuildable)
         ];
@@ -522,7 +522,7 @@ export class NcStatusMonitor extends NcWorker
     public override GetAllProperties(recurse: boolean) : NcObjectPropertiesHolder[]
     {
         let properties = [
-            new NcObjectPropertiesHolder(this.GetRolePath(), [
+            new NcObjectPropertiesHolder(this.GetRolePath(), [], [
                 new NcPropertyValueHolder(new NcPropertyId(3, 1), "overallStatus", "NcOverallStatus", true, this.overallStatus),
                 new NcPropertyValueHolder(new NcPropertyId(3, 2), "overallStatusMessage", "NcString", true, this.overallStatusMessage),
                 new NcPropertyValueHolder(new NcPropertyId(3, 3), "statusReportingDelay", "NcUint32", false, this.statusReportingDelay)
@@ -1028,7 +1028,7 @@ export class NcReceiverMonitor extends NcStatusMonitor
     public override GetAllProperties(recurse: boolean) : NcObjectPropertiesHolder[]
     {
         let properties = [
-            new NcObjectPropertiesHolder(this.GetRolePath(), [
+            new NcObjectPropertiesHolder(this.GetRolePath(), [], [
                 new NcPropertyValueHolder(new NcPropertyId(4, 1), "linkStatus", "NcLinkStatus", true, this.linkStatus),
                 new NcPropertyValueHolder(new NcPropertyId(4, 2), "linkStatusMessage", "NcString", true, this.linkStatusMessage),
                 new NcPropertyValueHolder(new NcPropertyId(4, 3), "connectionStatus", "NcConnectionStatus", true, this.connectionStatus),
@@ -1887,7 +1887,11 @@ export class ExampleControl extends NcWorker
     public override GetAllProperties(recurse: boolean) : NcObjectPropertiesHolder[]
     {
         let properties = [
-            new NcObjectPropertiesHolder(this.GetRolePath(), [
+            new NcObjectPropertiesHolder(this.GetRolePath(), 
+            [
+                this.ownerObject?.GetRolePath() ?? []
+            ], 
+            [
                 new NcPropertyValueHolder(new NcPropertyId(3, 1), "enumProperty", "ExampleEnum", false, this.enumProperty),
                 new NcPropertyValueHolder(new NcPropertyId(3, 2), "stringProperty", "NcString", false, this.stringProperty),
                 new NcPropertyValueHolder(new NcPropertyId(3, 3), "numberProperty", "NcUint64", false, this.numberProperty),

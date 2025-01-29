@@ -530,7 +530,7 @@ export class NcBlock extends NcObject
     public override GetAllProperties(recurse: boolean) : NcObjectPropertiesHolder[]
     {
         let holders = [
-            new NcObjectPropertiesHolder(this.GetRolePath(), [
+            new NcObjectPropertiesHolder(this.GetRolePath(), [], [
                 new NcPropertyValueHolder(new NcPropertyId(2, 1), "enabled", "NcBoolean", true, this.enabled),
                 new NcPropertyValueHolder(new NcPropertyId(2, 2), "members", "NcBlockMemberDescriptor", true, this.members)
             ], this.isRebuildable)

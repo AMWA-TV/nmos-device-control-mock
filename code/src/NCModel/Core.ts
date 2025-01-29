@@ -379,7 +379,7 @@ export abstract class NcObject
     public GetAllProperties(recurse: boolean) : NcObjectPropertiesHolder[]
     {
         return [
-            new NcObjectPropertiesHolder(this.GetRolePath(), [
+            new NcObjectPropertiesHolder(this.GetRolePath(), [], [
                 new NcPropertyValueHolder(new NcPropertyId(1, 1), "classId", "NcClassId", true, this.classID),
                 new NcPropertyValueHolder(new NcPropertyId(1, 2), "oid", "NcOid", true, this.oid),
                 new NcPropertyValueHolder(new NcPropertyId(1, 3), "constantOid", "NcBoolean", true, this.constantOid),
@@ -1934,17 +1934,20 @@ export class NcPropertyValueHolder extends BaseType
 export class NcObjectPropertiesHolder extends BaseType
 {
     public path: string[];
+    public dependencyPaths: string[][]
     public values: NcPropertyValueHolder[];
     public isRebuildable: boolean;
 
     public constructor(
         path: string[],
+        dependencyPaths: string[][],
         values: NcPropertyValueHolder[],
         isRebuildable: boolean)
     {
         super();
 
         this.path = path;
+        this.dependencyPaths = dependencyPaths;
         this.values = values;
         this.isRebuildable = isRebuildable;
     }
@@ -1953,6 +1956,7 @@ export class NcObjectPropertiesHolder extends BaseType
     {
         return new NcDatatypeDescriptorStruct("NcObjectPropertiesHolder", [
             new NcFieldDescriptor("path", "NcRolePath", false, false, null, "Object role path"),
+            new NcFieldDescriptor("dependencyPaths", "NcRolePath", false, true, null, "Sequence of role paths which are a dependency for this object (helpful to inform clients which objects need to be restored together)"),
             new NcFieldDescriptor("values", "NcPropertyValueHolder", false, true, null, "Object properties values"),
             new NcFieldDescriptor("isRebuildable", "NcBoolean", false, false, null, "Describes if the object is rebuildable"),
         ], null, null, "Object properties holder descriptor");
