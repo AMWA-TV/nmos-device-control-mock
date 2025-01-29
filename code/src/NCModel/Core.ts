@@ -380,14 +380,14 @@ export abstract class NcObject
     {
         return [
             new NcObjectPropertiesHolder(this.GetRolePath(), [
-                new NcPropertyValueHolder(new NcPropertyId(1, 1), "classId", this.classID),
-                new NcPropertyValueHolder(new NcPropertyId(1, 2), "oid", this.oid),
-                new NcPropertyValueHolder(new NcPropertyId(1, 3), "constantOid", this.constantOid),
-                new NcPropertyValueHolder(new NcPropertyId(1, 4), "owner", this.owner),
-                new NcPropertyValueHolder(new NcPropertyId(1, 5), "role", this.role),
-                new NcPropertyValueHolder(new NcPropertyId(1, 6), "userLabel", this.userLabel),
-                new NcPropertyValueHolder(new NcPropertyId(1, 7), "touchpoints", this.touchpoints),
-                new NcPropertyValueHolder(new NcPropertyId(1, 8), "runtimePropertyConstraints", this.runtimePropertyConstraints),
+                new NcPropertyValueHolder(new NcPropertyId(1, 1), "classId", "NcClassId", true, this.classID),
+                new NcPropertyValueHolder(new NcPropertyId(1, 2), "oid", "NcOid", true, this.oid),
+                new NcPropertyValueHolder(new NcPropertyId(1, 3), "constantOid", "NcBoolean", true, this.constantOid),
+                new NcPropertyValueHolder(new NcPropertyId(1, 4), "owner", "NcOid", true, this.owner),
+                new NcPropertyValueHolder(new NcPropertyId(1, 5), "role", "NcString", true, this.role),
+                new NcPropertyValueHolder(new NcPropertyId(1, 6), "userLabel", "NcString", false, this.userLabel),
+                new NcPropertyValueHolder(new NcPropertyId(1, 7), "touchpoints", "NcTouchpoint", true, this.touchpoints),
+                new NcPropertyValueHolder(new NcPropertyId(1, 8), "runtimePropertyConstraints", "NcPropertyConstraints", true, this.runtimePropertyConstraints),
             ], this.isRebuildable)
         ];
     }
@@ -1897,28 +1897,36 @@ export class NcDatatypeDescriptorEnum extends NcDatatypeDescriptor
 
 export class NcPropertyValueHolder extends BaseType
 {
-    public propertyId: NcPropertyId;
-    public propertyName: string;
+    public id: NcPropertyId;
+    public name: string;
+    public typeName: string | null;
+    public isReadOnly: boolean;
     public value: any;
 
     public constructor(
-        propertyId: NcPropertyId,
-        propertyName: string,
+        id: NcPropertyId,
+        name: string,
+        typeName: string | null,
+        isReadOnly: boolean,
         value: any)
     {
         super();
 
-        this.propertyId = propertyId;
-        this.propertyName = propertyName;
+        this.id = id;
+        this.name = name;
+        this.typeName = typeName;
+        this.isReadOnly = isReadOnly;
         this.value = value;
     }
 
     public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor
     {
         return new NcDatatypeDescriptorStruct("NcPropertyValueHolder", [
-            new NcFieldDescriptor("propertyId", "NcPropertyId", false, false, null, "Property id"),
-            new NcFieldDescriptor("propertyName", "NcName", false, false, null, "Property name"),
-            new NcFieldDescriptor("value", null, true, false, null, "Value"),
+            new NcFieldDescriptor("id", "NcPropertyId", false, false, null, "Property id"),
+            new NcFieldDescriptor("name", "NcString", false, false, null, "Property name"),
+            new NcFieldDescriptor("typeName", "NcName", true, false, null, "Property type name. If null it means the type is any"),
+            new NcFieldDescriptor("isReadOnly", "NcBoolean", false, false, null, "Is the property ReadOnly?"),
+            new NcFieldDescriptor("value", null, true, false, null, "Property value"),
         ], null, null, "Property value holder descriptor");
     }
 }
@@ -2132,7 +2140,7 @@ export class NcObjectPropertiesSetValidation extends BaseType
 
     public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor
     {
-        return new NcDatatypeDescriptorStruct("NcBulkValuesHolder", [
+        return new NcDatatypeDescriptorStruct("NcObjectPropertiesSetValidation", [
             new NcFieldDescriptor("path", "NcRolePath", false, false, null, "Object role path"),
             new NcFieldDescriptor("status", "NcRestoreValidationStatus", false, false, null, "Validation status"),
             new NcFieldDescriptor("notices", "NcPropertyRestoreNotice", false, true, null, "Validation property notices"),

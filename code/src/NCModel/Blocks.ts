@@ -531,8 +531,8 @@ export class NcBlock extends NcObject
     {
         let holders = [
             new NcObjectPropertiesHolder(this.GetRolePath(), [
-                new NcPropertyValueHolder(new NcPropertyId(2, 1), "enabled", this.enabled),
-                new NcPropertyValueHolder(new NcPropertyId(2, 2), "members", this.members)
+                new NcPropertyValueHolder(new NcPropertyId(2, 1), "enabled", "NcBoolean", true, this.enabled),
+                new NcPropertyValueHolder(new NcPropertyId(2, 2), "members", "NcBlockMemberDescriptor", true, this.members)
             ], this.isRebuildable)
         ];
 
@@ -652,14 +652,14 @@ export class NcBlock extends NcObject
 
             myRestoreData.values.forEach(propertyData => 
             {
-                let propertyId = NcElementId.ToPropertyString(propertyData.propertyId);
+                let propertyId = NcElementId.ToPropertyString(propertyData.id);
 
                 if(restoreArguments.restoreMode == NcRestoreMode.Rebuild)
                 {
                     if(propertyId != '1p6' && propertyId != '2p2')
                         myNotices.push(new NcPropertyRestoreNotice(
-                            propertyData.propertyId,
-                            propertyData.propertyName,
+                            propertyData.id,
+                            propertyData.name,
                             NcPropertyRestoreNoticeType.Warning,
                             "Property cannot be changed and will be left untouched"));
                     else if(applyChanges)
@@ -682,15 +682,15 @@ export class NcBlock extends NcObject
                             else
                             {
                                 myNotices.push(new NcPropertyRestoreNotice(
-                                    propertyData.propertyId,
-                                    propertyData.propertyName,
+                                    propertyData.id,
+                                    propertyData.name,
                                     NcPropertyRestoreNoticeType.Warning,
                                     `Cannot reconstruct members because the members data is null`));
                                 console.log(`Cannot reconstruct members because the members data is null`);
                             }
                         }
                         else
-                            this.Set(this.oid, propertyData.propertyId, propertyData.value, 0);
+                            this.Set(this.oid, propertyData.id, propertyData.value, 0);
                     }
                 }
                 else
@@ -699,27 +699,27 @@ export class NcBlock extends NcObject
                     {
                         if(this.isRebuildable)
                             myNotices.push(new NcPropertyRestoreNotice(
-                                propertyData.propertyId,
-                                propertyData.propertyName,
+                                propertyData.id,
+                                propertyData.name,
                                 NcPropertyRestoreNoticeType.Warning,
                                 "Property cannot be changed and will be left untouched unless restoreMode is changed to Rebuild"));
                         else
                             myNotices.push(new NcPropertyRestoreNotice(
-                                propertyData.propertyId,
-                                propertyData.propertyName,
+                                propertyData.id,
+                                propertyData.name,
                                 NcPropertyRestoreNoticeType.Warning,
                                 "Property cannot be changed and will be left untouched"));
                     }
                     else if(propertyId != '1p6')
                         myNotices.push(new NcPropertyRestoreNotice(
-                            propertyData.propertyId,
-                            propertyData.propertyName,
+                            propertyData.id,
+                            propertyData.name,
                             NcPropertyRestoreNoticeType.Warning,
                             "Property cannot be changed and will be left untouched"));
                     else if(applyChanges)
                     {
                         //Perform further validations
-                        this.Set(this.oid, propertyData.propertyId, propertyData.value, 0);
+                        this.Set(this.oid, propertyData.id, propertyData.value, 0);
                     }
                 }
             });
@@ -1075,7 +1075,7 @@ export class ExampleControlsBlock extends NcBlock
 
         holder.values.forEach(propertyData => 
         {
-            let propertyId = NcElementId.ToPropertyString(propertyData.propertyId);
+            let propertyId = NcElementId.ToPropertyString(propertyData.id);
             switch(propertyId)
             {
                 case '1p6':
@@ -1094,7 +1094,7 @@ export class ExampleControlsBlock extends NcBlock
                         //TODO: Perform further validations
                     }
                 default:
-                    myNotices.push(new NcPropertyRestoreNotice(propertyData.propertyId, propertyData.propertyName, NcPropertyRestoreNoticeType.Warning, "Property can't be changed and will receive a default value"));
+                    myNotices.push(new NcPropertyRestoreNotice(propertyData.id, propertyData.name, NcPropertyRestoreNoticeType.Warning, "Property can't be changed and will receive a default value"));
             }
         });
 

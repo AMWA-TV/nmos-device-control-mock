@@ -353,7 +353,8 @@ try
         res.setHeader('Content-Type', 'application/json');
         res.send(JSON.stringify([ 
             'node/',
-            'connection/'
+            'connection/',
+            'configuration/'
         ]));
     })
 
@@ -517,6 +518,13 @@ try
         }
         else
             res.sendStatus(404);
+    })
+
+    //IS-14 paths
+
+    app.get('/x-nmos/configuration', function (req, res) {
+        res.setHeader('Content-Type', 'application/json');
+        res.send(JSON.stringify([ 'v1.0/' ]));
     })
 
     app.get('/x-nmos/configuration/:version', function (req, res) {
@@ -760,6 +768,13 @@ try
         }
         else
             res.sendStatus(404);
+    })
+
+    app.use((req, res, next) => {
+        //This applied to any invalid path
+
+        res.set({ 'content-type': 'application/json; charset=utf-8' });
+        res.status(404).send('');
     })
     
     //start our server
