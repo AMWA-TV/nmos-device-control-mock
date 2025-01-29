@@ -214,6 +214,8 @@ try
 
     //initialize the Express HTTP listener
     const app = application();
+    var cors = require('cors');
+    app.use(cors());
     app.use(application.json({ limit: '50mb' }));
     app.use(application.urlencoded({ extended: true }));
     
