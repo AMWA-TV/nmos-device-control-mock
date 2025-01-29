@@ -635,9 +635,9 @@ export class NcBlock extends NcObject
         return this.GetRolePath().concat(role);
     }
 
-    public ReconstructMembers(members: NcBlockMemberDescriptor[], dataSet: NcBulkValuesHolder) : [NcPropertyRestoreNotice | null, NcObjectPropertiesSetValidation[]]
+    public ReconstructMembers(members: NcBlockMemberDescriptor[], dataSet: NcBulkValuesHolder, applyChanges: Boolean = true) : [NcPropertyRestoreNotice | null, NcObjectPropertiesSetValidation[]]
     {
-        //Left intentionally empty as "virtual" so that rebuildable blocks MUST override this with the desired behaviour
+        //Left intentionally empty as "virtual" so that rebuildable blocks override this with the desired behaviour
         return [null, []];
     }
 
@@ -662,7 +662,7 @@ export class NcBlock extends NcObject
                             propertyData.name,
                             NcPropertyRestoreNoticeType.Warning,
                             "Property cannot be changed and will be left untouched"));
-                    else if(applyChanges)
+                    else
                     {
                         //Perform further validation
                         if(propertyId == '2p2')
@@ -673,7 +673,7 @@ export class NcBlock extends NcObject
                             {
                                 //TODO: Might need to include the list of members in the outcomes of ReconstructMembers so that we can skip them from further restore actions because they would have already been applied when creating the member objects
 
-                                let outcomes = this.ReconstructMembers(membersData, restoreArguments.dataSet);
+                                let outcomes = this.ReconstructMembers(membersData, restoreArguments.dataSet, applyChanges);
                                 if(outcomes[0] != null)
                                     myNotices.push(outcomes[0]);
 
@@ -689,8 +689,11 @@ export class NcBlock extends NcObject
                                 console.log(`Cannot reconstruct members because the members data is null`);
                             }
                         }
-                        else
+                        else if(applyChanges)
+                        {
+                            //Perform further validations
                             this.Set(this.oid, propertyData.id, propertyData.value, 0);
+                        }
                     }
                 }
                 else
@@ -969,13 +972,13 @@ export class ExampleControlsBlock extends NcBlock
             isRebuildable);
     }
 
-    public override ReconstructMembers(members: NcBlockMemberDescriptor[], dataSet: NcBulkValuesHolder) : [NcPropertyRestoreNotice | null, NcObjectPropertiesSetValidation[]]
+    public override ReconstructMembers(members: NcBlockMemberDescriptor[], dataSet: NcBulkValuesHolder, applyChanges: Boolean = true) : [NcPropertyRestoreNotice | null, NcObjectPropertiesSetValidation[]]
     {
         let blockMembersNotice: NcPropertyRestoreNotice | null = null;
 
         let validationEntries = new Array<NcObjectPropertiesSetValidation>();
 
-        console.log(`Reconstructing members, count: ${members.length}`);
+        console.log(`Reconstructing members, count: ${members.length}, applyChanges: ${applyChanges}`);
 
         let controlMembers: ExampleControl[] = [];
 
@@ -998,23 +1001,26 @@ export class ExampleControlsBlock extends NcBlock
                             else
                                 setValidation = new NcObjectPropertiesSetValidation(memberRolepath, NcRestoreValidationStatus.Ok, [], "No dataset information passed but object was created successfully with defaults")
     
-                            const exampleControl = new ExampleControl(
-                                this.rootContext.AllocateOid(memberRolepath.join('.')),
-                                true,
-                                this,
-                                member.role,
-                                member.userLabel ?? member.role,
-                                [],
-                                null,
-                                true,
-                                "Example control worker",
-                                this.notificationContext,
-                                true,
-                                memberRestoreData);
-    
                             validationEntries = validationEntries.concat(setValidation);
-    
-                            controlMembers.push(exampleControl);
+
+                            if(applyChanges)
+                            {
+                                const exampleControl = new ExampleControl(
+                                    this.rootContext.AllocateOid(memberRolepath.join('.')),
+                                    true,
+                                    this,
+                                    member.role,
+                                    member.userLabel ?? member.role,
+                                    [],
+                                    null,
+                                    true,
+                                    "Example control worker",
+                                    this.notificationContext,
+                                    true,
+                                    memberRestoreData);
+        
+                                controlMembers.push(exampleControl);
+                            }
                         }
                     }
                     else
@@ -1037,23 +1043,26 @@ export class ExampleControlsBlock extends NcBlock
                         else
                             setValidation = new NcObjectPropertiesSetValidation(memberRolepath, NcRestoreValidationStatus.Ok, [], "No dataset information passed but object was created successfully with defaults")
 
-                        const exampleControl = new ExampleControl(
-                            this.rootContext.AllocateOid(memberRolepath.join('.')),
-                            true,
-                            this,
-                            member.role,
-                            member.userLabel ?? member.role,
-                            [],
-                            null,
-                            true,
-                            "Example control worker",
-                            this.notificationContext,
-                            true,
-                            memberRestoreData);
-
                         validationEntries = validationEntries.concat(setValidation);
 
-                        controlMembers.push(exampleControl);
+                        if(applyChanges)
+                        {
+                            const exampleControl = new ExampleControl(
+                                this.rootContext.AllocateOid(memberRolepath.join('.')),
+                                true,
+                                this,
+                                member.role,
+                                member.userLabel ?? member.role,
+                                [],
+                                null,
+                                true,
+                                "Example control worker",
+                                this.notificationContext,
+                                true,
+                                memberRestoreData);
+    
+                            controlMembers.push(exampleControl);
+                        }
                     }
                 }
             }
@@ -1064,7 +1073,8 @@ export class ExampleControlsBlock extends NcBlock
             }
         });
         
-        this.UpdateMembers(controlMembers, true);
+        if(applyChanges)
+            this.UpdateMembers(controlMembers, true);
 
         return [blockMembersNotice, validationEntries];
     }
@@ -1093,6 +1103,7 @@ export class ExampleControlsBlock extends NcBlock
                     {
                         //TODO: Perform further validations
                     }
+                    break;
                 default:
                     myNotices.push(new NcPropertyRestoreNotice(propertyData.id, propertyData.name, NcPropertyRestoreNoticeType.Warning, "Property can't be changed and will receive a default value"));
             }
