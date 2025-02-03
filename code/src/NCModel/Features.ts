@@ -715,6 +715,9 @@ export class NcReceiverMonitor extends NcStatusMonitor
     @myIdDecorator('4p11')
     public autoResetPacketCounters: boolean;
 
+    @myIdDecorator('4p12')
+    public autoResetSynchronizationSourceChanges: boolean;
+
     private lostPacketCounters: NcCounter[];
     private latePacketCounters: NcCounter[];
 
@@ -757,6 +760,7 @@ export class NcReceiverMonitor extends NcStatusMonitor
         this.streamStatusMessage = "Receiver is inactive";
 
         this.autoResetPacketCounters = true;
+        this.autoResetSynchronizationSourceChanges = true;
     }
 
     public Connected()
@@ -779,6 +783,12 @@ export class NcReceiverMonitor extends NcStatusMonitor
             this.latePacketCounters.forEach(counter => {
                 counter.Reset();
             });
+        }
+
+        if(this.autoResetSynchronizationSourceChanges)
+        {
+            this.synchronizationSourceChanges = 0;
+            this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 8), NcPropertyChangeType.ValueChanged, this.synchronizationSourceChanges, null);
         }
 
         this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 1), NcPropertyChangeType.ValueChanged, this.overallStatus, null);
@@ -898,6 +908,8 @@ export class NcReceiverMonitor extends NcStatusMonitor
                     return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.streamStatusMessage);
                 case '4p11':
                     return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.autoResetPacketCounters);
+                case '4p12':
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.autoResetSynchronizationSourceChanges);
                 default:
                     return super.Get(oid, id, handle);
             }
@@ -934,6 +946,10 @@ export class NcReceiverMonitor extends NcStatusMonitor
                 case '4p11':
                     this.autoResetPacketCounters = value;
                     this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.autoResetPacketCounters, null);
+                    return new CommandResponseNoValue(handle, NcMethodStatus.OK);
+                case '4p12':
+                    this.autoResetSynchronizationSourceChanges = value;
+                    this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.autoResetSynchronizationSourceChanges, null);
                     return new CommandResponseNoValue(handle, NcMethodStatus.OK);
                 default:
                     return super.Set(oid, id, value, handle);
@@ -1002,7 +1018,8 @@ export class NcReceiverMonitor extends NcStatusMonitor
                 new NcPropertyDescriptor(new NcElementId(4, 8), "synchronizationSourceChanges", "NcUint64", true, false, false, null, "Synchronization source changes counter"),
                 new NcPropertyDescriptor(new NcElementId(4, 9), "streamStatus", "NcStreamStatus", true, false, false, null, "Stream status property"),
                 new NcPropertyDescriptor(new NcElementId(4, 10), "streamStatusMessage", "NcString", true, true, false, null, "Stream status message property"),
-                new NcPropertyDescriptor(new NcElementId(4, 11), "autoResetPacketCounters", "NcBoolean", false, false, false, null, "Automatic reset packet counters property (default: true)")
+                new NcPropertyDescriptor(new NcElementId(4, 11), "autoResetPacketCounters", "NcBoolean", false, false, false, null, "Automatic reset packet counters property (default: true)"),
+                new NcPropertyDescriptor(new NcElementId(4, 12), "autoResetSynchronizationSourceChanges", "NcBoolean", false, false, false, null, "Automatic reset synchronization source changes property (default: true)")
             ],
             [
                 new NcMethodDescriptor(new NcElementId(4, 1), "GetLostPacketCounters", "NcMethodResultCounters", [], "Gets the lost packet counters"),
