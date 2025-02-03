@@ -1056,7 +1056,8 @@ export class NcReceiverMonitor extends NcStatusMonitor
                 new NcPropertyValueHolder(new NcPropertyId(4, 8), "synchronizationSourceChanges", "NcUint64", true, this.synchronizationSourceChanges),
                 new NcPropertyValueHolder(new NcPropertyId(4, 9), "streamStatus", "NcStreamStatus", true, this.streamStatus),
                 new NcPropertyValueHolder(new NcPropertyId(4, 10), "streamStatusMessage", "NcString", true, this.streamStatusMessage),
-                new NcPropertyValueHolder(new NcPropertyId(4, 11), "autoResetPacketCounters", "NcBoolean", false, this.autoResetPacketCounters)
+                new NcPropertyValueHolder(new NcPropertyId(4, 11), "autoResetPacketCounters", "NcBoolean", false, this.autoResetPacketCounters),
+                new NcPropertyValueHolder(new NcPropertyId(4, 12), "autoResetSynchronizationSourceChanges", "NcBoolean", false, this.autoResetSynchronizationSourceChanges)
             ], this.isRebuildable)
         ];
 
