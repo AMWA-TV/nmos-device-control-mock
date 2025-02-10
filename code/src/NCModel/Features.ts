@@ -369,7 +369,6 @@ export class NcIdentBeacon extends NcWorker
         ];
 
         properties[0].values = properties[0].values.concat(super.GetAllProperties(recurse)[0].values);
-
         return properties;
     }
 
