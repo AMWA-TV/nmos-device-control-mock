@@ -496,8 +496,8 @@ export class NcStatusMonitor extends NcWorker
 
     public static override GetClassDescriptor(includeInherited: boolean): NcClassDescriptor 
     {
-        let currentClassDescriptor = new NcClassDescriptor(`${NcReceiverMonitor.name} class descriptor`,
-            NcReceiverMonitor.staticClassID, NcReceiverMonitor.name, null,
+        let currentClassDescriptor = new NcClassDescriptor(`${NcStatusMonitor.name} class descriptor`,
+            NcStatusMonitor.staticClassID, NcStatusMonitor.name, null,
             [
                 new NcPropertyDescriptor(new NcElementId(3, 1), "overallStatus", "NcOverallStatus", true, false, false, null, "Overall status property"),
                 new NcPropertyDescriptor(new NcElementId(3, 2), "overallStatusMessage", "NcString", true, true, false, null, "Overall status message property"),
