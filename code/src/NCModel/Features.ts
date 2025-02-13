@@ -428,6 +428,14 @@ enum NcConnectionStatus
     Unhealthy = 3
 }
 
+enum NcTransmissionStatus
+{
+    Inactive = 0,
+    Healthy = 1,
+    PartiallyHealthy = 2,
+    Unhealthy = 3
+}
+
 enum NcSynchronizationStatus
 {
     NotUsed = 0,
@@ -437,6 +445,14 @@ enum NcSynchronizationStatus
 }
 
 enum NcStreamStatus
+{
+    Inactive = 0,
+    Healthy = 1,
+    PartiallyHealthy = 2,
+    Unhealthy = 3
+}
+
+enum NcEssenceStatus
 {
     Inactive = 0,
     Healthy = 1,
@@ -875,6 +891,332 @@ export class NcReceiverMonitor extends NcStatusMonitor
                 new NcMethodDescriptor(new NcElementId(4, 2), "GetLatePacketCounters", "NcMethodResultCounters", [], "Gets the late packet counters"),
                 new NcMethodDescriptor(new NcElementId(4, 3), "ResetPacketCounters", "NcMethodResult", [], "Resets the packet counters"),
                 new NcMethodDescriptor(new NcElementId(4, 4), "ResetSynchronizationSourceChanges", "NcMethodResult", [], "Resets the synchronization source changes counter property")
+            ],
+            []
+        );
+
+        if(includeInherited)
+        {
+            let baseDescriptor = super.GetClassDescriptor(includeInherited);
+
+            currentClassDescriptor.properties = currentClassDescriptor.properties.concat(baseDescriptor.properties);
+            currentClassDescriptor.methods = currentClassDescriptor.methods.concat(baseDescriptor.methods);
+            currentClassDescriptor.events = currentClassDescriptor.events.concat(baseDescriptor.events);
+        }
+
+        return currentClassDescriptor;
+    }
+}
+
+export class NcSenderMonitor extends NcStatusMonitor
+{
+    public static staticClassID: number[] = [ 1, 2, 2, 2 ];
+
+    @myIdDecorator('1p1')
+    public override classID: number[] = NcSenderMonitor.staticClassID;
+
+    @myIdDecorator('4p1')
+    public linkStatus: NcLinkStatus;
+
+    @myIdDecorator('4p2')
+    public linkStatusMessage: string | null;
+
+    @myIdDecorator('4p3')
+    public transmissionStatus: NcTransmissionStatus;
+
+    @myIdDecorator('4p4')
+    public transmissionStatusMessage: string | null;
+
+    @myIdDecorator('4p5')
+    public externalSynchronizationStatus: NcSynchronizationStatus;
+
+    @myIdDecorator('4p6')
+    public externalSynchronizationStatusMessage: string | null;
+
+    @myIdDecorator('4p7')
+    public synchronizationSourceId: string | null;
+
+    @myIdDecorator('4p8')
+    public synchronizationSourceChanges: number;
+
+    @myIdDecorator('4p9')
+    public essenceStatus: NcEssenceStatus;
+
+    @myIdDecorator('4p10')
+    public essenceStatusMessage: string | null;
+
+    @myIdDecorator('4p11')
+    public autoResetErrorCounters: boolean;
+
+    @myIdDecorator('4p12')
+    public autoResetSynchronizationSourceChanges: boolean;
+
+    private errorCounters: NcCounter[];
+
+    public constructor(
+        oid: number,
+        constantOid: boolean,
+        ownerObject: NcObject | null,
+        role: string,
+        userLabel: string,
+        touchpoints: NcTouchpoint[],
+        runtimePropertyConstraints: NcPropertyConstraints[] | null,
+        enabled: boolean,
+        description: string,
+        notificationContext: INotificationContext)
+    {
+        super(oid, constantOid, ownerObject, role, userLabel, touchpoints, runtimePropertyConstraints, enabled, description, notificationContext);
+
+        this.linkStatus = NcLinkStatus.AllUp;
+        this.linkStatusMessage = "All interfaces are up";
+
+        this.transmissionStatus = NcTransmissionStatus.Inactive;
+        this.transmissionStatusMessage = "Sender is inactive";
+
+        this.errorCounters = [
+            new NcCounter("Main", 0, "Main transmission errors")
+        ];
+        
+        this.externalSynchronizationStatus = NcSynchronizationStatus.Healthy;
+        this.externalSynchronizationStatusMessage = "Locked to grandmaster";
+        this.synchronizationSourceId = "0xD4:AD:71:FF:FE:6F:E2:80";
+        this.synchronizationSourceChanges = 0;
+
+        this.essenceStatus = NcEssenceStatus.Inactive;
+        this.essenceStatusMessage = "Sender is inactive";
+
+        this.autoResetErrorCounters = true;
+        this.autoResetSynchronizationSourceChanges = true;
+
+        this.Activated();
+    }
+
+    public Activated()
+    {
+        this.overallStatus = NcOverallStatus.Healthy;
+        this.overallStatusMessage = "Sender is active and healthy";
+
+        this.transmissionStatus = NcTransmissionStatus.Healthy;
+        this.transmissionStatusMessage = "Sender is active and transmission is healthy";
+
+        this.essenceStatus = NcEssenceStatus.Healthy;
+        this.essenceStatusMessage = "Sender is active and essence is healthy";
+
+        if(this.autoResetErrorCounters)
+        {
+            this.errorCounters.forEach(counter => {
+                counter.Reset();
+            });
+        }
+
+        if(this.autoResetSynchronizationSourceChanges)
+        {
+            this.synchronizationSourceChanges = 0;
+            this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 8), NcPropertyChangeType.ValueChanged, this.synchronizationSourceChanges, null);
+        }
+
+        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 1), NcPropertyChangeType.ValueChanged, this.overallStatus, null);
+        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 2), NcPropertyChangeType.ValueChanged, this.overallStatusMessage, null);
+
+        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 3), NcPropertyChangeType.ValueChanged, this.transmissionStatus, null);
+        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 4), NcPropertyChangeType.ValueChanged, this.transmissionStatusMessage, null);
+
+        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 9), NcPropertyChangeType.ValueChanged, this.essenceStatus, null);
+        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 10), NcPropertyChangeType.ValueChanged, this.essenceStatusMessage, null);
+
+        // Uncomment to emulate broken transmission
+        // DelayTask(1000 * this.statusReportingDelay).then(() => this.TransmissionBroken());
+    }
+
+    public TransmissionBroken()
+    {
+        if(this.overallStatus != NcOverallStatus.Inactive)
+        {
+            this.overallStatus = NcOverallStatus.Unhealthy;
+            this.overallStatusMessage = "Sender connectivity is experiencing severe issues";
+    
+            this.transmissionStatus = NcTransmissionStatus.Unhealthy;
+            this.transmissionStatusMessage = "Significant transmission errors detected";
+
+            this.essenceStatus = NcEssenceStatus.Unhealthy;
+            this.essenceStatusMessage = "Essence is unhealthy";
+
+            this.errorCounters[0]?.Increment();
+    
+            this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 1), NcPropertyChangeType.ValueChanged, this.overallStatus, null);
+            this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 2), NcPropertyChangeType.ValueChanged, this.overallStatusMessage, null);
+
+            this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 3), NcPropertyChangeType.ValueChanged, this.transmissionStatus, null);
+            this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 4), NcPropertyChangeType.ValueChanged, this.transmissionStatusMessage, null);
+    
+            this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 9), NcPropertyChangeType.ValueChanged, this.essenceStatus, null);
+            this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 10), NcPropertyChangeType.ValueChanged, this.essenceStatusMessage, null);
+        }
+    }
+
+    public Deactivated()
+    {
+        this.overallStatus = NcOverallStatus.Inactive;
+        this.overallStatusMessage = "Sender is inactive";
+
+        this.transmissionStatus = NcTransmissionStatus.Inactive;
+        this.transmissionStatusMessage = "Sender is inactive";
+
+        this.essenceStatus = NcEssenceStatus.Inactive;
+        this.essenceStatusMessage = "Sender is inactive";
+
+        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 1), NcPropertyChangeType.ValueChanged, this.overallStatus, null);
+        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 2), NcPropertyChangeType.ValueChanged, this.overallStatusMessage, null);
+
+        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 3), NcPropertyChangeType.ValueChanged, this.transmissionStatus, null);
+        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 4), NcPropertyChangeType.ValueChanged, this.transmissionStatusMessage, null);
+
+        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 9), NcPropertyChangeType.ValueChanged, this.essenceStatus, null);
+        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 10), NcPropertyChangeType.ValueChanged, this.essenceStatusMessage, null);
+    }
+
+    //'1m1'
+    public override Get(oid: number, id: NcElementId, handle: number) : CommandResponseNoValue
+    {
+        if(oid == this.oid)
+        {
+            let key: string = `${id.level}p${id.index}`;
+
+            switch(key)
+            {
+                case '4p1':
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.linkStatus);
+                case '4p2':
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.linkStatusMessage);
+                case '4p3':
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.transmissionStatus);
+                case '4p4':
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.transmissionStatusMessage);
+                case '4p5':
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.externalSynchronizationStatus);
+                case '4p6':
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.externalSynchronizationStatusMessage);
+                case '4p7':
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.synchronizationSourceId);
+                case '4p8':
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.synchronizationSourceChanges);
+                case '4p9':
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.essenceStatus);
+                case '4p10':
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.essenceStatusMessage);
+                case '4p11':
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.autoResetErrorCounters);
+                case '4p12':
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.autoResetSynchronizationSourceChanges);
+                default:
+                    return super.Get(oid, id, handle);
+            }
+        }
+
+        return new CommandResponseError(handle, NcMethodStatus.BadOid, 'OID could not be found');
+    }
+
+    //'1m2'
+    public override Set(oid: number, id: NcElementId, value: any, handle: number) : CommandResponseNoValue
+    {
+        if(oid == this.oid)
+        {
+            let key: string = `${id.level}p${id.index}`;
+
+            switch(key)
+            {
+                case '2p1':
+                    if(value === true)
+                        return new CommandResponseNoValue(handle, NcMethodStatus.OK);
+                    else
+                        return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, "Receiver monitors cannot be disabled");
+                case '4p1':
+                case '4p2':
+                case '4p3':
+                case '4p4':
+                case '4p5':
+                case '4p6':
+                case '4p7':
+                case '4p8':
+                case '4p9':
+                case '4p10':
+                    return new CommandResponseError(handle, NcMethodStatus.Readonly, 'Property is readonly');
+                case '4p11':
+                    this.autoResetErrorCounters = value;
+                    this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.autoResetErrorCounters, null);
+                    return new CommandResponseNoValue(handle, NcMethodStatus.OK);
+                case '4p12':
+                    this.autoResetSynchronizationSourceChanges = value;
+                    this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.autoResetSynchronizationSourceChanges, null);
+                    return new CommandResponseNoValue(handle, NcMethodStatus.OK);
+                default:
+                    return super.Set(oid, id, value, handle);
+            }
+        }
+
+        return new CommandResponseError(handle, NcMethodStatus.BadOid, 'OID could not be found');
+    }
+
+    public override InvokeMethod(socket: WebSocketConnection, oid: number, methodId: NcElementId, args: { [key: string]: any; } | null, handle: number): CommandResponseNoValue 
+    {
+        if(oid == this.oid)
+        {
+            let key: string = `${methodId.level}m${methodId.index}`;
+
+            switch(key)
+            {
+                case '4m1':
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.errorCounters);
+                case '4m2':
+                    this.ResetErrorCounters();
+                    return new CommandResponseNoValue(handle, NcMethodStatus.OK);
+                case '4m3':
+                    this.ResetSynchronizationSourceChanges();
+                    return new CommandResponseNoValue(handle, NcMethodStatus.OK);
+                default:
+                    return super.InvokeMethod(socket, oid, methodId, args, handle);
+
+            }
+        }
+
+        return new CommandResponseError(handle, NcMethodStatus.BadOid, 'OID could not be found');
+    }
+
+    private ResetErrorCounters()
+    {
+        this.errorCounters.forEach(counter => {
+            counter.Reset();
+        });
+    }
+
+    private ResetSynchronizationSourceChanges()
+    {
+        this.synchronizationSourceChanges = 0;
+        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 8), NcPropertyChangeType.ValueChanged, this.synchronizationSourceChanges, null);
+    }
+
+    public static override GetClassDescriptor(includeInherited: boolean): NcClassDescriptor 
+    {
+        let currentClassDescriptor = new NcClassDescriptor(`${NcSenderMonitor.name} class descriptor`,
+            NcSenderMonitor.staticClassID, NcSenderMonitor.name, null,
+            [
+                new NcPropertyDescriptor(new NcElementId(4, 1), "linkStatus", "NcLinkStatus", true, false, false, null, "Link status property"),
+                new NcPropertyDescriptor(new NcElementId(4, 2), "linkStatusMessage", "NcString", true, true, false, null, "Link status message property"),
+                new NcPropertyDescriptor(new NcElementId(4, 3), "transmissionStatus", "NcTransmissionStatus", true, false, false, null, "Transmission status property"),
+                new NcPropertyDescriptor(new NcElementId(4, 4), "transmissionStatusMessage", "NcString", true, true, false, null, "Transmission status message property"),
+                new NcPropertyDescriptor(new NcElementId(4, 5), "externalSynchronizationStatus", "NcSynchronizationStatus", true, false, false, null, "External synchronization status property"),
+                new NcPropertyDescriptor(new NcElementId(4, 6), "externalSynchronizationStatusMessage", "NcString", true, true, false, null, "External synchronization status message property"),
+                new NcPropertyDescriptor(new NcElementId(4, 7), "synchronizationSourceId", "NcString", true, true, false, null, "Synchronization source id property"),
+                new NcPropertyDescriptor(new NcElementId(4, 8), "synchronizationSourceChanges", "NcUint64", true, false, false, null, "Synchronization source changes counter"),
+                new NcPropertyDescriptor(new NcElementId(4, 9), "essenceStatus", "NcEssenceStatus", true, false, false, null, "Essence status property"),
+                new NcPropertyDescriptor(new NcElementId(4, 10), "essenceStatusMessage", "NcString", true, true, false, null, "Essence status message property"),
+                new NcPropertyDescriptor(new NcElementId(4, 11), "autoResetErrorCounters", "NcBoolean", false, false, false, null, "Automatic reset error counters property (default: true)"),
+                new NcPropertyDescriptor(new NcElementId(4, 12), "autoResetSynchronizationSourceChanges", "NcBoolean", false, false, false, null, "Automatic reset synchronization source changes property (default: true)")
+            ],
+            [
+                new NcMethodDescriptor(new NcElementId(4, 1), "GetTransmissionErrorCounters", "NcMethodResultCounters", [], "Gets the transmission error counters"),
+                new NcMethodDescriptor(new NcElementId(4, 2), "ResetErrorCounters", "NcMethodResult", [], "Resets the error counters"),
+                new NcMethodDescriptor(new NcElementId(4, 3), "ResetSynchronizationSourceChanges", "NcMethodResult", [], "Resets the synchronization source changes counter property")
             ],
             []
         );

@@ -122,13 +122,9 @@ a=mid:secondary`;
         if(settings.activation != null)
         {
             if(settings.master_enable)
-            {
-                // this.agent?.Activated();
-            }
+                this.agent?.Activated();
             else
-            {
-                // this.agent?.Deactivated();
-            }
+                this.agent?.Deactivated();
 
             this.active = new NmosSenderActiveRtp(
                 settings.receiver_id,

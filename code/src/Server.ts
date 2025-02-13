@@ -15,7 +15,7 @@ import { SessionManager } from './SessionManager';
 import { NcBlock, RootBlock } from './NCModel/Blocks';
 import { NcClassManager, NcDeviceManager } from './NCModel/Managers';
 import { NcMethodStatus, NcTouchpointNmos, NcTouchpointResourceNmos } from './NCModel/Core';
-import { ExampleControl, GainControl, NcIdentBeacon, NcReceiverMonitor } from './NCModel/Features';
+import { ExampleControl, GainControl, NcIdentBeacon, NcReceiverMonitor, NcSenderMonitor } from './NCModel/Features';
 import { ProtocolError, ProtocolSubscription } from './NCProtocol/Commands';
 import { MessageType, ProtocolWrapper } from './NCProtocol/Core';
 import { NmosSourceVideo } from './NmosSourceVideo';
@@ -177,7 +177,7 @@ try
         sessionManager);
 
     const stereoGainBlock = new NcBlock(
-        31,
+        131,
         true,
         rootBlock,
         'stereo-gain',
@@ -190,7 +190,7 @@ try
         sessionManager);
 
     const channelGainBlock = new NcBlock(
-        21,
+        121,
         true,
         stereoGainBlock,
         'channel-gain',
@@ -240,9 +240,38 @@ try
 
     receiversBlock.UpdateMembers([ receiverMonitor ]);
 
+    const sendersBlock = new NcBlock(
+        20,
+        true,
+        rootBlock,
+        'senders',
+        'Senders',
+        null,
+        null,
+        true,
+        [],
+        "Receivers block",
+        sessionManager);
+    
+    const senderMonitor = new NcSenderMonitor(
+        21,
+        true,
+        sendersBlock,
+        'monitor-01',
+        'Sender monitor 01',
+        [ new NcTouchpointNmos('x-nmos', new NcTouchpointResourceNmos('sender', myVideoSender.id)) ],
+        null,
+        true,
+        "Sender monitor worker",
+        sessionManager);
+
+    myVideoSender.AttachMonitoringAgent(senderMonitor);
+
+    sendersBlock.UpdateMembers([ senderMonitor ]);
+
     const identBeacon = new NcIdentBeacon(51, true, rootBlock, "IdentBeacon", "Identification beacon", [], null, true, false, "Identification beacon", sessionManager);
 
-    rootBlock.UpdateMembers([ deviceManager, classManager, receiversBlock, stereoGainBlock, exampleControl, identBeacon ]);
+    rootBlock.UpdateMembers([ deviceManager, classManager, receiversBlock, sendersBlock, stereoGainBlock, exampleControl, identBeacon ]);
 
     async function doAsync () {
         await registrationClient.RegisterOrUpdateResource('node', myNode);
