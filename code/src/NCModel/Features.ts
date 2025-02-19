@@ -674,7 +674,7 @@ export class NcReceiverMonitor extends NcStatusMonitor
         if(this.autoResetSynchronizationSourceChanges)
         {
             this.synchronizationSourceChanges = 0;
-            this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 8), NcPropertyChangeType.ValueChanged, this.synchronizationSourceChanges, null);
+            this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 11), NcPropertyChangeType.ValueChanged, this.synchronizationSourceChanges, null);
         }
 
         if(this.autoResetStatusTransitionCounters)
@@ -692,11 +692,11 @@ export class NcReceiverMonitor extends NcStatusMonitor
         this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 1), NcPropertyChangeType.ValueChanged, this.overallStatus, null);
         this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 2), NcPropertyChangeType.ValueChanged, this.overallStatusMessage, null);
 
-        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 3), NcPropertyChangeType.ValueChanged, this.connectionStatus, null);
-        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 4), NcPropertyChangeType.ValueChanged, this.connectionStatusMessage, null);
+        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 4), NcPropertyChangeType.ValueChanged, this.connectionStatus, null);
+        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 5), NcPropertyChangeType.ValueChanged, this.connectionStatusMessage, null);
 
-        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 9), NcPropertyChangeType.ValueChanged, this.streamStatus, null);
-        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 10), NcPropertyChangeType.ValueChanged, this.streamStatusMessage, null);
+        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 12), NcPropertyChangeType.ValueChanged, this.streamStatus, null);
+        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 13), NcPropertyChangeType.ValueChanged, this.streamStatusMessage, null);
 
         DelayTask(1000 * this.statusReportingDelay).then(() => this.StreamBroken());
     }
@@ -722,11 +722,11 @@ export class NcReceiverMonitor extends NcStatusMonitor
             this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 1), NcPropertyChangeType.ValueChanged, this.overallStatus, null);
             this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 2), NcPropertyChangeType.ValueChanged, this.overallStatusMessage, null);
 
-            this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 3), NcPropertyChangeType.ValueChanged, this.connectionStatus, null);
-            this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 4), NcPropertyChangeType.ValueChanged, this.connectionStatusMessage, null);
+            this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 4), NcPropertyChangeType.ValueChanged, this.connectionStatus, null);
+            this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 5), NcPropertyChangeType.ValueChanged, this.connectionStatusMessage, null);
     
-            this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 9), NcPropertyChangeType.ValueChanged, this.streamStatus, null);
-            this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 10), NcPropertyChangeType.ValueChanged, this.streamStatusMessage, null);
+            this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 12), NcPropertyChangeType.ValueChanged, this.streamStatus, null);
+            this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 13), NcPropertyChangeType.ValueChanged, this.streamStatusMessage, null);
 
             this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 6), NcPropertyChangeType.ValueChanged, this.connectionStatusTransitionCounter, null);
             this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 14), NcPropertyChangeType.ValueChanged, this.streamStatusTransitionCounter, null);
@@ -751,11 +751,11 @@ export class NcReceiverMonitor extends NcStatusMonitor
             this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 1), NcPropertyChangeType.ValueChanged, this.overallStatus, null);
             this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 2), NcPropertyChangeType.ValueChanged, this.overallStatusMessage, null);
     
-            this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 3), NcPropertyChangeType.ValueChanged, this.connectionStatus, null);
-            this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 4), NcPropertyChangeType.ValueChanged, this.connectionStatusMessage, null);
-
-            this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 9), NcPropertyChangeType.ValueChanged, this.streamStatus, null);
-            this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 10), NcPropertyChangeType.ValueChanged, this.streamStatusMessage, null);
+            this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 4), NcPropertyChangeType.ValueChanged, this.connectionStatus, null);
+            this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 5), NcPropertyChangeType.ValueChanged, this.connectionStatusMessage, null);
+    
+            this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 12), NcPropertyChangeType.ValueChanged, this.streamStatus, null);
+            this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 13), NcPropertyChangeType.ValueChanged, this.streamStatusMessage, null);
         }
     }
 
@@ -773,11 +773,11 @@ export class NcReceiverMonitor extends NcStatusMonitor
         this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 1), NcPropertyChangeType.ValueChanged, this.overallStatus, null);
         this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 2), NcPropertyChangeType.ValueChanged, this.overallStatusMessage, null);
 
-        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 3), NcPropertyChangeType.ValueChanged, this.connectionStatus, null);
-        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 4), NcPropertyChangeType.ValueChanged, this.connectionStatusMessage, null);
-
-        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 9), NcPropertyChangeType.ValueChanged, this.streamStatus, null);
-        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 10), NcPropertyChangeType.ValueChanged, this.streamStatusMessage, null);
+        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 4), NcPropertyChangeType.ValueChanged, this.connectionStatus, null);
+        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 5), NcPropertyChangeType.ValueChanged, this.connectionStatusMessage, null);
+    
+        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 12), NcPropertyChangeType.ValueChanged, this.streamStatus, null);
+        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 13), NcPropertyChangeType.ValueChanged, this.streamStatusMessage, null);
     }
 
     //'1m1'
@@ -924,7 +924,7 @@ export class NcReceiverMonitor extends NcStatusMonitor
     private ResetSynchronizationSourceChanges()
     {
         this.synchronizationSourceChanges = 0;
-        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 8), NcPropertyChangeType.ValueChanged, this.synchronizationSourceChanges, null);
+        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 11), NcPropertyChangeType.ValueChanged, this.synchronizationSourceChanges, null);
     }
 
     private ResetStatusTransitionCounters()
@@ -1110,7 +1110,7 @@ export class NcSenderMonitor extends NcStatusMonitor
         if(this.autoResetSynchronizationSourceChanges)
         {
             this.synchronizationSourceChanges = 0;
-            this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 8), NcPropertyChangeType.ValueChanged, this.synchronizationSourceChanges, null);
+            this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 11), NcPropertyChangeType.ValueChanged, this.synchronizationSourceChanges, null);
         }
 
         if(this.autoResetStatusTransitionCounters)
@@ -1128,11 +1128,11 @@ export class NcSenderMonitor extends NcStatusMonitor
         this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 1), NcPropertyChangeType.ValueChanged, this.overallStatus, null);
         this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 2), NcPropertyChangeType.ValueChanged, this.overallStatusMessage, null);
 
-        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 3), NcPropertyChangeType.ValueChanged, this.transmissionStatus, null);
-        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 4), NcPropertyChangeType.ValueChanged, this.transmissionStatusMessage, null);
+        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 4), NcPropertyChangeType.ValueChanged, this.transmissionStatus, null);
+        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 5), NcPropertyChangeType.ValueChanged, this.transmissionStatusMessage, null);
 
-        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 9), NcPropertyChangeType.ValueChanged, this.essenceStatus, null);
-        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 10), NcPropertyChangeType.ValueChanged, this.essenceStatusMessage, null);
+        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 12), NcPropertyChangeType.ValueChanged, this.essenceStatus, null);
+        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 13), NcPropertyChangeType.ValueChanged, this.essenceStatusMessage, null);
 
         // Uncomment to emulate broken transmission
         // DelayTask(1000 * this.statusReportingDelay).then(() => this.TransmissionBroken());
@@ -1158,11 +1158,11 @@ export class NcSenderMonitor extends NcStatusMonitor
             this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 1), NcPropertyChangeType.ValueChanged, this.overallStatus, null);
             this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 2), NcPropertyChangeType.ValueChanged, this.overallStatusMessage, null);
 
-            this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 3), NcPropertyChangeType.ValueChanged, this.transmissionStatus, null);
-            this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 4), NcPropertyChangeType.ValueChanged, this.transmissionStatusMessage, null);
+            this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 4), NcPropertyChangeType.ValueChanged, this.transmissionStatus, null);
+            this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 5), NcPropertyChangeType.ValueChanged, this.transmissionStatusMessage, null);
     
-            this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 9), NcPropertyChangeType.ValueChanged, this.essenceStatus, null);
-            this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 10), NcPropertyChangeType.ValueChanged, this.essenceStatusMessage, null);
+            this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 12), NcPropertyChangeType.ValueChanged, this.essenceStatus, null);
+            this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 13), NcPropertyChangeType.ValueChanged, this.essenceStatusMessage, null);
         }
     }
 
@@ -1180,11 +1180,11 @@ export class NcSenderMonitor extends NcStatusMonitor
         this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 1), NcPropertyChangeType.ValueChanged, this.overallStatus, null);
         this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 2), NcPropertyChangeType.ValueChanged, this.overallStatusMessage, null);
 
-        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 3), NcPropertyChangeType.ValueChanged, this.transmissionStatus, null);
-        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 4), NcPropertyChangeType.ValueChanged, this.transmissionStatusMessage, null);
+        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 4), NcPropertyChangeType.ValueChanged, this.transmissionStatus, null);
+        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 5), NcPropertyChangeType.ValueChanged, this.transmissionStatusMessage, null);
 
-        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 9), NcPropertyChangeType.ValueChanged, this.essenceStatus, null);
-        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 10), NcPropertyChangeType.ValueChanged, this.essenceStatusMessage, null);
+        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 12), NcPropertyChangeType.ValueChanged, this.essenceStatus, null);
+        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 13), NcPropertyChangeType.ValueChanged, this.essenceStatusMessage, null);
     }
 
     //'1m1'
@@ -1325,7 +1325,7 @@ export class NcSenderMonitor extends NcStatusMonitor
     private ResetSynchronizationSourceChanges()
     {
         this.synchronizationSourceChanges = 0;
-        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 8), NcPropertyChangeType.ValueChanged, this.synchronizationSourceChanges, null);
+        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 11), NcPropertyChangeType.ValueChanged, this.synchronizationSourceChanges, null);
     }
 
     private ResetStatusTransitionCounters()
