@@ -48,7 +48,7 @@ import {
     NcTouchpointResource,
     NcTouchpointResourceNmos,
     NcTouchpointResourceNmosChannelMapping} from './Core';
-import { ExampleDataType, ExampleControl, GainControl, NcIdentBeacon, NcReceiverMonitor, NcWorker, NcStatusMonitor, NcMethodResultCounters, NcCounter } from './Features';
+import { ExampleDataType, ExampleControl, GainControl, NcIdentBeacon, NcReceiverMonitor, NcWorker, NcStatusMonitor, NcMethodResultCounters, NcCounter, NcSenderMonitor } from './Features';
 
 export abstract class NcManager extends NcObject
 {
@@ -699,6 +699,7 @@ export class NcClassManager extends NcManager
             '1.2.1': NcIdentBeacon.GetClassDescriptor(false),
             '1.2.2': NcStatusMonitor.GetClassDescriptor(false),
             '1.2.2.1': NcReceiverMonitor.GetClassDescriptor(false),
+            '1.2.2.2': NcSenderMonitor.GetClassDescriptor(false),
             '1.3': NcManager.GetClassDescriptor(false),
             '1.3.1': NcDeviceManager.GetClassDescriptor(false),
             '1.3.2': NcClassManager.GetClassDescriptor(false)
@@ -721,6 +722,7 @@ export class NcClassManager extends NcManager
             case '1.2.1': return NcIdentBeacon.GetClassDescriptor(true);
             case '1.2.2': return NcStatusMonitor.GetClassDescriptor(true);
             case '1.2.2.1': return NcReceiverMonitor.GetClassDescriptor(true);
+            case '1.2.2.2': return NcSenderMonitor.GetClassDescriptor(true);
             case '1.3': return NcManager.GetClassDescriptor(true);
             case '1.3.1': return NcDeviceManager.GetClassDescriptor(true);
             case '1.3.2': return NcClassManager.GetClassDescriptor(true);
@@ -851,6 +853,12 @@ export class NcClassManager extends NcManager
                 new NcEnumItemDescriptor("PartiallyHealthy", 2, "Active and partially healthy"),
                 new NcEnumItemDescriptor("Unhealthy", 3, "Active and unhealthy")
             ], null, "Connection status enum data type"),
+            'NcTransmissionStatus': new NcDatatypeDescriptorEnum("NcTransmissionStatus", [
+                new NcEnumItemDescriptor("Inactive", 0, "Inactive"),
+                new NcEnumItemDescriptor("Healthy", 1, "Active and healthy"),
+                new NcEnumItemDescriptor("PartiallyHealthy", 2, "Active and partially healthy"),
+                new NcEnumItemDescriptor("Unhealthy", 3, "Active and unhealthy")
+            ], null, "Transmission status enum data type"),
             'NcSynchronizationStatus': new NcDatatypeDescriptorEnum("NcSynchronizationStatus", [
                 new NcEnumItemDescriptor("NotUsed", 0, "Feature not in use"),
                 new NcEnumItemDescriptor("Healthy", 1, "Locked to a synchronization source"),
@@ -863,6 +871,12 @@ export class NcClassManager extends NcManager
                 new NcEnumItemDescriptor("PartiallyHealthy", 2, "Active and partially healthy"),
                 new NcEnumItemDescriptor("Unhealthy", 3, "Active and unhealthy")
             ], null, "Stream status enum data type"),
+            'NcEssenceStatus': new NcDatatypeDescriptorEnum("NcEssenceStatus", [
+                new NcEnumItemDescriptor("Inactive", 0, "Inactive"),
+                new NcEnumItemDescriptor("Healthy", 1, "Active and healthy"),
+                new NcEnumItemDescriptor("PartiallyHealthy", 2, "Active and partially healthy"),
+                new NcEnumItemDescriptor("Unhealthy", 3, "Active and unhealthy")
+            ], null, "Essence status enum data type"),
             'NcTouchpoint': NcTouchpoint.GetTypeDescriptor(false),
             'NcTouchpointResource': NcTouchpointResource.GetTypeDescriptor(false),
             'NcTouchpointNmos': NcTouchpointNmos.GetTypeDescriptor(false),

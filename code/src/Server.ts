@@ -15,9 +15,13 @@ import { SessionManager } from './SessionManager';
 import { NcBlock, RootBlock } from './NCModel/Blocks';
 import { NcClassManager, NcDeviceManager } from './NCModel/Managers';
 import { NcMethodStatus, NcTouchpointNmos, NcTouchpointResourceNmos } from './NCModel/Core';
-import { ExampleControl, GainControl, NcIdentBeacon, NcReceiverMonitor } from './NCModel/Features';
+import { ExampleControl, GainControl, NcIdentBeacon, NcReceiverMonitor, NcSenderMonitor } from './NCModel/Features';
 import { ProtocolError, ProtocolSubscription } from './NCProtocol/Commands';
 import { MessageType, ProtocolWrapper } from './NCProtocol/Core';
+import { NmosSourceVideo } from './NmosSourceVideo';
+import { NmosFlowVideo } from './NmosFlowVideo';
+import { NmosSenderVideo } from './NmosSenderVideo';
+import { NmosSenderActiveRtp } from './NmosSenderActiveRtp';
 
 export interface WebSocketConnection extends WebSocket {
     isAlive: boolean;
@@ -58,14 +62,72 @@ try
         config.function,
         registrationClient);
 
+    const myVideoSource = new NmosSourceVideo(
+        config.source_id,
+        config.device_id,
+        config.base_label,
+        [],
+        myNode.clocks[0].name,
+        25,
+        1,
+        "urn:x-nmos:format:video",
+        registrationClient);
+
+    const myVideoFlow = new NmosFlowVideo(
+        config.flow_id,
+        config.source_id,
+        config.device_id,
+        config.base_label,
+        [],
+        25,
+        1,
+        "urn:x-nmos:format:video",
+        1920,
+        1080,
+        "BT709",
+        "interlaced_tff",
+        "SDR",
+        "video/raw",
+        [
+            {
+                "name": "Y",
+                "width": 1920,
+                "height": 1080,
+                "bit_depth": 10
+            },
+            {
+                "name": "Cb",
+                "width": 960,
+                "height": 1080,
+                "bit_depth": 10
+            },
+            {
+                "name": "Cr",
+                "width": 960,
+                "height": 1080,
+                "bit_depth": 10
+            }
+        ],
+        registrationClient);
+
+    const myVideoSender = new NmosSenderVideo(
+        config.sender_id,
+        config.flow_id,
+        config.device_id,
+        config.base_label,
+        "urn:x-nmos:transport:rtp.mcast",
+        `http://${config.address}:${config.port}/x-nmos/node/v1.2/senders/${config.sender_id}/sdp`,
+        registrationClient);
+
     const myVideoReceiver = new NmosReceiverVideo(
         config.receiver_id,
         config.device_id,
         config.base_label,
         'urn:x-nmos:transport:rtp.mcast',
-        registrationClient)
+        registrationClient);
 
     myDevice.AddReceiver(myVideoReceiver);
+    myDevice.AddSender(myVideoSender);
 
     const sessionManager = new SessionManager(config.notify_without_subscriptions);
 
@@ -115,7 +177,7 @@ try
         sessionManager);
 
     const stereoGainBlock = new NcBlock(
-        31,
+        131,
         true,
         rootBlock,
         'stereo-gain',
@@ -128,7 +190,7 @@ try
         sessionManager);
 
     const channelGainBlock = new NcBlock(
-        21,
+        121,
         true,
         stereoGainBlock,
         'channel-gain',
@@ -178,15 +240,47 @@ try
 
     receiversBlock.UpdateMembers([ receiverMonitor ]);
 
+    const sendersBlock = new NcBlock(
+        20,
+        true,
+        rootBlock,
+        'senders',
+        'Senders',
+        null,
+        null,
+        true,
+        [],
+        "Receivers block",
+        sessionManager);
+    
+    const senderMonitor = new NcSenderMonitor(
+        21,
+        true,
+        sendersBlock,
+        'monitor-01',
+        'Sender monitor 01',
+        [ new NcTouchpointNmos('x-nmos', new NcTouchpointResourceNmos('sender', myVideoSender.id)) ],
+        null,
+        true,
+        "Sender monitor worker",
+        sessionManager);
+
+    myVideoSender.AttachMonitoringAgent(senderMonitor);
+
+    sendersBlock.UpdateMembers([ senderMonitor ]);
+
     const identBeacon = new NcIdentBeacon(51, true, rootBlock, "IdentBeacon", "Identification beacon", [], null, true, false, "Identification beacon", sessionManager);
 
-    rootBlock.UpdateMembers([ deviceManager, classManager, receiversBlock, stereoGainBlock, exampleControl, identBeacon ]);
+    rootBlock.UpdateMembers([ deviceManager, classManager, receiversBlock, sendersBlock, stereoGainBlock, exampleControl, identBeacon ]);
 
     async function doAsync () {
         await registrationClient.RegisterOrUpdateResource('node', myNode);
         registrationClient.StartHeatbeats(myNode.id);
         await registrationClient.RegisterOrUpdateResource('device', myDevice);
         await registrationClient.RegisterOrUpdateResource('receiver', myVideoReceiver);
+        await registrationClient.RegisterOrUpdateResource('source', myVideoSource);
+        await registrationClient.RegisterOrUpdateResource('flow', myVideoFlow);
+        await registrationClient.RegisterOrUpdateResource('sender', myVideoSender);
     };
 
     doAsync();
@@ -373,17 +467,62 @@ try
 
     app.get('/x-nmos/node/v1.3/sources', function (req, res) {
         res.setHeader('Content-Type', 'application/json');
-        res.send(JSON.stringify([]));
+        res.send(myVideoSource.ToJsonArray());
+    })
+
+    app.get('/x-nmos/node/v1.3/sources/:id', function (req, res) {
+        res.setHeader('Content-Type', 'application/json');
+
+        if(req.params.id === myVideoSource.id)
+            res.send(myVideoSource.ToJson());
+        else
+            res.sendStatus(404);
     })
 
     app.get('/x-nmos/node/v1.3/flows', function (req, res) {
         res.setHeader('Content-Type', 'application/json');
-        res.send(JSON.stringify([]));
+        res.send(myVideoFlow.ToJsonArray());
+    })
+
+    app.get('/x-nmos/node/v1.3/flows/:id', function (req, res) {
+        res.setHeader('Content-Type', 'application/json');
+
+        if(req.params.id === myVideoFlow.id)
+            res.send(myVideoFlow.ToJson());
+        else
+            res.sendStatus(404);
     })
 
     app.get('/x-nmos/node/v1.3/senders', function (req, res) {
         res.setHeader('Content-Type', 'application/json');
-        res.send(JSON.stringify([]));
+        res.send(JSON.stringify(myDevice.FetchSenders(), jsonIgnoreReplacer));
+    })
+
+    app.get('/x-nmos/node/v1.3/senders/:id', function (req, res) {
+        res.setHeader('Content-Type', 'application/json');
+
+        if(myDevice.FindSender(req.params.id))
+            res.send(myDevice.FetchSender(req.params.id)?.ToJson());
+        else
+            res.sendStatus(404);
+    })
+
+    app.get('/x-nmos/node/v1.2/senders/:id/sdp', function (req, res) {
+        res.setHeader('Content-Type', 'application/sdp');
+
+        if(myDevice.FindSender(req.params.id))
+            res.send(myDevice.FetchSender(req.params.id)?.FetchSdp());
+        else
+            res.sendStatus(404);
+    })
+
+    app.get('/x-nmos/node/v1.3/senders/:id/sdp', function (req, res) {
+        res.setHeader('Content-Type', 'application/sdp');
+
+        if(myDevice.FindSender(req.params.id))
+            res.send(myDevice.FetchSender(req.params.id)?.FetchSdp());
+        else
+            res.sendStatus(404);
     })
 
     app.get('/x-nmos/node/v1.3/receivers', function (req, res) {
@@ -423,7 +562,81 @@ try
 
     app.get('/x-nmos/connection/:version/single/senders', function (req, res) {
         res.setHeader('Content-Type', 'application/json');
-        res.send(JSON.stringify([]));
+        res.send(JSON.stringify(myDevice.FetchSendersUris()));
+    })
+
+    app.get('/x-nmos/connection/:version/single/senders/:id', function (req, res) {
+        res.setHeader('Content-Type', 'application/json');
+
+        if(myDevice.FindSender(req.params.id))
+            res.send(JSON.stringify([ 
+                'constraints/',
+                'staged/',
+                'active/',
+                'transportfile/',
+                'transporttype/'
+            ]));
+        else
+            res.sendStatus(404);
+    })
+
+    app.get('/x-nmos/connection/:version/single/senders/:id/constraints', function (req, res) {
+        res.setHeader('Content-Type', 'application/json');
+
+        if(myDevice.FindSender(req.params.id))
+            res.send(JSON.stringify(myDevice.FetchSender(req.params.id)?.FetchConstraints()));
+        else
+            res.sendStatus(404);
+    })
+
+    app.get('/x-nmos/connection/:version/single/senders/:id/active', function (req, res) {
+        res.setHeader('Content-Type', 'application/json');
+
+        if(myDevice.FindSender(req.params.id))
+            res.send((myDevice.FetchSender(req.params.id)?.FetchActive()?.ToJson()));
+        else
+            res.sendStatus(404);
+    })
+
+    app.get('/x-nmos/connection/:version/single/senders/:id/staged', function (req, res) {
+        res.setHeader('Content-Type', 'application/json');
+
+        if(myDevice.FindSender(req.params.id))
+            res.send((myDevice.FetchSender(req.params.id)?.FetchStaged()?.ToJson()));
+        else
+            res.sendStatus(404);
+    })
+
+    app.patch('/x-nmos/connection/:version/single/senders/:id/staged', function (req, res) {
+        res.setHeader('Content-Type', 'application/json');
+
+        let settings = req.body as NmosSenderActiveRtp;
+
+        if(myDevice.FindSender(req.params.id))
+        {
+            myDevice.ChangeSenderSettings(req.params.id, settings);
+            res.send((myDevice.FetchSender(req.params.id)?.FetchActive()?.ToJson()));
+        }
+        else
+            res.sendStatus(404);
+    })
+
+    app.get('/x-nmos/connection/:version/single/senders/:id/transportfile', function (req, res) {
+        res.setHeader('Content-Type', 'application/sdp');
+
+        if(myDevice.FindSender(req.params.id))
+            res.send(myDevice.FetchSender(req.params.id)?.FetchSdp());
+        else
+            res.sendStatus(404);
+    })
+
+    app.get('/x-nmos/connection/:version/single/senders/:id/transporttype', function (req, res) {
+        res.setHeader('Content-Type', 'application/json');
+
+        if(myDevice.FindSender(req.params.id))
+            res.send(JSON.stringify(myDevice.FetchSender(req.params.id)?.FetchTransportType()));
+        else
+            res.sendStatus(404);
     })
 
     app.get('/x-nmos/connection/:version/single/receivers', function (req, res) {
@@ -436,10 +649,10 @@ try
 
         if(myDevice.FindReceiver(req.params.id))
             res.send(JSON.stringify([ 
-                'constrains/',
+                'constraints/',
                 'staged/',
                 'active/',
-                'transporttype'
+                'transporttype/'
             ]));
         else
             res.sendStatus(404);
