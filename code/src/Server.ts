@@ -230,10 +230,42 @@ try
 
     receiversBlock.UpdateMembers([ receiverMonitor ]);
 
+    const sendersBlock = new NcBlock(
+        rootBlock.AllocateOid(rootBlock.GetRolePathForMember('senders').join('.')),
+        true,
+        rootBlock,
+        'senders',
+        'Senders',
+        null,
+        null,
+        true,
+        [],
+        "Senders block",
+        sessionManager,
+        rootBlock);
+    
+    const senderMonitor = new NcSenderMonitor(
+        rootBlock.AllocateOid(sendersBlock.GetRolePathForMember('monitor-01').join('.')),
+        true,
+        sendersBlock,
+        'monitor-01',
+        'Sender monitor 01',
+        [ new NcTouchpointNmos('x-nmos', new NcTouchpointResourceNmos('sender', myVideoSender.id)) ],
+        null,
+        true,
+        "Sender monitor worker",
+        sessionManager);
+
+    myVideoSender.AttachMonitoringAgent(senderMonitor);
+
+    sendersBlock.UpdateMembers([ senderMonitor ]);
+
     const identBeacon = new NcIdentBeacon(rootBlock.AllocateOid(rootBlock.GetRolePathForMember('IdentBeacon').join('.')), true, rootBlock, 'IdentBeacon', 'Identification beacon', [], null, true, false, 'Identification beacon', sessionManager);
 
     const exampleControlsBlock = new ExampleControlsBlock(
         rootBlock.AllocateOid(rootBlock.GetRolePathForMember('example-controls').join('.')),
+        true,
+        rootBlock,
         'example-controls',
         'Example controls',
         null,
@@ -261,10 +293,7 @@ try
 
     exampleControlsBlock.UpdateMembers([ exampleControl ]);
 
-    sendersBlock.UpdateMembers([ senderMonitor ]);
-
-
-    rootBlock.UpdateMembers([ deviceManager, classManager, receiversBlock, stereoGainBlock, exampleControlsBlock, identBeacon ]);
+    rootBlock.UpdateMembers([ deviceManager, classManager, receiversBlock, sendersBlock, stereoGainBlock, exampleControlsBlock, identBeacon ]);
 
     async function doAsync () {
         await registrationClient.RegisterOrUpdateResource('node', myNode);
