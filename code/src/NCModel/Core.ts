@@ -1,6 +1,5 @@
 import { jsonIgnoreReplacer, jsonIgnore } from 'json-ignore';
 import { CommandResponseError, CommandResponseNoValue, CommandResponseWithValue } from '../NCProtocol/Commands';
-import { WebSocketConnection } from '../Server';
 import { INotificationContext } from '../SessionManager';
 
 export function myIdDecorator(identity: string) {
@@ -49,6 +48,8 @@ export abstract class NcObject
 
     public ownerObject: NcObject | null;
 
+    protected isRebuildable: boolean;
+
     public constructor(
         oid: number,
         constantOid: boolean,
@@ -58,7 +59,8 @@ export abstract class NcObject
         touchpoints: NcTouchpoint[] | null,
         runtimePropertyConstraints: NcPropertyConstraints[] | null,
         description: string,
-        notificationContext: INotificationContext)
+        notificationContext: INotificationContext,
+        isRebuildable: boolean = false)
     {
         this.oid = oid;
         this.constantOid = constantOid;
@@ -70,6 +72,8 @@ export abstract class NcObject
         this.runtimePropertyConstraints = runtimePropertyConstraints;
         this.description = description;
         this.notificationContext = notificationContext;
+
+        this.isRebuildable = isRebuildable;
     }
 
     //'1m1'
@@ -135,13 +139,42 @@ export abstract class NcObject
         return new CommandResponseError(handle, NcMethodStatus.BadOid, 'OID could not be found');
     }
 
-    public InvokeMethod(socket: WebSocketConnection, oid: number, methodId: NcElementId, args: { [key: string]: any } | null, handle: number) : CommandResponseNoValue
+    public InvokeMethod(oid: number, methodId: NcElementId, args: { [key: string]: any } | null, handle: number) : CommandResponseNoValue
     {
         if(oid == this.oid)
         {
             let key: string = `${methodId.level}m${methodId.index}`;
             switch(key)
             {
+                case '1m1': //Get
+                    {
+                        if(args != null &&
+                            'id' in args)
+                        {
+                            let propertyId = args['id'] as NcElementId;
+                            if(propertyId)
+                                return this.Get(this.oid, propertyId, handle);
+                            else
+                                return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid id argument provided');
+                        }
+                        else
+                            return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid arguments provided');
+                    }
+                case '1m2': //Set
+                    {
+                        if(args != null &&
+                            'id' in args &&
+                            'value' in args)
+                        {
+                            let propertyId = args['id'] as NcElementId;
+                            if(propertyId)
+                                return this.Set(this.oid, propertyId, args['value'], handle);
+                            else
+                                return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid id argument provided');
+                        }
+                        else
+                            return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid arguments provided');
+                    }
                 case '1m3': //GetSequenceItem
                     {
                         if(args != null &&
@@ -343,6 +376,22 @@ export abstract class NcObject
         );
     }
 
+    public GetAllProperties(recurse: boolean) : NcObjectPropertiesHolder[]
+    {
+        return [
+            new NcObjectPropertiesHolder(this.GetRolePath(), [], [
+                new NcPropertyValueHolder(new NcPropertyId(1, 1), "classId", "NcClassId", true, this.classID),
+                new NcPropertyValueHolder(new NcPropertyId(1, 2), "oid", "NcOid", true, this.oid),
+                new NcPropertyValueHolder(new NcPropertyId(1, 3), "constantOid", "NcBoolean", true, this.constantOid),
+                new NcPropertyValueHolder(new NcPropertyId(1, 4), "owner", "NcOid", true, this.owner),
+                new NcPropertyValueHolder(new NcPropertyId(1, 5), "role", "NcString", true, this.role),
+                new NcPropertyValueHolder(new NcPropertyId(1, 6), "userLabel", "NcString", false, this.userLabel),
+                new NcPropertyValueHolder(new NcPropertyId(1, 7), "touchpoints", "NcTouchpoint", true, this.touchpoints),
+                new NcPropertyValueHolder(new NcPropertyId(1, 8), "runtimePropertyConstraints", "NcPropertyConstraints", true, this.runtimePropertyConstraints),
+            ], [], this.isRebuildable)
+        ];
+    }
+
     public GetRolePath(): string[]
     {
         let rolePath: string[] = [];
@@ -354,6 +403,13 @@ export abstract class NcObject
 
         return rolePath;
     }
+
+    public GetRolePathUrl(): string
+    {
+        return this.GetRolePath().join('.') + "/";
+    }
+
+    public abstract Restore(restoreArguments: RestoreArguments, applyChanges: Boolean) : NcObjectPropertiesSetValidation[]
 }
 
 export class NcElementId extends BaseType
@@ -377,6 +433,34 @@ export class NcElementId extends BaseType
             new NcFieldDescriptor("level", "NcUint16", false, false, null, "Level of the element"),
             new NcFieldDescriptor("index", "NcUint16", false, false, null, "Index of the element")
         ], null, null, "Class element id which contains the level and index");
+    }
+
+    public static ToPropertyId(id: string) : NcPropertyId | null
+    {
+        let split = id.split('p');
+        if(split.length == 2)
+            return new NcPropertyId(Number(split[0] || 0), Number(split[1] || 0));
+        else
+            return null;
+    }
+
+    public static ToMethodId(id: string) : NcMethodId | null
+    {
+        let split = id.split('m');
+        if(split.length == 2)
+            return new NcMethodId(Number(split[0] || 0), Number(split[1] || 0));
+        else
+            return null;
+    }
+
+    public static ToPropertyString(id: NcElementId) : string
+    {
+        return `${id.level}p${id.index}`;
+    }
+
+    public static ToMethodString(id: NcElementId) : string
+    {
+        return `${id.level}m${id.index}`;
     }
 
     public ToJson()
@@ -1808,5 +1892,299 @@ export class NcDatatypeDescriptorEnum extends NcDatatypeDescriptor
     public ToJson()
     {
         return JSON.stringify(this, jsonIgnoreReplacer);
+    }
+}
+
+export class NcPropertyValueHolder extends BaseType
+{
+    public id: NcPropertyId;
+    public name: string;
+    public typeName: string | null;
+    public isReadOnly: boolean;
+    public value: any;
+
+    public constructor(
+        id: NcPropertyId,
+        name: string,
+        typeName: string | null,
+        isReadOnly: boolean,
+        value: any)
+    {
+        super();
+
+        this.id = id;
+        this.name = name;
+        this.typeName = typeName;
+        this.isReadOnly = isReadOnly;
+        this.value = value;
+    }
+
+    public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor
+    {
+        return new NcDatatypeDescriptorStruct("NcPropertyValueHolder", [
+            new NcFieldDescriptor("id", "NcPropertyId", false, false, null, "Property id"),
+            new NcFieldDescriptor("name", "NcString", false, false, null, "Property name"),
+            new NcFieldDescriptor("typeName", "NcName", true, false, null, "Property type name. If null it means the type is any"),
+            new NcFieldDescriptor("isReadOnly", "NcBoolean", false, false, null, "Is the property ReadOnly?"),
+            new NcFieldDescriptor("value", null, true, false, null, "Property value"),
+        ], null, null, "Property value holder descriptor");
+    }
+}
+
+export class NcObjectPropertiesHolder extends BaseType
+{
+    public path: string[];
+    public dependencyPaths: string[][]
+    public allowedMembersClasses: number[][]
+    public values: NcPropertyValueHolder[];
+    public isRebuildable: boolean;
+
+    public constructor(
+        path: string[],
+        dependencyPaths: string[][],
+        values: NcPropertyValueHolder[],
+        allowedMembersClasses: number[][],
+        isRebuildable: boolean)
+    {
+        super();
+
+        this.path = path;
+        this.dependencyPaths = dependencyPaths;
+        this.allowedMembersClasses = allowedMembersClasses;
+        this.values = values;
+        this.isRebuildable = isRebuildable;
+    }
+
+    public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor
+    {
+        return new NcDatatypeDescriptorStruct("NcObjectPropertiesHolder", [
+            new NcFieldDescriptor("path", "NcRolePath", false, false, null, "Object role path"),
+            new NcFieldDescriptor("dependencyPaths", "NcRolePath", false, true, null, "Sequence of role paths which are a dependency for this object (helpful to inform clients which objects need to be restored together)"),
+            new NcFieldDescriptor("allowedMembersClasses", "NcClassId", false, true, null, "Sequence of class ids allowed as members of the block (non-block objects have this as an empty sequence)"),
+            new NcFieldDescriptor("values", "NcPropertyValueHolder", false, true, null, "Object properties values"),
+            new NcFieldDescriptor("isRebuildable", "NcBoolean", false, false, null, "Describes if the object is rebuildable"),
+        ], null, null, "Object properties holder descriptor");
+    }
+}
+
+export class NcBulkValuesHolder extends BaseType
+{
+    public validationFingerprint: string | null;
+    public values: NcObjectPropertiesHolder[];
+
+    public constructor(
+        validationFingerprint: string | null,
+        values: NcObjectPropertiesHolder[])
+    {
+        super();
+
+        this.validationFingerprint = validationFingerprint;
+        this.values = values;
+    }
+
+    public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor
+    {
+        return new NcDatatypeDescriptorStruct("NcBulkValuesHolder", [
+            new NcFieldDescriptor("validationFingerprint", "NcString", true, false, null, "Optional vendor specific fingerprinting mechanism used for validation purposes"),
+            new NcFieldDescriptor("values", "NcObjectPropertiesHolder", false, true, null, "Values by rolePath")
+        ], null, null, "Bulk values holder descriptor");
+    }
+}
+
+export class NcMethodResultBulkValuesHolder extends NcMethodResult
+{
+    public value: NcBulkValuesHolder;
+
+    public constructor(
+        status: NcMethodStatus,
+        value: NcBulkValuesHolder)
+    {
+        super(status);
+
+        this.value = value;
+    }
+
+    public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor
+    {
+        let currentClassDescriptor = new NcDatatypeDescriptorStruct("NcMethodResultBulkValuesHolder", [
+            new NcFieldDescriptor("value", "NcBulkValuesHolder", false, false, null, "Bulk values holder value")
+        ], "NcMethodResult", null, "Bulk values holder result")
+
+        if(includeInherited)
+        {
+            let baseDescriptor = super.GetTypeDescriptor(includeInherited);
+
+            let baseDescriptorStruct = baseDescriptor as NcDatatypeDescriptorStruct;
+            if(baseDescriptorStruct)
+                currentClassDescriptor.fields = currentClassDescriptor.fields.concat(baseDescriptorStruct.fields);
+        }
+
+        return currentClassDescriptor;
+    }
+}
+
+export class ConfigApiValue
+{
+    public value: any;
+
+    constructor(
+        value: any)
+    {
+        this.value = value;
+    }
+}
+
+export class ConfigApiArguments
+{
+    public arguments: { [key: string]: any } | null;
+
+    constructor(
+        configArguments: { [key: string]: any } | null)
+    {
+        this.arguments = configArguments;
+    }
+}
+
+export class RestoreBody
+{
+    public arguments: RestoreArguments;
+
+    constructor(
+        restoreArguments: RestoreArguments)
+    {
+        this.arguments = restoreArguments;
+    }
+}
+
+export enum NcRestoreMode
+{
+    Modify = 0,
+    Rebuild = 1
+}
+
+export class RestoreArguments
+{
+    public dataSet: NcBulkValuesHolder;
+    public recurse: boolean;
+    public restoreMode: NcRestoreMode;
+
+    constructor(
+        dataSet: NcBulkValuesHolder,
+        recurse: boolean,
+        restoreMode: NcRestoreMode)
+    {
+        this.dataSet = dataSet;
+        this.recurse = recurse;
+        this.restoreMode = restoreMode;
+    }
+}
+
+export enum NcRestoreValidationStatus
+{
+    Ok = 200,
+    Failed = 400,
+    NotFound = 404,
+    DeviceError = 500
+}
+
+export enum NcPropertyRestoreNoticeType
+{
+    Warning = 300,
+    Error = 400
+}
+
+export class NcPropertyRestoreNotice extends BaseType
+{
+    public id: NcPropertyId;
+    public name: string;
+    public noticeType: NcPropertyRestoreNoticeType;
+    public noticeMessage: string;
+
+    public constructor(
+        id: NcPropertyId,
+        name: string,
+        noticeType: NcPropertyRestoreNoticeType,
+        noticeMessage: string)
+    {
+        super();
+
+        this.id = id;
+        this.name = name;
+        this.noticeType = noticeType;
+        this.noticeMessage = noticeMessage;
+    }
+
+    public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor
+    {
+        return new NcDatatypeDescriptorStruct("NcPropertyRestoreNotice", [
+            new NcFieldDescriptor("id", "NcPropertyId", false, false, null, "Property id"),
+            new NcFieldDescriptor("name", "NcName", false, false, null, "Property name"),
+            new NcFieldDescriptor("noticeType", "NcPropertyRestoreNoticeType", false, false, null, "Property restore notice type"),
+            new NcFieldDescriptor("noticeMessage", "NcString", false, false, null, "Property restore notice message")
+        ], null, null, "Property restore notice descriptor");
+    }
+}
+
+export class NcObjectPropertiesSetValidation extends BaseType
+{
+    public path: string[];
+    public status: NcRestoreValidationStatus;
+    public notices: NcPropertyRestoreNotice[];
+    public statusMessage: string | null;
+
+    public constructor(
+        path: string[],
+        status: NcRestoreValidationStatus,
+        notices: NcPropertyRestoreNotice[],
+        statusMessage: string | null)
+    {
+        super();
+
+        this.path = path;
+        this.status = status;
+        this.notices = notices;
+        this.statusMessage = statusMessage;
+    }
+
+    public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor
+    {
+        return new NcDatatypeDescriptorStruct("NcObjectPropertiesSetValidation", [
+            new NcFieldDescriptor("path", "NcRolePath", false, false, null, "Object role path"),
+            new NcFieldDescriptor("status", "NcRestoreValidationStatus", false, false, null, "Validation status"),
+            new NcFieldDescriptor("notices", "NcPropertyRestoreNotice", false, true, null, "Validation property notices"),
+            new NcFieldDescriptor("statusMessage", "NcString", true, false, null, "Validation status message"),
+        ], null, null, "Object properties bulk set validation");
+    }
+}
+
+export class NcMethodResultObjectPropertiesSetValidation extends NcMethodResult
+{
+    public value: NcObjectPropertiesSetValidation[];
+
+    public constructor(
+        status: NcMethodStatus,
+        value: NcObjectPropertiesSetValidation[])
+    {
+        super(status);
+
+        this.value = value;
+    }
+
+    public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor
+    {
+        let currentClassDescriptor = new NcDatatypeDescriptorStruct("NcMethodResultObjectPropertiesSetValidation", [
+            new NcFieldDescriptor("value", "NcObjectPropertiesSetValidation", false, true, null, "Object properties set path validations")
+        ], "NcMethodResult", null, "Object properties bulk set validation result")
+
+        if(includeInherited)
+        {
+            let baseDescriptor = super.GetTypeDescriptor(includeInherited);
+
+            let baseDescriptorStruct = baseDescriptor as NcDatatypeDescriptorStruct;
+            if(baseDescriptorStruct)
+                currentClassDescriptor.fields = currentClassDescriptor.fields.concat(baseDescriptorStruct.fields);
+        }
+
+        return currentClassDescriptor;
     }
 }

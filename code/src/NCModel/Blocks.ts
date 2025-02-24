@@ -6,19 +6,33 @@ import { INotificationContext } from '../SessionManager';
 import {
     myIdDecorator,
     NcBlockMemberDescriptor,
+    NcBulkValuesHolder,
     NcClassDescriptor,
     NcElementId,
     NcMethodDescriptor,
     NcMethodStatus,
     NcObject,
+    NcObjectPropertiesHolder,
+    NcObjectPropertiesSetValidation,
     NcParameterDescriptor,
+    NcPropertyChangeType,
     NcPropertyConstraints,
     NcPropertyDescriptor,
-    NcTouchpoint } from './Core';
+    NcPropertyId,
+    NcPropertyRestoreNotice,
+    NcPropertyRestoreNoticeType,
+    NcPropertyValueHolder,
+    NcRestoreMode,
+    NcRestoreValidationStatus,
+    NcTouchpoint, 
+    RestoreArguments } from './Core';
+import { ExampleControl } from './Features';
 
 export class NcBlock extends NcObject
 {
     public static staticClassID: number[] = [ 1, 1 ];
+
+    public static readonly RootOid: number = 1;
 
     @myIdDecorator('1p1')
     public override classID: number[] = NcBlock.staticClassID;
@@ -31,6 +45,10 @@ export class NcBlock extends NcObject
 
     public memberObjects: NcObject[];
 
+    protected maxMembers: number | null;
+
+    protected rootContext: IRootContext | null;
+
     public constructor(
         oid: number,
         constantOid: boolean,
@@ -42,9 +60,16 @@ export class NcBlock extends NcObject
         enabled: boolean,
         memberObjects: NcObject[],
         description: string,
-        notificationContext: INotificationContext)
+        notificationContext: INotificationContext,
+        rootContext: IRootContext | null,
+        maxMembers: number | null = null,
+        isRebuildable: boolean = false)
     {
-        super(oid, constantOid, ownerObject, role, userLabel, touchpoints, runtimePropertyConstraints, description, notificationContext);
+        super(oid, constantOid, ownerObject, role, userLabel, touchpoints, runtimePropertyConstraints, description, notificationContext, isRebuildable);
+
+        this.maxMembers = maxMembers;
+
+        this.rootContext = rootContext;
 
         this.enabled = enabled;
         this.memberObjects = memberObjects;
@@ -93,7 +118,7 @@ export class NcBlock extends NcObject
         return new CommandResponseError(handle, NcMethodStatus.BadOid, 'OID could not be found');
     }
 
-    public override InvokeMethod(socket: WebSocketConnection, oid: number, methodId: NcElementId, args: { [key: string]: any; } | null, handle: number): CommandResponseNoValue 
+    public override InvokeMethod(oid: number, methodId: NcElementId, args: { [key: string]: any; } | null, handle: number): CommandResponseNoValue 
     {
         if(oid == this.oid)
         {
@@ -303,7 +328,7 @@ export class NcBlock extends NcObject
                             return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid arguments provided');
                     }
                 default:
-                    return super.InvokeMethod(socket, oid, methodId, args, handle);
+                    return super.InvokeMethod(oid, methodId, args, handle);
             }
         }
 
@@ -388,10 +413,13 @@ export class NcBlock extends NcObject
         return currentClassDescriptor;
     }
 
-    public UpdateMembers(memberObjects: NcObject[])
+    public UpdateMembers(memberObjects: NcObject[], notify: boolean = false)
     {
         this.memberObjects = memberObjects;
         this.members = this.memberObjects.map(x => x.GenerateMemberDescriptor());
+
+        if(notify)
+            this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(2, 2), NcPropertyChangeType.ValueChanged, this.members, null);
     }
 
     public GenerateMemberDescriptors(recurse: boolean) : NcBlockMemberDescriptor[]
@@ -463,6 +491,63 @@ export class NcBlock extends NcObject
             return new Array<NcBlockMemberDescriptor>();
     }
 
+    public FindMemberByRolePath(rolePath: string[]) : NcObject | null
+    {
+        if(rolePath.length == 1 && rolePath[0] == this.role)
+        {
+            return this;
+        }
+        else if(rolePath.length > 1 && rolePath[0] == this.role)
+        {
+            let childRole = rolePath[1];
+            if(this.memberObjects != null)
+            {
+                let member = this.memberObjects.find(e => e.role === childRole);
+                if(member)
+                {
+                    if(rolePath.length == 2)
+                    {
+                        return member;
+                    }
+                    else if(member instanceof NcBlock)
+                    {
+                        let furtherPath = rolePath.splice(1);
+                        return member.FindMemberByRolePath(furtherPath);
+                    }
+                    else
+                        return null;
+                }
+                else
+                return null;
+            }
+            else
+                return null;
+        }
+        else
+            return null;
+    }
+
+    public override GetAllProperties(recurse: boolean) : NcObjectPropertiesHolder[]
+    {
+        let holders = [
+            new NcObjectPropertiesHolder(this.GetRolePath(), [], [
+                new NcPropertyValueHolder(new NcPropertyId(2, 1), "enabled", "NcBoolean", true, this.enabled),
+                new NcPropertyValueHolder(new NcPropertyId(2, 2), "members", "NcBlockMemberDescriptor", true, this.members)
+            ], [], this.isRebuildable)
+        ];
+
+        holders[0].values = holders[0].values.concat(super.GetAllProperties(recurse)[0].values);
+
+        if(recurse)
+        {
+            this.memberObjects.forEach(member => {
+                holders = holders.concat(member.GetAllProperties(recurse));
+            });
+        }
+
+        return holders
+    }
+
     public GenerateMemberDescriptorsByRole(role: string, caseSensitive: boolean, matchWholeString: boolean, recurse: boolean) : NcBlockMemberDescriptor[]
     {
         if(this.memberObjects != null)
@@ -528,12 +613,144 @@ export class NcBlock extends NcObject
         else
             return new Array<NcBlockMemberDescriptor>()
     }
+
+    public GetRolePathUrls(): string[]
+    {
+        let urls = new Array<string>();
+
+        urls = urls.concat(this.GetRolePathUrl());
+
+        this.memberObjects.forEach(member => {
+            if(member instanceof NcBlock)
+                urls = urls.concat(member.GetRolePathUrls());
+            else
+                urls = urls.concat(member.GetRolePathUrl());
+        });
+
+        return urls;
+    }
+
+    public GetRolePathForMember(role: string): string[]
+    {
+        return this.GetRolePath().concat(role);
+    }
+
+    public ReconstructMembers(members: NcBlockMemberDescriptor[], dataSet: NcBulkValuesHolder, applyChanges: Boolean = true) : [NcPropertyRestoreNotice | null, NcObjectPropertiesSetValidation[]]
+    {
+        //Left intentionally empty as "virtual" so that rebuildable blocks override this with the desired behaviour
+        return [null, []];
+    }
+
+    public override Restore(restoreArguments: RestoreArguments, applyChanges: Boolean) : NcObjectPropertiesSetValidation[]
+    {
+        let validationEntries = new Array<NcObjectPropertiesSetValidation>();
+
+        let myRestoreData = restoreArguments.dataSet.values.find(f => f.path.join('.') == this.GetRolePath().join('.'))
+        if(myRestoreData)
+        {
+            let myNotices = new Array<NcPropertyRestoreNotice>();
+
+            myRestoreData.values.forEach(propertyData => 
+            {
+                let propertyId = NcElementId.ToPropertyString(propertyData.id);
+
+                if(restoreArguments.restoreMode == NcRestoreMode.Rebuild)
+                {
+                    if(propertyId != '1p6' && propertyId != '2p2')
+                        myNotices.push(new NcPropertyRestoreNotice(
+                            propertyData.id,
+                            propertyData.name,
+                            NcPropertyRestoreNoticeType.Warning,
+                            "Property cannot be changed and will be left untouched"));
+                    else
+                    {
+                        //Perform further validation
+                        if(propertyId == '2p2')
+                        {
+                            //Structural changes to the members
+                            let membersData = propertyData.value as NcBlockMemberDescriptor[];
+                            if(membersData)
+                            {
+                                //TODO: Might need to include the list of members in the outcomes of ReconstructMembers so that we can skip them from further restore actions because they would have already been applied when creating the member objects
+
+                                let outcomes = this.ReconstructMembers(membersData, restoreArguments.dataSet, applyChanges);
+                                if(outcomes[0] != null)
+                                    myNotices.push(outcomes[0]);
+
+                                validationEntries = validationEntries.concat(outcomes[1]);
+                            }
+                            else
+                            {
+                                myNotices.push(new NcPropertyRestoreNotice(
+                                    propertyData.id,
+                                    propertyData.name,
+                                    NcPropertyRestoreNoticeType.Warning,
+                                    `Cannot reconstruct members because the members data is null`));
+                                console.log(`Cannot reconstruct members because the members data is null`);
+                            }
+                        }
+                        else if(applyChanges)
+                        {
+                            //Perform further validations
+                            this.Set(this.oid, propertyData.id, propertyData.value, 0);
+                        }
+                    }
+                }
+                else
+                {
+                    if(propertyId == '2p2')
+                    {
+                        if(this.isRebuildable)
+                            myNotices.push(new NcPropertyRestoreNotice(
+                                propertyData.id,
+                                propertyData.name,
+                                NcPropertyRestoreNoticeType.Warning,
+                                "Property cannot be changed and will be left untouched unless restoreMode is changed to Rebuild"));
+                        else
+                            myNotices.push(new NcPropertyRestoreNotice(
+                                propertyData.id,
+                                propertyData.name,
+                                NcPropertyRestoreNoticeType.Warning,
+                                "Property cannot be changed and will be left untouched"));
+                    }
+                    else if(propertyId != '1p6')
+                        myNotices.push(new NcPropertyRestoreNotice(
+                            propertyData.id,
+                            propertyData.name,
+                            NcPropertyRestoreNoticeType.Warning,
+                            "Property cannot be changed and will be left untouched"));
+                    else if(applyChanges)
+                    {
+                        //Perform further validations
+                        this.Set(this.oid, propertyData.id, propertyData.value, 0);
+                    }
+                }
+            });
+
+            validationEntries.push(new NcObjectPropertiesSetValidation(this.GetRolePath(), NcRestoreValidationStatus.Ok, myNotices, myNotices.length > 0 ? 'Some properties have notices' : null));
+        }
+
+        if(restoreArguments.recurse)
+        {
+            this.memberObjects.forEach(member => {
+                validationEntries = validationEntries.concat(member.Restore(restoreArguments, applyChanges));
+            });
+        }
+
+        return validationEntries;
+    }
 }
 
-export class RootBlock extends NcBlock
+export interface IRootContext
 {
+    AllocateOid(path: string) : number
+}
+
+export class RootBlock extends NcBlock implements IRootContext
+{
+    private oidAllocations: { [id: number] : string; } = {};
+
     public constructor(
-        oid: number,
         constantOid: boolean,
         ownerObject: NcObject | null,
         role: string,
@@ -543,10 +760,11 @@ export class RootBlock extends NcBlock
         enabled: boolean,
         memberObjects: NcObject[],
         description: string,
-        notificationContext: INotificationContext)
+        notificationContext: INotificationContext,
+        maxMembers: number | null = null)
     {
         super(
-            oid,
+            NcBlock.RootOid,
             constantOid,
             ownerObject,
             role,
@@ -556,7 +774,19 @@ export class RootBlock extends NcBlock
             enabled,
             memberObjects,
             description,
-            notificationContext);
+            notificationContext,
+            null,
+            maxMembers);
+
+        this.oidAllocations[NcBlock.RootOid] = this.GetRolePathUrl();
+    }
+
+    public AllocateOid(path: string) : number
+    {
+        //Generate new oid
+        let newOid = Object.keys(this.oidAllocations).length + 1;
+        this.oidAllocations[newOid] = path;
+        return newOid;
     }
 
     public ProcessMessage(msg: string, socket: WebSocketConnection)
@@ -678,12 +908,12 @@ export class RootBlock extends NcBlock
         else
         {
             if(commandMsg.oid == this.oid)
-                return this.InvokeMethod(socket, commandMsg.oid, commandMsg.methodId, commandMsg.arguments, commandMsg.handle);
+                return this.InvokeMethod(commandMsg.oid, commandMsg.methodId, commandMsg.arguments, commandMsg.handle);
             else if(this.memberObjects != null)
             {
                 let member = this.FindNestedMember(commandMsg.oid);
                 if(member)
-                    return member.InvokeMethod(socket, commandMsg.oid, commandMsg.methodId, commandMsg.arguments, commandMsg.handle);
+                    return member.InvokeMethod(commandMsg.oid, commandMsg.methodId, commandMsg.arguments, commandMsg.handle);
                 else
                     return new CommandResponseError(commandMsg.handle, NcMethodStatus.BadOid, "OID could not be found");
             }
@@ -704,5 +934,201 @@ export class RootBlock extends NcBlock
         if(propertyId.level == 1 && propertyId.index == 2)
             return true;
         return false;
+    }
+}
+
+export class ExampleControlsBlock extends NcBlock
+{
+    public constructor(
+        oid: number,
+        constantOid: boolean,
+        ownerObject: NcObject | null,
+        role: string,
+        userLabel: string,
+        touchpoints: NcTouchpoint[] | null,
+        runtimePropertyConstraints: NcPropertyConstraints[] | null,
+        enabled: boolean,
+        memberObjects: NcObject[],
+        description: string,
+        notificationContext: INotificationContext,
+        rootContext: IRootContext | null,
+        maxMembers: number | null = null,
+        isRebuildable: boolean)
+    {
+        super(
+            oid,
+            constantOid,
+            ownerObject,
+            role,
+            userLabel,
+            touchpoints,
+            runtimePropertyConstraints,
+            enabled,
+            memberObjects,
+            description,
+            notificationContext,
+            rootContext,
+            maxMembers,
+            isRebuildable);
+    }
+
+    public override GetAllProperties(recurse: boolean) : NcObjectPropertiesHolder[]
+    {
+        let holders = [
+            new NcObjectPropertiesHolder(this.GetRolePath(), [], [], [
+                ExampleControl.staticClassID,
+            ], this.isRebuildable)
+        ];
+
+        holders[0].values = holders[0].values.concat(super.GetAllProperties(recurse)[0].values);
+
+        if(recurse)
+        {
+            this.memberObjects.forEach(member => {
+                holders = holders.concat(member.GetAllProperties(recurse));
+            });
+        }
+
+        return holders
+    }
+
+    public override ReconstructMembers(members: NcBlockMemberDescriptor[], dataSet: NcBulkValuesHolder, applyChanges: Boolean = true) : [NcPropertyRestoreNotice | null, NcObjectPropertiesSetValidation[]]
+    {
+        let blockMembersNotice: NcPropertyRestoreNotice | null = null;
+
+        let validationEntries = new Array<NcObjectPropertiesSetValidation>();
+
+        console.log(`Reconstructing members, count: ${members.length}, applyChanges: ${applyChanges}`);
+
+        let controlMembers: ExampleControl[] = [];
+
+        members.forEach(member => {
+            if(member.classId.join() == ExampleControl.staticClassID.join())
+            {
+                if(this.maxMembers != null)
+                {
+                    if(controlMembers.length < this.maxMembers)
+                    {
+                        if(this.rootContext != null)
+                        {
+                            let memberRolepath = this.GetRolePathForMember(member.role);
+    
+                            let setValidation: NcObjectPropertiesSetValidation;
+    
+                            let memberRestoreData = dataSet.values.find(f => f.path.join('.') == memberRolepath.join('.'))
+                            if(memberRestoreData)
+                                setValidation = this.ValidateMemberDatasetChunk(memberRestoreData);
+                            else
+                                setValidation = new NcObjectPropertiesSetValidation(memberRolepath, NcRestoreValidationStatus.Ok, [], "No dataset information passed but object was created successfully with defaults")
+    
+                            validationEntries = validationEntries.concat(setValidation);
+
+                            if(applyChanges)
+                            {
+                                const exampleControl = new ExampleControl(
+                                    this.rootContext.AllocateOid(memberRolepath.join('.')),
+                                    true,
+                                    this,
+                                    member.role,
+                                    member.userLabel ?? member.role,
+                                    [],
+                                    null,
+                                    true,
+                                    "Example control worker",
+                                    this.notificationContext,
+                                    true,
+                                    memberRestoreData);
+        
+                                controlMembers.push(exampleControl);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        blockMembersNotice = new NcPropertyRestoreNotice(new NcPropertyId(2, 2), "members", NcPropertyRestoreNoticeType.Warning, `Member [${member.role}] can't be constructed because it goes over the maximum block members limit of ${this.maxMembers}`);
+                        console.log(`Member [${member.role}] can't be constructed because it goes over the maximum block members limit of ${this.maxMembers}`);
+                    }
+                }
+                else
+                {
+                    if(this.rootContext != null)
+                    {
+                        let memberRolepath = this.GetRolePathForMember(member.role);
+
+                        let setValidation: NcObjectPropertiesSetValidation;
+
+                        let memberRestoreData = dataSet.values.find(f => f.path.join('.') == memberRolepath.join('.'))
+                        if(memberRestoreData)
+                            setValidation = this.ValidateMemberDatasetChunk(memberRestoreData);
+                        else
+                            setValidation = new NcObjectPropertiesSetValidation(memberRolepath, NcRestoreValidationStatus.Ok, [], "No dataset information passed but object was created successfully with defaults")
+
+                        validationEntries = validationEntries.concat(setValidation);
+
+                        if(applyChanges)
+                        {
+                            const exampleControl = new ExampleControl(
+                                this.rootContext.AllocateOid(memberRolepath.join('.')),
+                                true,
+                                this,
+                                member.role,
+                                member.userLabel ?? member.role,
+                                [],
+                                null,
+                                true,
+                                "Example control worker",
+                                this.notificationContext,
+                                true,
+                                memberRestoreData);
+    
+                            controlMembers.push(exampleControl);
+                        }
+                    }
+                }
+            }
+            else
+            {
+                blockMembersNotice = new NcPropertyRestoreNotice(new NcPropertyId(2, 2), "members", NcPropertyRestoreNoticeType.Warning, `Member [${member.role}] can't be constructed because it has an invalid classId of ${member.classId.join('.')}`);
+                console.log(`Member [${member.role}] can't be constructed because it has an invalid classId of ${member.classId.join('.')}`);
+            }
+        });
+        
+        if(applyChanges)
+            this.UpdateMembers(controlMembers, true);
+
+        return [blockMembersNotice, validationEntries];
+    }
+
+    public ValidateMemberDatasetChunk(holder: NcObjectPropertiesHolder) : NcObjectPropertiesSetValidation
+    {
+        let myNotices = new Array<NcPropertyRestoreNotice>();
+
+        holder.values.forEach(propertyData => 
+        {
+            let propertyId = NcElementId.ToPropertyString(propertyData.id);
+            switch(propertyId)
+            {
+                case '1p6':
+                case '2p1':
+                case '3p1':
+                case '3p2':
+                case '3p3':
+                case '3p4':
+                case '3p5':
+                case '3p9':
+                case '3p10':
+                case '3p11':
+                case '3p12':
+                case '3p13':
+                    {
+                        //TODO: Perform further validations
+                    }
+                    break;
+                default:
+                    myNotices.push(new NcPropertyRestoreNotice(propertyData.id, propertyData.name, NcPropertyRestoreNoticeType.Warning, "Property can't be changed and will receive a default value"));
+            }
+        });
+
+        return new NcObjectPropertiesSetValidation(holder.path, NcRestoreValidationStatus.Ok, myNotices, null)
     }
 }

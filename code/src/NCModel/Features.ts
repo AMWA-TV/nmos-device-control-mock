@@ -1,6 +1,5 @@
 import { jsonIgnoreReplacer, jsonIgnore } from 'json-ignore';
 import { CommandResponseError, CommandResponseNoValue, CommandResponseWithValue } from '../NCProtocol/Commands';
-import { WebSocketConnection } from '../Server';
 import { INotificationContext } from '../SessionManager';
 import {
     BaseType,
@@ -14,13 +13,21 @@ import {
     NcMethodResult,
     NcMethodStatus,
     NcObject,
+    NcObjectPropertiesHolder,
+    NcObjectPropertiesSetValidation,
     NcParameterConstraintsNumber,
     NcParameterConstraintsString,
     NcParameterDescriptor,
     NcPropertyChangeType,
     NcPropertyConstraints,
     NcPropertyDescriptor,
-    NcTouchpoint } from './Core';
+    NcPropertyId,
+    NcPropertyRestoreNotice,
+    NcPropertyRestoreNoticeType,
+    NcPropertyValueHolder,
+    NcRestoreValidationStatus,
+    NcTouchpoint, 
+    RestoreArguments} from './Core';
 
 export abstract class NcWorker extends NcObject
 {
@@ -42,9 +49,10 @@ export abstract class NcWorker extends NcObject
         runtimePropertyConstraints: NcPropertyConstraints[] | null,
         enabled: boolean,
         description: string,
-        notificationContext: INotificationContext)
+        notificationContext: INotificationContext,
+        isRebuildable: boolean = false)
     {
-        super(oid, constantOid, ownerObject, role, userLabel, touchpoints, runtimePropertyConstraints, description, notificationContext);
+        super(oid, constantOid, ownerObject, role, userLabel, touchpoints, runtimePropertyConstraints, description, notificationContext, isRebuildable);
 
         this.enabled = enabled;
     }
@@ -110,6 +118,19 @@ export abstract class NcWorker extends NcObject
         }
 
         return currentClassDescriptor;
+    }
+
+    public override GetAllProperties(recurse: boolean) : NcObjectPropertiesHolder[]
+    {
+        let properties = [
+            new NcObjectPropertiesHolder(this.GetRolePath(), [], [
+                new NcPropertyValueHolder(new NcPropertyId(2, 1), "enabled", "NcBoolean", false, this.enabled)
+            ], [], this.isRebuildable)
+        ];
+
+        properties[0].values = properties[0].values.concat(super.GetAllProperties(recurse)[0].values);
+
+        return properties;
     }
 }
 
@@ -203,6 +224,49 @@ export class GainControl extends NcWorker
 
         return currentClassDescriptor;
     }
+
+    public override GetAllProperties(recurse: boolean) : NcObjectPropertiesHolder[]
+    {
+        let properties = [
+            new NcObjectPropertiesHolder(this.GetRolePath(), [], [
+                new NcPropertyValueHolder(new NcPropertyId(3, 1), "gainValue", "NcFloat32", false, this.gainValue)
+            ], [], this.isRebuildable)
+        ];
+
+        properties[0].values = properties[0].values.concat(super.GetAllProperties(recurse)[0].values);
+
+        return properties;
+    }
+
+    public override Restore(restoreArguments: RestoreArguments, applyChanges: Boolean) : NcObjectPropertiesSetValidation[]
+    {
+        let validationEntries = new Array<NcObjectPropertiesSetValidation>();
+
+        let myRestoreData = restoreArguments.dataSet.values.find(f => f.path.join('.') == this.GetRolePath().join('.'))
+        if(myRestoreData)
+        {
+            let myNotices = new Array<NcPropertyRestoreNotice>();
+
+            myRestoreData.values.forEach(propertyData => {
+                let propertyId = NcElementId.ToPropertyString(propertyData.id);
+                if(propertyId != '1p6' && propertyId != '3p1')
+                    myNotices.push(new NcPropertyRestoreNotice(
+                        propertyData.id,
+                        propertyData.name,
+                        NcPropertyRestoreNoticeType.Warning,
+                        "Property cannot be changed and will be left untouched"));
+                else if(applyChanges)
+                {
+                    //Perform further validation
+                    this.Set(this.oid, propertyData.id, propertyData.value, 0);
+                }
+            });
+
+            validationEntries.push(new NcObjectPropertiesSetValidation(this.GetRolePath(), NcRestoreValidationStatus.Ok, myNotices, myNotices.length > 0 ? 'Some properties have notices' : null));
+        }
+
+        return validationEntries;
+    }
 }
 
 export class NcIdentBeacon extends NcWorker
@@ -294,6 +358,48 @@ export class NcIdentBeacon extends NcWorker
         }
 
         return currentClassDescriptor;
+    }
+
+    public override GetAllProperties(recurse: boolean) : NcObjectPropertiesHolder[]
+    {
+        let properties = [
+            new NcObjectPropertiesHolder(this.GetRolePath(), [], [
+                new NcPropertyValueHolder(new NcPropertyId(3, 1), "active", "NcBoolean", false, this.active)
+            ], [], this.isRebuildable)
+        ];
+
+        properties[0].values = properties[0].values.concat(super.GetAllProperties(recurse)[0].values);
+        return properties;
+    }
+
+    public override Restore(restoreArguments: RestoreArguments, applyChanges: Boolean) : NcObjectPropertiesSetValidation[]
+    {
+        let validationEntries = new Array<NcObjectPropertiesSetValidation>();
+
+        let myRestoreData = restoreArguments.dataSet.values.find(f => f.path.join('.') == this.GetRolePath().join('.'))
+        if(myRestoreData)
+        {
+            let myNotices = new Array<NcPropertyRestoreNotice>();
+
+            myRestoreData.values.forEach(propertyData => {
+                let propertyId = NcElementId.ToPropertyString(propertyData.id);
+                if(propertyId != '1p6' && propertyId != '3p1')
+                    myNotices.push(new NcPropertyRestoreNotice(
+                        propertyData.id,
+                        propertyData.name,
+                        NcPropertyRestoreNoticeType.Warning,
+                        "Property cannot be changed and will be left untouched"));
+                else if(applyChanges)
+                {
+                    //Perform further validation
+                    this.Set(this.oid, propertyData.id, propertyData.value, 0);
+                }
+            });
+
+            validationEntries.push(new NcObjectPropertiesSetValidation(this.GetRolePath(), NcRestoreValidationStatus.Ok, myNotices, myNotices.length > 0 ? 'Some properties have notices' : null));
+        }
+
+        return validationEntries;
     }
 }
 
@@ -410,6 +516,50 @@ export class NcStatusMonitor extends NcWorker
         }
 
         return currentClassDescriptor;
+    }
+
+    public override GetAllProperties(recurse: boolean) : NcObjectPropertiesHolder[]
+    {
+        let properties = [
+            new NcObjectPropertiesHolder(this.GetRolePath(), [], [
+                new NcPropertyValueHolder(new NcPropertyId(3, 1), "overallStatus", "NcOverallStatus", true, this.overallStatus),
+                new NcPropertyValueHolder(new NcPropertyId(3, 2), "overallStatusMessage", "NcString", true, this.overallStatusMessage),
+                new NcPropertyValueHolder(new NcPropertyId(3, 3), "statusReportingDelay", "NcUint32", false, this.statusReportingDelay)
+            ], [], this.isRebuildable)
+        ];
+
+        properties[0].values = properties[0].values.concat(super.GetAllProperties(recurse)[0].values);
+
+        return properties;
+    }
+
+    public override Restore(restoreArguments: RestoreArguments, applyChanges: Boolean) : NcObjectPropertiesSetValidation[]
+    {
+        let validationEntries = new Array<NcObjectPropertiesSetValidation>();
+
+        let myRestoreData = restoreArguments.dataSet.values.find(f => f.path.join('.') == this.GetRolePath().join('.'))
+        if(myRestoreData)
+        {
+            let myNotices = new Array<NcPropertyRestoreNotice>();
+
+            myRestoreData.values.forEach(propertyData => {
+                if(NcElementId.ToPropertyString(propertyData.id) != '1p6')
+                    myNotices.push(new NcPropertyRestoreNotice(
+                        propertyData.id,
+                        propertyData.name,
+                        NcPropertyRestoreNoticeType.Warning,
+                        "Property cannot be changed and will be left untouched"));
+                else if(applyChanges)
+                {
+                    //Perform further validation
+                    this.Set(this.oid, propertyData.id, propertyData.value, 0);
+                }
+            });
+
+            validationEntries.push(new NcObjectPropertiesSetValidation(this.GetRolePath(), NcRestoreValidationStatus.Ok, myNotices, myNotices.length > 0 ? 'Some properties have notices' : null));
+        }
+
+        return validationEntries;
     }
 }
 
@@ -880,7 +1030,7 @@ export class NcReceiverMonitor extends NcStatusMonitor
         return new CommandResponseError(handle, NcMethodStatus.BadOid, 'OID could not be found');
     }
 
-    public override InvokeMethod(socket: WebSocketConnection, oid: number, methodId: NcElementId, args: { [key: string]: any; } | null, handle: number): CommandResponseNoValue 
+    public override InvokeMethod(oid: number, methodId: NcElementId, args: { [key: string]: any; } | null, handle: number): CommandResponseNoValue 
     {
         if(oid == this.oid)
         {
@@ -902,7 +1052,7 @@ export class NcReceiverMonitor extends NcStatusMonitor
                     this.ResetStatusTransitionCounters();
                     return new CommandResponseNoValue(handle, NcMethodStatus.OK);
                 default:
-                    return super.InvokeMethod(socket, oid, methodId, args, handle);
+                    return super.InvokeMethod(oid, methodId, args, handle);
 
             }
         }
@@ -982,6 +1132,67 @@ export class NcReceiverMonitor extends NcStatusMonitor
         }
 
         return currentClassDescriptor;
+    }
+
+    public override GetAllProperties(recurse: boolean) : NcObjectPropertiesHolder[]
+    {
+        let properties = [
+            new NcObjectPropertiesHolder(this.GetRolePath(), [], [
+                new NcPropertyValueHolder(new NcPropertyId(4, 1), "linkStatus", "NcLinkStatus", true, this.linkStatus),
+                new NcPropertyValueHolder(new NcPropertyId(4, 2), "linkStatusMessage", "NcString", true, this.linkStatusMessage),
+                new NcPropertyValueHolder(new NcPropertyId(4, 3), "linkStatusTransitionCounter", "NcUint64", true, this.linkStatusTransitionCounter),
+                new NcPropertyValueHolder(new NcPropertyId(4, 4), "connectionStatus", "NcConnectionStatus", true, this.connectionStatus),
+                new NcPropertyValueHolder(new NcPropertyId(4, 5), "connectionStatusMessage", "NcString", true, this.connectionStatusMessage),
+                new NcPropertyValueHolder(new NcPropertyId(4, 6), "connectionStatusTransitionCounter", "NcUint64", true, this.connectionStatusTransitionCounter),
+                new NcPropertyValueHolder(new NcPropertyId(4, 7), "externalSynchronizationStatus", "NcSynchronizationStatus", true, this.externalSynchronizationStatus),
+                new NcPropertyValueHolder(new NcPropertyId(4, 8), "externalSynchronizationStatusMessage", "NcString", true, this.externalSynchronizationStatusMessage),
+                new NcPropertyValueHolder(new NcPropertyId(4, 9), "externalSynchronizationStatusTransitionCounter", "NcUint64", true, this.externalSynchronizationStatusTransitionCounter),
+                new NcPropertyValueHolder(new NcPropertyId(4, 10), "synchronizationSourceId", "NcString", true, this.synchronizationSourceId),
+                new NcPropertyValueHolder(new NcPropertyId(4, 11), "synchronizationSourceChanges", "NcUint64", true, this.synchronizationSourceChanges),
+                new NcPropertyValueHolder(new NcPropertyId(4, 12), "streamStatus", "NcStreamStatus", true, this.streamStatus),
+                new NcPropertyValueHolder(new NcPropertyId(4, 13), "streamStatusMessage", "NcString", true, this.streamStatusMessage),
+                new NcPropertyValueHolder(new NcPropertyId(4, 14), "streamStatusTransitionCounter", "NcUint64", true, this.streamStatusTransitionCounter),
+                new NcPropertyValueHolder(new NcPropertyId(4, 15), "autoResetPacketCounters", "NcBoolean", false, this.autoResetPacketCounters),
+                new NcPropertyValueHolder(new NcPropertyId(4, 16), "autoResetSynchronizationSourceChanges", "NcBoolean", false, this.autoResetSynchronizationSourceChanges),
+                new NcPropertyValueHolder(new NcPropertyId(4, 17), "autoResetStatusTransitionCounters", "NcBoolean", false, this.autoResetStatusTransitionCounters)
+            ], [], this.isRebuildable)
+        ];
+
+        properties[0].values = properties[0].values.concat(super.GetAllProperties(recurse)[0].values);
+
+        return properties;
+    }
+
+    public override Restore(restoreArguments: RestoreArguments, applyChanges: Boolean) : NcObjectPropertiesSetValidation[]
+    {
+        let validationEntries = new Array<NcObjectPropertiesSetValidation>();
+
+        let myRestoreData = restoreArguments.dataSet.values.find(f => f.path.join('.') == this.GetRolePath().join('.'))
+        if(myRestoreData)
+        {
+            let myNotices = new Array<NcPropertyRestoreNotice>();
+
+            myRestoreData.values.forEach(propertyData => {
+                let propertyId = NcElementId.ToPropertyString(propertyData.id);
+                if(propertyId != '1p6' && propertyId != '4p1' && propertyId != '4p2' && propertyId != '4p3' && propertyId != '4p4' && propertyId != '4p5' &&
+                    propertyId != '4p6' && propertyId != '4p7' && propertyId != '4p8' && propertyId != '4p9' && propertyId != '4p10' &&
+                    propertyId != '4p11' && propertyId != '4p12' && propertyId != '4p13' && propertyId != '4p14')
+                    myNotices.push(new NcPropertyRestoreNotice(
+                        propertyData.id,
+                        propertyData.name,
+                        NcPropertyRestoreNoticeType.Warning,
+                        "Property cannot be changed and will be left untouched"));
+                else if(applyChanges)
+                {
+                    //Perform further validation
+                    this.Set(this.oid, propertyData.id, propertyData.value, 0);
+                }
+            });
+
+            validationEntries.push(new NcObjectPropertiesSetValidation(this.GetRolePath(), NcRestoreValidationStatus.Ok, myNotices, myNotices.length > 0 ? 'Some properties have notices' : null));
+        }
+
+        return validationEntries;
     }
 }
 
@@ -1287,7 +1498,7 @@ export class NcSenderMonitor extends NcStatusMonitor
         return new CommandResponseError(handle, NcMethodStatus.BadOid, 'OID could not be found');
     }
 
-    public override InvokeMethod(socket: WebSocketConnection, oid: number, methodId: NcElementId, args: { [key: string]: any; } | null, handle: number): CommandResponseNoValue 
+    public override InvokeMethod(oid: number, methodId: NcElementId, args: { [key: string]: any; } | null, handle: number): CommandResponseNoValue 
     {
         if(oid == this.oid)
         {
@@ -1307,7 +1518,7 @@ export class NcSenderMonitor extends NcStatusMonitor
                     this.ResetStatusTransitionCounters();
                     return new CommandResponseNoValue(handle, NcMethodStatus.OK);
                 default:
-                    return super.InvokeMethod(socket, oid, methodId, args, handle);
+                    return super.InvokeMethod(oid, methodId, args, handle);
 
             }
         }
@@ -1382,6 +1593,67 @@ export class NcSenderMonitor extends NcStatusMonitor
         }
 
         return currentClassDescriptor;
+    }
+
+    public override GetAllProperties(recurse: boolean) : NcObjectPropertiesHolder[]
+    {
+        let properties = [
+            new NcObjectPropertiesHolder(this.GetRolePath(), [], [
+                new NcPropertyValueHolder(new NcPropertyId(4, 1), "linkStatus", "NcLinkStatus", true, this.linkStatus),
+                new NcPropertyValueHolder(new NcPropertyId(4, 2), "linkStatusMessage", "NcString", true, this.linkStatusMessage),
+                new NcPropertyValueHolder(new NcPropertyId(4, 3), "linkStatusTransitionCounter", "NcUint64", true, this.linkStatusTransitionCounter),
+                new NcPropertyValueHolder(new NcPropertyId(4, 4), "transmissionStatus", "NcTransmissionStatus", true, this.transmissionStatus),
+                new NcPropertyValueHolder(new NcPropertyId(4, 5), "transmissionStatusMessage", "NcString", true, this.transmissionStatusMessage),
+                new NcPropertyValueHolder(new NcPropertyId(4, 6), "transmissionStatusTransitionCounter", "NcUint64", true, this.transmissionStatusTransitionCounter),
+                new NcPropertyValueHolder(new NcPropertyId(4, 7), "externalSynchronizationStatus", "NcSynchronizationStatus", true, this.externalSynchronizationStatus),
+                new NcPropertyValueHolder(new NcPropertyId(4, 8), "externalSynchronizationStatusMessage", "NcString", true, this.externalSynchronizationStatusMessage),
+                new NcPropertyValueHolder(new NcPropertyId(4, 9), "externalSynchronizationStatusTransitionCounter", "NcUint64", true, this.externalSynchronizationStatusTransitionCounter),
+                new NcPropertyValueHolder(new NcPropertyId(4, 10), "synchronizationSourceId", "NcString", true, this.synchronizationSourceId),
+                new NcPropertyValueHolder(new NcPropertyId(4, 11), "synchronizationSourceChanges", "NcUint64", true, this.synchronizationSourceChanges),
+                new NcPropertyValueHolder(new NcPropertyId(4, 12), "essenceStatus", "NcEssenceStatus", true, this.essenceStatus),
+                new NcPropertyValueHolder(new NcPropertyId(4, 13), "essenceStatusMessage", "NcString", true, this.essenceStatusMessage),
+                new NcPropertyValueHolder(new NcPropertyId(4, 14), "essenceStatusTransitionCounter", "NcUint64", true, this.essenceStatusTransitionCounter),
+                new NcPropertyValueHolder(new NcPropertyId(4, 15), "autoResetErrorCounters", "NcBoolean", false, this.autoResetErrorCounters),
+                new NcPropertyValueHolder(new NcPropertyId(4, 16), "autoResetSynchronizationSourceChanges", "NcBoolean", false, this.autoResetSynchronizationSourceChanges),
+                new NcPropertyValueHolder(new NcPropertyId(4, 17), "autoResetStatusTransitionCounters", "NcBoolean", false, this.autoResetStatusTransitionCounters)
+            ], [], this.isRebuildable)
+        ];
+
+        properties[0].values = properties[0].values.concat(super.GetAllProperties(recurse)[0].values);
+
+        return properties;
+    }
+
+    public override Restore(restoreArguments: RestoreArguments, applyChanges: Boolean) : NcObjectPropertiesSetValidation[]
+    {
+        let validationEntries = new Array<NcObjectPropertiesSetValidation>();
+
+        let myRestoreData = restoreArguments.dataSet.values.find(f => f.path.join('.') == this.GetRolePath().join('.'))
+        if(myRestoreData)
+        {
+            let myNotices = new Array<NcPropertyRestoreNotice>();
+
+            myRestoreData.values.forEach(propertyData => {
+                let propertyId = NcElementId.ToPropertyString(propertyData.id);
+                if(propertyId != '1p6' && propertyId != '4p1' && propertyId != '4p2' && propertyId != '4p3' && propertyId != '4p4' && propertyId != '4p5' &&
+                    propertyId != '4p6' && propertyId != '4p7' && propertyId != '4p8' && propertyId != '4p9' && propertyId != '4p10' &&
+                    propertyId != '4p11' && propertyId != '4p12' && propertyId != '4p13' && propertyId != '4p14')
+                    myNotices.push(new NcPropertyRestoreNotice(
+                        propertyData.id,
+                        propertyData.name,
+                        NcPropertyRestoreNoticeType.Warning,
+                        "Property cannot be changed and will be left untouched"));
+                else if(applyChanges)
+                {
+                    //Perform further validation
+                    this.Set(this.oid, propertyData.id, propertyData.value, 0);
+                }
+            });
+
+            validationEntries.push(new NcObjectPropertiesSetValidation(this.GetRolePath(), NcRestoreValidationStatus.Ok, myNotices, myNotices.length > 0 ? 'Some properties have notices' : null));
+        }
+
+        return validationEntries;
     }
 }
 
@@ -1486,9 +1758,11 @@ export class ExampleControl extends NcWorker
         runtimePropertyConstraints: NcPropertyConstraints[] | null,
         enabled: boolean,
         description: string,
-        notificationContext: INotificationContext)
+        notificationContext: INotificationContext,
+        isRebuildable: boolean = false,
+        dataSet: NcObjectPropertiesHolder | null = null)
     {
-        super(oid, constantOid, ownerObject, role, userLabel, touchpoints, runtimePropertyConstraints, enabled, description, notificationContext);
+        super(oid, constantOid, ownerObject, role, userLabel, touchpoints, runtimePropertyConstraints, enabled, description, notificationContext, isRebuildable);
 
         this.enumProperty = ExampleEnum.Undefined;
         this.stringProperty = "test";
@@ -1503,6 +1777,45 @@ export class ExampleControl extends NcWorker
         this.enumSequence = [ ExampleEnum.Alpha, ExampleEnum.Gamma ];
         this.numberSequence = [ 0, 50, 88];
         this.objectSequence = [ new ExampleDataType(ExampleEnum.Alpha, "example", 50, false), new ExampleDataType(ExampleEnum.Gamma, "different", 75, true) ];
+
+        if(dataSet != null)
+        {
+            this.InitialiseFromDataset(dataSet);
+            console.log(`ExampleControl object [${this.role}] constructed from a dataSet`);
+        }
+        else
+            console.log(`ExampleControl object [${this.role}] constructed with defaults`);
+    }
+
+    private InitialiseFromDataset(dataSet: NcObjectPropertiesHolder)
+    {
+        dataSet.values.forEach(propertyData => 
+        {
+            let propertyId = NcElementId.ToPropertyString(propertyData.id);
+            switch(propertyId)
+            {
+                case '3p1':
+                    this.enumProperty = propertyData.value;
+                case '3p2':
+                    this.stringProperty = propertyData.value;
+                case '3p3':
+                    this.numberProperty = propertyData.value;
+                case '3p4':
+                    this.booleanProperty = propertyData.value;
+                case '3p5':
+                    this.objectProperty = propertyData.value;
+                case '3p9':
+                    this.stringSequence = propertyData.value;
+                case '3p10':
+                    this.booleanSequence = propertyData.value;
+                case '3p11':
+                    this.enumSequence = propertyData.value;
+                case '3p12':
+                    this.numberSequence = propertyData.value;
+                case '3p13':
+                    this.objectSequence = propertyData.value;
+            }
+        });
     }
 
     //'1m1'
@@ -1609,7 +1922,7 @@ export class ExampleControl extends NcWorker
         return new CommandResponseError(handle, NcMethodStatus.BadOid, 'OID could not be found');
     }
 
-    public override InvokeMethod(socket: WebSocketConnection, oid: number, methodId: NcElementId, args: { [key: string]: any; } | null, handle: number): CommandResponseNoValue 
+    public override InvokeMethod(oid: number, methodId: NcElementId, args: { [key: string]: any; } | null, handle: number): CommandResponseNoValue 
     {
         if(oid == this.oid)
         {
@@ -2123,7 +2436,7 @@ export class ExampleControl extends NcWorker
                             return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid arguments provided');
                     }
                 default:
-                    return super.InvokeMethod(socket, oid, methodId, args, handle);
+                    return super.InvokeMethod(oid, methodId, args, handle);
             }
         }
 
@@ -2177,5 +2490,65 @@ export class ExampleControl extends NcWorker
         }
 
         return currentClassDescriptor;
+    }
+
+    public override GetAllProperties(recurse: boolean) : NcObjectPropertiesHolder[]
+    {
+        let properties = [
+            new NcObjectPropertiesHolder(this.GetRolePath(), 
+            [
+                this.ownerObject?.GetRolePath() ?? []
+            ], 
+            [
+                new NcPropertyValueHolder(new NcPropertyId(3, 1), "enumProperty", "ExampleEnum", false, this.enumProperty),
+                new NcPropertyValueHolder(new NcPropertyId(3, 2), "stringProperty", "NcString", false, this.stringProperty),
+                new NcPropertyValueHolder(new NcPropertyId(3, 3), "numberProperty", "NcUint64", false, this.numberProperty),
+                new NcPropertyValueHolder(new NcPropertyId(3, 4), "booleanProperty", "NcBoolean", false, this.booleanProperty),
+                new NcPropertyValueHolder(new NcPropertyId(3, 5), "objectProperty", "ExampleDataType", false, this.objectProperty),
+                new NcPropertyValueHolder(new NcPropertyId(3, 6), "methodNoArgsCount", "NcUint64", true, this.methodNoArgsCount),
+                new NcPropertyValueHolder(new NcPropertyId(3, 7), "methodSimpleArgsCount", "NcUint64", true, this.methodSimpleArgsCount),
+                new NcPropertyValueHolder(new NcPropertyId(3, 8), "methodObjectArgCount", "NcUint64", true, this.methodObjectArgCount),
+                new NcPropertyValueHolder(new NcPropertyId(3, 9), "stringSequence", "NcString", false, this.stringSequence),
+                new NcPropertyValueHolder(new NcPropertyId(3, 10), "booleanSequence", "NcBoolean", false, this.booleanSequence),
+                new NcPropertyValueHolder(new NcPropertyId(3, 11), "enumSequence", "ExampleEnum", false, this.enumSequence),
+                new NcPropertyValueHolder(new NcPropertyId(3, 12), "numberSequence", "NcUint64", false, this.numberSequence),
+                new NcPropertyValueHolder(new NcPropertyId(3, 13), "objectSequence", "ExampleDataType", false, this.objectSequence),
+            ], [], this.isRebuildable)
+        ];
+
+        properties[0].values = properties[0].values.concat(super.GetAllProperties(recurse)[0].values);
+
+        return properties;
+    }
+
+    public override Restore(restoreArguments: RestoreArguments, applyChanges: Boolean) : NcObjectPropertiesSetValidation[]
+    {
+        let validationEntries = new Array<NcObjectPropertiesSetValidation>();
+
+        let myRestoreData = restoreArguments.dataSet.values.find(f => f.path.join('.') == this.GetRolePath().join('.'))
+        if(myRestoreData)
+        {
+            let myNotices = new Array<NcPropertyRestoreNotice>();
+
+            myRestoreData.values.forEach(propertyData => {
+                let propertyId = NcElementId.ToPropertyString(propertyData.id);
+                if(propertyId != '1p6' && propertyId != '3p1' && propertyId != '3p2' && propertyId != '3p3' && propertyId != '3p4' && propertyId != '3p5' &&
+                    propertyId != '3p9' && propertyId != '3p10' && propertyId != '3p11' && propertyId != '3p12' && propertyId != '3p13')
+                    myNotices.push(new NcPropertyRestoreNotice(
+                        propertyData.id,
+                        propertyData.name,
+                        NcPropertyRestoreNoticeType.Warning,
+                        "Property cannot be changed and will be left untouched"));
+                else if(applyChanges)
+                {
+                    //Perform further validation
+                    this.Set(this.oid, propertyData.id, propertyData.value, 0);
+                }
+            });
+
+            validationEntries.push(new NcObjectPropertiesSetValidation(this.GetRolePath(), NcRestoreValidationStatus.Ok, myNotices, myNotices.length > 0 ? 'Some properties have notices' : null));
+        }
+
+        return validationEntries;
     }
 }
