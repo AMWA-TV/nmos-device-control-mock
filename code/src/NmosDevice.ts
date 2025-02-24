@@ -5,6 +5,9 @@ import { NmosResource } from './NmosResource';
 import { NmosReceiverActiveRtp } from './NmosReceiverActiveRtp';
 import { NmosReceiverVideo } from './NmosReceiverVideo';
 import { RegistrationClient } from './RegistrationClient';
+import { NmosSender } from './NmosSender';
+import { NmosSenderActiveRtp } from './NmosSenderActiveRtp';
+import { NmosSenderVideo } from './NmosSenderVideo';
 
 export class NmosDevice extends NmosResource
 {
@@ -28,6 +31,9 @@ export class NmosDevice extends NmosResource
 
     @jsonIgnore()
     public receiverObjects: NmosReceiverCore[];
+
+    @jsonIgnore()
+    public senderObjects: NmosSender[];
 
     public constructor(
         id: string,
@@ -58,6 +64,7 @@ export class NmosDevice extends NmosResource
         };
 
         this.receiverObjects = [];
+        this.senderObjects = [];
 
         this.receivers = [];
         this.senders = [];
@@ -108,6 +115,48 @@ export class NmosDevice extends NmosResource
 
         this.receivers.forEach( (receiverId) => {
             uris.push(`${receiverId}/`);
+        });
+
+        return uris;
+    }
+
+    public AddSender(sender: NmosSender)
+    {
+        this.senderObjects.push(sender);
+        this.senders.push(sender.id);
+    }
+
+    public FindSender(id: string) : boolean
+    {
+        let sender = this.senders.find(e => e === id);
+        if(sender === undefined)
+            return false;
+        else
+            return true;
+    }
+
+    public FetchSender(id: string)
+    {
+        return this.senderObjects.find(e => e.id === id);
+    }
+
+    public FetchSenders() {
+        return this.senderObjects;
+    }
+
+    public ChangeSenderSettings(id: string, settings: NmosSenderActiveRtp)
+    {
+        let sender = this.senderObjects.find(e => e.id === id);
+        if(sender)
+            (sender as NmosSenderVideo).ChangeSenderSettings(settings);
+    }
+
+    public FetchSendersUris()
+    {
+        let uris: string[] = [];
+
+        this.senders.forEach( (senderId) => {
+            uris.push(`${senderId}/`);
         });
 
         return uris;

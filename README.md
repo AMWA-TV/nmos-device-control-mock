@@ -12,11 +12,12 @@ It has support for the NMOS Control & Monitoring suite:
 * MS-05-02
 * IS-12
 * BCP-008-01
+* BCP-008-02
 
 It also has support for IS-04 and IS-05 with some limitations:
 
 * It does not support DND-SD discovery and the NMOS registry endpoint has to be configured in the config.json file
-* It does not support the IS-05 bulk API as it only has 1 receiver currently.
+* It does not support the IS-05 bulk API as it currently only runs 1 receiver and 1 sender
 
 ## Installation
 
@@ -61,5 +62,6 @@ These are the configuration keys which can be specified in the configuration fil
 * [MS-05-02 NMOS Control Framework](https://specs.amwa.tv/ms-05-02)
 * [BCP-002-02 NMOS Asset Distinguishing Information](https://specs.amwa.tv/bcp-002-02)
 * [BCP-008-01 NMOS Receiver Status](https://specs.amwa.tv/bcp-008-01/)
+* [BCP-008-02 NMOS Sender Status](https://specs.amwa.tv/bcp-008-02/)
 
 <!-- INTRO-END -->

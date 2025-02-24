@@ -8,6 +8,9 @@ export class Configuration implements IConfiguration
     public node_id: string;
     public device_id: string;
     public receiver_id: string;
+    public source_id: string;
+    public flow_id: string;
+    public sender_id: string;
     public address: string;
     public port: number;
     public base_label: string;
@@ -30,6 +33,9 @@ export class Configuration implements IConfiguration
         this.node_id = config.node_id;
         this.device_id = config.device_id;
         this.receiver_id = config.receiver_id;
+        this.source_id = config.source_id;
+        this.flow_id = config.flow_id;
+        this.sender_id = config.sender_id;
         this.base_label = config.base_label;
         this.address = config.address;
         this.port = config.port;
@@ -71,6 +77,24 @@ export class Configuration implements IConfiguration
             shouldWriteConfig = true;
         }
 
+        if(this.source_id == null)
+        {
+            this.source_id = uuidv4().toString();
+            shouldWriteConfig = true;
+        }
+
+        if(this.flow_id == null)
+        {
+            this.flow_id = uuidv4().toString();
+            shouldWriteConfig = true;
+        }
+
+        if(this.sender_id == null)
+        {
+            this.sender_id = uuidv4().toString();
+            shouldWriteConfig = true;
+        }
+
         if(shouldWriteConfig)
             this.WriteConfig();
     }
@@ -101,7 +125,7 @@ export class Configuration implements IConfiguration
 
         if(this.function == null)
         {
-            this.function = "UHD Decoder";
+            this.function = "UHD Encoder/Decoder";
             shouldWriteConfig = true;
         }
 
@@ -137,6 +161,9 @@ export interface IConfiguration
     node_id: string;
     device_id: string;
     receiver_id: string;
+    source_id: string;
+    flow_id: string;
+    sender_id: string;
     address: string;
     port: number;
     base_label: string;
