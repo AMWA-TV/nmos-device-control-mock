@@ -533,7 +533,7 @@ export class NcBlock extends NcObject
             new NcObjectPropertiesHolder(this.GetRolePath(), [], [
                 new NcPropertyValueHolder(new NcPropertyId(2, 1), "enabled", "NcBoolean", true, this.enabled),
                 new NcPropertyValueHolder(new NcPropertyId(2, 2), "members", "NcBlockMemberDescriptor", true, this.members)
-            ], this.isRebuildable)
+            ], [], this.isRebuildable)
         ];
 
         holders[0].values = holders[0].values.concat(super.GetAllProperties(recurse)[0].values);
@@ -970,6 +970,26 @@ export class ExampleControlsBlock extends NcBlock
             rootContext,
             maxMembers,
             isRebuildable);
+    }
+
+    public override GetAllProperties(recurse: boolean) : NcObjectPropertiesHolder[]
+    {
+        let holders = [
+            new NcObjectPropertiesHolder(this.GetRolePath(), [], [], [
+                ExampleControl.staticClassID,
+            ], this.isRebuildable)
+        ];
+
+        holders[0].values = holders[0].values.concat(super.GetAllProperties(recurse)[0].values);
+
+        if(recurse)
+        {
+            this.memberObjects.forEach(member => {
+                holders = holders.concat(member.GetAllProperties(recurse));
+            });
+        }
+
+        return holders
     }
 
     public override ReconstructMembers(members: NcBlockMemberDescriptor[], dataSet: NcBulkValuesHolder, applyChanges: Boolean = true) : [NcPropertyRestoreNotice | null, NcObjectPropertiesSetValidation[]]

@@ -125,7 +125,7 @@ export abstract class NcWorker extends NcObject
         let properties = [
             new NcObjectPropertiesHolder(this.GetRolePath(), [], [
                 new NcPropertyValueHolder(new NcPropertyId(2, 1), "enabled", "NcBoolean", false, this.enabled)
-            ], this.isRebuildable)
+            ], [], this.isRebuildable)
         ];
 
         properties[0].values = properties[0].values.concat(super.GetAllProperties(recurse)[0].values);
@@ -230,7 +230,7 @@ export class GainControl extends NcWorker
         let properties = [
             new NcObjectPropertiesHolder(this.GetRolePath(), [], [
                 new NcPropertyValueHolder(new NcPropertyId(3, 1), "gainValue", "NcFloat32", false, this.gainValue)
-            ], this.isRebuildable)
+            ], [], this.isRebuildable)
         ];
 
         properties[0].values = properties[0].values.concat(super.GetAllProperties(recurse)[0].values);
@@ -365,7 +365,7 @@ export class NcIdentBeacon extends NcWorker
         let properties = [
             new NcObjectPropertiesHolder(this.GetRolePath(), [], [
                 new NcPropertyValueHolder(new NcPropertyId(3, 1), "active", "NcBoolean", false, this.active)
-            ], this.isRebuildable)
+            ], [], this.isRebuildable)
         ];
 
         properties[0].values = properties[0].values.concat(super.GetAllProperties(recurse)[0].values);
@@ -525,7 +525,7 @@ export class NcStatusMonitor extends NcWorker
                 new NcPropertyValueHolder(new NcPropertyId(3, 1), "overallStatus", "NcOverallStatus", true, this.overallStatus),
                 new NcPropertyValueHolder(new NcPropertyId(3, 2), "overallStatusMessage", "NcString", true, this.overallStatusMessage),
                 new NcPropertyValueHolder(new NcPropertyId(3, 3), "statusReportingDelay", "NcUint32", false, this.statusReportingDelay)
-            ], this.isRebuildable)
+            ], [], this.isRebuildable)
         ];
 
         properties[0].values = properties[0].values.concat(super.GetAllProperties(recurse)[0].values);
@@ -1155,7 +1155,7 @@ export class NcReceiverMonitor extends NcStatusMonitor
                 new NcPropertyValueHolder(new NcPropertyId(4, 15), "autoResetPacketCounters", "NcBoolean", false, this.autoResetPacketCounters),
                 new NcPropertyValueHolder(new NcPropertyId(4, 16), "autoResetSynchronizationSourceChanges", "NcBoolean", false, this.autoResetSynchronizationSourceChanges),
                 new NcPropertyValueHolder(new NcPropertyId(4, 17), "autoResetStatusTransitionCounters", "NcBoolean", false, this.autoResetStatusTransitionCounters)
-            ], this.isRebuildable)
+            ], [], this.isRebuildable)
         ];
 
         properties[0].values = properties[0].values.concat(super.GetAllProperties(recurse)[0].values);
@@ -1616,7 +1616,7 @@ export class NcSenderMonitor extends NcStatusMonitor
                 new NcPropertyValueHolder(new NcPropertyId(4, 15), "autoResetErrorCounters", "NcBoolean", false, this.autoResetErrorCounters),
                 new NcPropertyValueHolder(new NcPropertyId(4, 16), "autoResetSynchronizationSourceChanges", "NcBoolean", false, this.autoResetSynchronizationSourceChanges),
                 new NcPropertyValueHolder(new NcPropertyId(4, 17), "autoResetStatusTransitionCounters", "NcBoolean", false, this.autoResetStatusTransitionCounters)
-            ], this.isRebuildable)
+            ], [], this.isRebuildable)
         ];
 
         properties[0].values = properties[0].values.concat(super.GetAllProperties(recurse)[0].values);
@@ -2513,7 +2513,7 @@ export class ExampleControl extends NcWorker
                 new NcPropertyValueHolder(new NcPropertyId(3, 11), "enumSequence", "ExampleEnum", false, this.enumSequence),
                 new NcPropertyValueHolder(new NcPropertyId(3, 12), "numberSequence", "NcUint64", false, this.numberSequence),
                 new NcPropertyValueHolder(new NcPropertyId(3, 13), "objectSequence", "ExampleDataType", false, this.objectSequence),
-            ], this.isRebuildable)
+            ], [], this.isRebuildable)
         ];
 
         properties[0].values = properties[0].values.concat(super.GetAllProperties(recurse)[0].values);

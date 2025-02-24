@@ -388,7 +388,7 @@ export abstract class NcObject
                 new NcPropertyValueHolder(new NcPropertyId(1, 6), "userLabel", "NcString", false, this.userLabel),
                 new NcPropertyValueHolder(new NcPropertyId(1, 7), "touchpoints", "NcTouchpoint", true, this.touchpoints),
                 new NcPropertyValueHolder(new NcPropertyId(1, 8), "runtimePropertyConstraints", "NcPropertyConstraints", true, this.runtimePropertyConstraints),
-            ], this.isRebuildable)
+            ], [], this.isRebuildable)
         ];
     }
 
@@ -1935,6 +1935,7 @@ export class NcObjectPropertiesHolder extends BaseType
 {
     public path: string[];
     public dependencyPaths: string[][]
+    public allowedMembersClasses: number[][]
     public values: NcPropertyValueHolder[];
     public isRebuildable: boolean;
 
@@ -1942,12 +1943,14 @@ export class NcObjectPropertiesHolder extends BaseType
         path: string[],
         dependencyPaths: string[][],
         values: NcPropertyValueHolder[],
+        allowedMembersClasses: number[][],
         isRebuildable: boolean)
     {
         super();
 
         this.path = path;
         this.dependencyPaths = dependencyPaths;
+        this.allowedMembersClasses = allowedMembersClasses;
         this.values = values;
         this.isRebuildable = isRebuildable;
     }
@@ -1957,6 +1960,7 @@ export class NcObjectPropertiesHolder extends BaseType
         return new NcDatatypeDescriptorStruct("NcObjectPropertiesHolder", [
             new NcFieldDescriptor("path", "NcRolePath", false, false, null, "Object role path"),
             new NcFieldDescriptor("dependencyPaths", "NcRolePath", false, true, null, "Sequence of role paths which are a dependency for this object (helpful to inform clients which objects need to be restored together)"),
+            new NcFieldDescriptor("allowedMembersClasses", "NcClassId", false, true, null, "Sequence of class ids allowed as members of the block (non-block objects have this as an empty sequence)"),
             new NcFieldDescriptor("values", "NcPropertyValueHolder", false, true, null, "Object properties values"),
             new NcFieldDescriptor("isRebuildable", "NcBoolean", false, false, null, "Describes if the object is rebuildable"),
         ], null, null, "Object properties holder descriptor");
