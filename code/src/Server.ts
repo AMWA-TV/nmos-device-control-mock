@@ -289,7 +289,9 @@ try
         true,
         "Example control worker",
         sessionManager,
-        true);
+        true,
+        null,
+        receiverMonitor);
 
     exampleControlsBlock.UpdateMembers([ exampleControl ]);
 

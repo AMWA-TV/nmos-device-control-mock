@@ -952,6 +952,11 @@ export class NcClassManager extends NcManager
                 new NcEnumItemDescriptor("Beta", 2, "Beta option"),
                 new NcEnumItemDescriptor("Gamma", 3, "Gamma option")
             ], null, "Example enum data type"),
+            'ReceiverMonitorFaultEmulation': new NcDatatypeDescriptorEnum("ReceiverMonitorFaultEmulation", [
+                new NcEnumItemDescriptor("Healthy", 1, "Receiver monitor is healthy"),
+                new NcEnumItemDescriptor("NIC 1 down", 2, "Network interface 1 is down"),
+                new NcEnumItemDescriptor("All NICs down", 3, "All network interfaces are down")
+            ], null, "Receiver monitor fault emulation enum data type"),
             'ExampleDataType': ExampleDataType.GetTypeDescriptor(false),
             'NcRegex': new NcDatatypeDescriptorTypeDef("NcRegex", "NcString", false, null, "Regex pattern"),
             'NcPropertyConstraints': NcPropertyConstraints.GetTypeDescriptor(false),
