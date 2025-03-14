@@ -779,11 +779,14 @@ export class NcReceiverMonitor extends NcStatusMonitor implements IReceiverMonit
 
         this.activated = false;
 
+        this.overallStatus = NcOverallStatus.Inactive;
+        this.overallStatusMessage = "Inactive";
+
         this.linkStatus = NcLinkStatus.AllUp;
-        this.linkStatusMessage = "All interfaces are up";
+        this.linkStatusMessage = null;
 
         this.connectionStatus = NcConnectionStatus.Inactive;
-        this.connectionStatusMessage = "Receiver is inactive";
+        this.connectionStatusMessage = "Inactive";
 
         this.lostPacketCounters = [
             new NcCounter("Nic_1", 0, "Lost packets on Nic 1"),
@@ -796,11 +799,11 @@ export class NcReceiverMonitor extends NcStatusMonitor implements IReceiverMonit
         ];
         
         this.externalSynchronizationStatus = NcSynchronizationStatus.Healthy;
-        this.externalSynchronizationStatusMessage = "Locked to GM";
+        this.externalSynchronizationStatusMessage = "Locked to grandmaster on NIC2";
         this.synchronizationSourceId = "0xD4:AD:71:FF:FE:6F:E2:80";
 
         this.streamStatus = NcStreamStatus.Inactive;
-        this.streamStatusMessage = "Receiver is inactive";
+        this.streamStatusMessage = "Inactive";
 
         this.linkStatusTransitionCounter = 0;
         this.connectionStatusTransitionCounter = 0;
@@ -815,13 +818,13 @@ export class NcReceiverMonitor extends NcStatusMonitor implements IReceiverMonit
         this.activated = true;
 
         this.overallStatus = NcOverallStatus.Healthy; //3p1
-        this.overallStatusMessage = "Receiver is connected and healthy"; //3p2
+        this.overallStatusMessage = null; //3p2
 
         this.connectionStatus = NcConnectionStatus.Healthy; //4p4
-        this.connectionStatusMessage = "Receiver is connected and connection is healthy"; //4p5
+        this.connectionStatusMessage = null; //4p5
 
         this.streamStatus = NcStreamStatus.Healthy; //4p11
-        this.streamStatusMessage = "Receiver is connected and stream is healthy"; //4p12
+        this.streamStatusMessage = null; //4p12
 
         this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 1), NcPropertyChangeType.ValueChanged, this.overallStatus, null);
         this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 2), NcPropertyChangeType.ValueChanged, this.overallStatusMessage, null);
@@ -856,27 +859,27 @@ export class NcReceiverMonitor extends NcStatusMonitor implements IReceiverMonit
     public Nic1Down(transitionFromUnhealthy: boolean = false)
     {
         this.overallStatus = NcOverallStatus.PartiallyHealthy; //3p1
-        this.overallStatusMessage = "Receiver connectivity is experiencing issues on one interface"; //3p2
+        this.overallStatusMessage = "NIC1 down"; //3p2
 
         this.linkStatus = NcLinkStatus.SomeDown; //4p1
-        this.linkStatusMessage = "NIC1 is down"; //4p2
+        this.linkStatusMessage = "NIC1 down"; //4p2
         if(!transitionFromUnhealthy)
             this.linkStatusTransitionCounter++; //4p3
 
         this.connectionStatus = NcConnectionStatus.PartiallyHealthy; //4p4
-        this.connectionStatusMessage = "Significant packet loss detected on one interface"; //4p5
+        this.connectionStatusMessage = "Packet loss detected on NIC1"; //4p5
         if(!transitionFromUnhealthy)
             this.connectionStatusTransitionCounter++; //4p6
 
         this.externalSynchronizationStatus = NcSynchronizationStatus.PartiallyHealthy; //4p7
-        this.externalSynchronizationStatusMessage = "Locked to GM from single interface"; //4p8
+        this.externalSynchronizationStatusMessage = "Grandmaster lost on NIC1. Locked to grandmaster on NIC2"; //4p8
         if(!transitionFromUnhealthy)
             this.externalSynchronizationStatusTransitionCounter++; //4p9
         else
             this.synchronizationSourceId = "0xD4:AD:71:FF:FE:6F:E2:80"; //4p10
 
         this.streamStatus = NcStreamStatus.Healthy; //4p11
-        this.streamStatusMessage = "Stream decoded ok"; //4p12
+        this.streamStatusMessage = null; //4p12
 
         this.lostPacketCounters.find(c => c.name === 'Nic_1')?.Increment(5159);
 
@@ -908,18 +911,18 @@ export class NcReceiverMonitor extends NcStatusMonitor implements IReceiverMonit
     public SimulateAllNicsDown()
     {
         this.overallStatus = NcOverallStatus.Unhealthy; //3p1
-        this.overallStatusMessage = "Receiver connectivity is experiencing severe issues on all interfaces"; //3p2
+        this.overallStatusMessage = "All interfaces down"; //3p2
 
         this.linkStatus = NcLinkStatus.AllDown; //4p1
-        this.linkStatusMessage = "All interfaces are down"; //4p2
+        this.linkStatusMessage = "All interfaces down"; //4p2
         this.linkStatusTransitionCounter++; //4p3
 
         this.connectionStatus = NcConnectionStatus.Unhealthy; //4p4
-        this.connectionStatusMessage = "Significant packet loss detected across all interfaces"; //4p5
+        this.connectionStatusMessage = "Unrecoverable packet loss"; //4p5
         this.connectionStatusTransitionCounter++; //4p6
 
         this.externalSynchronizationStatus = NcSynchronizationStatus.Unhealthy; //4p7
-        this.externalSynchronizationStatusMessage = "Not locked to GM"; //4p8
+        this.externalSynchronizationStatusMessage = "Grandmaster lost"; //4p8
         this.externalSynchronizationStatusTransitionCounter++; //4p9
         this.synchronizationSourceId = null; //4p10
 
@@ -966,20 +969,20 @@ export class NcReceiverMonitor extends NcStatusMonitor implements IReceiverMonit
     public FaultFixed()
     {
         this.overallStatus = NcOverallStatus.Healthy; //3p1
-        this.overallStatusMessage = "Receiver is connected and healthy"; //3p2
+        this.overallStatusMessage = null; //3p2
 
         this.linkStatus = NcLinkStatus.AllUp; //4p1
-        this.linkStatusMessage = "All interfaces are up"; //4p2
+        this.linkStatusMessage = null; //4p2
 
         this.connectionStatus = NcConnectionStatus.Healthy; //4p4
-        this.connectionStatusMessage = "Receiver is connected and connection is healthy"; //4p5
+        this.connectionStatusMessage = null; //4p5
 
         this.externalSynchronizationStatus = NcSynchronizationStatus.Healthy; //4p7
-        this.externalSynchronizationStatusMessage = "Locked to GM"; //4p8
+        this.externalSynchronizationStatusMessage = "Locked to grandmaster on NIC2"; //4p8
         this.synchronizationSourceId = "0xD4:AD:71:FF:FE:6F:E2:80"; //4p10
 
         this.streamStatus = NcStreamStatus.Healthy; //4p11
-        this.streamStatusMessage = "Receiver is connected and stream is healthy"; //4p12
+        this.streamStatusMessage = null; //4p12
 
         this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 1), NcPropertyChangeType.ValueChanged, this.overallStatus, null);
         this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 2), NcPropertyChangeType.ValueChanged, this.overallStatusMessage, null);
@@ -1013,7 +1016,7 @@ export class NcReceiverMonitor extends NcStatusMonitor implements IReceiverMonit
     public GrandMasterChange()
     {
         this.overallStatus = NcOverallStatus.PartiallyHealthy; //3p1
-        this.overallStatusMessage = "Receiver has suffered a GM change"; //3p2
+        this.overallStatusMessage = "Experienced grandmaster change"; //3p2
 
         let previousGM = this.synchronizationSourceId;
 
@@ -1023,7 +1026,7 @@ export class NcReceiverMonitor extends NcStatusMonitor implements IReceiverMonit
             this.synchronizationSourceId = this.emulatedGM1; //4p10
 
         this.externalSynchronizationStatus = NcSynchronizationStatus.PartiallyHealthy; //4p7
-        this.externalSynchronizationStatusMessage = `GM changed to: ${this.synchronizationSourceId} from: ${previousGM}`; //4p8
+        this.externalSynchronizationStatusMessage = `Grandmaster changed from: ${previousGM}`; //4p8
         this.externalSynchronizationStatusTransitionCounter++; //4p9
 
         this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 1), NcPropertyChangeType.ValueChanged, this.overallStatus, null);
@@ -1040,7 +1043,7 @@ export class NcReceiverMonitor extends NcStatusMonitor implements IReceiverMonit
     public GrandMasterChangeRecovery()
     {
         this.overallStatus = NcOverallStatus.Healthy; //3p1
-        this.overallStatusMessage = "Receiver is connected and healthy"; //3p2
+        this.overallStatusMessage = "Experienced grandmaster change"; //3p2
 
         this.externalSynchronizationStatus = NcSynchronizationStatus.Healthy; //4p7
 
@@ -1055,13 +1058,13 @@ export class NcReceiverMonitor extends NcStatusMonitor implements IReceiverMonit
         this.activated = false;
 
         this.overallStatus = NcOverallStatus.Inactive; //3p1
-        this.overallStatusMessage = "Receiver is inactive"; //3p2
+        this.overallStatusMessage = "Inactive"; //3p2
 
         this.connectionStatus = NcConnectionStatus.Inactive; //4p4
-        this.connectionStatusMessage = "Receiver is inactive"; //4p5
+        this.connectionStatusMessage = "Inactive"; //4p5
 
         this.streamStatus = NcStreamStatus.Inactive; //4p11
-        this.streamStatusMessage = "Receiver is inactive"; //4p12
+        this.streamStatusMessage = "Inactive"; //4p12
 
         this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 1), NcPropertyChangeType.ValueChanged, this.overallStatus, null);
         this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 2), NcPropertyChangeType.ValueChanged, this.overallStatusMessage, null);
@@ -1301,7 +1304,16 @@ export class NcReceiverMonitor extends NcStatusMonitor implements IReceiverMonit
     }
 }
 
-export class NcSenderMonitor extends NcStatusMonitor
+export interface ISenderMonitoring
+{
+    SimulateSignalLost(): void;
+
+    SimulateFaultFixed(): void;
+
+    activated: boolean;
+}
+
+export class NcSenderMonitor extends NcStatusMonitor implements ISenderMonitoring
 {
     public static staticClassID: number[] = [ 1, 2, 2, 2 ];
 
@@ -1352,6 +1364,8 @@ export class NcSenderMonitor extends NcStatusMonitor
 
     private errorCounters: NcCounter[];
 
+    public activated: boolean;
+
     public constructor(
         oid: number,
         constantOid: boolean,
@@ -1366,22 +1380,27 @@ export class NcSenderMonitor extends NcStatusMonitor
     {
         super(oid, constantOid, ownerObject, role, userLabel, touchpoints, runtimePropertyConstraints, enabled, description, notificationContext);
 
+        this.activated = false;
+
+        this.overallStatus = NcOverallStatus.Inactive;
+        this.overallStatusMessage = "Inactive";
+
         this.linkStatus = NcLinkStatus.AllUp;
-        this.linkStatusMessage = "All interfaces are up";
+        this.linkStatusMessage = null;
 
         this.transmissionStatus = NcTransmissionStatus.Inactive;
-        this.transmissionStatusMessage = "Sender is inactive";
+        this.transmissionStatusMessage = "Inactive";
 
         this.errorCounters = [
             new NcCounter("Main", 0, "Main transmission errors")
         ];
         
         this.externalSynchronizationStatus = NcSynchronizationStatus.Healthy;
-        this.externalSynchronizationStatusMessage = "Locked to grandmaster";
+        this.externalSynchronizationStatusMessage = "Locked to grandmaster on NIC2";
         this.synchronizationSourceId = "0xD4:AD:71:FF:FE:6F:E2:80";
 
         this.essenceStatus = NcEssenceStatus.Inactive;
-        this.essenceStatusMessage = "Sender is inactive";
+        this.essenceStatusMessage = "Inactive";
 
         this.linkStatusTransitionCounter = 0;
         this.transmissionStatusTransitionCounter = 0;
@@ -1395,14 +1414,16 @@ export class NcSenderMonitor extends NcStatusMonitor
 
     public Activated()
     {
+        this.activated = true;
+
         this.overallStatus = NcOverallStatus.Healthy; //3p1
-        this.overallStatusMessage = "Sender is active and healthy"; //3p2
+        this.overallStatusMessage = null; //3p2
 
         this.transmissionStatus = NcTransmissionStatus.Healthy; //4p4
-        this.transmissionStatusMessage = "Sender is active and transmission is healthy"; //4p5
+        this.transmissionStatusMessage = null; //4p5
 
         this.essenceStatus = NcEssenceStatus.Healthy; //4p11
-        this.essenceStatusMessage = "Sender is active and essence is healthy"; //4p12
+        this.essenceStatusMessage = null; //4p12
 
         this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 1), NcPropertyChangeType.ValueChanged, this.overallStatus, null);
         this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 2), NcPropertyChangeType.ValueChanged, this.overallStatusMessage, null);
@@ -1428,19 +1449,17 @@ export class NcSenderMonitor extends NcStatusMonitor
             this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 9), NcPropertyChangeType.ValueChanged, this.externalSynchronizationStatusTransitionCounter, null);
             this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 13), NcPropertyChangeType.ValueChanged, this.essenceStatusTransitionCounter, null);
         }
-
-        DelayTask(1000 * (this.statusReportingDelay + 2)).then(() => this.SimulateFault());
     }
 
-    public SimulateFault()
+    public SimulateSignalLost()
     {
         if(this.overallStatus != NcOverallStatus.Inactive)
         {
-            this.overallStatus = NcOverallStatus.PartiallyHealthy; //3p1
-            this.overallStatusMessage = "Sender essence is experiencing anomalies"; //3p2
+            this.overallStatus = NcOverallStatus.Unhealthy; //3p1
+            this.overallStatusMessage = "No signal on SDI IN3"; //3p2
     
-            this.essenceStatus = NcEssenceStatus.PartiallyHealthy; //4p11
-            this.essenceStatusMessage = "Essence is experiencing anomalies"; //4p12
+            this.essenceStatus = NcEssenceStatus.Unhealthy; //4p11
+            this.essenceStatusMessage = "No signal on SDI IN3"; //4p12
             this.essenceStatusTransitionCounter++; //4p13
 
             this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 1), NcPropertyChangeType.ValueChanged, this.overallStatus, null);
@@ -1450,41 +1469,42 @@ export class NcSenderMonitor extends NcStatusMonitor
             this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 12), NcPropertyChangeType.ValueChanged, this.essenceStatusMessage, null);
 
             this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 13), NcPropertyChangeType.ValueChanged, this.essenceStatusTransitionCounter, null);
-
-            DelayTask(1000 * (this.statusReportingDelay + 2)).then(() => this.FaultFixed());
         }
+    }
+
+    public SimulateFaultFixed()
+    {
+        if(this.overallStatus != NcOverallStatus.Inactive)
+            DelayTask(1000 * this.statusReportingDelay).then(() => this.FaultFixed());
     }
 
     public FaultFixed()
     {
-        if(this.overallStatus != NcOverallStatus.Inactive)
-        {
-            this.overallStatus = NcOverallStatus.Healthy; //3p1
-            this.overallStatusMessage = "Sender is active and healthy"; //3p2
+        this.overallStatus = NcOverallStatus.Healthy; //3p1
+        this.overallStatusMessage = null; //3p2
 
-            this.essenceStatus = NcEssenceStatus.Healthy; //4p11
-            this.essenceStatusMessage = "Sender is active and essence is healthy"; //4p12
-    
-            this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 1), NcPropertyChangeType.ValueChanged, this.overallStatus, null);
-            this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 2), NcPropertyChangeType.ValueChanged, this.overallStatusMessage, null);
-    
-            this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 11), NcPropertyChangeType.ValueChanged, this.essenceStatus, null);
-            this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 12), NcPropertyChangeType.ValueChanged, this.essenceStatusMessage, null);
+        this.essenceStatus = NcEssenceStatus.Healthy; //4p11
+        this.essenceStatusMessage = null; //4p12
 
-            DelayTask(1000 * (this.statusReportingDelay + 2)).then(() => this.SimulateFault());
-        }
+        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 1), NcPropertyChangeType.ValueChanged, this.overallStatus, null);
+        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 2), NcPropertyChangeType.ValueChanged, this.overallStatusMessage, null);
+
+        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 11), NcPropertyChangeType.ValueChanged, this.essenceStatus, null);
+        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 12), NcPropertyChangeType.ValueChanged, this.essenceStatusMessage, null);
     }
 
     public Deactivated()
     {
+        this.activated = false;
+
         this.overallStatus = NcOverallStatus.Inactive; //3p1
-        this.overallStatusMessage = "Sender is inactive"; //3p2
+        this.overallStatusMessage = "Inactive"; //3p2
 
         this.transmissionStatus = NcTransmissionStatus.Inactive; //4p4
-        this.transmissionStatusMessage = "Sender is inactive"; //4p5
+        this.transmissionStatusMessage = "Inactive"; //4p5
 
         this.essenceStatus = NcEssenceStatus.Inactive; //4p11
-        this.essenceStatusMessage = "Sender is inactive"; //4p12
+        this.essenceStatusMessage = "Inactive"; //4p12
 
         this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 1), NcPropertyChangeType.ValueChanged, this.overallStatus, null);
         this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 2), NcPropertyChangeType.ValueChanged, this.overallStatusMessage, null);
@@ -1732,6 +1752,12 @@ enum ReceiverMonitorFaultEmulation
     AllNicsDown = 3
 }
 
+enum SenderMonitorFaultEmulation
+{
+    Healthy = 1,
+    SignalLost = 2
+}
+
 export class ExampleDataType extends BaseType
 {
     public enumProperty: ExampleEnum;
@@ -1818,7 +1844,11 @@ export class ExampleControl extends NcWorker
     @myIdDecorator('3p14')
     public receiverMonitorFaultEmulation: ReceiverMonitorFaultEmulation;
 
+    @myIdDecorator('3p15')
+    public senderMonitorFaultEmulation: SenderMonitorFaultEmulation;
+
     private receiverMonitoringContext: IReceiverMonitoring | null;
+    private senderMonitoringContext: ISenderMonitoring | null;
 
     public constructor(
         oid: number,
@@ -1833,11 +1863,13 @@ export class ExampleControl extends NcWorker
         notificationContext: INotificationContext,
         isRebuildable: boolean = false,
         dataSet: NcObjectPropertiesHolder | null = null,
-        receiverMonitoringContext: IReceiverMonitoring | null = null)
+        receiverMonitoringContext: IReceiverMonitoring | null = null,
+        senderMonitoringContext: ISenderMonitoring | null = null)
     {
         super(oid, constantOid, ownerObject, role, userLabel, touchpoints, runtimePropertyConstraints, enabled, description, notificationContext, isRebuildable);
 
         this.receiverMonitoringContext = receiverMonitoringContext;
+        this.senderMonitoringContext = senderMonitoringContext;
 
         this.enumProperty = ExampleEnum.Undefined;
         this.stringProperty = "test";
@@ -1853,6 +1885,7 @@ export class ExampleControl extends NcWorker
         this.numberSequence = [ 0, 50, 88];
         this.objectSequence = [ new ExampleDataType(ExampleEnum.Alpha, "example", 50, false), new ExampleDataType(ExampleEnum.Gamma, "different", 75, true) ];
         this.receiverMonitorFaultEmulation = ReceiverMonitorFaultEmulation.Healthy;
+        this.senderMonitorFaultEmulation = SenderMonitorFaultEmulation.Healthy;
 
         if(dataSet != null)
         {
@@ -1892,6 +1925,8 @@ export class ExampleControl extends NcWorker
                     this.objectSequence = propertyData.value;
                 case '3p14':
                     this.receiverMonitorFaultEmulation = propertyData.value;
+                case '3p15':
+                    this.senderMonitorFaultEmulation = propertyData.value;
             }
         });
     }
@@ -1933,6 +1968,8 @@ export class ExampleControl extends NcWorker
                     return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.objectSequence);
                 case '3p14':
                     return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.receiverMonitorFaultEmulation);
+                case '3p15':
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.senderMonitorFaultEmulation);
                 default:
                     return super.Get(oid, id, handle);
             }
@@ -1995,21 +2032,21 @@ export class ExampleControl extends NcWorker
                     this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.objectSequence, null);
                     return new CommandResponseNoValue(handle, NcMethodStatus.OK);
                 case '3p14':
-                    let enumValue = value as ReceiverMonitorFaultEmulation;
-                    if(enumValue !== undefined)
+                    let enumValueReceiverEmulation = value as ReceiverMonitorFaultEmulation;
+                    if(enumValueReceiverEmulation !== undefined)
                     {
                         if(this.receiverMonitoringContext != null)
                         {
                             if(this.receiverMonitoringContext.activated)
                             {
-                                if(enumValue == ReceiverMonitorFaultEmulation.Nic1Down)
+                                if(enumValueReceiverEmulation == ReceiverMonitorFaultEmulation.Nic1Down)
                                     this.receiverMonitoringContext.SimulateNic1Down();
-                                else if(enumValue == ReceiverMonitorFaultEmulation.AllNicsDown)
+                                else if(enumValueReceiverEmulation == ReceiverMonitorFaultEmulation.AllNicsDown)
                                     this.receiverMonitoringContext.SimulateAllNicsDown();
                                 else
                                     this.receiverMonitoringContext.SimulateFaultFixed();
     
-                                this.receiverMonitorFaultEmulation = enumValue;
+                                this.receiverMonitorFaultEmulation = enumValueReceiverEmulation;
                                 this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.receiverMonitorFaultEmulation, null);
                             }
                             else
@@ -2020,8 +2057,37 @@ export class ExampleControl extends NcWorker
                         }
                         else
                         {
-                            this.receiverMonitorFaultEmulation = enumValue;
+                            this.receiverMonitorFaultEmulation = enumValueReceiverEmulation;
                             this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.receiverMonitorFaultEmulation, null);
+                        }
+                        return new CommandResponseNoValue(handle, NcMethodStatus.OK);
+                    }
+                case '3p15':
+                    let enumValueSenderEmulation = value as SenderMonitorFaultEmulation;
+                    if(enumValueSenderEmulation !== undefined)
+                    {
+                        if(this.senderMonitoringContext != null)
+                        {
+                            if(this.senderMonitoringContext.activated)
+                            {
+                                if(enumValueSenderEmulation == SenderMonitorFaultEmulation.SignalLost)
+                                    this.senderMonitoringContext.SimulateSignalLost();
+                                else
+                                    this.senderMonitoringContext.SimulateFaultFixed();
+    
+                                this.senderMonitorFaultEmulation = enumValueSenderEmulation;
+                                this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.senderMonitorFaultEmulation, null);
+                            }
+                            else
+                            {
+                                this.senderMonitorFaultEmulation = SenderMonitorFaultEmulation.Healthy;
+                                this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.senderMonitorFaultEmulation, null);
+                            }
+                        }
+                        else
+                        {
+                            this.senderMonitorFaultEmulation = enumValueSenderEmulation;
+                            this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.senderMonitorFaultEmulation, null);
                         }
                         return new CommandResponseNoValue(handle, NcMethodStatus.OK);
                     }
@@ -2578,6 +2644,7 @@ export class ExampleControl extends NcWorker
                 new NcPropertyDescriptor(new NcElementId(3, 12), "numberSequence", "NcUint64", false, false, true, null, "Example number sequence property"),
                 new NcPropertyDescriptor(new NcElementId(3, 13), "objectSequence", "ExampleDataType", false, false, true, null, "Example object sequence property"),
                 new NcPropertyDescriptor(new NcElementId(3, 14), "receiverMonitorFaultEmulation", "ReceiverMonitorFaultEmulation", false, false, false, null, "Receiver monitor fault emulation property"),
+                new NcPropertyDescriptor(new NcElementId(3, 15), "senderMonitorFaultEmulation", "SenderMonitorFaultEmulation", false, false, false, null, "Sender monitor fault emulation property"),
             ],
             [
                 new NcMethodDescriptor(new NcElementId(3, 1), "MethodNoArgs", "NcMethodResult", [], "Example method with no arguments"),
@@ -2628,7 +2695,8 @@ export class ExampleControl extends NcWorker
                 new NcPropertyValueHolder(new NcPropertyId(3, 11), "enumSequence", "ExampleEnum", false, this.enumSequence),
                 new NcPropertyValueHolder(new NcPropertyId(3, 12), "numberSequence", "NcUint64", false, this.numberSequence),
                 new NcPropertyValueHolder(new NcPropertyId(3, 13), "objectSequence", "ExampleDataType", false, this.objectSequence),
-                new NcPropertyValueHolder(new NcPropertyId(3, 14), "receiverMonitorFaultEmulation", "ReceiverMonitorFaultEmulation", false, this.receiverMonitorFaultEmulation)
+                new NcPropertyValueHolder(new NcPropertyId(3, 14), "receiverMonitorFaultEmulation", "ReceiverMonitorFaultEmulation", false, this.receiverMonitorFaultEmulation),
+                new NcPropertyValueHolder(new NcPropertyId(3, 15), "senderMonitorFaultEmulation", "SenderMonitorFaultEmulation", false, this.receiverMonitorFaultEmulation)
             ], [], this.isRebuildable)
         ];
 
@@ -2649,7 +2717,7 @@ export class ExampleControl extends NcWorker
             myRestoreData.values.forEach(propertyData => {
                 let propertyId = NcElementId.ToPropertyString(propertyData.id);
                 if(propertyId != '1p6' && propertyId != '3p1' && propertyId != '3p2' && propertyId != '3p3' && propertyId != '3p4' && propertyId != '3p5' &&
-                    propertyId != '3p9' && propertyId != '3p10' && propertyId != '3p11' && propertyId != '3p12' && propertyId != '3p13' && propertyId != '3p14')
+                    propertyId != '3p9' && propertyId != '3p10' && propertyId != '3p11' && propertyId != '3p12' && propertyId != '3p13' && propertyId != '3p14' && propertyId != '3p15')
                     myNotices.push(new NcPropertyRestoreNotice(
                         propertyData.id,
                         propertyData.name,

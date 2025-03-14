@@ -291,7 +291,8 @@ try
         sessionManager,
         true,
         null,
-        receiverMonitor);
+        receiverMonitor,
+        senderMonitor);
 
     exampleControlsBlock.UpdateMembers([ exampleControl ]);
 
