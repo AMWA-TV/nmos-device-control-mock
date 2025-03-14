@@ -701,6 +701,8 @@ export interface IReceiverMonitoring
 
     SimulateFaultFixed(): void;
 
+    SimulateGrandMasterChange(): void;
+
     activated: boolean;
 }
 
@@ -758,6 +760,9 @@ export class NcReceiverMonitor extends NcStatusMonitor implements IReceiverMonit
 
     public activated: boolean;
 
+    private readonly emulatedGM1 = "0xD4:AD:71:FF:FE:6F:E2:80";
+    private readonly emulatedGM2 = "0xEC:46:70:FF:FE:00:FF:A9";
+
     public constructor(
         oid: number,
         constantOid: boolean,
@@ -791,7 +796,7 @@ export class NcReceiverMonitor extends NcStatusMonitor implements IReceiverMonit
         ];
         
         this.externalSynchronizationStatus = NcSynchronizationStatus.Healthy;
-        this.externalSynchronizationStatusMessage = "Locked to grandmaster";
+        this.externalSynchronizationStatusMessage = "Locked to GM";
         this.synchronizationSourceId = "0xD4:AD:71:FF:FE:6F:E2:80";
 
         this.streamStatus = NcStreamStatus.Inactive;
@@ -864,7 +869,7 @@ export class NcReceiverMonitor extends NcStatusMonitor implements IReceiverMonit
             this.connectionStatusTransitionCounter++; //4p6
 
         this.externalSynchronizationStatus = NcSynchronizationStatus.PartiallyHealthy; //4p7
-        this.externalSynchronizationStatusMessage = "Locked to grandmaster from single interface"; //4p8
+        this.externalSynchronizationStatusMessage = "Locked to GM from single interface"; //4p8
         if(!transitionFromUnhealthy)
             this.externalSynchronizationStatusTransitionCounter++; //4p9
         else
@@ -914,7 +919,7 @@ export class NcReceiverMonitor extends NcStatusMonitor implements IReceiverMonit
         this.connectionStatusTransitionCounter++; //4p6
 
         this.externalSynchronizationStatus = NcSynchronizationStatus.Unhealthy; //4p7
-        this.externalSynchronizationStatusMessage = "Not locked"; //4p8
+        this.externalSynchronizationStatusMessage = "Not locked to GM"; //4p8
         this.externalSynchronizationStatusTransitionCounter++; //4p9
         this.synchronizationSourceId = null; //4p10
 
@@ -970,7 +975,7 @@ export class NcReceiverMonitor extends NcStatusMonitor implements IReceiverMonit
         this.connectionStatusMessage = "Receiver is connected and connection is healthy"; //4p5
 
         this.externalSynchronizationStatus = NcSynchronizationStatus.Healthy; //4p7
-        this.externalSynchronizationStatusMessage = "Locked to grandmaster"; //4p8
+        this.externalSynchronizationStatusMessage = "Locked to GM"; //4p8
         this.synchronizationSourceId = "0xD4:AD:71:FF:FE:6F:E2:80"; //4p10
 
         this.streamStatus = NcStreamStatus.Healthy; //4p11
@@ -993,10 +998,56 @@ export class NcReceiverMonitor extends NcStatusMonitor implements IReceiverMonit
         this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 12), NcPropertyChangeType.ValueChanged, this.streamStatusMessage, null);
     }
 
-    public SimulateFaultFixed() 
+    public SimulateFaultFixed()
     {
         if(this.overallStatus != NcOverallStatus.Inactive)
             DelayTask(1000 * this.statusReportingDelay).then(() => this.FaultFixed());
+    }
+
+    public SimulateGrandMasterChange()
+    {
+        if(this.overallStatus == NcOverallStatus.Healthy)
+            this.GrandMasterChange();
+    }
+
+    public GrandMasterChange()
+    {
+        this.overallStatus = NcOverallStatus.PartiallyHealthy; //3p1
+        this.overallStatusMessage = "Receiver has suffered a GM change"; //3p2
+
+        let previousGM = this.synchronizationSourceId;
+
+        if(this.synchronizationSourceId == this.emulatedGM1)
+            this.synchronizationSourceId = this.emulatedGM2; //4p10
+        else
+            this.synchronizationSourceId = this.emulatedGM1; //4p10
+
+        this.externalSynchronizationStatus = NcSynchronizationStatus.PartiallyHealthy; //4p7
+        this.externalSynchronizationStatusMessage = `GM changed to: ${this.synchronizationSourceId} from: ${previousGM}`; //4p8
+        this.externalSynchronizationStatusTransitionCounter++; //4p9
+
+        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 1), NcPropertyChangeType.ValueChanged, this.overallStatus, null);
+        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 2), NcPropertyChangeType.ValueChanged, this.overallStatusMessage, null);
+
+        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 7), NcPropertyChangeType.ValueChanged, this.externalSynchronizationStatus, null);
+        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 8), NcPropertyChangeType.ValueChanged, this.externalSynchronizationStatusMessage, null);
+        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 9), NcPropertyChangeType.ValueChanged, this.externalSynchronizationStatusTransitionCounter, null);
+        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 10), NcPropertyChangeType.ValueChanged, this.synchronizationSourceId, null);
+
+        DelayTask(1000 * this.statusReportingDelay).then(() => this.GrandMasterChangeRecovery());
+    }
+
+    public GrandMasterChangeRecovery()
+    {
+        this.overallStatus = NcOverallStatus.Healthy; //3p1
+        this.overallStatusMessage = "Receiver is connected and healthy"; //3p2
+
+        this.externalSynchronizationStatus = NcSynchronizationStatus.Healthy; //4p7
+
+        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 1), NcPropertyChangeType.ValueChanged, this.overallStatus, null);
+        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 2), NcPropertyChangeType.ValueChanged, this.overallStatusMessage, null);
+
+        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 7), NcPropertyChangeType.ValueChanged, this.externalSynchronizationStatus, null);
     }
 
     public Disconnected()
@@ -1944,9 +1995,6 @@ export class ExampleControl extends NcWorker
                     this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.objectSequence, null);
                     return new CommandResponseNoValue(handle, NcMethodStatus.OK);
                 case '3p14':
-                    // this.receiverMonitorFaultEmulation = value;
-                    // this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.receiverMonitorFaultEmulation, null);
-                    // return new CommandResponseNoValue(handle, NcMethodStatus.OK);
                     let enumValue = value as ReceiverMonitorFaultEmulation;
                     if(enumValue !== undefined)
                     {
@@ -2436,6 +2484,9 @@ export class ExampleControl extends NcWorker
                     }
                 case '3m1':
                     {
+                        if(this.receiverMonitoringContext != null && this.receiverMonitoringContext.activated)
+                            this.receiverMonitoringContext.SimulateGrandMasterChange();
+
                         this.methodNoArgsCount = this.methodNoArgsCount + 1;
                         this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 6), NcPropertyChangeType.ValueChanged, this.methodNoArgsCount, null);
                         return new CommandResponseNoValue(handle, NcMethodStatus.OK);
