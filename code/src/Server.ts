@@ -294,6 +294,9 @@ try
         receiverMonitor,
         senderMonitor);
 
+    receiverMonitor.SetMonitorManager(exampleControl);
+    senderMonitor.SetMonitorManager(exampleControl);
+
     exampleControlsBlock.UpdateMembers([ exampleControl ]);
 
     rootBlock.UpdateMembers([ deviceManager, classManager, receiversBlock, sendersBlock, stereoGainBlock, exampleControlsBlock, identBeacon ]);
