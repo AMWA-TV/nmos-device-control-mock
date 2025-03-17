@@ -763,6 +763,8 @@ export class NcReceiverMonitor extends NcStatusMonitor implements IReceiverMonit
     private readonly emulatedGM1 = "0xD4:AD:71:FF:FE:6F:E2:80";
     private readonly emulatedGM2 = "0xEC:46:70:FF:FE:00:FF:A9";
 
+    private monitorManager: IMonitorManager | null;
+
     public constructor(
         oid: number,
         constantOid: boolean,
@@ -811,6 +813,13 @@ export class NcReceiverMonitor extends NcStatusMonitor implements IReceiverMonit
         this.streamStatusTransitionCounter = 0;
 
         this.autoResetCounters = true;
+
+        this.monitorManager = null;
+    }
+
+    public SetMonitorManager(manager: IMonitorManager)
+    {
+        this.monitorManager = manager;
     }
 
     public Connected()
@@ -1077,6 +1086,8 @@ export class NcReceiverMonitor extends NcStatusMonitor implements IReceiverMonit
 
         if(this.autoResetCounters)
             this.ResetCounters();
+
+        this.monitorManager?.ReceiverDisconnected();
     }
 
     //'1m1'
@@ -1369,6 +1380,8 @@ export class NcSenderMonitor extends NcStatusMonitor implements ISenderMonitorin
 
     public activated: boolean;
 
+    private monitorManager: IMonitorManager | null;
+
     public constructor(
         oid: number,
         constantOid: boolean,
@@ -1413,6 +1426,13 @@ export class NcSenderMonitor extends NcStatusMonitor implements ISenderMonitorin
         this.autoResetCounters = true;
 
         this.Activated();
+
+        this.monitorManager = null;
+    }
+
+    public SetMonitorManager(manager: IMonitorManager)
+    {
+        this.monitorManager = manager;
     }
 
     public Activated()
@@ -1520,6 +1540,8 @@ export class NcSenderMonitor extends NcStatusMonitor implements ISenderMonitorin
 
         if(this.autoResetCounters)
             this.ResetCounters();
+
+        this.monitorManager?.SenderDeactivated();
     }
 
     //'1m1'
@@ -1801,7 +1823,14 @@ export class ExampleDataType extends BaseType
     }
 }
 
-export class ExampleControl extends NcWorker
+export interface IMonitorManager
+{
+    ReceiverDisconnected(): void;
+
+    SenderDeactivated(): void;
+}
+
+export class ExampleControl extends NcWorker implements IMonitorManager
 {
     public static staticClassID: number[] = [ 1, 2, 0, 2 ];
 
@@ -2627,6 +2656,18 @@ export class ExampleControl extends NcWorker
         }
 
         return new CommandResponseError(handle, NcMethodStatus.BadOid, 'OID could not be found');
+    }
+
+    public ReceiverDisconnected()
+    {
+        this.receiverMonitorFaultEmulation = ReceiverMonitorFaultEmulation.Healthy;
+        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 14), NcPropertyChangeType.ValueChanged, this.receiverMonitorFaultEmulation, null);
+    }
+
+    public SenderDeactivated()
+    {
+        this.senderMonitorFaultEmulation = SenderMonitorFaultEmulation.Healthy;
+        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 15), NcPropertyChangeType.ValueChanged, this.senderMonitorFaultEmulation, null);
     }
 
     public static override GetClassDescriptor(includeInherited: boolean): NcClassDescriptor 
