@@ -1069,8 +1069,15 @@ export class NcReceiverMonitor extends NcStatusMonitor implements IReceiverMonit
         this.overallStatus = NcOverallStatus.Inactive; //3p1
         this.overallStatusMessage = "Inactive"; //3p2
 
+        this.linkStatus = NcLinkStatus.AllUp; //4p1
+        this.linkStatusMessage = null; //4p2
+
         this.connectionStatus = NcConnectionStatus.Inactive; //4p4
         this.connectionStatusMessage = "Inactive"; //4p5
+
+        this.externalSynchronizationStatus = NcSynchronizationStatus.Healthy; //4p7
+        this.externalSynchronizationStatusMessage = "Locked to grandmaster on NIC2"; //4p8
+        this.synchronizationSourceId = "0xD4:AD:71:FF:FE:6F:E2:80"; //4p10
 
         this.streamStatus = NcStreamStatus.Inactive; //4p11
         this.streamStatusMessage = "Inactive"; //4p12
@@ -1078,8 +1085,15 @@ export class NcReceiverMonitor extends NcStatusMonitor implements IReceiverMonit
         this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 1), NcPropertyChangeType.ValueChanged, this.overallStatus, null);
         this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 2), NcPropertyChangeType.ValueChanged, this.overallStatusMessage, null);
 
+        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 1), NcPropertyChangeType.ValueChanged, this.linkStatus, null);
+        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 2), NcPropertyChangeType.ValueChanged, this.linkStatusMessage, null);
+
         this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 4), NcPropertyChangeType.ValueChanged, this.connectionStatus, null);
         this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 5), NcPropertyChangeType.ValueChanged, this.connectionStatusMessage, null);
+
+        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 7), NcPropertyChangeType.ValueChanged, this.externalSynchronizationStatus, null);
+        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 8), NcPropertyChangeType.ValueChanged, this.externalSynchronizationStatusMessage, null);
+        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 10), NcPropertyChangeType.ValueChanged, this.synchronizationSourceId, null);
     
         this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 11), NcPropertyChangeType.ValueChanged, this.streamStatus, null);
         this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 12), NcPropertyChangeType.ValueChanged, this.streamStatusMessage, null);
