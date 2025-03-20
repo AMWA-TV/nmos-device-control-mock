@@ -1025,7 +1025,6 @@ export class NcReceiverMonitor extends NcStatusMonitor implements IReceiverMonit
     public GrandMasterChange()
     {
         this.overallStatus = NcOverallStatus.PartiallyHealthy; //3p1
-        this.overallStatusMessage = "Experienced grandmaster change"; //3p2
 
         let previousGM = this.synchronizationSourceId;
 
@@ -1037,6 +1036,8 @@ export class NcReceiverMonitor extends NcStatusMonitor implements IReceiverMonit
         this.externalSynchronizationStatus = NcSynchronizationStatus.PartiallyHealthy; //4p7
         this.externalSynchronizationStatusMessage = `Grandmaster changed from: ${previousGM}`; //4p8
         this.externalSynchronizationStatusTransitionCounter++; //4p9
+
+        this.overallStatusMessage = this.externalSynchronizationStatusMessage; //3p2
 
         this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 1), NcPropertyChangeType.ValueChanged, this.overallStatus, null);
         this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 2), NcPropertyChangeType.ValueChanged, this.overallStatusMessage, null);
@@ -1052,12 +1053,10 @@ export class NcReceiverMonitor extends NcStatusMonitor implements IReceiverMonit
     public GrandMasterChangeRecovery()
     {
         this.overallStatus = NcOverallStatus.Healthy; //3p1
-        this.overallStatusMessage = "Experienced grandmaster change"; //3p2
 
         this.externalSynchronizationStatus = NcSynchronizationStatus.Healthy; //4p7
 
         this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 1), NcPropertyChangeType.ValueChanged, this.overallStatus, null);
-        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 2), NcPropertyChangeType.ValueChanged, this.overallStatusMessage, null);
 
         this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 7), NcPropertyChangeType.ValueChanged, this.externalSynchronizationStatus, null);
     }
