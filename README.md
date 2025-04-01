@@ -52,7 +52,7 @@ These are the configuration keys which can be specified in the configuration fil
 
 * notify_without_subscriptions - boolean flag which is set to false by default, but it can be set to true if you would like to get all notifications on all sessions without subscribing (for debugging purposes only).
 * work_without_registry - boolean flag which is set to false by default, but it can be set to true if you would like the mock device not to attempt to register with an NMOS registry.
-* streaming_profile - enum option [RTP_RAW, RTP_MPEG_TS] specifying the streaming profile of senders and receivers (default is RTP_RAW)
+* streaming_profile - enum option `[RTP_RAW, RTP_MPEG_TS]` specifying the streaming profile of senders and receivers (default is `RTP_RAW`)
 
 ## Specifications supported
 
