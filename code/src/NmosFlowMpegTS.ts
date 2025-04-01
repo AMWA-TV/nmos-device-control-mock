@@ -1,25 +1,26 @@
 import { jsonIgnoreReplacer } from "json-ignore";
 import { RegistrationClient } from "./RegistrationClient";
-import { NmosSource } from "./NmosSource";
+import { NmosFlow } from "./NmosFlow";
 
-export class NmosSourceVideo extends NmosSource
+export class NmosFlowMpegTS extends NmosFlow
 {
     public format: string;
+    public media_type: string;
 
     public constructor(
         id: string,
+        source_id: string,
         device_id: string,
         label: string,
         parents: string[],
-        clock_name: string,
-        grain_rate_numerator: number,
-        grain_rate_denominator: number,
         format: string,
+        media_type: string,
         registrationClient: RegistrationClient)
     {
-        super(id, device_id, label, parents, clock_name, grain_rate_numerator, grain_rate_denominator, registrationClient);
+        super(id, source_id, device_id, label, parents, registrationClient);
 
         this.format = format;
+        this.media_type = media_type;
     }
 
     public ToJson()

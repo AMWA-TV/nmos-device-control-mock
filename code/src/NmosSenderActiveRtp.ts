@@ -1,5 +1,5 @@
 import { jsonIgnoreReplacer, jsonIgnore } from 'json-ignore';
-import { NmosActivation, TransportParamsSet } from './NmosReceiverCore';
+import { NmosActivation, TransportParamsSet } from './NmosReceiver';
 import { NmosSenderActive } from './NmosSender';
 
 export class NmosSenderActiveRtp extends NmosSenderActive

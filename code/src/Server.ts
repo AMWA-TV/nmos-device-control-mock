@@ -5,12 +5,10 @@ import WebSocket from 'ws';
 import { v4 as uuidv4 } from 'uuid';
 import { jsonIgnoreReplacer } from 'json-ignore';
 
-import { Configuration } from './Configuration';
+import { Configuration, StreamingProfile } from './Configuration';
 import { NmosNode } from './NmosNode';
 import { NmosDevice } from './NmosDevice';
 import { RegistrationClient } from './RegistrationClient';
-import { NmosReceiverVideo } from './NmosReceiverVideo';
-import { NmosReceiverActiveRtp } from './NmosReceiverActiveRtp';
 import { SessionManager } from './SessionManager';
 import { ExampleControlsBlock, NcBlock, RootBlock } from './NCModel/Blocks';
 import { NcClassManager, NcDeviceManager } from './NCModel/Managers';
@@ -18,10 +16,20 @@ import { ConfigApiArguments, ConfigApiValue, NcBulkValuesHolder, NcMethodResultB
 import { ExampleControl, GainControl, NcIdentBeacon, NcReceiverMonitor, NcSenderMonitor } from './NCModel/Features';
 import { ProtocolError, ProtocolSubscription } from './NCProtocol/Commands';
 import { MessageType, ProtocolWrapper } from './NCProtocol/Core';
-import { NmosSourceVideo } from './NmosSourceVideo';
-import { NmosFlowVideo } from './NmosFlowVideo';
-import { NmosSenderVideo } from './NmosSenderVideo';
+import { NmosSource } from './NmosSource';
+import { NmosSourceVideoRaw } from './NmosSourceVideoRaw';
+import { NmosSourceMpegTS } from './NmosSourceMpegTS';
+import { NmosFlow } from './NmosFlow';
+import { NmosFlowVideoRaw } from './NmosFlowVideoRaw';
+import { NmosFlowMpegTS } from './NmosFlowMpegTS';
+import { NmosSender } from './NmosSender';
+import { NmosSenderVideoRaw } from './NmosSenderVideoRaw';
+import { NmosSenderMpegTS } from './NmosSenderMpegTS';
 import { NmosSenderActiveRtp } from './NmosSenderActiveRtp';
+import { NmosReceiver } from './NmosReceiver';
+import { NmosReceiverVideoRaw } from './NmosReceiverVideoRaw';
+import { NmosReceiverMpegTS } from './NmosReceiverMpegTS';
+import { NmosReceiverActiveRtp } from './NmosReceiverActiveRtp';
 
 export interface WebSocketConnection extends WebSocket {
     isAlive: boolean;
@@ -62,72 +70,162 @@ try
         config.function,
         registrationClient);
 
-    const myVideoSource = new NmosSourceVideo(
-        config.source_id,
-        config.device_id,
-        config.base_label,
-        [],
-        myNode.clocks[0].name,
-        25,
-        1,
-        "urn:x-nmos:format:video",
-        registrationClient);
+    let mySource: NmosSource | null = null;
+    
+    switch(config.streaming_profile)
+    {
+        case StreamingProfile.RTP_RAW:
+        {
+            mySource = new NmosSourceVideoRaw(
+                config.source_id,
+                config.device_id,
+                config.base_label,
+                [],
+                myNode.clocks[0].name,
+                25,
+                1,
+                "urn:x-nmos:format:video",
+                registrationClient);
+        }
+        break;
 
-    const myVideoFlow = new NmosFlowVideo(
-        config.flow_id,
-        config.source_id,
-        config.device_id,
-        config.base_label,
-        [],
-        25,
-        1,
-        "urn:x-nmos:format:video",
-        1920,
-        1080,
-        "BT709",
-        "interlaced_tff",
-        "SDR",
-        "video/raw",
-        [
-            {
-                "name": "Y",
-                "width": 1920,
-                "height": 1080,
-                "bit_depth": 10
-            },
-            {
-                "name": "Cb",
-                "width": 960,
-                "height": 1080,
-                "bit_depth": 10
-            },
-            {
-                "name": "Cr",
-                "width": 960,
-                "height": 1080,
-                "bit_depth": 10
-            }
-        ],
-        registrationClient);
+        case StreamingProfile.RTP_MPEG_TS:
+        {
+            mySource = new NmosSourceMpegTS(
+                config.source_id,
+                config.device_id,
+                config.base_label,
+                [],
+                myNode.clocks[0].name,
+                "urn:x-nmos:format:mux",
+                registrationClient);
+        }
+        break;
+    }
 
-    const myVideoSender = new NmosSenderVideo(
-        config.sender_id,
-        config.flow_id,
-        config.device_id,
-        config.base_label,
-        "urn:x-nmos:transport:rtp.mcast",
-        `http://${config.address}:${config.port}/x-nmos/node/v1.2/senders/${config.sender_id}/sdp`,
-        registrationClient);
+    let myFlow: NmosFlow | null = null;
 
-    const myVideoReceiver = new NmosReceiverVideo(
-        config.receiver_id,
-        config.device_id,
-        config.base_label,
-        'urn:x-nmos:transport:rtp.mcast',
-        registrationClient);
+    switch(config.streaming_profile)
+    {
+        case StreamingProfile.RTP_RAW:
+        {
+            myFlow = new NmosFlowVideoRaw(
+                config.flow_id,
+                config.source_id,
+                config.device_id,
+                config.base_label,
+                [],
+                25,
+                1,
+                "urn:x-nmos:format:video",
+                1920,
+                1080,
+                "BT709",
+                "interlaced_tff",
+                "SDR",
+                "video/raw",
+                [
+                    {
+                        "name": "Y",
+                        "width": 1920,
+                        "height": 1080,
+                        "bit_depth": 10
+                    },
+                    {
+                        "name": "Cb",
+                        "width": 960,
+                        "height": 1080,
+                        "bit_depth": 10
+                    },
+                    {
+                        "name": "Cr",
+                        "width": 960,
+                        "height": 1080,
+                        "bit_depth": 10
+                    }
+                ],
+                registrationClient);
+        }
+        break;
 
-    myDevice.AddReceiver(myVideoReceiver);
-    myDevice.AddSender(myVideoSender);
+        case StreamingProfile.RTP_MPEG_TS:
+        {
+            myFlow = new NmosFlowMpegTS(
+                config.flow_id,
+                config.source_id,
+                config.device_id,
+                config.base_label,
+                [],
+                "urn:x-nmos:format:mux",
+                "video/MP2T",
+                registrationClient);
+        }
+        break;
+    }
+
+    let mySender: NmosSender | null = null;
+
+    switch(config.streaming_profile)
+    {
+        case StreamingProfile.RTP_RAW:
+        {
+            mySender = new NmosSenderVideoRaw(
+                config.sender_id,
+                config.flow_id,
+                config.device_id,
+                config.base_label,
+                "urn:x-nmos:transport:rtp.mcast",
+                `http://${config.address}:${config.port}/x-nmos/node/v1.2/senders/${config.sender_id}/sdp`,
+                registrationClient);
+        }
+        break;
+
+        case StreamingProfile.RTP_MPEG_TS:
+        {
+            mySender = new NmosSenderMpegTS(
+                config.sender_id,
+                config.flow_id,
+                config.device_id,
+                config.base_label,
+                "urn:x-nmos:transport:rtp.mcast",
+                100000,
+                `http://${config.address}:${config.port}/x-nmos/node/v1.2/senders/${config.sender_id}/sdp`,
+                registrationClient);
+        }
+        break;
+    }
+
+    let myReceiver: NmosReceiver | null = null;
+
+    switch(config.streaming_profile)
+    {
+        case StreamingProfile.RTP_RAW:
+        {
+            myReceiver = new NmosReceiverVideoRaw(
+                config.receiver_id,
+                config.device_id,
+                config.base_label,
+                'urn:x-nmos:transport:rtp.mcast',
+                registrationClient);
+        }
+        break;
+
+        case StreamingProfile.RTP_MPEG_TS:
+        {
+            myReceiver = new NmosReceiverMpegTS(
+                config.receiver_id,
+                config.device_id,
+                config.base_label,
+                'urn:x-nmos:transport:rtp.mcast',
+                registrationClient);
+        }
+        break;
+    }
+
+    if(myReceiver != null)
+        myDevice.AddReceiver(myReceiver);
+    if(mySender != null)
+        myDevice.AddSender(mySender);
 
     const sessionManager = new SessionManager(config.notify_without_subscriptions);
 
@@ -220,13 +318,13 @@ try
         receiversBlock,
         'monitor-01',
         'Receiver monitor 01',
-        [ new NcTouchpointNmos('x-nmos', new NcTouchpointResourceNmos('receiver', myVideoReceiver.id)) ],
+        myReceiver != null ? [ new NcTouchpointNmos('x-nmos', new NcTouchpointResourceNmos('receiver', myReceiver.id)) ] : [],
         null,
         true,
         "Receiver monitor worker",
         sessionManager);
 
-    myVideoReceiver.AttachMonitoringAgent(receiverMonitor);
+    myReceiver?.AttachMonitoringAgent(receiverMonitor);
 
     receiversBlock.UpdateMembers([ receiverMonitor ]);
 
@@ -250,13 +348,13 @@ try
         sendersBlock,
         'monitor-01',
         'Sender monitor 01',
-        [ new NcTouchpointNmos('x-nmos', new NcTouchpointResourceNmos('sender', myVideoSender.id)) ],
+        mySender != null ? [ new NcTouchpointNmos('x-nmos', new NcTouchpointResourceNmos('sender', mySender.id)) ] : [],
         null,
         true,
         "Sender monitor worker",
         sessionManager);
 
-    myVideoSender.AttachMonitoringAgent(senderMonitor);
+    mySender?.AttachMonitoringAgent(senderMonitor);
 
     sendersBlock.UpdateMembers([ senderMonitor ]);
 
@@ -299,10 +397,14 @@ try
         await registrationClient.RegisterOrUpdateResource('node', myNode);
         registrationClient.StartHeatbeats(myNode.id);
         await registrationClient.RegisterOrUpdateResource('device', myDevice);
-        await registrationClient.RegisterOrUpdateResource('receiver', myVideoReceiver);
-        await registrationClient.RegisterOrUpdateResource('source', myVideoSource);
-        await registrationClient.RegisterOrUpdateResource('flow', myVideoFlow);
-        await registrationClient.RegisterOrUpdateResource('sender', myVideoSender);
+        if(myReceiver != null)
+            await registrationClient.RegisterOrUpdateResource('receiver', myReceiver);
+        if(mySource != null)
+            await registrationClient.RegisterOrUpdateResource('source', mySource);
+        if(myFlow != null)
+            await registrationClient.RegisterOrUpdateResource('flow', myFlow);
+        if(mySender != null)
+            await registrationClient.RegisterOrUpdateResource('sender', mySender);
     };
 
     doAsync();
@@ -493,28 +595,28 @@ try
 
     app.get('/x-nmos/node/v1.3/sources', function (req, res) {
         res.setHeader('Content-Type', 'application/json');
-        res.send(myVideoSource.ToJsonArray());
+        res.send(mySource?.ToJsonArray());
     })
 
     app.get('/x-nmos/node/v1.3/sources/:id', function (req, res) {
         res.setHeader('Content-Type', 'application/json');
 
-        if(req.params.id === myVideoSource.id)
-            res.send(myVideoSource.ToJson());
+        if(req.params.id === mySource?.id)
+            res.send(mySource.ToJson());
         else
             res.sendStatus(404);
     })
 
     app.get('/x-nmos/node/v1.3/flows', function (req, res) {
         res.setHeader('Content-Type', 'application/json');
-        res.send(myVideoFlow.ToJsonArray());
+        res.send(myFlow?.ToJsonArray());
     })
 
     app.get('/x-nmos/node/v1.3/flows/:id', function (req, res) {
         res.setHeader('Content-Type', 'application/json');
 
-        if(req.params.id === myVideoFlow.id)
-            res.send(myVideoFlow.ToJson());
+        if(req.params.id === myFlow?.id)
+            res.send(myFlow.ToJson());
         else
             res.sendStatus(404);
     })

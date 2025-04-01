@@ -1,13 +1,13 @@
 import { jsonIgnoreReplacer, jsonIgnore } from 'json-ignore';
 
-import { NmosReceiverCore } from './NmosReceiverCore';
+import { NmosReceiver } from './NmosReceiver';
 import { NmosResource } from './NmosResource';
 import { NmosReceiverActiveRtp } from './NmosReceiverActiveRtp';
-import { NmosReceiverVideo } from './NmosReceiverVideo';
+import { NmosReceiverVideoRaw } from './NmosReceiverVideoRaw';
 import { RegistrationClient } from './RegistrationClient';
 import { NmosSender } from './NmosSender';
 import { NmosSenderActiveRtp } from './NmosSenderActiveRtp';
-import { NmosSenderVideo } from './NmosSenderVideo';
+import { NmosSenderVideoRaw } from './NmosSenderVideoRaw';
 
 export class NmosDevice extends NmosResource
 {
@@ -30,7 +30,7 @@ export class NmosDevice extends NmosResource
     private application: string;
 
     @jsonIgnore()
-    public receiverObjects: NmosReceiverCore[];
+    public receiverObjects: NmosReceiver[];
 
     @jsonIgnore()
     public senderObjects: NmosSender[];
@@ -78,7 +78,7 @@ export class NmosDevice extends NmosResource
         this.type = 'urn:x-nmos:device:generic';
     }
 
-    public AddReceiver(receiver: NmosReceiverCore)
+    public AddReceiver(receiver: NmosReceiver)
     {
         this.receiverObjects.push(receiver);
         this.receivers.push(receiver.id);
@@ -106,7 +106,7 @@ export class NmosDevice extends NmosResource
     {
         let receiver = this.receiverObjects.find(e => e.id === id);
         if(receiver)
-            (receiver as NmosReceiverVideo).ChangeReceiverSettings(settings);
+            (receiver as NmosReceiver).ChangeReceiverSettings(settings);
     }
 
     public FetchReceiversUris()
@@ -148,7 +148,7 @@ export class NmosDevice extends NmosResource
     {
         let sender = this.senderObjects.find(e => e.id === id);
         if(sender)
-            (sender as NmosSenderVideo).ChangeSenderSettings(settings);
+            (sender as NmosSender).ChangeSenderSettings(settings);
     }
 
     public FetchSendersUris()

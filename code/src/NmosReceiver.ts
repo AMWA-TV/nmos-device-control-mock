@@ -4,7 +4,7 @@ import { NcReceiverMonitor } from './NCModel/Features';
 import { NmosResource } from './NmosResource';
 import { RegistrationClient } from './RegistrationClient';
 
-export abstract class NmosReceiverCore extends NmosResource
+export abstract class NmosReceiver extends NmosResource
 {
     public device_id: string;
     public transport: string;
@@ -61,13 +61,15 @@ export abstract class NmosReceiverCore extends NmosResource
 
     public abstract FetchConstraints() : object | null;
 
+    public abstract ChangeReceiverSettings(settings: NmosReceiverActive)
+
     public UpdateSubscription(
         sender_id : string | null,
         active: boolean)
     {
         this.subscription = new NmosReceiverSubscription(sender_id, active);
         this.BumpVersion();
-        this.registrationClient.RegisterOrUpdateResource<NmosReceiverCore>('receiver', this);
+        this.registrationClient.RegisterOrUpdateResource<NmosReceiver>('receiver', this);
     }
 
     public AttachMonitoringAgent(agent: NcReceiverMonitor)
