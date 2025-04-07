@@ -2,7 +2,7 @@ import { jsonIgnoreReplacer } from "json-ignore";
 import { RegistrationClient } from "./RegistrationClient";
 import { NmosFlow } from "./NmosFlow";
 
-export class NmosFlowVideo extends NmosFlow
+export class NmosFlowVideoRaw extends NmosFlow
 {
     public format: string;
     public frame_width: number;
@@ -12,6 +12,7 @@ export class NmosFlowVideo extends NmosFlow
     public transfer_characteristic: string;
     public media_type: string;
     public components: object[];
+    public grain_rate: object;
 
     public constructor(
         id: string,
@@ -31,7 +32,7 @@ export class NmosFlowVideo extends NmosFlow
         components: object[],
         registrationClient: RegistrationClient)
     {
-        super(id, source_id, device_id, label, parents, grain_rate_numerator, grain_rate_denominator, registrationClient);
+        super(id, source_id, device_id, label, parents, registrationClient);
 
         this.format = format;
         this.frame_width = frame_width;
@@ -41,6 +42,10 @@ export class NmosFlowVideo extends NmosFlow
         this.transfer_characteristic = transfer_characteristic;
         this.media_type = media_type;
         this.components = components;
+        this.grain_rate = {
+            "numerator": grain_rate_numerator,
+            "denominator": grain_rate_denominator
+        };
     }
 
     public ToJson()

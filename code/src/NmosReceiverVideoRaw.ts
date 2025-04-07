@@ -2,10 +2,10 @@ import { jsonIgnoreReplacer, jsonIgnore } from 'json-ignore';
 import * as sdpTransform from 'sdp-transform';
 
 import { NmosReceiverActiveRtp, RtpReceiverTransportParamsSet } from './NmosReceiverActiveRtp';
-import { NmosActivation, NmosReceiverCore, NmosReceiverActive } from './NmosReceiverCore';
 import { RegistrationClient } from './RegistrationClient';
+import { NmosActivation, NmosReceiver, NmosReceiverActive } from './NmosReceiver';
 
-export class NmosReceiverVideo extends NmosReceiverCore
+export class NmosReceiverVideoRaw extends NmosReceiver
 {
     public caps: object;
     public format: string;
@@ -81,15 +81,16 @@ export class NmosReceiverVideo extends NmosReceiverCore
         return this.staged;
     }
 
-    public ChangeReceiverSettings(settings: NmosReceiverActiveRtp)
+    public ChangeReceiverSettings(settings: NmosReceiverActive)
     {
-        if(settings.activation != null)
+        let rtpSettings = settings as NmosReceiverActiveRtp;
+        if(rtpSettings && settings.activation != null)
         {
             if(settings.sender_id != null)
             {
-                if(settings.master_enable && settings.transport_file != null && settings.transport_file.data != null)
+                if(settings.master_enable && rtpSettings.transport_file != null && rtpSettings.transport_file.data != null)
                 {
-                    const res = sdpTransform.parse(settings.transport_file.data);
+                    const res = sdpTransform.parse(rtpSettings.transport_file.data);
 
                     if(res.media[0].sourceFilter?.destAddress != null &&
                         res.media[0].sourceFilter?.srcList != null &&
@@ -101,7 +102,7 @@ export class NmosReceiverVideo extends NmosReceiverCore
                             settings.sender_id,
                             settings.master_enable,
                             settings.activation,
-                            settings.transport_file,
+                            rtpSettings.transport_file,
                             [
                                 new RtpReceiverTransportParamsSet(res.media[0].sourceFilter?.destAddress, res.media[0].sourceFilter?.srcList, res.media[0].port),
                                 new RtpReceiverTransportParamsSet(res.media[1].sourceFilter?.destAddress, res.media[1].sourceFilter?.srcList, res.media[1].port),
@@ -110,7 +111,7 @@ export class NmosReceiverVideo extends NmosReceiverCore
                          this.staged = new NmosReceiverActiveRtp(settings.sender_id,
                             settings.master_enable,
                             new NmosActivation(null, null, null),
-                            settings.transport_file,
+                            rtpSettings.transport_file,
                             [
                                 new RtpReceiverTransportParamsSet(res.media[0].sourceFilter?.destAddress, res.media[0].sourceFilter?.srcList, res.media[0].port),
                                 new RtpReceiverTransportParamsSet(res.media[1].sourceFilter?.destAddress, res.media[1].sourceFilter?.srcList, res.media[1].port),

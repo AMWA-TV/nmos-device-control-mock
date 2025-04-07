@@ -1,7 +1,7 @@
 import { jsonIgnore, jsonIgnoreReplacer } from "json-ignore";
 import { NmosResource } from "./NmosResource";
 import { RegistrationClient } from "./RegistrationClient";
-import { NmosActivation, TransportParamsSet } from "./NmosReceiverCore";
+import { NmosActivation, TransportParamsSet } from "./NmosReceiver";
 import { NcSenderMonitor } from "./NCModel/Features";
 
 export abstract class NmosSender extends NmosResource
@@ -75,6 +75,8 @@ export abstract class NmosSender extends NmosResource
     public abstract FetchConstraints() : object | null;
 
     public abstract FetchSdp(): string | null;
+
+    public abstract ChangeSenderSettings(settings: NmosSenderActive);
 
     public AttachMonitoringAgent(agent: NcSenderMonitor)
     {

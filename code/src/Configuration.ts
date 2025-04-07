@@ -3,6 +3,12 @@ import { jsonIgnoreReplacer } from 'json-ignore';
 const fs = require("fs");
 const writeFileAtomic = require('write-file-atomic')
 
+export enum StreamingProfile
+{
+    RTP_RAW = "RTP_RAW",
+    RTP_MPEG_TS = "RTP_MPEG_TS"
+}
+
 export class Configuration implements IConfiguration
 {
     public node_id: string;
@@ -22,6 +28,7 @@ export class Configuration implements IConfiguration
     public product: string;
     public instance: string;
     public function: string;
+    public streaming_profile: StreamingProfile;
 
     public constructor()
     {
@@ -48,6 +55,10 @@ export class Configuration implements IConfiguration
         this.product = config.product;
         this.instance = config.instance;
         this.function = config.function;
+
+        this.streaming_profile = StreamingProfile.RTP_RAW;
+        if(config.streaming_profile)
+            this.streaming_profile = config.streaming_profile
 
         this.CheckIdentifiers();
         this.CheckDistinguishingInformation();
@@ -175,4 +186,5 @@ export interface IConfiguration
     product: string;
     instance: string;
     function: string;
+    streaming_profile: StreamingProfile | null;
 }
