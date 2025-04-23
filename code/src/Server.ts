@@ -36,6 +36,25 @@ export interface WebSocketConnection extends WebSocket {
     connectionId: string;
 }
 
+export class ApiError
+{
+    public code: Number;
+
+    public error: string;
+
+    public debug: string;
+
+    public constructor(
+        code: Number,
+        error: string,
+        debug: string)
+    {
+        this.code = code;
+        this.error = error;
+        this.debug = debug;
+    }
+}
+
 function DelayTask(timeMs: number | undefined) 
 {
     return new Promise(resolve => setTimeout(resolve, timeMs));
@@ -411,8 +430,9 @@ try
 
     //initialize the Express HTTP listener
     const app = application();
+    const corsOptions = { optionsSuccessStatus: 200 };
     var cors = require('cors');
-    app.use(cors());
+    app.use(cors(corsOptions));
     app.use(application.json({ limit: '50mb' }));
     app.use(application.urlencoded({ extended: true }));
     
@@ -540,31 +560,34 @@ try
     });
 
     //General paths
-    
+
     app.get('/', function (req, res) {
-        res.setHeader('Content-Type', 'application/json');
-        res.send(JSON.stringify([ 'x-nmos/' ]));
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.write(JSON.stringify([ 'x-nmos/' ]));
+        res.end();
     })
 
     app.get('/x-nmos', function (req, res) {
-        res.setHeader('Content-Type', 'application/json');
-        res.send(JSON.stringify([ 
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.write(JSON.stringify([ 
             'node/',
             'connection/',
             'configuration/'
         ]));
+        res.end();
     })
 
     //IS-04 paths
 
     app.get('/x-nmos/node', function (req, res) {
-        res.setHeader('Content-Type', 'application/json');
-        res.send(JSON.stringify([ 'v1.3/' ]));
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.write(JSON.stringify([ 'v1.3/' ]));
+        res.end();
     })
 
     app.get('/x-nmos/node/v1.3', function (req, res) {
-        res.setHeader('Content-Type', 'application/json');
-        res.send(JSON.stringify([ 
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.write(JSON.stringify([ 
             'self/',
             'devices/',
             'sources/',
@@ -572,65 +595,79 @@ try
             'senders/',
             'receivers/',
         ]));
+        res.end();
     })
 
     app.get('/x-nmos/node/v1.3/self', function (req, res) {
-        res.setHeader('Content-Type', 'application/json');
-        res.send(myNode.ToJson());
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.write(myNode.ToJson());
+        res.end();
     })
 
     app.get('/x-nmos/node/v1.3/devices', function (req, res) {
-        res.setHeader('Content-Type', 'application/json');
-        res.send(myDevice.ToJsonArray());
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.write(myDevice.ToJsonArray());
+        res.end();
     })
 
     app.get('/x-nmos/node/v1.3/devices/:id', function (req, res) {
-        res.setHeader('Content-Type', 'application/json');
-
         if(req.params.id === myDevice.id)
-            res.send(myDevice.ToJson());
+        {
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.write(myDevice.ToJson());
+            res.end();
+        }
         else
             res.sendStatus(404);
     })
 
     app.get('/x-nmos/node/v1.3/sources', function (req, res) {
-        res.setHeader('Content-Type', 'application/json');
-        res.send(mySource?.ToJsonArray());
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.write(mySource?.ToJsonArray());
+        res.end();
     })
 
     app.get('/x-nmos/node/v1.3/sources/:id', function (req, res) {
-        res.setHeader('Content-Type', 'application/json');
-
         if(req.params.id === mySource?.id)
-            res.send(mySource.ToJson());
+        {
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.write(mySource.ToJson());
+            res.end();
+        }
         else
             res.sendStatus(404);
     })
 
     app.get('/x-nmos/node/v1.3/flows', function (req, res) {
-        res.setHeader('Content-Type', 'application/json');
-        res.send(myFlow?.ToJsonArray());
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.write(myFlow?.ToJsonArray());
+        res.end();
     })
 
     app.get('/x-nmos/node/v1.3/flows/:id', function (req, res) {
-        res.setHeader('Content-Type', 'application/json');
-
         if(req.params.id === myFlow?.id)
-            res.send(myFlow.ToJson());
+        {
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.write(myFlow.ToJson());
+            res.end();
+        }
         else
             res.sendStatus(404);
     })
 
     app.get('/x-nmos/node/v1.3/senders', function (req, res) {
-        res.setHeader('Content-Type', 'application/json');
-        res.send(JSON.stringify(myDevice.FetchSenders(), jsonIgnoreReplacer));
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.write(JSON.stringify(myDevice.FetchSenders(), jsonIgnoreReplacer));
+        res.end();
     })
 
     app.get('/x-nmos/node/v1.3/senders/:id', function (req, res) {
-        res.setHeader('Content-Type', 'application/json');
-
         if(myDevice.FindSender(req.params.id))
-            res.send(myDevice.FetchSender(req.params.id)?.ToJson());
+        {
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.write(myDevice.FetchSender(req.params.id)?.ToJson());
+            res.end();
+        }
         else
             res.sendStatus(404);
     })
@@ -654,96 +691,112 @@ try
     })
 
     app.get('/x-nmos/node/v1.3/receivers', function (req, res) {
-        res.setHeader('Content-Type', 'application/json');
-        res.send(JSON.stringify(myDevice.FetchReceivers(), jsonIgnoreReplacer));
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.write(JSON.stringify(myDevice.FetchReceivers(), jsonIgnoreReplacer));
+        res.end();
     }) 
 
     app.get('/x-nmos/node/v1.3/receivers/:id', function (req, res) {
-        res.setHeader('Content-Type', 'application/json');
-
         if(myDevice.FindReceiver(req.params.id))
-            res.send(myDevice.FetchReceiver(req.params.id)?.ToJson());
+        {
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.write(myDevice.FetchReceiver(req.params.id)?.ToJson());
+            res.end();
+        }
         else
             res.sendStatus(404);
     })
 
     //IS-05 paths
     app.get('/x-nmos/connection', function (req, res) {
-        res.setHeader('Content-Type', 'application/json');
-        res.send(JSON.stringify([ 'v1.1/' ]));
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.write(JSON.stringify([ 'v1.1/' ]));
+        res.end();
     })
 
     app.get('/x-nmos/connection/:version', function (req, res) {
-        res.setHeader('Content-Type', 'application/json');
-        res.send(JSON.stringify([ 
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.write(JSON.stringify([ 
             'single/'
         ]));
+        res.end();
     })
 
     app.get('/x-nmos/connection/:version/single', function (req, res) {
-        res.setHeader('Content-Type', 'application/json');
-        res.send(JSON.stringify([ 
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.write(JSON.stringify([ 
             'senders/',
             'receivers/'
         ]));
+        res.end();
     })
 
     app.get('/x-nmos/connection/:version/single/senders', function (req, res) {
-        res.setHeader('Content-Type', 'application/json');
-        res.send(JSON.stringify(myDevice.FetchSendersUris()));
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.write(JSON.stringify(myDevice.FetchSendersUris()));
+        res.end();
     })
 
     app.get('/x-nmos/connection/:version/single/senders/:id', function (req, res) {
-        res.setHeader('Content-Type', 'application/json');
-
         if(myDevice.FindSender(req.params.id))
-            res.send(JSON.stringify([ 
+        {
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.write(JSON.stringify([ 
                 'constraints/',
                 'staged/',
                 'active/',
                 'transportfile/',
                 'transporttype/'
             ]));
+            res.end();
+        }
         else
             res.sendStatus(404);
     })
 
     app.get('/x-nmos/connection/:version/single/senders/:id/constraints', function (req, res) {
-        res.setHeader('Content-Type', 'application/json');
-
         if(myDevice.FindSender(req.params.id))
-            res.send(JSON.stringify(myDevice.FetchSender(req.params.id)?.FetchConstraints()));
+        {
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.write(JSON.stringify(myDevice.FetchSender(req.params.id)?.FetchConstraints()));
+            res.end();
+        }
         else
             res.sendStatus(404);
     })
 
     app.get('/x-nmos/connection/:version/single/senders/:id/active', function (req, res) {
-        res.setHeader('Content-Type', 'application/json');
-
         if(myDevice.FindSender(req.params.id))
-            res.send((myDevice.FetchSender(req.params.id)?.FetchActive()?.ToJson()));
+        {
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.write(myDevice.FetchSender(req.params.id)?.FetchActive()?.ToJson());
+            res.end();
+        }
         else
             res.sendStatus(404);
     })
 
     app.get('/x-nmos/connection/:version/single/senders/:id/staged', function (req, res) {
-        res.setHeader('Content-Type', 'application/json');
-
         if(myDevice.FindSender(req.params.id))
-            res.send((myDevice.FetchSender(req.params.id)?.FetchStaged()?.ToJson()));
+        {
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.write(myDevice.FetchSender(req.params.id)?.FetchStaged()?.ToJson());
+            res.end();
+        }
         else
             res.sendStatus(404);
     })
 
     app.patch('/x-nmos/connection/:version/single/senders/:id/staged', function (req, res) {
-        res.setHeader('Content-Type', 'application/json');
-
         let settings = req.body as NmosSenderActiveRtp;
 
         if(myDevice.FindSender(req.params.id))
         {
             myDevice.ChangeSenderSettings(req.params.id, settings);
-            res.send((myDevice.FetchSender(req.params.id)?.FetchActive()?.ToJson()));
+
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.write(myDevice.FetchSender(req.params.id)?.FetchActive()?.ToJson());
+            res.end();
         }
         else
             res.sendStatus(404);
@@ -759,78 +812,92 @@ try
     })
 
     app.get('/x-nmos/connection/:version/single/senders/:id/transporttype', function (req, res) {
-        res.setHeader('Content-Type', 'application/json');
-
         if(myDevice.FindSender(req.params.id))
-            res.send(JSON.stringify(myDevice.FetchSender(req.params.id)?.FetchTransportType()));
+        {
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.write(JSON.stringify(myDevice.FetchSender(req.params.id)?.FetchTransportType()));
+            res.end();
+        }
         else
             res.sendStatus(404);
     })
 
     app.get('/x-nmos/connection/:version/single/receivers', function (req, res) {
-        res.setHeader('Content-Type', 'application/json');
-        res.send(JSON.stringify(myDevice.FetchReceiversUris()));
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.write(JSON.stringify(myDevice.FetchReceiversUris()));
+        res.end();
     })
 
     app.get('/x-nmos/connection/:version/single/receivers/:id', function (req, res) {
-        res.setHeader('Content-Type', 'application/json');
-
         if(myDevice.FindReceiver(req.params.id))
-            res.send(JSON.stringify([ 
+        {
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.write(JSON.stringify([ 
                 'constraints/',
                 'staged/',
                 'active/',
                 'transporttype/'
             ]));
+            res.end();
+        }
         else
             res.sendStatus(404);
     })
 
     app.get('/x-nmos/connection/:version/single/receivers/:id/constraints', function (req, res) {
-        res.setHeader('Content-Type', 'application/json');
-
         if(myDevice.FindReceiver(req.params.id))
-            res.send(JSON.stringify(myDevice.FetchReceiver(req.params.id)?.FetchConstraints()));
+        {
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.write(JSON.stringify(myDevice.FetchReceiver(req.params.id)?.FetchConstraints()));
+            res.end();
+        }
         else
             res.sendStatus(404);
     })
 
     app.get('/x-nmos/connection/:version/single/receivers/:id/active', function (req, res) {
-        res.setHeader('Content-Type', 'application/json');
-
         if(myDevice.FindReceiver(req.params.id))
-            res.send((myDevice.FetchReceiver(req.params.id)?.FetchActive()?.ToJson()));
+        {
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.write(myDevice.FetchReceiver(req.params.id)?.FetchActive()?.ToJson());
+            res.end();
+        }
         else
             res.sendStatus(404);
     })
 
     app.get('/x-nmos/connection/:version/single/receivers/:id/staged', function (req, res) {
-        res.setHeader('Content-Type', 'application/json');
-
         if(myDevice.FindReceiver(req.params.id))
-            res.send((myDevice.FetchReceiver(req.params.id)?.FetchStaged()?.ToJson()));
+        {
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.write(myDevice.FetchReceiver(req.params.id)?.FetchStaged()?.ToJson());
+            res.end();
+        }
         else
             res.sendStatus(404);
     })
 
     app.get('/x-nmos/connection/:version/single/receivers/:id/transporttype', function (req, res) {
-        res.setHeader('Content-Type', 'application/json');
-
         if(myDevice.FindReceiver(req.params.id))
-            res.send(JSON.stringify(myDevice.FetchReceiver(req.params.id)?.FetchTransportType()));
+        {
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.write(JSON.stringify(myDevice.FetchReceiver(req.params.id)?.FetchTransportType()));
+            res.end();
+        }
         else
             res.sendStatus(404);
     })
 
     app.patch('/x-nmos/connection/:version/single/receivers/:id/staged', function (req, res) {
-        res.setHeader('Content-Type', 'application/json');
-
         let settings = req.body as NmosReceiverActiveRtp;
 
         if(myDevice.FindReceiver(req.params.id))
         {
             myDevice.ChangeReceiverSettings(req.params.id, settings);
-            res.send((myDevice.FetchReceiver(req.params.id)?.FetchActive()?.ToJson()));
+
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.write(myDevice.FetchReceiver(req.params.id)?.FetchActive()?.ToJson());
+            res.end();
         }
         else
             res.sendStatus(404);
@@ -839,89 +906,89 @@ try
     //IS-14 paths
 
     app.get('/x-nmos/configuration', function (req, res) {
-        res.setHeader('Content-Type', 'application/json');
-        res.send(JSON.stringify([ 'v1.0/' ]));
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.write(JSON.stringify([ 'v1.0/' ]));
+        res.end();
     })
 
     app.get('/x-nmos/configuration/:version', function (req, res) {
-        res.setHeader('Content-Type', 'application/json');
-        res.send(JSON.stringify([ 
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.write(JSON.stringify([ 
             'rolePaths/'
         ]));
+        res.end();
     })
 
     app.get('/x-nmos/configuration/:version/rolePaths', function (req, res) {
-        res.setHeader('Content-Type', 'application/json');
-
         let response = rootBlock.GetRolePathUrls();
 
-        res.send(JSON.stringify(response.sort((a, b) => (a > b ? -1 : 1))));
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.write(JSON.stringify(response.sort((a, b) => (a > b ? -1 : 1))));
+        res.end();
     })
 
     app.get('/x-nmos/configuration/:version/rolePaths/:rolePath', function (req, res) {
-        res.setHeader('Content-Type', 'application/json');
-
         let rolePath = req.params.rolePath.split('.');
 
         let member = rootBlock.FindMemberByRolePath(rolePath);
         if(member)
         {
-            res.send(JSON.stringify([ 
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.write(JSON.stringify([ 
                 'bulkProperties/',
                 'descriptor/',
                 'methods/',
                 'properties/'
             ]));
+            res.end();
         }
         else
             res.sendStatus(404);
     })
 
     app.get('/x-nmos/configuration/:version/rolePaths/:rolePath/descriptor/', function (req, res) {
-        res.setHeader('Content-Type', 'application/json');
-
         let rolePath = req.params.rolePath.split('.');
 
         let member = rootBlock.FindMemberByRolePath(rolePath);
         if(member)
         {
-            res.send(JSON.stringify(classManager.GetClassDescriptor(member.classID, true), jsonIgnoreReplacer));
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.write(JSON.stringify(classManager.GetClassDescriptor(member.classID, true), jsonIgnoreReplacer));
+            res.end();
         }
         else
             res.sendStatus(404);
     })
 
     app.get('/x-nmos/configuration/:version/rolePaths/:rolePath/methods/', function (req, res) {
-        res.setHeader('Content-Type', 'application/json');
-
         let rolePath = req.params.rolePath.split('.');
 
         let member = rootBlock.FindMemberByRolePath(rolePath);
         if(member)
         {
-            res.send(JSON.stringify(classManager.GetClassDescriptor(member.classID, true)?.methods.map(({ id }) => `${id.level}m${id.index}/`).sort((a, b) => (a > b ? 1 : -1)), jsonIgnoreReplacer));
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.write(JSON.stringify(classManager.GetClassDescriptor(member.classID, true)?.methods.map(({ id }) => `${id.level}m${id.index}/`).sort((a, b) => (a > b ? 1 : -1)), jsonIgnoreReplacer));
+            res.end();
         }
         else
             res.sendStatus(404);
     })
 
     app.get('/x-nmos/configuration/:version/rolePaths/:rolePath/properties/', function (req, res) {
-        res.setHeader('Content-Type', 'application/json');
-
         let rolePath = req.params.rolePath.split('.');
 
         let member = rootBlock.FindMemberByRolePath(rolePath);
         if(member)
         {
-            res.send(JSON.stringify(classManager.GetClassDescriptor(member.classID, true)?.properties.map(({ id }) => `${id.level}p${id.index}/`).sort((a, b) => (a > b ? 1 : -1)), jsonIgnoreReplacer));
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.write(JSON.stringify(classManager.GetClassDescriptor(member.classID, true)?.properties.map(({ id }) => `${id.level}p${id.index}/`).sort((a, b) => (a > b ? 1 : -1)), jsonIgnoreReplacer));
+            res.end();
         }
         else
             res.sendStatus(404);
     })
 
     app.get('/x-nmos/configuration/:version/rolePaths/:rolePath/properties/:propertyId', function (req, res) {
-        res.setHeader('Content-Type', 'application/json');
-
         let rolePath = req.params.rolePath.split('.');
 
         let member = rootBlock.FindMemberByRolePath(rolePath);
@@ -929,10 +996,14 @@ try
         {
             let property = classManager.GetClassDescriptor(member.classID, true)?.properties.find(f => req.params.propertyId == `${f.id.level}p${f.id.index}`);
             if(property)
-                res.send(JSON.stringify([ 
+            {
+                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.write(JSON.stringify([ 
                     'descriptor/',
                     'value/'
                 ]));
+                res.end();
+            }
             else
                 res.sendStatus(404);
         }
@@ -941,8 +1012,6 @@ try
     })
 
     app.get('/x-nmos/configuration/:version/rolePaths/:rolePath/properties/:propertyId/descriptor', function (req, res) {
-        res.setHeader('Content-Type', 'application/json');
-
         let rolePath = req.params.rolePath.split('.');
 
         let member = rootBlock.FindMemberByRolePath(rolePath);
@@ -950,7 +1019,11 @@ try
         {
             let property = classManager.GetClassDescriptor(member.classID, true)?.properties.find(f => req.params.propertyId == `${f.id.level}p${f.id.index}`);
             if(property?.typeName)
-                res.send(JSON.stringify(classManager.GetTypeDescriptor(property.typeName, true), jsonIgnoreReplacer));
+            {
+                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.write(JSON.stringify(classManager.GetTypeDescriptor(property.typeName, true), jsonIgnoreReplacer));
+                res.end();
+            }
             else
                 res.sendStatus(404);
         }
@@ -959,8 +1032,6 @@ try
     })
 
     app.get('/x-nmos/configuration/:version/rolePaths/:rolePath/properties/:propertyId/value', function (req, res) {
-        res.setHeader('Content-Type', 'application/json');
-
         let rolePath = req.params.rolePath.split('.');
 
         let member = rootBlock.FindMemberByRolePath(rolePath);
@@ -968,7 +1039,11 @@ try
         {
             let property = classManager.GetClassDescriptor(member.classID, true)?.properties.find(f => req.params.propertyId == `${f.id.level}p${f.id.index}`);
             if(property)
-                res.send(JSON.stringify(member.Get(member.oid, property.id, 0).result, jsonIgnoreReplacer));
+            {
+                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.write(JSON.stringify(member.Get(member.oid, property.id, 0).result, jsonIgnoreReplacer));
+                res.end();
+            }
             else
                 res.sendStatus(404);
         }
@@ -977,8 +1052,6 @@ try
     })
 
     app.put('/x-nmos/configuration/:version/rolePaths/:rolePath/properties/:propertyId/value', function (req, res) {
-        res.setHeader('Content-Type', 'application/json');
-
         let apiValue = req.body as ConfigApiValue;
 
         console.log(`Property PUT ${req.url}`);
@@ -990,7 +1063,11 @@ try
         {
             let property = classManager.GetClassDescriptor(member.classID, true)?.properties.find(f => req.params.propertyId == `${f.id.level}p${f.id.index}`);
             if(property)
-                res.send(JSON.stringify(member.Set(member.oid, property.id, apiValue.value, 0).result, jsonIgnoreReplacer));
+            {
+                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.write(JSON.stringify(member.Set(member.oid, property.id, apiValue.value, 0).result, jsonIgnoreReplacer));
+                res.end();
+            }
             else
                 res.sendStatus(404);
         }
@@ -999,8 +1076,6 @@ try
     });
 
     app.patch('/x-nmos/configuration/:version/rolePaths/:rolePath/methods/:methodId', function (req, res) {
-        res.setHeader('Content-Type', 'application/json');
-
         let apiArguments = req.body as ConfigApiArguments;
 
         console.log(`Method PATCH ${req.url}`);
@@ -1012,7 +1087,11 @@ try
         {
             let method = classManager.GetClassDescriptor(member.classID, true)?.methods.find(f => req.params.methodId == `${f.id.level}m${f.id.index}`);
             if(method)
-                res.send(JSON.stringify(member.InvokeMethod(member.oid, method.id, apiArguments.arguments, 0).result, jsonIgnoreReplacer));
+            {
+                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.write(JSON.stringify(member.InvokeMethod(member.oid, method.id, apiArguments.arguments, 0).result, jsonIgnoreReplacer));
+                res.end();
+            }
             else
                 res.sendStatus(404);
         }
@@ -1021,8 +1100,6 @@ try
     })
 
     app.get('/x-nmos/configuration/:version/rolePaths/:rolePath/bulkProperties', function (req, res) {
-        res.setHeader('Content-Type', 'application/json');
-
         let recurse: boolean = req.query.recurse === 'false' ? false : true;
 
         console.log(`BulkProperties GET ${req.url}, recurse: ${recurse}`);
@@ -1036,15 +1113,15 @@ try
                 NcMethodStatus.OK, new NcBulkValuesHolder("AMWA NMOS Device Control Mock Application|v1.0",
                 member.GetAllProperties(recurse)));
 
-            res.send(JSON.stringify(response, jsonIgnoreReplacer));
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.write(JSON.stringify(response, jsonIgnoreReplacer));
+            res.end();
         }
         else
             res.sendStatus(404);
     })
 
     app.patch('/x-nmos/configuration/:version/rolePaths/:rolePath/bulkProperties', function (req, res) {
-        res.setHeader('Content-Type', 'application/json');
-
         let restore = req.body as RestoreBody;
 
         console.log(`BulkProperties PATCH ${req.url}`);
@@ -1058,15 +1135,15 @@ try
                 NcMethodStatus.OK,
                 member.Restore(restore.arguments, false));
 
-            res.send(JSON.stringify(response, jsonIgnoreReplacer));
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.write(JSON.stringify(response, jsonIgnoreReplacer));
+            res.end();
         }
         else
             res.sendStatus(404);
     })
 
     app.put('/x-nmos/configuration/:version/rolePaths/:rolePath/bulkProperties', function (req, res) {
-        res.setHeader('Content-Type', 'application/json');
-
         let restore = req.body as RestoreBody;
 
         console.log(`BulkProperties PUT ${req.url}`);
@@ -1080,7 +1157,9 @@ try
                 NcMethodStatus.OK,
                 member.Restore(restore.arguments, true));
 
-            res.send(JSON.stringify(response, jsonIgnoreReplacer));
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.write(JSON.stringify(response, jsonIgnoreReplacer));
+            res.end();
         }
         else
             res.sendStatus(404);
@@ -1089,8 +1168,9 @@ try
     app.use((req, res, next) => {
         //This applied to any invalid path
 
-        res.set({ 'content-type': 'application/json; charset=utf-8' });
-        res.status(404).send('');
+        res.writeHead(404, { 'Content-Type': 'application/json' });
+        res.write(JSON.stringify(new ApiError(404, "Invalid path", "Invalid API path")));
+        res.end();
     })
     
     //start our server
