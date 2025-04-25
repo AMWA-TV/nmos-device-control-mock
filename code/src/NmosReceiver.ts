@@ -18,7 +18,7 @@ export abstract class NmosReceiver extends NmosResource
     public active: NmosReceiverActive | null;
 
     @jsonIgnore()
-    public staged: NmosReceiverActive | null;
+    public staged: NmosReceiverStaged | null;
 
     @jsonIgnore()
     public agent: NcReceiverMonitor | null;
@@ -28,6 +28,7 @@ export abstract class NmosReceiver extends NmosResource
         device_id: string,
         base_label: string,
         transport: string,
+        interface_bindings: string[],
         registrationClient: RegistrationClient)
     {
         super(id, `${base_label} receiver`, registrationClient);
@@ -35,7 +36,7 @@ export abstract class NmosReceiver extends NmosResource
         this.device_id = device_id;
         this.transport = transport;
 
-        this.interface_bindings = [ 'eth0' ];
+        this.interface_bindings = interface_bindings;
         this.subscription = new NmosReceiverSubscription(null, false);
         this.active = null;
         this.staged = null;
@@ -57,11 +58,11 @@ export abstract class NmosReceiver extends NmosResource
 
     public abstract FetchActive() : NmosReceiverActive | null;
 
-    public abstract FetchStaged() : NmosReceiverActive | null;
+    public abstract FetchStaged() : NmosReceiverStaged | null;
 
     public abstract FetchConstraints() : object | null;
 
-    public abstract ChangeReceiverSettings(settings: NmosReceiverActive)
+    public abstract ChangeReceiverSettings(settings: NmosReceiverStaged) : NmosReceiverStaged | null;
 
     public UpdateSubscription(
         sender_id : string | null,
@@ -102,14 +103,40 @@ export abstract class NmosReceiverActive
     public sender_id: string | null;
     public master_enable: boolean;
     public activation: NmosActivation;
-    
-    public transport_params: TransportParamsSet[] | null
+
+    public transport_params: TransportParamsSetActive[] | null
 
     public constructor(
         sender_id: string | null,
         master_enable: boolean,
         activation: NmosActivation,
-        transport_params: TransportParamsSet[])
+        transport_params: TransportParamsSetActive[])
+    {
+        this.sender_id = sender_id;
+        this.master_enable = master_enable;
+        this.activation = activation;
+        this.transport_params = transport_params;
+    }
+
+    public ToJson()
+    {
+        return JSON.stringify(this, jsonIgnoreReplacer);
+    }
+}
+
+export abstract class NmosReceiverStaged
+{
+    public sender_id: string | null;
+    public master_enable: boolean;
+    public activation: NmosActivation;
+
+    public transport_params: TransportParamsSetStaged[] | null
+
+    public constructor(
+        sender_id: string | null,
+        master_enable: boolean,
+        activation: NmosActivation,
+        transport_params: TransportParamsSetStaged[])
     {
         this.sender_id = sender_id;
         this.master_enable = master_enable;
@@ -134,18 +161,24 @@ export class NmosActivation
         activation_time: string | null,
         requested_time: string | null)
     {
-        this.mode = null;
-        this.activation_time = null;
-        this.requested_time = null;
+        this.mode = mode;
+        this.activation_time = activation_time;
+        this.requested_time = requested_time;
     }
 
     public ToJson()
     {
-        return JSON.stringify(this, jsonIgnoreReplacer);
+        return JSON.stringify(this);
     }
 }
 
-export abstract class TransportParamsSet {
+export abstract class TransportParamsSetActive {
+    constructor() 
+    {
+    }
+}
+
+export abstract class TransportParamsSetStaged {
     constructor() 
     {
     }

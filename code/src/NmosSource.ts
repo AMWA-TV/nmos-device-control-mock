@@ -6,7 +6,7 @@ export class NmosSource extends NmosResource
 {
     public device_id: string;
     public parents: string[];
-    public clock_name: string;
+    public clock_name: string | null;
     public caps: object;
 
     public constructor(
@@ -14,7 +14,7 @@ export class NmosSource extends NmosResource
         device_id: string,
         base_label: string,
         parents: string[],
-        clock_name: string,
+        clock_name: string | null,
         registrationClient: RegistrationClient)
     {
         super(id, `${base_label} source`, registrationClient);

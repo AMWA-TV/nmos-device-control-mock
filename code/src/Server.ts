@@ -25,11 +25,11 @@ import { NmosFlowMpegTS } from './NmosFlowMpegTS';
 import { NmosSender } from './NmosSender';
 import { NmosSenderVideoRaw } from './NmosSenderVideoRaw';
 import { NmosSenderMpegTS } from './NmosSenderMpegTS';
-import { NmosSenderActiveRtp } from './NmosSenderActiveRtp';
+import { NmosSenderActiveRtp, NmosSenderStagedRtp } from './NmosSenderRtp';
 import { NmosReceiver } from './NmosReceiver';
 import { NmosReceiverVideoRaw } from './NmosReceiverVideoRaw';
 import { NmosReceiverMpegTS } from './NmosReceiverMpegTS';
-import { NmosReceiverActiveRtp } from './NmosReceiverActiveRtp';
+import { NmosReceiverActiveRtp, NmosReceiverStagedRtp } from './NmosReceiverRtp';
 
 export interface WebSocketConnection extends WebSocket {
     isAlive: boolean;
@@ -115,7 +115,6 @@ try
                 config.device_id,
                 config.base_label,
                 [],
-                myNode.clocks[0].name,
                 "urn:x-nmos:format:mux",
                 registrationClient);
         }
@@ -195,6 +194,7 @@ try
                 config.base_label,
                 "urn:x-nmos:transport:rtp.mcast",
                 `http://${config.address}:${config.port}/x-nmos/node/v1.2/senders/${config.sender_id}/sdp`,
+                [ 'eth0', 'eth1' ],
                 registrationClient);
         }
         break;
@@ -209,6 +209,7 @@ try
                 "urn:x-nmos:transport:rtp.mcast",
                 100000,
                 `http://${config.address}:${config.port}/x-nmos/node/v1.2/senders/${config.sender_id}/sdp`,
+                [ 'eth0' ],
                 registrationClient);
         }
         break;
@@ -225,6 +226,7 @@ try
                 config.device_id,
                 config.base_label,
                 'urn:x-nmos:transport:rtp.mcast',
+                [ 'eth0', 'eth1' ],
                 registrationClient);
         }
         break;
@@ -236,6 +238,7 @@ try
                 config.device_id,
                 config.base_label,
                 'urn:x-nmos:transport:rtp.mcast',
+                [ 'eth0' ],
                 registrationClient);
         }
         break;
@@ -673,19 +676,23 @@ try
     })
 
     app.get('/x-nmos/node/v1.2/senders/:id/sdp', function (req, res) {
-        res.setHeader('Content-Type', 'application/sdp');
-
         if(myDevice.FindSender(req.params.id))
-            res.send(myDevice.FetchSender(req.params.id)?.FetchSdp());
+        {
+            res.writeHead(200, { 'Content-Type': 'application/sdp' });
+            res.write(myDevice.FetchSender(req.params.id)?.FetchSdp());
+            res.end();
+        }
         else
             res.sendStatus(404);
     })
 
     app.get('/x-nmos/node/v1.3/senders/:id/sdp', function (req, res) {
-        res.setHeader('Content-Type', 'application/sdp');
-
         if(myDevice.FindSender(req.params.id))
-            res.send(myDevice.FetchSender(req.params.id)?.FetchSdp());
+        {
+            res.writeHead(200, { 'Content-Type': 'application/sdp' });
+            res.write(myDevice.FetchSender(req.params.id)?.FetchSdp());
+            res.end();
+        }
         else
             res.sendStatus(404);
     })
@@ -788,25 +795,46 @@ try
     })
 
     app.patch('/x-nmos/connection/:version/single/senders/:id/staged', function (req, res) {
-        let settings = req.body as NmosSenderActiveRtp;
+        console.log(`patch - /x-nmos/connection/:version/single/senders/:id/staged, body: ${req.body}`);
 
-        if(myDevice.FindSender(req.params.id))
+        let settings = req.body as NmosSenderStagedRtp;
+
+        if(JSON.stringify(req.body) == "{}" || settings.activation || settings.receiver_id !== undefined || settings.master_enable !== undefined || settings.transport_params)
         {
-            myDevice.ChangeSenderSettings(req.params.id, settings);
-
-            res.writeHead(200, { 'Content-Type': 'application/json' });
-            res.write(myDevice.FetchSender(req.params.id)?.FetchActive()?.ToJson());
-            res.end();
+            if(myDevice.FindSender(req.params.id))
+            {
+                let response = myDevice.ChangeSenderSettings(req.params.id, settings);
+                if(response)
+                {
+                    res.writeHead(200, { 'Content-Type': 'application/json' });
+                    res.write(response.ToJson());
+                    res.end();
+                }
+                else
+                {
+                    res.writeHead(500, { 'Content-Type': 'application/json' });
+                    res.write(JSON.stringify(new ApiError(500, "Error processing the request", "Error processing the request")));
+                    res.end();
+                }
+            }
+            else
+                res.sendStatus(404);
         }
         else
-            res.sendStatus(404);
+        {
+            res.writeHead(400, { 'Content-Type': 'application/json' });
+            res.write(JSON.stringify(new ApiError(400, "Invalid request body", "Invalid request body")));
+            res.end();
+        }
     })
 
     app.get('/x-nmos/connection/:version/single/senders/:id/transportfile', function (req, res) {
-        res.setHeader('Content-Type', 'application/sdp');
-
         if(myDevice.FindSender(req.params.id))
-            res.send(myDevice.FetchSender(req.params.id)?.FetchSdp());
+        {
+            res.writeHead(200, { 'Content-Type': 'application/sdp' });
+            res.write(myDevice.FetchSender(req.params.id)?.FetchSdp());
+            res.end();
+        }
         else
             res.sendStatus(404);
     })
@@ -889,18 +917,37 @@ try
     })
 
     app.patch('/x-nmos/connection/:version/single/receivers/:id/staged', function (req, res) {
-        let settings = req.body as NmosReceiverActiveRtp;
+        console.log(`patch - /x-nmos/connection/:version/single/receivers/:id/staged, body: ${req.body}`);
 
-        if(myDevice.FindReceiver(req.params.id))
+        let settings = req.body as NmosReceiverStagedRtp;
+
+        if(JSON.stringify(req.body) == "{}" || settings.activation || settings.sender_id !== undefined || settings.master_enable !== undefined || settings.transport_params)
         {
-            myDevice.ChangeReceiverSettings(req.params.id, settings);
-
-            res.writeHead(200, { 'Content-Type': 'application/json' });
-            res.write(myDevice.FetchReceiver(req.params.id)?.FetchActive()?.ToJson());
-            res.end();
+            if(myDevice.FindReceiver(req.params.id))
+            {
+                let response = myDevice.ChangeReceiverSettings(req.params.id, settings);
+                if(response)
+                {
+                    res.writeHead(200, { 'Content-Type': 'application/json' });
+                    res.write(response.ToJson());
+                    res.end();
+                }
+                else
+                {
+                    res.writeHead(500, { 'Content-Type': 'application/json' });
+                    res.write(JSON.stringify(new ApiError(500, "Error processing the request", "Error processing the request")));
+                    res.end();
+                }
+            }
+            else
+                res.sendStatus(404);
         }
         else
-            res.sendStatus(404);
+        {
+            res.writeHead(400, { 'Content-Type': 'application/json' });
+            res.write(JSON.stringify(new ApiError(400, "Invalid request body", "Invalid request body")));
+            res.end();
+        }
     })
 
     //IS-14 paths
@@ -1076,6 +1123,8 @@ try
     });
 
     app.patch('/x-nmos/configuration/:version/rolePaths/:rolePath/methods/:methodId', function (req, res) {
+        console.log(`patch - /x-nmos/configuration/:version/rolePaths/:rolePath/methods/:methodId, body: ${req.body}`);
+
         let apiArguments = req.body as ConfigApiArguments;
 
         console.log(`Method PATCH ${req.url}`);
@@ -1122,6 +1171,8 @@ try
     })
 
     app.patch('/x-nmos/configuration/:version/rolePaths/:rolePath/bulkProperties', function (req, res) {
+        console.log(`patch - /x-nmos/configuration/:version/rolePaths/:rolePath/bulkProperties, body: ${req.body}`);
+
         let restore = req.body as RestoreBody;
 
         console.log(`BulkProperties PATCH ${req.url}`);

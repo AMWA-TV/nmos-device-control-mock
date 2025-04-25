@@ -11,11 +11,10 @@ export class NmosSourceMpegTS extends NmosSource
         device_id: string,
         label: string,
         parents: string[],
-        clock_name: string,
         format: string,
         registrationClient: RegistrationClient)
     {
-        super(id, device_id, label, parents, clock_name, registrationClient);
+        super(id, device_id, label, parents, null, registrationClient);
 
         this.format = format;
     }

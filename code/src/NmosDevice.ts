@@ -1,12 +1,12 @@
 import { jsonIgnoreReplacer, jsonIgnore } from 'json-ignore';
 
-import { NmosReceiver } from './NmosReceiver';
+import { NmosReceiver, NmosReceiverStaged } from './NmosReceiver';
 import { NmosResource } from './NmosResource';
-import { NmosReceiverActiveRtp } from './NmosReceiverActiveRtp';
+import { NmosReceiverActiveRtp, NmosReceiverStagedRtp } from './NmosReceiverRtp';
 import { NmosReceiverVideoRaw } from './NmosReceiverVideoRaw';
 import { RegistrationClient } from './RegistrationClient';
-import { NmosSender } from './NmosSender';
-import { NmosSenderActiveRtp } from './NmosSenderActiveRtp';
+import { NmosSender, NmosSenderStaged } from './NmosSender';
+import { NmosSenderActiveRtp, NmosSenderStagedRtp } from './NmosSenderRtp';
 import { NmosSenderVideoRaw } from './NmosSenderVideoRaw';
 
 export class NmosDevice extends NmosResource
@@ -102,11 +102,12 @@ export class NmosDevice extends NmosResource
         return this.receiverObjects;
     }
 
-    public ChangeReceiverSettings(id: string, settings: NmosReceiverActiveRtp)
+    public ChangeReceiverSettings(id: string, settings: NmosReceiverStaged) : NmosReceiverStaged | null
     {
         let receiver = this.receiverObjects.find(e => e.id === id);
         if(receiver)
-            (receiver as NmosReceiver).ChangeReceiverSettings(settings);
+            return (receiver as NmosReceiver).ChangeReceiverSettings(settings);
+        return null;
     }
 
     public FetchReceiversUris()
@@ -144,11 +145,12 @@ export class NmosDevice extends NmosResource
         return this.senderObjects;
     }
 
-    public ChangeSenderSettings(id: string, settings: NmosSenderActiveRtp)
+    public ChangeSenderSettings(id: string, settings: NmosSenderStaged) : NmosSenderStaged | null
     {
         let sender = this.senderObjects.find(e => e.id === id);
         if(sender)
-            (sender as NmosSender).ChangeSenderSettings(settings);
+            return (sender as NmosSender).ChangeSenderSettings(settings);
+        return null;
     }
 
     public FetchSendersUris()

@@ -58,7 +58,7 @@ export class NmosNode extends NmosResource
 
         this.api = new NmosApi(address, port);
 
-        this.interfaces = [ new NmosInterface('00-15-5d-67-c3-4e', 'eth0', '00-15-5d-67-c3-4e') ];
+        this.interfaces = [ new NmosInterface('00-15-5d-67-c3-4e', 'eth0', '00-15-5d-67-c3-4e'), new NmosInterface('96-1c-70-61-b1-54', 'eth1', '96-1c-70-61-b1-54') ];
     }
 
     public ToJson()

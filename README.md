@@ -16,8 +16,9 @@ It has support for the NMOS Control & Monitoring suite:
 
 It also has support for IS-04 and IS-05 with some limitations:
 
-* It does not support DND-SD discovery and the NMOS registry endpoint has to be configured in the config.json file
+* It does not support DND-SD discovery (the NMOS registry endpoint has to be configured in the config.json file)
 * It does not support the IS-05 bulk API as it currently only runs 1 receiver and 1 sender
+* It does not support absolute or relative IS-05 activations (only immediate activations are implemented)
 
 ## Installation
 
