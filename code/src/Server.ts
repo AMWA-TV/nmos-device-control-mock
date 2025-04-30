@@ -795,7 +795,7 @@ try
     })
 
     app.patch('/x-nmos/connection/:version/single/senders/:id/staged', function (req, res) {
-        console.log(`patch - /x-nmos/connection/:version/single/senders/:id/staged, body: ${req.body}`);
+        console.log(`patch - /x-nmos/connection/:version/single/senders/:id/staged, body: ${JSON.stringify(req.body)}`);
 
         let settings = req.body as NmosSenderStagedRtp;
 
@@ -917,7 +917,7 @@ try
     })
 
     app.patch('/x-nmos/connection/:version/single/receivers/:id/staged', function (req, res) {
-        console.log(`patch - /x-nmos/connection/:version/single/receivers/:id/staged, body: ${req.body}`);
+        console.log(`patch - /x-nmos/connection/:version/single/receivers/:id/staged, body: ${JSON.stringify(req.body)}`);
 
         let settings = req.body as NmosReceiverStagedRtp;
 
@@ -1123,7 +1123,7 @@ try
     });
 
     app.patch('/x-nmos/configuration/:version/rolePaths/:rolePath/methods/:methodId', function (req, res) {
-        console.log(`patch - /x-nmos/configuration/:version/rolePaths/:rolePath/methods/:methodId, body: ${req.body}`);
+        console.log(`patch - /x-nmos/configuration/:version/rolePaths/:rolePath/methods/:methodId, body: ${JSON.stringify(req.body)}`);
 
         let apiArguments = req.body as ConfigApiArguments;
 
@@ -1171,7 +1171,7 @@ try
     })
 
     app.patch('/x-nmos/configuration/:version/rolePaths/:rolePath/bulkProperties', function (req, res) {
-        console.log(`patch - /x-nmos/configuration/:version/rolePaths/:rolePath/bulkProperties, body: ${req.body}`);
+        console.log(`patch - /x-nmos/configuration/:version/rolePaths/:rolePath/bulkProperties, body: ${JSON.stringify(req.body)}`);
 
         let restore = req.body as RestoreBody;
 
