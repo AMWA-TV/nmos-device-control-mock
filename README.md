@@ -16,8 +16,9 @@ It has support for the NMOS Control & Monitoring suite:
 
 It also has support for IS-04 and IS-05 with some limitations:
 
-* It does not support DND-SD discovery and the NMOS registry endpoint has to be configured in the config.json file
+* It does not support DND-SD discovery (the NMOS registry endpoint has to be configured in the config.json file)
 * It does not support the IS-05 bulk API as it currently only runs 1 receiver and 1 sender
+* It does not support absolute or relative IS-05 activations (only immediate activations are implemented)
 
 ## Installation
 
@@ -52,16 +53,18 @@ These are the configuration keys which can be specified in the configuration fil
 
 * notify_without_subscriptions - boolean flag which is set to false by default, but it can be set to true if you would like to get all notifications on all sessions without subscribing (for debugging purposes only).
 * work_without_registry - boolean flag which is set to false by default, but it can be set to true if you would like the mock device not to attempt to register with an NMOS registry.
+* streaming_profile - enum option `[RTP_RAW, RTP_MPEG_TS]` specifying the streaming profile of senders and receivers (default is `RTP_RAW`)
 
 ## Specifications supported
 
 * [AMWA IS-04 NMOS Discovery and Registration](https://specs.amwa.tv/is-04)
 * [AMWA IS-05 NMOS Device Connection Management](https://specs.amwa.tv/is-05)
 * [AMWA IS-12 NMOS Control Protocol](https://specs.amwa.tv/is-12)
-* [MS-05-01 NMOS Control Architecture](https://specs.amwa.tv/ms-05-01)
-* [MS-05-02 NMOS Control Framework](https://specs.amwa.tv/ms-05-02)
-* [BCP-002-02 NMOS Asset Distinguishing Information](https://specs.amwa.tv/bcp-002-02)
-* [BCP-008-01 NMOS Receiver Status](https://specs.amwa.tv/bcp-008-01/)
-* [BCP-008-02 NMOS Sender Status](https://specs.amwa.tv/bcp-008-02/)
+* [AMWA MS-05-01 NMOS Control Architecture](https://specs.amwa.tv/ms-05-01)
+* [AMWA MS-05-02 NMOS Control Framework](https://specs.amwa.tv/ms-05-02)
+* [AMWA BCP-002-02 NMOS Asset Distinguishing Information](https://specs.amwa.tv/bcp-002-02)
+* [AMWA BCP-008-01 NMOS Receiver Status](https://specs.amwa.tv/bcp-008-01/)
+* [AMWA BCP-008-02 NMOS Sender Status](https://specs.amwa.tv/bcp-008-02/)
+* [AMWA BCP-006-04 NMOS Support for MPEG Transport Streams](https://specs.amwa.tv/bcp-006-04/)
 
 <!-- INTRO-END -->

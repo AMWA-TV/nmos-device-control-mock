@@ -5,12 +5,10 @@ import WebSocket from 'ws';
 import { v4 as uuidv4 } from 'uuid';
 import { jsonIgnoreReplacer } from 'json-ignore';
 
-import { Configuration } from './Configuration';
+import { Configuration, StreamingProfile } from './Configuration';
 import { NmosNode } from './NmosNode';
 import { NmosDevice } from './NmosDevice';
 import { RegistrationClient } from './RegistrationClient';
-import { NmosReceiverVideo } from './NmosReceiverVideo';
-import { NmosReceiverActiveRtp } from './NmosReceiverActiveRtp';
 import { SessionManager } from './SessionManager';
 import { ExampleControlsBlock, NcBlock, RootBlock } from './NCModel/Blocks';
 import { NcClassManager, NcDeviceManager } from './NCModel/Managers';
@@ -18,14 +16,43 @@ import { ConfigApiArguments, ConfigApiValue, NcBulkValuesHolder, NcMethodResultB
 import { ExampleControl, GainControl, NcIdentBeacon, NcReceiverMonitor, NcSenderMonitor } from './NCModel/Features';
 import { ProtocolError, ProtocolSubscription } from './NCProtocol/Commands';
 import { MessageType, ProtocolWrapper } from './NCProtocol/Core';
-import { NmosSourceVideo } from './NmosSourceVideo';
-import { NmosFlowVideo } from './NmosFlowVideo';
-import { NmosSenderVideo } from './NmosSenderVideo';
-import { NmosSenderActiveRtp } from './NmosSenderActiveRtp';
+import { NmosSource } from './NmosSource';
+import { NmosSourceVideoRaw } from './NmosSourceVideoRaw';
+import { NmosSourceMpegTS } from './NmosSourceMpegTS';
+import { NmosFlow } from './NmosFlow';
+import { NmosFlowVideoRaw } from './NmosFlowVideoRaw';
+import { NmosFlowMpegTS } from './NmosFlowMpegTS';
+import { NmosSender } from './NmosSender';
+import { NmosSenderVideoRaw } from './NmosSenderVideoRaw';
+import { NmosSenderMpegTS } from './NmosSenderMpegTS';
+import { NmosSenderActiveRtp, NmosSenderStagedRtp } from './NmosSenderRtp';
+import { NmosReceiver } from './NmosReceiver';
+import { NmosReceiverVideoRaw } from './NmosReceiverVideoRaw';
+import { NmosReceiverMpegTS } from './NmosReceiverMpegTS';
+import { NmosReceiverActiveRtp, NmosReceiverStagedRtp } from './NmosReceiverRtp';
 
 export interface WebSocketConnection extends WebSocket {
     isAlive: boolean;
     connectionId: string;
+}
+
+export class ApiError
+{
+    public code: Number;
+
+    public error: string;
+
+    public debug: string;
+
+    public constructor(
+        code: Number,
+        error: string,
+        debug: string)
+    {
+        this.code = code;
+        this.error = error;
+        this.debug = debug;
+    }
 }
 
 function DelayTask(timeMs: number | undefined) 
@@ -62,72 +89,165 @@ try
         config.function,
         registrationClient);
 
-    const myVideoSource = new NmosSourceVideo(
-        config.source_id,
-        config.device_id,
-        config.base_label,
-        [],
-        myNode.clocks[0].name,
-        25,
-        1,
-        "urn:x-nmos:format:video",
-        registrationClient);
+    let mySource: NmosSource | null = null;
+    
+    switch(config.streaming_profile)
+    {
+        case StreamingProfile.RTP_RAW:
+        {
+            mySource = new NmosSourceVideoRaw(
+                config.source_id,
+                config.device_id,
+                config.base_label,
+                [],
+                myNode.clocks[0].name,
+                25,
+                1,
+                "urn:x-nmos:format:video",
+                registrationClient);
+        }
+        break;
 
-    const myVideoFlow = new NmosFlowVideo(
-        config.flow_id,
-        config.source_id,
-        config.device_id,
-        config.base_label,
-        [],
-        25,
-        1,
-        "urn:x-nmos:format:video",
-        1920,
-        1080,
-        "BT709",
-        "interlaced_tff",
-        "SDR",
-        "video/raw",
-        [
-            {
-                "name": "Y",
-                "width": 1920,
-                "height": 1080,
-                "bit_depth": 10
-            },
-            {
-                "name": "Cb",
-                "width": 960,
-                "height": 1080,
-                "bit_depth": 10
-            },
-            {
-                "name": "Cr",
-                "width": 960,
-                "height": 1080,
-                "bit_depth": 10
-            }
-        ],
-        registrationClient);
+        case StreamingProfile.RTP_MPEG_TS:
+        {
+            mySource = new NmosSourceMpegTS(
+                config.source_id,
+                config.device_id,
+                config.base_label,
+                [],
+                "urn:x-nmos:format:mux",
+                registrationClient);
+        }
+        break;
+    }
 
-    const myVideoSender = new NmosSenderVideo(
-        config.sender_id,
-        config.flow_id,
-        config.device_id,
-        config.base_label,
-        "urn:x-nmos:transport:rtp.mcast",
-        `http://${config.address}:${config.port}/x-nmos/node/v1.2/senders/${config.sender_id}/sdp`,
-        registrationClient);
+    let myFlow: NmosFlow | null = null;
 
-    const myVideoReceiver = new NmosReceiverVideo(
-        config.receiver_id,
-        config.device_id,
-        config.base_label,
-        'urn:x-nmos:transport:rtp.mcast',
-        registrationClient);
+    switch(config.streaming_profile)
+    {
+        case StreamingProfile.RTP_RAW:
+        {
+            myFlow = new NmosFlowVideoRaw(
+                config.flow_id,
+                config.source_id,
+                config.device_id,
+                config.base_label,
+                [],
+                25,
+                1,
+                "urn:x-nmos:format:video",
+                1920,
+                1080,
+                "BT709",
+                "interlaced_tff",
+                "SDR",
+                "video/raw",
+                [
+                    {
+                        "name": "Y",
+                        "width": 1920,
+                        "height": 1080,
+                        "bit_depth": 10
+                    },
+                    {
+                        "name": "Cb",
+                        "width": 960,
+                        "height": 1080,
+                        "bit_depth": 10
+                    },
+                    {
+                        "name": "Cr",
+                        "width": 960,
+                        "height": 1080,
+                        "bit_depth": 10
+                    }
+                ],
+                registrationClient);
+        }
+        break;
 
-    myDevice.AddReceiver(myVideoReceiver);
-    myDevice.AddSender(myVideoSender);
+        case StreamingProfile.RTP_MPEG_TS:
+        {
+            myFlow = new NmosFlowMpegTS(
+                config.flow_id,
+                config.source_id,
+                config.device_id,
+                config.base_label,
+                [],
+                "urn:x-nmos:format:mux",
+                "video/MP2T",
+                registrationClient);
+        }
+        break;
+    }
+
+    let mySender: NmosSender | null = null;
+
+    switch(config.streaming_profile)
+    {
+        case StreamingProfile.RTP_RAW:
+        {
+            mySender = new NmosSenderVideoRaw(
+                config.sender_id,
+                config.flow_id,
+                config.device_id,
+                config.base_label,
+                "urn:x-nmos:transport:rtp.mcast",
+                `http://${config.address}:${config.port}/x-nmos/node/v1.2/senders/${config.sender_id}/sdp`,
+                [ 'eth0', 'eth1' ],
+                registrationClient);
+        }
+        break;
+
+        case StreamingProfile.RTP_MPEG_TS:
+        {
+            mySender = new NmosSenderMpegTS(
+                config.sender_id,
+                config.flow_id,
+                config.device_id,
+                config.base_label,
+                "urn:x-nmos:transport:rtp.mcast",
+                100000,
+                `http://${config.address}:${config.port}/x-nmos/node/v1.2/senders/${config.sender_id}/sdp`,
+                [ 'eth0' ],
+                registrationClient);
+        }
+        break;
+    }
+
+    let myReceiver: NmosReceiver | null = null;
+
+    switch(config.streaming_profile)
+    {
+        case StreamingProfile.RTP_RAW:
+        {
+            myReceiver = new NmosReceiverVideoRaw(
+                config.receiver_id,
+                config.device_id,
+                config.base_label,
+                'urn:x-nmos:transport:rtp.mcast',
+                [ 'eth0', 'eth1' ],
+                registrationClient);
+        }
+        break;
+
+        case StreamingProfile.RTP_MPEG_TS:
+        {
+            myReceiver = new NmosReceiverMpegTS(
+                config.receiver_id,
+                config.device_id,
+                config.base_label,
+                'urn:x-nmos:transport:rtp.mcast',
+                [ 'eth0' ],
+                registrationClient);
+        }
+        break;
+    }
+
+    if(myReceiver != null)
+        myDevice.AddReceiver(myReceiver);
+    if(mySender != null)
+        myDevice.AddSender(mySender);
 
     const sessionManager = new SessionManager(config.notify_without_subscriptions);
 
@@ -220,13 +340,13 @@ try
         receiversBlock,
         'monitor-01',
         'Receiver monitor 01',
-        [ new NcTouchpointNmos('x-nmos', new NcTouchpointResourceNmos('receiver', myVideoReceiver.id)) ],
+        myReceiver != null ? [ new NcTouchpointNmos('x-nmos', new NcTouchpointResourceNmos('receiver', myReceiver.id)) ] : [],
         null,
         true,
         "Receiver monitor worker",
         sessionManager);
 
-    myVideoReceiver.AttachMonitoringAgent(receiverMonitor);
+    myReceiver?.AttachMonitoringAgent(receiverMonitor);
 
     receiversBlock.UpdateMembers([ receiverMonitor ]);
 
@@ -250,13 +370,13 @@ try
         sendersBlock,
         'monitor-01',
         'Sender monitor 01',
-        [ new NcTouchpointNmos('x-nmos', new NcTouchpointResourceNmos('sender', myVideoSender.id)) ],
+        mySender != null ? [ new NcTouchpointNmos('x-nmos', new NcTouchpointResourceNmos('sender', mySender.id)) ] : [],
         null,
         true,
         "Sender monitor worker",
         sessionManager);
 
-    myVideoSender.AttachMonitoringAgent(senderMonitor);
+    mySender?.AttachMonitoringAgent(senderMonitor);
 
     sendersBlock.UpdateMembers([ senderMonitor ]);
 
@@ -299,18 +419,23 @@ try
         await registrationClient.RegisterOrUpdateResource('node', myNode);
         registrationClient.StartHeatbeats(myNode.id);
         await registrationClient.RegisterOrUpdateResource('device', myDevice);
-        await registrationClient.RegisterOrUpdateResource('receiver', myVideoReceiver);
-        await registrationClient.RegisterOrUpdateResource('source', myVideoSource);
-        await registrationClient.RegisterOrUpdateResource('flow', myVideoFlow);
-        await registrationClient.RegisterOrUpdateResource('sender', myVideoSender);
+        if(myReceiver != null)
+            await registrationClient.RegisterOrUpdateResource('receiver', myReceiver);
+        if(mySource != null)
+            await registrationClient.RegisterOrUpdateResource('source', mySource);
+        if(myFlow != null)
+            await registrationClient.RegisterOrUpdateResource('flow', myFlow);
+        if(mySender != null)
+            await registrationClient.RegisterOrUpdateResource('sender', mySender);
     };
 
     doAsync();
 
     //initialize the Express HTTP listener
     const app = application();
+    const corsOptions = { optionsSuccessStatus: 200 };
     var cors = require('cors');
-    app.use(cors());
+    app.use(cors(corsOptions));
     app.use(application.json({ limit: '50mb' }));
     app.use(application.urlencoded({ extended: true }));
     
@@ -438,31 +563,34 @@ try
     });
 
     //General paths
-    
+
     app.get('/', function (req, res) {
-        res.setHeader('Content-Type', 'application/json');
-        res.send(JSON.stringify([ 'x-nmos/' ]));
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.write(JSON.stringify([ 'x-nmos/' ]));
+        res.end();
     })
 
     app.get('/x-nmos', function (req, res) {
-        res.setHeader('Content-Type', 'application/json');
-        res.send(JSON.stringify([ 
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.write(JSON.stringify([ 
             'node/',
             'connection/',
             'configuration/'
         ]));
+        res.end();
     })
 
     //IS-04 paths
 
     app.get('/x-nmos/node', function (req, res) {
-        res.setHeader('Content-Type', 'application/json');
-        res.send(JSON.stringify([ 'v1.3/' ]));
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.write(JSON.stringify([ 'v1.3/' ]));
+        res.end();
     })
 
     app.get('/x-nmos/node/v1.3', function (req, res) {
-        res.setHeader('Content-Type', 'application/json');
-        res.send(JSON.stringify([ 
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.write(JSON.stringify([ 
             'self/',
             'devices/',
             'sources/',
@@ -470,356 +598,444 @@ try
             'senders/',
             'receivers/',
         ]));
+        res.end();
     })
 
     app.get('/x-nmos/node/v1.3/self', function (req, res) {
-        res.setHeader('Content-Type', 'application/json');
-        res.send(myNode.ToJson());
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.write(myNode.ToJson());
+        res.end();
     })
 
     app.get('/x-nmos/node/v1.3/devices', function (req, res) {
-        res.setHeader('Content-Type', 'application/json');
-        res.send(myDevice.ToJsonArray());
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.write(myDevice.ToJsonArray());
+        res.end();
     })
 
     app.get('/x-nmos/node/v1.3/devices/:id', function (req, res) {
-        res.setHeader('Content-Type', 'application/json');
-
         if(req.params.id === myDevice.id)
-            res.send(myDevice.ToJson());
+        {
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.write(myDevice.ToJson());
+            res.end();
+        }
         else
             res.sendStatus(404);
     })
 
     app.get('/x-nmos/node/v1.3/sources', function (req, res) {
-        res.setHeader('Content-Type', 'application/json');
-        res.send(myVideoSource.ToJsonArray());
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.write(mySource?.ToJsonArray());
+        res.end();
     })
 
     app.get('/x-nmos/node/v1.3/sources/:id', function (req, res) {
-        res.setHeader('Content-Type', 'application/json');
-
-        if(req.params.id === myVideoSource.id)
-            res.send(myVideoSource.ToJson());
+        if(req.params.id === mySource?.id)
+        {
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.write(mySource.ToJson());
+            res.end();
+        }
         else
             res.sendStatus(404);
     })
 
     app.get('/x-nmos/node/v1.3/flows', function (req, res) {
-        res.setHeader('Content-Type', 'application/json');
-        res.send(myVideoFlow.ToJsonArray());
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.write(myFlow?.ToJsonArray());
+        res.end();
     })
 
     app.get('/x-nmos/node/v1.3/flows/:id', function (req, res) {
-        res.setHeader('Content-Type', 'application/json');
-
-        if(req.params.id === myVideoFlow.id)
-            res.send(myVideoFlow.ToJson());
+        if(req.params.id === myFlow?.id)
+        {
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.write(myFlow.ToJson());
+            res.end();
+        }
         else
             res.sendStatus(404);
     })
 
     app.get('/x-nmos/node/v1.3/senders', function (req, res) {
-        res.setHeader('Content-Type', 'application/json');
-        res.send(JSON.stringify(myDevice.FetchSenders(), jsonIgnoreReplacer));
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.write(JSON.stringify(myDevice.FetchSenders(), jsonIgnoreReplacer));
+        res.end();
     })
 
     app.get('/x-nmos/node/v1.3/senders/:id', function (req, res) {
-        res.setHeader('Content-Type', 'application/json');
-
         if(myDevice.FindSender(req.params.id))
-            res.send(myDevice.FetchSender(req.params.id)?.ToJson());
+        {
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.write(myDevice.FetchSender(req.params.id)?.ToJson());
+            res.end();
+        }
         else
             res.sendStatus(404);
     })
 
     app.get('/x-nmos/node/v1.2/senders/:id/sdp', function (req, res) {
-        res.setHeader('Content-Type', 'application/sdp');
-
         if(myDevice.FindSender(req.params.id))
-            res.send(myDevice.FetchSender(req.params.id)?.FetchSdp());
+        {
+            res.writeHead(200, { 'Content-Type': 'application/sdp' });
+            res.write(myDevice.FetchSender(req.params.id)?.FetchSdp());
+            res.end();
+        }
         else
             res.sendStatus(404);
     })
 
     app.get('/x-nmos/node/v1.3/senders/:id/sdp', function (req, res) {
-        res.setHeader('Content-Type', 'application/sdp');
-
         if(myDevice.FindSender(req.params.id))
-            res.send(myDevice.FetchSender(req.params.id)?.FetchSdp());
+        {
+            res.writeHead(200, { 'Content-Type': 'application/sdp' });
+            res.write(myDevice.FetchSender(req.params.id)?.FetchSdp());
+            res.end();
+        }
         else
             res.sendStatus(404);
     })
 
     app.get('/x-nmos/node/v1.3/receivers', function (req, res) {
-        res.setHeader('Content-Type', 'application/json');
-        res.send(JSON.stringify(myDevice.FetchReceivers(), jsonIgnoreReplacer));
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.write(JSON.stringify(myDevice.FetchReceivers(), jsonIgnoreReplacer));
+        res.end();
     }) 
 
     app.get('/x-nmos/node/v1.3/receivers/:id', function (req, res) {
-        res.setHeader('Content-Type', 'application/json');
-
         if(myDevice.FindReceiver(req.params.id))
-            res.send(myDevice.FetchReceiver(req.params.id)?.ToJson());
+        {
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.write(myDevice.FetchReceiver(req.params.id)?.ToJson());
+            res.end();
+        }
         else
             res.sendStatus(404);
     })
 
     //IS-05 paths
     app.get('/x-nmos/connection', function (req, res) {
-        res.setHeader('Content-Type', 'application/json');
-        res.send(JSON.stringify([ 'v1.1/' ]));
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.write(JSON.stringify([ 'v1.1/' ]));
+        res.end();
     })
 
     app.get('/x-nmos/connection/:version', function (req, res) {
-        res.setHeader('Content-Type', 'application/json');
-        res.send(JSON.stringify([ 
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.write(JSON.stringify([ 
             'single/'
         ]));
+        res.end();
     })
 
     app.get('/x-nmos/connection/:version/single', function (req, res) {
-        res.setHeader('Content-Type', 'application/json');
-        res.send(JSON.stringify([ 
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.write(JSON.stringify([ 
             'senders/',
             'receivers/'
         ]));
+        res.end();
     })
 
     app.get('/x-nmos/connection/:version/single/senders', function (req, res) {
-        res.setHeader('Content-Type', 'application/json');
-        res.send(JSON.stringify(myDevice.FetchSendersUris()));
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.write(JSON.stringify(myDevice.FetchSendersUris()));
+        res.end();
     })
 
     app.get('/x-nmos/connection/:version/single/senders/:id', function (req, res) {
-        res.setHeader('Content-Type', 'application/json');
-
         if(myDevice.FindSender(req.params.id))
-            res.send(JSON.stringify([ 
+        {
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.write(JSON.stringify([ 
                 'constraints/',
                 'staged/',
                 'active/',
                 'transportfile/',
                 'transporttype/'
             ]));
+            res.end();
+        }
         else
             res.sendStatus(404);
     })
 
     app.get('/x-nmos/connection/:version/single/senders/:id/constraints', function (req, res) {
-        res.setHeader('Content-Type', 'application/json');
-
         if(myDevice.FindSender(req.params.id))
-            res.send(JSON.stringify(myDevice.FetchSender(req.params.id)?.FetchConstraints()));
+        {
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.write(JSON.stringify(myDevice.FetchSender(req.params.id)?.FetchConstraints()));
+            res.end();
+        }
         else
             res.sendStatus(404);
     })
 
     app.get('/x-nmos/connection/:version/single/senders/:id/active', function (req, res) {
-        res.setHeader('Content-Type', 'application/json');
-
         if(myDevice.FindSender(req.params.id))
-            res.send((myDevice.FetchSender(req.params.id)?.FetchActive()?.ToJson()));
+        {
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.write(myDevice.FetchSender(req.params.id)?.FetchActive()?.ToJson());
+            res.end();
+        }
         else
             res.sendStatus(404);
     })
 
     app.get('/x-nmos/connection/:version/single/senders/:id/staged', function (req, res) {
-        res.setHeader('Content-Type', 'application/json');
-
         if(myDevice.FindSender(req.params.id))
-            res.send((myDevice.FetchSender(req.params.id)?.FetchStaged()?.ToJson()));
+        {
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.write(myDevice.FetchSender(req.params.id)?.FetchStaged()?.ToJson());
+            res.end();
+        }
         else
             res.sendStatus(404);
     })
 
     app.patch('/x-nmos/connection/:version/single/senders/:id/staged', function (req, res) {
-        res.setHeader('Content-Type', 'application/json');
+        console.log(`patch - /x-nmos/connection/:version/single/senders/:id/staged, body: ${JSON.stringify(req.body)}`);
 
-        let settings = req.body as NmosSenderActiveRtp;
+        let settings = req.body as NmosSenderStagedRtp;
 
-        if(myDevice.FindSender(req.params.id))
+        if(JSON.stringify(req.body) == "{}" || settings.activation || settings.receiver_id !== undefined || settings.master_enable !== undefined || settings.transport_params)
         {
-            myDevice.ChangeSenderSettings(req.params.id, settings);
-            res.send((myDevice.FetchSender(req.params.id)?.FetchActive()?.ToJson()));
+            if(myDevice.FindSender(req.params.id))
+            {
+                let response = myDevice.ChangeSenderSettings(req.params.id, settings);
+                if(response)
+                {
+                    res.writeHead(200, { 'Content-Type': 'application/json' });
+                    res.write(response.ToJson());
+                    res.end();
+                }
+                else
+                {
+                    res.writeHead(500, { 'Content-Type': 'application/json' });
+                    res.write(JSON.stringify(new ApiError(500, "Error processing the request", "Error processing the request")));
+                    res.end();
+                }
+            }
+            else
+                res.sendStatus(404);
         }
         else
-            res.sendStatus(404);
+        {
+            res.writeHead(400, { 'Content-Type': 'application/json' });
+            res.write(JSON.stringify(new ApiError(400, "Invalid request body", "Invalid request body")));
+            res.end();
+        }
     })
 
     app.get('/x-nmos/connection/:version/single/senders/:id/transportfile', function (req, res) {
-        res.setHeader('Content-Type', 'application/sdp');
-
         if(myDevice.FindSender(req.params.id))
-            res.send(myDevice.FetchSender(req.params.id)?.FetchSdp());
+        {
+            res.writeHead(200, { 'Content-Type': 'application/sdp' });
+            res.write(myDevice.FetchSender(req.params.id)?.FetchSdp());
+            res.end();
+        }
         else
             res.sendStatus(404);
     })
 
     app.get('/x-nmos/connection/:version/single/senders/:id/transporttype', function (req, res) {
-        res.setHeader('Content-Type', 'application/json');
-
         if(myDevice.FindSender(req.params.id))
-            res.send(JSON.stringify(myDevice.FetchSender(req.params.id)?.FetchTransportType()));
-        else
-            res.sendStatus(404);
-    })
-
-    app.get('/x-nmos/connection/:version/single/receivers', function (req, res) {
-        res.setHeader('Content-Type', 'application/json');
-        res.send(JSON.stringify(myDevice.FetchReceiversUris()));
-    })
-
-    app.get('/x-nmos/connection/:version/single/receivers/:id', function (req, res) {
-        res.setHeader('Content-Type', 'application/json');
-
-        if(myDevice.FindReceiver(req.params.id))
-            res.send(JSON.stringify([ 
-                'constraints/',
-                'staged/',
-                'active/',
-                'transporttype/'
-            ]));
-        else
-            res.sendStatus(404);
-    })
-
-    app.get('/x-nmos/connection/:version/single/receivers/:id/constraints', function (req, res) {
-        res.setHeader('Content-Type', 'application/json');
-
-        if(myDevice.FindReceiver(req.params.id))
-            res.send(JSON.stringify(myDevice.FetchReceiver(req.params.id)?.FetchConstraints()));
-        else
-            res.sendStatus(404);
-    })
-
-    app.get('/x-nmos/connection/:version/single/receivers/:id/active', function (req, res) {
-        res.setHeader('Content-Type', 'application/json');
-
-        if(myDevice.FindReceiver(req.params.id))
-            res.send((myDevice.FetchReceiver(req.params.id)?.FetchActive()?.ToJson()));
-        else
-            res.sendStatus(404);
-    })
-
-    app.get('/x-nmos/connection/:version/single/receivers/:id/staged', function (req, res) {
-        res.setHeader('Content-Type', 'application/json');
-
-        if(myDevice.FindReceiver(req.params.id))
-            res.send((myDevice.FetchReceiver(req.params.id)?.FetchStaged()?.ToJson()));
-        else
-            res.sendStatus(404);
-    })
-
-    app.get('/x-nmos/connection/:version/single/receivers/:id/transporttype', function (req, res) {
-        res.setHeader('Content-Type', 'application/json');
-
-        if(myDevice.FindReceiver(req.params.id))
-            res.send(JSON.stringify(myDevice.FetchReceiver(req.params.id)?.FetchTransportType()));
-        else
-            res.sendStatus(404);
-    })
-
-    app.patch('/x-nmos/connection/:version/single/receivers/:id/staged', function (req, res) {
-        res.setHeader('Content-Type', 'application/json');
-
-        let settings = req.body as NmosReceiverActiveRtp;
-
-        if(myDevice.FindReceiver(req.params.id))
         {
-            myDevice.ChangeReceiverSettings(req.params.id, settings);
-            res.send((myDevice.FetchReceiver(req.params.id)?.FetchActive()?.ToJson()));
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.write(JSON.stringify(myDevice.FetchSender(req.params.id)?.FetchTransportType()));
+            res.end();
         }
         else
             res.sendStatus(404);
     })
 
+    app.get('/x-nmos/connection/:version/single/receivers', function (req, res) {
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.write(JSON.stringify(myDevice.FetchReceiversUris()));
+        res.end();
+    })
+
+    app.get('/x-nmos/connection/:version/single/receivers/:id', function (req, res) {
+        if(myDevice.FindReceiver(req.params.id))
+        {
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.write(JSON.stringify([ 
+                'constraints/',
+                'staged/',
+                'active/',
+                'transporttype/'
+            ]));
+            res.end();
+        }
+        else
+            res.sendStatus(404);
+    })
+
+    app.get('/x-nmos/connection/:version/single/receivers/:id/constraints', function (req, res) {
+        if(myDevice.FindReceiver(req.params.id))
+        {
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.write(JSON.stringify(myDevice.FetchReceiver(req.params.id)?.FetchConstraints()));
+            res.end();
+        }
+        else
+            res.sendStatus(404);
+    })
+
+    app.get('/x-nmos/connection/:version/single/receivers/:id/active', function (req, res) {
+        if(myDevice.FindReceiver(req.params.id))
+        {
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.write(myDevice.FetchReceiver(req.params.id)?.FetchActive()?.ToJson());
+            res.end();
+        }
+        else
+            res.sendStatus(404);
+    })
+
+    app.get('/x-nmos/connection/:version/single/receivers/:id/staged', function (req, res) {
+        if(myDevice.FindReceiver(req.params.id))
+        {
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.write(myDevice.FetchReceiver(req.params.id)?.FetchStaged()?.ToJson());
+            res.end();
+        }
+        else
+            res.sendStatus(404);
+    })
+
+    app.get('/x-nmos/connection/:version/single/receivers/:id/transporttype', function (req, res) {
+        if(myDevice.FindReceiver(req.params.id))
+        {
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.write(JSON.stringify(myDevice.FetchReceiver(req.params.id)?.FetchTransportType()));
+            res.end();
+        }
+        else
+            res.sendStatus(404);
+    })
+
+    app.patch('/x-nmos/connection/:version/single/receivers/:id/staged', function (req, res) {
+        console.log(`patch - /x-nmos/connection/:version/single/receivers/:id/staged, body: ${JSON.stringify(req.body)}`);
+
+        let settings = req.body as NmosReceiverStagedRtp;
+
+        if(JSON.stringify(req.body) == "{}" || settings.activation || settings.sender_id !== undefined || settings.master_enable !== undefined || settings.transport_params)
+        {
+            if(myDevice.FindReceiver(req.params.id))
+            {
+                let response = myDevice.ChangeReceiverSettings(req.params.id, settings);
+                if(response)
+                {
+                    res.writeHead(200, { 'Content-Type': 'application/json' });
+                    res.write(response.ToJson());
+                    res.end();
+                }
+                else
+                {
+                    res.writeHead(500, { 'Content-Type': 'application/json' });
+                    res.write(JSON.stringify(new ApiError(500, "Error processing the request", "Error processing the request")));
+                    res.end();
+                }
+            }
+            else
+                res.sendStatus(404);
+        }
+        else
+        {
+            res.writeHead(400, { 'Content-Type': 'application/json' });
+            res.write(JSON.stringify(new ApiError(400, "Invalid request body", "Invalid request body")));
+            res.end();
+        }
+    })
+
     //IS-14 paths
 
     app.get('/x-nmos/configuration', function (req, res) {
-        res.setHeader('Content-Type', 'application/json');
-        res.send(JSON.stringify([ 'v1.0/' ]));
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.write(JSON.stringify([ 'v1.0/' ]));
+        res.end();
     })
 
     app.get('/x-nmos/configuration/:version', function (req, res) {
-        res.setHeader('Content-Type', 'application/json');
-        res.send(JSON.stringify([ 
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.write(JSON.stringify([ 
             'rolePaths/'
         ]));
+        res.end();
     })
 
     app.get('/x-nmos/configuration/:version/rolePaths', function (req, res) {
-        res.setHeader('Content-Type', 'application/json');
-
         let response = rootBlock.GetRolePathUrls();
 
-        res.send(JSON.stringify(response.sort((a, b) => (a > b ? -1 : 1))));
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.write(JSON.stringify(response.sort((a, b) => (a > b ? -1 : 1))));
+        res.end();
     })
 
     app.get('/x-nmos/configuration/:version/rolePaths/:rolePath', function (req, res) {
-        res.setHeader('Content-Type', 'application/json');
-
         let rolePath = req.params.rolePath.split('.');
 
         let member = rootBlock.FindMemberByRolePath(rolePath);
         if(member)
         {
-            res.send(JSON.stringify([ 
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.write(JSON.stringify([ 
                 'bulkProperties/',
                 'descriptor/',
                 'methods/',
                 'properties/'
             ]));
+            res.end();
         }
         else
             res.sendStatus(404);
     })
 
     app.get('/x-nmos/configuration/:version/rolePaths/:rolePath/descriptor/', function (req, res) {
-        res.setHeader('Content-Type', 'application/json');
-
         let rolePath = req.params.rolePath.split('.');
 
         let member = rootBlock.FindMemberByRolePath(rolePath);
         if(member)
         {
-            res.send(JSON.stringify(classManager.GetClassDescriptor(member.classID, true), jsonIgnoreReplacer));
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.write(JSON.stringify(classManager.GetClassDescriptor(member.classID, true), jsonIgnoreReplacer));
+            res.end();
         }
         else
             res.sendStatus(404);
     })
 
     app.get('/x-nmos/configuration/:version/rolePaths/:rolePath/methods/', function (req, res) {
-        res.setHeader('Content-Type', 'application/json');
-
         let rolePath = req.params.rolePath.split('.');
 
         let member = rootBlock.FindMemberByRolePath(rolePath);
         if(member)
         {
-            res.send(JSON.stringify(classManager.GetClassDescriptor(member.classID, true)?.methods.map(({ id }) => `${id.level}m${id.index}/`).sort((a, b) => (a > b ? 1 : -1)), jsonIgnoreReplacer));
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.write(JSON.stringify(classManager.GetClassDescriptor(member.classID, true)?.methods.map(({ id }) => `${id.level}m${id.index}/`).sort((a, b) => (a > b ? 1 : -1)), jsonIgnoreReplacer));
+            res.end();
         }
         else
             res.sendStatus(404);
     })
 
     app.get('/x-nmos/configuration/:version/rolePaths/:rolePath/properties/', function (req, res) {
-        res.setHeader('Content-Type', 'application/json');
-
         let rolePath = req.params.rolePath.split('.');
 
         let member = rootBlock.FindMemberByRolePath(rolePath);
         if(member)
         {
-            res.send(JSON.stringify(classManager.GetClassDescriptor(member.classID, true)?.properties.map(({ id }) => `${id.level}p${id.index}/`).sort((a, b) => (a > b ? 1 : -1)), jsonIgnoreReplacer));
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.write(JSON.stringify(classManager.GetClassDescriptor(member.classID, true)?.properties.map(({ id }) => `${id.level}p${id.index}/`).sort((a, b) => (a > b ? 1 : -1)), jsonIgnoreReplacer));
+            res.end();
         }
         else
             res.sendStatus(404);
     })
 
     app.get('/x-nmos/configuration/:version/rolePaths/:rolePath/properties/:propertyId', function (req, res) {
-        res.setHeader('Content-Type', 'application/json');
-
         let rolePath = req.params.rolePath.split('.');
 
         let member = rootBlock.FindMemberByRolePath(rolePath);
@@ -827,10 +1043,14 @@ try
         {
             let property = classManager.GetClassDescriptor(member.classID, true)?.properties.find(f => req.params.propertyId == `${f.id.level}p${f.id.index}`);
             if(property)
-                res.send(JSON.stringify([ 
+            {
+                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.write(JSON.stringify([ 
                     'descriptor/',
                     'value/'
                 ]));
+                res.end();
+            }
             else
                 res.sendStatus(404);
         }
@@ -839,8 +1059,6 @@ try
     })
 
     app.get('/x-nmos/configuration/:version/rolePaths/:rolePath/properties/:propertyId/descriptor', function (req, res) {
-        res.setHeader('Content-Type', 'application/json');
-
         let rolePath = req.params.rolePath.split('.');
 
         let member = rootBlock.FindMemberByRolePath(rolePath);
@@ -848,7 +1066,11 @@ try
         {
             let property = classManager.GetClassDescriptor(member.classID, true)?.properties.find(f => req.params.propertyId == `${f.id.level}p${f.id.index}`);
             if(property?.typeName)
-                res.send(JSON.stringify(classManager.GetTypeDescriptor(property.typeName, true), jsonIgnoreReplacer));
+            {
+                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.write(JSON.stringify(classManager.GetTypeDescriptor(property.typeName, true), jsonIgnoreReplacer));
+                res.end();
+            }
             else
                 res.sendStatus(404);
         }
@@ -857,8 +1079,6 @@ try
     })
 
     app.get('/x-nmos/configuration/:version/rolePaths/:rolePath/properties/:propertyId/value', function (req, res) {
-        res.setHeader('Content-Type', 'application/json');
-
         let rolePath = req.params.rolePath.split('.');
 
         let member = rootBlock.FindMemberByRolePath(rolePath);
@@ -866,7 +1086,11 @@ try
         {
             let property = classManager.GetClassDescriptor(member.classID, true)?.properties.find(f => req.params.propertyId == `${f.id.level}p${f.id.index}`);
             if(property)
-                res.send(JSON.stringify(member.Get(member.oid, property.id, 0).result, jsonIgnoreReplacer));
+            {
+                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.write(JSON.stringify(member.Get(member.oid, property.id, 0).result, jsonIgnoreReplacer));
+                res.end();
+            }
             else
                 res.sendStatus(404);
         }
@@ -875,8 +1099,6 @@ try
     })
 
     app.put('/x-nmos/configuration/:version/rolePaths/:rolePath/properties/:propertyId/value', function (req, res) {
-        res.setHeader('Content-Type', 'application/json');
-
         let apiValue = req.body as ConfigApiValue;
 
         console.log(`Property PUT ${req.url}`);
@@ -888,7 +1110,11 @@ try
         {
             let property = classManager.GetClassDescriptor(member.classID, true)?.properties.find(f => req.params.propertyId == `${f.id.level}p${f.id.index}`);
             if(property)
-                res.send(JSON.stringify(member.Set(member.oid, property.id, apiValue.value, 0).result, jsonIgnoreReplacer));
+            {
+                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.write(JSON.stringify(member.Set(member.oid, property.id, apiValue.value, 0).result, jsonIgnoreReplacer));
+                res.end();
+            }
             else
                 res.sendStatus(404);
         }
@@ -897,7 +1123,7 @@ try
     });
 
     app.patch('/x-nmos/configuration/:version/rolePaths/:rolePath/methods/:methodId', function (req, res) {
-        res.setHeader('Content-Type', 'application/json');
+        console.log(`patch - /x-nmos/configuration/:version/rolePaths/:rolePath/methods/:methodId, body: ${JSON.stringify(req.body)}`);
 
         let apiArguments = req.body as ConfigApiArguments;
 
@@ -910,7 +1136,11 @@ try
         {
             let method = classManager.GetClassDescriptor(member.classID, true)?.methods.find(f => req.params.methodId == `${f.id.level}m${f.id.index}`);
             if(method)
-                res.send(JSON.stringify(member.InvokeMethod(member.oid, method.id, apiArguments.arguments, 0).result, jsonIgnoreReplacer));
+            {
+                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.write(JSON.stringify(member.InvokeMethod(member.oid, method.id, apiArguments.arguments, 0).result, jsonIgnoreReplacer));
+                res.end();
+            }
             else
                 res.sendStatus(404);
         }
@@ -919,8 +1149,6 @@ try
     })
 
     app.get('/x-nmos/configuration/:version/rolePaths/:rolePath/bulkProperties', function (req, res) {
-        res.setHeader('Content-Type', 'application/json');
-
         let recurse: boolean = req.query.recurse === 'false' ? false : true;
 
         console.log(`BulkProperties GET ${req.url}, recurse: ${recurse}`);
@@ -934,14 +1162,16 @@ try
                 NcMethodStatus.OK, new NcBulkValuesHolder("AMWA NMOS Device Control Mock Application|v1.0",
                 member.GetAllProperties(recurse)));
 
-            res.send(JSON.stringify(response, jsonIgnoreReplacer));
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.write(JSON.stringify(response, jsonIgnoreReplacer));
+            res.end();
         }
         else
             res.sendStatus(404);
     })
 
     app.patch('/x-nmos/configuration/:version/rolePaths/:rolePath/bulkProperties', function (req, res) {
-        res.setHeader('Content-Type', 'application/json');
+        console.log(`patch - /x-nmos/configuration/:version/rolePaths/:rolePath/bulkProperties, body: ${JSON.stringify(req.body)}`);
 
         let restore = req.body as RestoreBody;
 
@@ -956,15 +1186,15 @@ try
                 NcMethodStatus.OK,
                 member.Restore(restore.arguments, false));
 
-            res.send(JSON.stringify(response, jsonIgnoreReplacer));
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.write(JSON.stringify(response, jsonIgnoreReplacer));
+            res.end();
         }
         else
             res.sendStatus(404);
     })
 
     app.put('/x-nmos/configuration/:version/rolePaths/:rolePath/bulkProperties', function (req, res) {
-        res.setHeader('Content-Type', 'application/json');
-
         let restore = req.body as RestoreBody;
 
         console.log(`BulkProperties PUT ${req.url}`);
@@ -978,7 +1208,9 @@ try
                 NcMethodStatus.OK,
                 member.Restore(restore.arguments, true));
 
-            res.send(JSON.stringify(response, jsonIgnoreReplacer));
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.write(JSON.stringify(response, jsonIgnoreReplacer));
+            res.end();
         }
         else
             res.sendStatus(404);
@@ -987,8 +1219,9 @@ try
     app.use((req, res, next) => {
         //This applied to any invalid path
 
-        res.set({ 'content-type': 'application/json; charset=utf-8' });
-        res.status(404).send('');
+        res.writeHead(404, { 'Content-Type': 'application/json' });
+        res.write(JSON.stringify(new ApiError(404, "Invalid path", "Invalid API path")));
+        res.end();
     })
     
     //start our server
