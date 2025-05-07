@@ -6,8 +6,7 @@ export class NmosSource extends NmosResource
 {
     public device_id: string;
     public parents: string[];
-    public clock_name: string;
-    public grain_rate: object;
+    public clock_name: string | null;
     public caps: object;
 
     public constructor(
@@ -15,9 +14,7 @@ export class NmosSource extends NmosResource
         device_id: string,
         base_label: string,
         parents: string[],
-        clock_name: string,
-        grain_rate_numerator: number,
-        grain_rate_denominator: number,
+        clock_name: string | null,
         registrationClient: RegistrationClient)
     {
         super(id, `${base_label} source`, registrationClient);
@@ -25,10 +22,7 @@ export class NmosSource extends NmosResource
         this.device_id = device_id;
         this.parents = parents;
         this.clock_name = clock_name;
-        this.grain_rate = {
-            "numerator": grain_rate_numerator,
-            "denominator": grain_rate_denominator
-        };
+        
         this.tags = {};
         this.caps = {};
     }
