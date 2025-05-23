@@ -103,7 +103,12 @@ a=rtpmap:33 MP2T/90000\r\n`;
                     activeParams = [];
                     activeParams.push(currentParams.transport_params[0].ProcessStagedTransportParams(rtpSettings.transport_params[0]));
                     if(currentParams.transport_params.length == 2)
-                        activeParams.push(currentParams.transport_params[1].ProcessStagedTransportParams(rtpSettings.transport_params[1]));
+                    {
+                        if(rtpSettings.transport_params.length == 2)
+                            activeParams.push(currentParams.transport_params[1].ProcessStagedTransportParams(rtpSettings.transport_params[1]));
+                        else
+                            activeParams.push(currentParams.transport_params[1]);
+                    }
                 }
                 else
                     activeParams = currentParams.transport_params;
