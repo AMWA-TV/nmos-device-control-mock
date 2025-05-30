@@ -827,23 +827,17 @@ export class NcReceiverMonitor extends NcStatusMonitor implements IReceiverMonit
         this.activated = true;
 
         this.overallStatus = NcOverallStatus.Healthy; //3p1
-        this.overallStatusMessage = null; //3p2
 
         this.connectionStatus = NcConnectionStatus.Healthy; //4p4
-        this.connectionStatusMessage = null; //4p5
 
         this.streamStatus = NcStreamStatus.Healthy; //4p11
-        this.streamStatusMessage = null; //4p12
-
+        
         this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 1), NcPropertyChangeType.ValueChanged, this.overallStatus, null);
-        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 2), NcPropertyChangeType.ValueChanged, this.overallStatusMessage, null);
 
         this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 4), NcPropertyChangeType.ValueChanged, this.connectionStatus, null);
-        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 5), NcPropertyChangeType.ValueChanged, this.connectionStatusMessage, null);
-
+        
         this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 11), NcPropertyChangeType.ValueChanged, this.streamStatus, null);
-        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 12), NcPropertyChangeType.ValueChanged, this.streamStatusMessage, null);
-
+        
         if(this.autoResetCounters)
         {
             this.lostPacketCounters.forEach(counter => {
@@ -862,6 +856,18 @@ export class NcReceiverMonitor extends NcStatusMonitor implements IReceiverMonit
             this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 6), NcPropertyChangeType.ValueChanged, this.connectionStatusTransitionCounter, null);
             this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 9), NcPropertyChangeType.ValueChanged, this.externalSynchronizationStatusTransitionCounter, null);
             this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 13), NcPropertyChangeType.ValueChanged, this.streamStatusTransitionCounter, null);
+
+            this.overallStatusMessage = null; //3p2
+            this.linkStatusMessage = null; //4p2
+            this.connectionStatusMessage = null; //4p5
+            this.externalSynchronizationStatusMessage = null; //4p8
+            this.streamStatusMessage = null; //4p12
+
+            this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 2), NcPropertyChangeType.ValueChanged, this.overallStatusMessage, null);
+            this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 2), NcPropertyChangeType.ValueChanged, this.linkStatusMessage, null);
+            this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 5), NcPropertyChangeType.ValueChanged, this.connectionStatusMessage, null);
+            this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 8), NcPropertyChangeType.ValueChanged, this.externalSynchronizationStatusMessage, null);
+            this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 12), NcPropertyChangeType.ValueChanged, this.streamStatusMessage, null);
         }
     }
 
@@ -1468,22 +1474,16 @@ export class NcSenderMonitor extends NcStatusMonitor implements ISenderMonitorin
         this.activated = true;
 
         this.overallStatus = NcOverallStatus.Healthy; //3p1
-        this.overallStatusMessage = null; //3p2
 
         this.transmissionStatus = NcTransmissionStatus.Healthy; //4p4
-        this.transmissionStatusMessage = null; //4p5
 
         this.essenceStatus = NcEssenceStatus.Healthy; //4p11
-        this.essenceStatusMessage = null; //4p12
 
         this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 1), NcPropertyChangeType.ValueChanged, this.overallStatus, null);
-        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 2), NcPropertyChangeType.ValueChanged, this.overallStatusMessage, null);
 
         this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 4), NcPropertyChangeType.ValueChanged, this.transmissionStatus, null);
-        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 5), NcPropertyChangeType.ValueChanged, this.transmissionStatusMessage, null);
 
         this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 11), NcPropertyChangeType.ValueChanged, this.essenceStatus, null);
-        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 12), NcPropertyChangeType.ValueChanged, this.essenceStatusMessage, null);
 
         if(this.autoResetCounters)
         {
@@ -1499,6 +1499,18 @@ export class NcSenderMonitor extends NcStatusMonitor implements ISenderMonitorin
             this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 6), NcPropertyChangeType.ValueChanged, this.transmissionStatusTransitionCounter, null);
             this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 9), NcPropertyChangeType.ValueChanged, this.externalSynchronizationStatusTransitionCounter, null);
             this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 13), NcPropertyChangeType.ValueChanged, this.essenceStatusTransitionCounter, null);
+
+            this.overallStatusMessage = null; //3p2
+            this.linkStatusMessage = null; //4p2
+            this.transmissionStatusMessage = null; //4p5
+            this.externalSynchronizationStatusMessage = null; //4p8
+            this.essenceStatusMessage = null; //4p12
+
+            this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 2), NcPropertyChangeType.ValueChanged, this.overallStatusMessage, null);
+            this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 2), NcPropertyChangeType.ValueChanged, this.linkStatusMessage, null);
+            this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 5), NcPropertyChangeType.ValueChanged, this.transmissionStatusMessage, null);
+            this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 8), NcPropertyChangeType.ValueChanged, this.externalSynchronizationStatusMessage, null);
+            this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 12), NcPropertyChangeType.ValueChanged, this.essenceStatusMessage, null);
         }
     }
 
