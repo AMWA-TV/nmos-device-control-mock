@@ -1110,9 +1110,6 @@ export class NcReceiverMonitor extends NcStatusMonitor implements IReceiverMonit
         this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 11), NcPropertyChangeType.ValueChanged, this.streamStatus, null);
         this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 12), NcPropertyChangeType.ValueChanged, this.streamStatusMessage, null);
 
-        if(this.autoResetCounters)
-            this.ResetCounters();
-
         this.monitorManager?.ReceiverDisconnected();
     }
 
@@ -1578,9 +1575,6 @@ export class NcSenderMonitor extends NcStatusMonitor implements ISenderMonitorin
 
         this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 11), NcPropertyChangeType.ValueChanged, this.essenceStatus, null);
         this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 12), NcPropertyChangeType.ValueChanged, this.essenceStatusMessage, null);
-
-        if(this.autoResetCounters)
-            this.ResetCounters();
 
         this.monitorManager?.SenderDeactivated();
     }
