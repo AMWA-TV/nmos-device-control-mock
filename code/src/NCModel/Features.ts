@@ -1239,10 +1239,23 @@ export class NcReceiverMonitor extends NcStatusMonitor implements IReceiverMonit
         this.connectionStatusTransitionCounter = 0; //4p6
         this.externalSynchronizationStatusTransitionCounter = 0; //4p9
         this.streamStatusTransitionCounter = 0; //4p13
+
+        this.overallStatusMessage = null; //3p2
+        this.linkStatusMessage = null; //4p2
+        this.connectionStatusMessage = null; //4p5
+        this.externalSynchronizationStatusMessage = null; //4p8
+        this.streamStatusMessage = null; //4p12
+
         this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 3), NcPropertyChangeType.ValueChanged, this.linkStatusTransitionCounter, null);
         this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 6), NcPropertyChangeType.ValueChanged, this.connectionStatusTransitionCounter, null);
         this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 9), NcPropertyChangeType.ValueChanged, this.externalSynchronizationStatusTransitionCounter, null);
         this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 13), NcPropertyChangeType.ValueChanged, this.streamStatusTransitionCounter, null);
+
+        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 2), NcPropertyChangeType.ValueChanged, this.overallStatusMessage, null);
+        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 2), NcPropertyChangeType.ValueChanged, this.linkStatusMessage, null);
+        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 5), NcPropertyChangeType.ValueChanged, this.connectionStatusMessage, null);
+        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 8), NcPropertyChangeType.ValueChanged, this.externalSynchronizationStatusMessage, null);
+        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 12), NcPropertyChangeType.ValueChanged, this.streamStatusMessage, null);
     }
 
     public static override GetClassDescriptor(includeInherited: boolean): NcClassDescriptor 
@@ -1689,10 +1702,23 @@ export class NcSenderMonitor extends NcStatusMonitor implements ISenderMonitorin
         this.transmissionStatusTransitionCounter = 0; //4p6
         this.externalSynchronizationStatusTransitionCounter = 0; //4p9
         this.essenceStatusTransitionCounter = 0; //4p13
+
+        this.overallStatusMessage = null; //3p2
+        this.linkStatusMessage = null; //4p2
+        this.transmissionStatusMessage = null; //4p5
+        this.externalSynchronizationStatusMessage = null; //4p8
+        this.essenceStatusMessage = null; //4p12
+
         this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 3), NcPropertyChangeType.ValueChanged, this.linkStatusTransitionCounter, null);
         this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 6), NcPropertyChangeType.ValueChanged, this.transmissionStatusTransitionCounter, null);
         this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 9), NcPropertyChangeType.ValueChanged, this.externalSynchronizationStatusTransitionCounter, null);
         this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 13), NcPropertyChangeType.ValueChanged, this.essenceStatusTransitionCounter, null);
+
+        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 2), NcPropertyChangeType.ValueChanged, this.overallStatusMessage, null);
+        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 2), NcPropertyChangeType.ValueChanged, this.linkStatusMessage, null);
+        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 5), NcPropertyChangeType.ValueChanged, this.transmissionStatusMessage, null);
+        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 8), NcPropertyChangeType.ValueChanged, this.externalSynchronizationStatusMessage, null);
+        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 12), NcPropertyChangeType.ValueChanged, this.essenceStatusMessage, null);
     }
 
     public static override GetClassDescriptor(includeInherited: boolean): NcClassDescriptor 
