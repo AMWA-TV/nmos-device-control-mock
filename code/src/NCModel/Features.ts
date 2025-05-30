@@ -1087,28 +1087,20 @@ export class NcReceiverMonitor extends NcStatusMonitor implements IReceiverMonit
         this.activated = false;
 
         this.overallStatus = NcOverallStatus.Inactive; //3p1
-        this.overallStatusMessage = null; //3p2
 
         this.linkStatus = NcLinkStatus.AllUp; //4p1
-        this.linkStatusMessage = null; //4p2
 
         this.connectionStatus = NcConnectionStatus.Inactive; //4p4
-        this.connectionStatusMessage = null; //4p5
 
         this.streamStatus = NcStreamStatus.Inactive; //4p11
-        this.streamStatusMessage = null; //4p12
 
         this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 1), NcPropertyChangeType.ValueChanged, this.overallStatus, null);
-        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 2), NcPropertyChangeType.ValueChanged, this.overallStatusMessage, null);
 
         this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 1), NcPropertyChangeType.ValueChanged, this.linkStatus, null);
-        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 2), NcPropertyChangeType.ValueChanged, this.linkStatusMessage, null);
 
         this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 4), NcPropertyChangeType.ValueChanged, this.connectionStatus, null);
-        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 5), NcPropertyChangeType.ValueChanged, this.connectionStatusMessage, null);
 
         this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 11), NcPropertyChangeType.ValueChanged, this.streamStatus, null);
-        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 12), NcPropertyChangeType.ValueChanged, this.streamStatusMessage, null);
 
         this.monitorManager?.ReceiverDisconnected();
     }
@@ -1559,22 +1551,16 @@ export class NcSenderMonitor extends NcStatusMonitor implements ISenderMonitorin
         this.activated = false;
 
         this.overallStatus = NcOverallStatus.Inactive; //3p1
-        this.overallStatusMessage = null; //3p2
 
         this.transmissionStatus = NcTransmissionStatus.Inactive; //4p4
-        this.transmissionStatusMessage = null; //4p5
 
         this.essenceStatus = NcEssenceStatus.Inactive; //4p11
-        this.essenceStatusMessage = null; //4p12
 
         this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 1), NcPropertyChangeType.ValueChanged, this.overallStatus, null);
-        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 2), NcPropertyChangeType.ValueChanged, this.overallStatusMessage, null);
 
         this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 4), NcPropertyChangeType.ValueChanged, this.transmissionStatus, null);
-        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 5), NcPropertyChangeType.ValueChanged, this.transmissionStatusMessage, null);
 
         this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 11), NcPropertyChangeType.ValueChanged, this.essenceStatus, null);
-        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 12), NcPropertyChangeType.ValueChanged, this.essenceStatusMessage, null);
 
         this.monitorManager?.SenderDeactivated();
     }
