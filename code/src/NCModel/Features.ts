@@ -782,13 +782,13 @@ export class NcReceiverMonitor extends NcStatusMonitor implements IReceiverMonit
         this.activated = false;
 
         this.overallStatus = NcOverallStatus.Inactive;
-        this.overallStatusMessage = "Inactive";
+        this.overallStatusMessage = null;
 
         this.linkStatus = NcLinkStatus.AllUp;
         this.linkStatusMessage = null;
 
         this.connectionStatus = NcConnectionStatus.Inactive;
-        this.connectionStatusMessage = "Inactive";
+        this.connectionStatusMessage = null;
 
         this.lostPacketCounters = [
             new NcCounter("Nic_1", 0, "Lost packets on Nic 1"),
@@ -801,11 +801,11 @@ export class NcReceiverMonitor extends NcStatusMonitor implements IReceiverMonit
         ];
         
         this.externalSynchronizationStatus = NcSynchronizationStatus.Healthy;
-        this.externalSynchronizationStatusMessage = "Locked to grandmaster on NIC2";
         this.synchronizationSourceId = "0xD4:AD:71:FF:FE:6F:E2:80";
+        this.externalSynchronizationStatusMessage = `Sync source change, from: None, to: ${this.synchronizationSourceId} on NIC1` //4p8
 
         this.streamStatus = NcStreamStatus.Inactive;
-        this.streamStatusMessage = "Inactive";
+        this.streamStatusMessage = null;
 
         this.linkStatusTransitionCounter = 0;
         this.connectionStatusTransitionCounter = 0;
@@ -868,12 +868,13 @@ export class NcReceiverMonitor extends NcStatusMonitor implements IReceiverMonit
     public Nic1Down(transitionFromUnhealthy: boolean = false)
     {
         this.overallStatus = NcOverallStatus.PartiallyHealthy; //3p1
-        this.overallStatusMessage = "NIC1 down"; //3p2
 
         this.linkStatus = NcLinkStatus.SomeDown; //4p1
         this.linkStatusMessage = "NIC1 down"; //4p2
         if(!transitionFromUnhealthy)
             this.linkStatusTransitionCounter++; //4p3
+
+        this.overallStatusMessage = this.linkStatusMessage; //3p2
 
         this.connectionStatus = NcConnectionStatus.PartiallyHealthy; //4p4
         this.connectionStatusMessage = "Packet loss detected on NIC1"; //4p5
@@ -881,11 +882,16 @@ export class NcReceiverMonitor extends NcStatusMonitor implements IReceiverMonit
             this.connectionStatusTransitionCounter++; //4p6
 
         this.externalSynchronizationStatus = NcSynchronizationStatus.PartiallyHealthy; //4p7
-        this.externalSynchronizationStatusMessage = "Grandmaster lost on NIC1. Locked to grandmaster on NIC2"; //4p8
         if(!transitionFromUnhealthy)
+        {
+            this.externalSynchronizationStatusMessage = `Sync source change, from: ${this.synchronizationSourceId} on NIC1, to: ${this.synchronizationSourceId} on NIC2` //4p8
             this.externalSynchronizationStatusTransitionCounter++; //4p9
+        }
         else
+        {
             this.synchronizationSourceId = "0xD4:AD:71:FF:FE:6F:E2:80"; //4p10
+            this.externalSynchronizationStatusMessage = `Sync source change, from: None, to: ${this.synchronizationSourceId} on NIC2` //4p8
+        }
 
         this.streamStatus = NcStreamStatus.Healthy; //4p11
         this.streamStatusMessage = null; //4p12
@@ -920,18 +926,19 @@ export class NcReceiverMonitor extends NcStatusMonitor implements IReceiverMonit
     public SimulateAllNicsDown()
     {
         this.overallStatus = NcOverallStatus.Unhealthy; //3p1
-        this.overallStatusMessage = "All interfaces down"; //3p2
 
         this.linkStatus = NcLinkStatus.AllDown; //4p1
         this.linkStatusMessage = "All interfaces down"; //4p2
         this.linkStatusTransitionCounter++; //4p3
+
+        this.overallStatusMessage = this.linkStatusMessage; //3p2
 
         this.connectionStatus = NcConnectionStatus.Unhealthy; //4p4
         this.connectionStatusMessage = "Unrecoverable packet loss"; //4p5
         this.connectionStatusTransitionCounter++; //4p6
 
         this.externalSynchronizationStatus = NcSynchronizationStatus.Unhealthy; //4p7
-        this.externalSynchronizationStatusMessage = "Grandmaster lost"; //4p8
+        this.externalSynchronizationStatusMessage = `Sync source change, from: ${this.synchronizationSourceId} on NIC2, to: None`; //4p8
         this.externalSynchronizationStatusTransitionCounter++; //4p9
         this.synchronizationSourceId = null; //4p10
 
@@ -977,21 +984,27 @@ export class NcReceiverMonitor extends NcStatusMonitor implements IReceiverMonit
 
     public FaultFixed()
     {
-        this.overallStatus = NcOverallStatus.Healthy; //3p1
-        this.overallStatusMessage = null; //3p2
-
         this.linkStatus = NcLinkStatus.AllUp; //4p1
-        this.linkStatusMessage = null; //4p2
+        this.linkStatusMessage = this.linkStatusMessage != null ? `Previously: ${this.linkStatusMessage}` : null; //4p2
 
         this.connectionStatus = NcConnectionStatus.Healthy; //4p4
-        this.connectionStatusMessage = null; //4p5
+        this.connectionStatusMessage = this.connectionStatusMessage != null ? `Previously: ${this.connectionStatusMessage}` : null; //4p5
 
         this.externalSynchronizationStatus = NcSynchronizationStatus.Healthy; //4p7
-        this.externalSynchronizationStatusMessage = "Locked to grandmaster on NIC2"; //4p8
-        this.synchronizationSourceId = "0xD4:AD:71:FF:FE:6F:E2:80"; //4p10
+        
+        if(this.synchronizationSourceId == null)
+        {
+            this.synchronizationSourceId = "0xD4:AD:71:FF:FE:6F:E2:80"; //4p10
+            this.externalSynchronizationStatusMessage = `Previously: Sync source change, from: None, to: ${this.synchronizationSourceId} on NIC1`; //4p8
+        }
+        else
+            this.externalSynchronizationStatusMessage = this.externalSynchronizationStatusMessage != null ? `Previously: ${this.externalSynchronizationStatusMessage}` : null; //4p8
 
         this.streamStatus = NcStreamStatus.Healthy; //4p11
-        this.streamStatusMessage = null; //4p12
+        this.streamStatusMessage = this.streamStatusMessage != null ? `Previously: ${this.streamStatusMessage}` : null; //4p12
+
+        this.overallStatus = NcOverallStatus.Healthy; //3p1
+        this.overallStatusMessage = this.linkStatusMessage?.startsWith("Previously:") ? this.linkStatusMessage : `Previously: ${this.linkStatusMessage}`; //3p2
 
         this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 1), NcPropertyChangeType.ValueChanged, this.overallStatus, null);
         this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 2), NcPropertyChangeType.ValueChanged, this.overallStatusMessage, null);
@@ -1034,7 +1047,7 @@ export class NcReceiverMonitor extends NcStatusMonitor implements IReceiverMonit
             this.synchronizationSourceId = this.emulatedGM1; //4p10
 
         this.externalSynchronizationStatus = NcSynchronizationStatus.PartiallyHealthy; //4p7
-        this.externalSynchronizationStatusMessage = `Grandmaster changed from: ${previousGM}`; //4p8
+        this.externalSynchronizationStatusMessage = `Sync source change, from: ${previousGM} on NIC1, to: ${this.synchronizationSourceId} on NIC1`; //4p8;
         this.externalSynchronizationStatusTransitionCounter++; //4p9
 
         this.overallStatusMessage = this.externalSynchronizationStatusMessage; //3p2
@@ -1056,9 +1069,17 @@ export class NcReceiverMonitor extends NcStatusMonitor implements IReceiverMonit
 
         this.externalSynchronizationStatus = NcSynchronizationStatus.Healthy; //4p7
 
+        this.externalSynchronizationStatusMessage = this.externalSynchronizationStatusMessage != null ? `Previously: ${this.externalSynchronizationStatusMessage}` : null; //4p8
+
+        this.overallStatusMessage = this.externalSynchronizationStatusMessage?.startsWith("Previously:") ? this.externalSynchronizationStatusMessage : `Previously: ${this.externalSynchronizationStatusMessage}`; //3p2
+
         this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 1), NcPropertyChangeType.ValueChanged, this.overallStatus, null);
 
+        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 2), NcPropertyChangeType.ValueChanged, this.overallStatusMessage, null);
+
         this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 7), NcPropertyChangeType.ValueChanged, this.externalSynchronizationStatus, null);
+
+        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 8), NcPropertyChangeType.ValueChanged, this.externalSynchronizationStatusMessage, null);
     }
 
     public Disconnected()
@@ -1066,20 +1087,16 @@ export class NcReceiverMonitor extends NcStatusMonitor implements IReceiverMonit
         this.activated = false;
 
         this.overallStatus = NcOverallStatus.Inactive; //3p1
-        this.overallStatusMessage = "Inactive"; //3p2
+        this.overallStatusMessage = null; //3p2
 
         this.linkStatus = NcLinkStatus.AllUp; //4p1
         this.linkStatusMessage = null; //4p2
 
         this.connectionStatus = NcConnectionStatus.Inactive; //4p4
-        this.connectionStatusMessage = "Inactive"; //4p5
-
-        this.externalSynchronizationStatus = NcSynchronizationStatus.Healthy; //4p7
-        this.externalSynchronizationStatusMessage = "Locked to grandmaster on NIC2"; //4p8
-        this.synchronizationSourceId = "0xD4:AD:71:FF:FE:6F:E2:80"; //4p10
+        this.connectionStatusMessage = null; //4p5
 
         this.streamStatus = NcStreamStatus.Inactive; //4p11
-        this.streamStatusMessage = "Inactive"; //4p12
+        this.streamStatusMessage = null; //4p12
 
         this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 1), NcPropertyChangeType.ValueChanged, this.overallStatus, null);
         this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 2), NcPropertyChangeType.ValueChanged, this.overallStatusMessage, null);
@@ -1090,10 +1107,6 @@ export class NcReceiverMonitor extends NcStatusMonitor implements IReceiverMonit
         this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 4), NcPropertyChangeType.ValueChanged, this.connectionStatus, null);
         this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 5), NcPropertyChangeType.ValueChanged, this.connectionStatusMessage, null);
 
-        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 7), NcPropertyChangeType.ValueChanged, this.externalSynchronizationStatus, null);
-        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 8), NcPropertyChangeType.ValueChanged, this.externalSynchronizationStatusMessage, null);
-        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 10), NcPropertyChangeType.ValueChanged, this.synchronizationSourceId, null);
-    
         this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 11), NcPropertyChangeType.ValueChanged, this.streamStatus, null);
         this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 12), NcPropertyChangeType.ValueChanged, this.streamStatusMessage, null);
 
@@ -1412,24 +1425,24 @@ export class NcSenderMonitor extends NcStatusMonitor implements ISenderMonitorin
         this.activated = false;
 
         this.overallStatus = NcOverallStatus.Inactive;
-        this.overallStatusMessage = "Inactive";
+        this.overallStatusMessage = null;
 
         this.linkStatus = NcLinkStatus.AllUp;
         this.linkStatusMessage = null;
 
         this.transmissionStatus = NcTransmissionStatus.Inactive;
-        this.transmissionStatusMessage = "Inactive";
+        this.transmissionStatusMessage = null;
 
         this.errorCounters = [
             new NcCounter("Main", 0, "Main transmission errors")
         ];
         
         this.externalSynchronizationStatus = NcSynchronizationStatus.Healthy;
-        this.externalSynchronizationStatusMessage = "Locked to grandmaster on NIC2";
         this.synchronizationSourceId = "0xD4:AD:71:FF:FE:6F:E2:80";
+        this.externalSynchronizationStatusMessage = `Sync source change, from: None, to: ${this.synchronizationSourceId} on NIC1` //4p8
 
         this.essenceStatus = NcEssenceStatus.Inactive;
-        this.essenceStatusMessage = "Inactive";
+        this.essenceStatusMessage = null;
 
         this.linkStatusTransitionCounter = 0;
         this.transmissionStatusTransitionCounter = 0;
@@ -1492,11 +1505,12 @@ export class NcSenderMonitor extends NcStatusMonitor implements ISenderMonitorin
         if(this.overallStatus != NcOverallStatus.Inactive)
         {
             this.overallStatus = NcOverallStatus.Unhealthy; //3p1
-            this.overallStatusMessage = "No signal on SDI IN3"; //3p2
     
             this.essenceStatus = NcEssenceStatus.Unhealthy; //4p11
             this.essenceStatusMessage = "No signal on SDI IN3"; //4p12
             this.essenceStatusTransitionCounter++; //4p13
+
+            this.overallStatusMessage = this.essenceStatusMessage; //3p2
 
             this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 1), NcPropertyChangeType.ValueChanged, this.overallStatus, null);
             this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 2), NcPropertyChangeType.ValueChanged, this.overallStatusMessage, null);
@@ -1517,10 +1531,11 @@ export class NcSenderMonitor extends NcStatusMonitor implements ISenderMonitorin
     public FaultFixed()
     {
         this.overallStatus = NcOverallStatus.Healthy; //3p1
-        this.overallStatusMessage = null; //3p2
 
         this.essenceStatus = NcEssenceStatus.Healthy; //4p11
-        this.essenceStatusMessage = null; //4p12
+        this.essenceStatusMessage = this.essenceStatusMessage != null ? `Previously: ${this.essenceStatusMessage}` : null; //4p12
+
+        this.overallStatusMessage = this.essenceStatusMessage?.startsWith("Previously:") ? this.essenceStatusMessage : `Previously: ${this.essenceStatusMessage}`; //3p2
 
         this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 1), NcPropertyChangeType.ValueChanged, this.overallStatus, null);
         this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 2), NcPropertyChangeType.ValueChanged, this.overallStatusMessage, null);
@@ -1534,13 +1549,13 @@ export class NcSenderMonitor extends NcStatusMonitor implements ISenderMonitorin
         this.activated = false;
 
         this.overallStatus = NcOverallStatus.Inactive; //3p1
-        this.overallStatusMessage = "Inactive"; //3p2
+        this.overallStatusMessage = null; //3p2
 
         this.transmissionStatus = NcTransmissionStatus.Inactive; //4p4
-        this.transmissionStatusMessage = "Inactive"; //4p5
+        this.transmissionStatusMessage = null; //4p5
 
         this.essenceStatus = NcEssenceStatus.Inactive; //4p11
-        this.essenceStatusMessage = "Inactive"; //4p12
+        this.essenceStatusMessage = null; //4p12
 
         this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 1), NcPropertyChangeType.ValueChanged, this.overallStatus, null);
         this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 2), NcPropertyChangeType.ValueChanged, this.overallStatusMessage, null);
