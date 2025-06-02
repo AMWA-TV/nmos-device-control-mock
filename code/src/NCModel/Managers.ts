@@ -402,7 +402,7 @@ export class NcDeviceManager extends NcManager
                 new NcPropertyValueHolder(new NcPropertyId(3, 4), "serialNumber", "NcString", true, this.serialNumber),
                 new NcPropertyValueHolder(new NcPropertyId(3, 5), "userInventoryCode", "NcString", false, this.userInventoryCode),
                 new NcPropertyValueHolder(new NcPropertyId(3, 6), "deviceName", "NcString", false, this.deviceName),
-                new NcPropertyValueHolder(new NcPropertyId(3, 7), "deviceName", "NcString", false, this.deviceName),
+                new NcPropertyValueHolder(new NcPropertyId(3, 7), "deviceRole", "NcString", false, this.deviceRole),
                 new NcPropertyValueHolder(new NcPropertyId(3, 8), "operationalState", "NcDeviceOperationalState", true, this.operationalState),
                 new NcPropertyValueHolder(new NcPropertyId(3, 9), "resetCause", "NcResetCause", true, this.resetCause),
                 new NcPropertyValueHolder(new NcPropertyId(3, 10), "message", "NcString", true, this.message),
@@ -1056,7 +1056,7 @@ export class NcClassManager extends NcManager
         let properties = [
             new NcObjectPropertiesHolder(this.GetRolePath(), [], [
                 new NcPropertyValueHolder(new NcPropertyId(3, 1), "controlClasses", "NcClassDescriptor", true, this.controlClasses),
-                new NcPropertyValueHolder(new NcPropertyId(3, 2), "dataTypes", "NcDatatypeDescriptor", true, this.dataTypes)
+                new NcPropertyValueHolder(new NcPropertyId(3, 2), "datatypes", "NcDatatypeDescriptor", true, this.dataTypes)
             ], [], this.isRebuildable)
         ];
 
