@@ -1308,6 +1308,8 @@ try
     })
 
     app.put('/x-nmos/configuration/:version/rolePaths/:rolePath/bulkProperties', function (req, res) {
+        console.log(`put - /x-nmos/configuration/:version/rolePaths/:rolePath/bulkProperties, body: ${JSON.stringify(req.body)}`);
+
         let restore = req.body as RestoreBody;
 
         console.log(`BulkProperties PUT ${req.url}`);
