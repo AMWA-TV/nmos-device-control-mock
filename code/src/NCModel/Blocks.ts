@@ -645,9 +645,13 @@ export class NcBlock extends NcObject
     {
         let validationEntries = new Array<NcObjectPropertiesSetValidation>();
 
-        let myRestoreData = restoreArguments.dataSet.values.find(f => f.path.join('.') == this.GetRolePath().join('.'))
+        let localRolePath = this.GetRolePath().join('.');
+
+        let myRestoreData = restoreArguments.dataSet.values.find(f => f.path.join('.') == localRolePath);
         if(myRestoreData)
         {
+            console.log(`Found restore data for path: ${localRolePath}`);
+
             let myNotices = new Array<NcPropertyRestoreNotice>();
 
             myRestoreData.values.forEach(propertyData => 

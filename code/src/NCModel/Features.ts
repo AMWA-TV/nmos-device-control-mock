@@ -242,9 +242,13 @@ export class GainControl extends NcWorker
     {
         let validationEntries = new Array<NcObjectPropertiesSetValidation>();
 
-        let myRestoreData = restoreArguments.dataSet.values.find(f => f.path.join('.') == this.GetRolePath().join('.'))
+        let localRolePath = this.GetRolePath().join('.');
+
+        let myRestoreData = restoreArguments.dataSet.values.find(f => f.path.join('.') == localRolePath);
         if(myRestoreData)
         {
+            console.log(`Found restore data for path: ${localRolePath}`);
+
             let myNotices = new Array<NcPropertyRestoreNotice>();
 
             myRestoreData.values.forEach(propertyData => {
@@ -376,9 +380,13 @@ export class NcIdentBeacon extends NcWorker
     {
         let validationEntries = new Array<NcObjectPropertiesSetValidation>();
 
-        let myRestoreData = restoreArguments.dataSet.values.find(f => f.path.join('.') == this.GetRolePath().join('.'))
+        let localRolePath = this.GetRolePath().join('.');
+
+        let myRestoreData = restoreArguments.dataSet.values.find(f => f.path.join('.') == localRolePath);
         if(myRestoreData)
         {
+            console.log(`Found restore data for path: ${localRolePath}`);
+
             let myNotices = new Array<NcPropertyRestoreNotice>();
 
             myRestoreData.values.forEach(propertyData => {
@@ -537,9 +545,13 @@ export class NcStatusMonitor extends NcWorker
     {
         let validationEntries = new Array<NcObjectPropertiesSetValidation>();
 
-        let myRestoreData = restoreArguments.dataSet.values.find(f => f.path.join('.') == this.GetRolePath().join('.'))
+        let localRolePath = this.GetRolePath().join('.');
+
+        let myRestoreData = restoreArguments.dataSet.values.find(f => f.path.join('.') == localRolePath);
         if(myRestoreData)
         {
+            console.log(`Found restore data for path: ${localRolePath}`);
+
             let myNotices = new Array<NcPropertyRestoreNotice>();
 
             myRestoreData.values.forEach(propertyData => {
@@ -1108,9 +1120,13 @@ export class NcReceiverMonitor extends NcStatusMonitor
     {
         let validationEntries = new Array<NcObjectPropertiesSetValidation>();
 
-        let myRestoreData = restoreArguments.dataSet.values.find(f => f.path.join('.') == this.GetRolePath().join('.'))
+        let localRolePath = this.GetRolePath().join('.');
+
+        let myRestoreData = restoreArguments.dataSet.values.find(f => f.path.join('.') == localRolePath);
         if(myRestoreData)
         {
+            console.log(`Found restore data for path: ${localRolePath}`);
+
             let myNotices = new Array<NcPropertyRestoreNotice>();
 
             myRestoreData.values.forEach(propertyData => {
@@ -1539,9 +1555,13 @@ export class NcSenderMonitor extends NcStatusMonitor
     {
         let validationEntries = new Array<NcObjectPropertiesSetValidation>();
 
-        let myRestoreData = restoreArguments.dataSet.values.find(f => f.path.join('.') == this.GetRolePath().join('.'))
+        let localRolePath = this.GetRolePath().join('.');
+
+        let myRestoreData = restoreArguments.dataSet.values.find(f => f.path.join('.') == localRolePath);
         if(myRestoreData)
         {
+            console.log(`Found restore data for path: ${localRolePath}`);
+
             let myNotices = new Array<NcPropertyRestoreNotice>();
 
             myRestoreData.values.forEach(propertyData => {
@@ -2436,9 +2456,13 @@ export class ExampleControl extends NcWorker
     {
         let validationEntries = new Array<NcObjectPropertiesSetValidation>();
 
-        let myRestoreData = restoreArguments.dataSet.values.find(f => f.path.join('.') == this.GetRolePath().join('.'))
+        let localRolePath = this.GetRolePath().join('.');
+
+        let myRestoreData = restoreArguments.dataSet.values.find(f => f.path.join('.') == localRolePath);
         if(myRestoreData)
         {
+            console.log(`Found restore data for path: ${localRolePath}`);
+
             let myNotices = new Array<NcPropertyRestoreNotice>();
 
             myRestoreData.values.forEach(propertyData => {
