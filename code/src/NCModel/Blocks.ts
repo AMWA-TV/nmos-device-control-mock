@@ -737,7 +737,9 @@ export class NcBlock extends NcObject
         if(restoreArguments.recurse)
         {
             this.memberObjects.forEach(member => {
-                validationEntries = validationEntries.concat(member.Restore(restoreArguments, applyChanges));
+                var validationEntry = validationEntries.find(f => f.path.join('.') == member.GetRolePath().join('.'));
+                if (validationEntry == undefined)
+                    validationEntries = validationEntries.concat(member.Restore(restoreArguments, applyChanges));
             });
         }
 
