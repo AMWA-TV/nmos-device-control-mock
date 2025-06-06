@@ -645,9 +645,13 @@ export class NcBlock extends NcObject
     {
         let validationEntries = new Array<NcObjectPropertiesSetValidation>();
 
-        let myRestoreData = restoreArguments.dataSet.values.find(f => f.path.join('.') == this.GetRolePath().join('.'))
+        let localRolePath = this.GetRolePath().join('.');
+
+        let myRestoreData = restoreArguments.dataSet.values.find(f => f.path.join('.') == localRolePath);
         if(myRestoreData)
         {
+            console.log(`Found restore data for path: ${localRolePath}`);
+
             let myNotices = new Array<NcPropertyRestoreNotice>();
 
             myRestoreData.values.forEach(propertyData => 
@@ -733,7 +737,9 @@ export class NcBlock extends NcObject
         if(restoreArguments.recurse)
         {
             this.memberObjects.forEach(member => {
-                validationEntries = validationEntries.concat(member.Restore(restoreArguments, applyChanges));
+                var validationEntry = validationEntries.find(f => f.path.join('.') == member.GetRolePath().join('.'));
+                if (validationEntry == undefined)
+                    validationEntries = validationEntries.concat(member.Restore(restoreArguments, applyChanges));
             });
         }
 
