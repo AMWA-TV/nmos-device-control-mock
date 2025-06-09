@@ -1009,6 +1009,8 @@ export class ExampleControlsBlock extends NcBlock
         let controlMembers: ExampleControl[] = [];
 
         members.forEach(member => {
+            let memberRolepath = this.GetRolePathForMember(member.role);
+
             if(member.classId.join() == ExampleControl.staticClassID.join())
             {
                 if(this.maxMembers != null)
@@ -1017,8 +1019,6 @@ export class ExampleControlsBlock extends NcBlock
                     {
                         if(this.rootContext != null)
                         {
-                            let memberRolepath = this.GetRolePathForMember(member.role);
-    
                             let setValidation: NcObjectPropertiesSetValidation;
     
                             let memberRestoreData = dataSet.values.find(f => f.path.join('.') == memberRolepath.join('.'))
@@ -1053,14 +1053,14 @@ export class ExampleControlsBlock extends NcBlock
                     {
                         blockMembersNotice = new NcPropertyRestoreNotice(new NcPropertyId(2, 2), "members", NcPropertyRestoreNoticeType.Warning, `Member [${member.role}] can't be constructed because it goes over the maximum block members limit of ${this.maxMembers}`);
                         console.log(`Member [${member.role}] can't be constructed because it goes over the maximum block members limit of ${this.maxMembers}`);
+
+                        validationEntries = validationEntries.concat(new NcObjectPropertiesSetValidation(memberRolepath, NcRestoreValidationStatus.Failed, [], `[${member.role}] can't be constructed because it goes over the maximum parent block members limit of ${this.maxMembers}`));
                     }
                 }
                 else
                 {
                     if(this.rootContext != null)
                     {
-                        let memberRolepath = this.GetRolePathForMember(member.role);
-
                         let setValidation: NcObjectPropertiesSetValidation;
 
                         let memberRestoreData = dataSet.values.find(f => f.path.join('.') == memberRolepath.join('.'))
@@ -1096,6 +1096,8 @@ export class ExampleControlsBlock extends NcBlock
             {
                 blockMembersNotice = new NcPropertyRestoreNotice(new NcPropertyId(2, 2), "members", NcPropertyRestoreNoticeType.Warning, `Member [${member.role}] can't be constructed because it has an invalid classId of ${member.classId.join('.')}`);
                 console.log(`Member [${member.role}] can't be constructed because it has an invalid classId of ${member.classId.join('.')}`);
+
+                validationEntries = validationEntries.concat(new NcObjectPropertiesSetValidation(memberRolepath, NcRestoreValidationStatus.Failed, [], `[${member.role}] can't be constructed because it has an invalid classId of ${member.classId.join('.')}`));
             }
         });
         
