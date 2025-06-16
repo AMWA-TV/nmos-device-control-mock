@@ -765,7 +765,7 @@ export class NcReceiverMonitor extends NcStatusMonitor implements IReceiverMonit
     public streamStatusTransitionCounter: number;
 
     @myIdDecorator('4p14')
-    public autoResetCounters: boolean;
+    public autoResetCountersAndMessages: boolean;
 
     private lostPacketCounters: NcCounter[];
     private latePacketCounters: NcCounter[];
@@ -824,7 +824,7 @@ export class NcReceiverMonitor extends NcStatusMonitor implements IReceiverMonit
         this.externalSynchronizationStatusTransitionCounter = 0;
         this.streamStatusTransitionCounter = 0;
 
-        this.autoResetCounters = true;
+        this.autoResetCountersAndMessages = true;
 
         this.monitorManager = null;
     }
@@ -850,37 +850,8 @@ export class NcReceiverMonitor extends NcStatusMonitor implements IReceiverMonit
         
         this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 11), NcPropertyChangeType.ValueChanged, this.streamStatus, null);
         
-        if(this.autoResetCounters)
-        {
-            this.lostPacketCounters.forEach(counter => {
-                counter.Reset();
-            });
-
-            this.latePacketCounters.forEach(counter => {
-                counter.Reset();
-            });
-
-            this.linkStatusTransitionCounter = 0; //4p3
-            this.connectionStatusTransitionCounter = 0; //4p6
-            this.externalSynchronizationStatusTransitionCounter = 0; //4p9
-            this.streamStatusTransitionCounter = 0; //4p13
-            this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 3), NcPropertyChangeType.ValueChanged, this.linkStatusTransitionCounter, null);
-            this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 6), NcPropertyChangeType.ValueChanged, this.connectionStatusTransitionCounter, null);
-            this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 9), NcPropertyChangeType.ValueChanged, this.externalSynchronizationStatusTransitionCounter, null);
-            this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 13), NcPropertyChangeType.ValueChanged, this.streamStatusTransitionCounter, null);
-
-            this.overallStatusMessage = null; //3p2
-            this.linkStatusMessage = null; //4p2
-            this.connectionStatusMessage = null; //4p5
-            this.externalSynchronizationStatusMessage = null; //4p8
-            this.streamStatusMessage = null; //4p12
-
-            this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 2), NcPropertyChangeType.ValueChanged, this.overallStatusMessage, null);
-            this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 2), NcPropertyChangeType.ValueChanged, this.linkStatusMessage, null);
-            this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 5), NcPropertyChangeType.ValueChanged, this.connectionStatusMessage, null);
-            this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 8), NcPropertyChangeType.ValueChanged, this.externalSynchronizationStatusMessage, null);
-            this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 12), NcPropertyChangeType.ValueChanged, this.streamStatusMessage, null);
-        }
+        if(this.autoResetCountersAndMessages)
+            this.ResetCountersAndMessages();
     }
 
     public Nic1Down(transitionFromUnhealthy: boolean = false)
@@ -1159,7 +1130,7 @@ export class NcReceiverMonitor extends NcStatusMonitor implements IReceiverMonit
                 case '4p13':
                     return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.streamStatusTransitionCounter);
                 case '4p14':
-                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.autoResetCounters);
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.autoResetCountersAndMessages);
                 default:
                     return super.Get(oid, id, handle);
             }
@@ -1197,8 +1168,8 @@ export class NcReceiverMonitor extends NcStatusMonitor implements IReceiverMonit
                 case '4p13':
                     return new CommandResponseError(handle, NcMethodStatus.Readonly, 'Property is readonly');
                 case '4p14':
-                    this.autoResetCounters = value;
-                    this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.autoResetCounters, null);
+                    this.autoResetCountersAndMessages = value;
+                    this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.autoResetCountersAndMessages, null);
                     return new CommandResponseNoValue(handle, NcMethodStatus.OK);
                 default:
                     return super.Set(oid, id, value, handle);
@@ -1221,7 +1192,7 @@ export class NcReceiverMonitor extends NcStatusMonitor implements IReceiverMonit
                 case '4m2':
                     return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.latePacketCounters);
                 case '4m3':
-                    this.ResetCounters();
+                    this.ResetCountersAndMessages();
                     return new CommandResponseNoValue(handle, NcMethodStatus.OK);
                 default:
                     return super.InvokeMethod(oid, methodId, args, handle);
@@ -1232,7 +1203,7 @@ export class NcReceiverMonitor extends NcStatusMonitor implements IReceiverMonit
         return new CommandResponseError(handle, NcMethodStatus.BadOid, 'OID could not be found');
     }
 
-    private ResetCounters()
+    private ResetCountersAndMessages()
     {
         this.lostPacketCounters.forEach(counter => {
             counter.Reset();
@@ -1283,12 +1254,12 @@ export class NcReceiverMonitor extends NcStatusMonitor implements IReceiverMonit
                 new NcPropertyDescriptor(new NcElementId(4, 11), "streamStatus", "NcStreamStatus", true, false, false, null, "Stream status property"),
                 new NcPropertyDescriptor(new NcElementId(4, 12), "streamStatusMessage", "NcString", true, true, false, null, "Stream status message property"),
                 new NcPropertyDescriptor(new NcElementId(4, 13), "streamStatusTransitionCounter", "NcUint64", true, false, false, null, "Stream status transition counter property"),
-                new NcPropertyDescriptor(new NcElementId(4, 14), "autoResetCounters", "NcBoolean", false, false, false, null, "Automatic reset counters property (default: true)")
+                new NcPropertyDescriptor(new NcElementId(4, 14), "autoResetCountersAndMessages", "NcBoolean", false, false, false, null, "Automatic reset counters and status messages property (default: true)")
             ],
             [
                 new NcMethodDescriptor(new NcElementId(4, 1), "GetLostPacketCounters", "NcMethodResultCounters", [], "Gets the lost packet counters"),
                 new NcMethodDescriptor(new NcElementId(4, 2), "GetLatePacketCounters", "NcMethodResultCounters", [], "Gets the late packet counters"),
-                new NcMethodDescriptor(new NcElementId(4, 3), "ResetCounters", "NcMethodResult", [], "Resets ALL counters")
+                new NcMethodDescriptor(new NcElementId(4, 3), "ResetCountersAndMessages", "NcMethodResult", [], "Resets ALL counters and status messages")
             ],
             []
         );
@@ -1322,7 +1293,7 @@ export class NcReceiverMonitor extends NcStatusMonitor implements IReceiverMonit
                 new NcPropertyValueHolder(new NcPropertyId(4, 11), "streamStatus", "NcStreamStatus", true, this.streamStatus),
                 new NcPropertyValueHolder(new NcPropertyId(4, 12), "streamStatusMessage", "NcString", true, this.streamStatusMessage),
                 new NcPropertyValueHolder(new NcPropertyId(4, 13), "streamStatusTransitionCounter", "NcUint64", true, this.streamStatusTransitionCounter),
-                new NcPropertyValueHolder(new NcPropertyId(4, 14), "autoResetCounters", "NcBoolean", false, this.autoResetCounters)
+                new NcPropertyValueHolder(new NcPropertyId(4, 14), "autoResetCountersAndMessages", "NcBoolean", false, this.autoResetCountersAndMessages)
             ], [], this.isRebuildable)
         ];
 
@@ -1424,7 +1395,7 @@ export class NcSenderMonitor extends NcStatusMonitor implements ISenderMonitorin
     public essenceStatusTransitionCounter: number;
 
     @myIdDecorator('4p14')
-    public autoResetCounters: boolean;
+    public autoResetCountersAndMessages: boolean;
 
     private errorCounters: NcCounter[];
 
@@ -1473,7 +1444,7 @@ export class NcSenderMonitor extends NcStatusMonitor implements ISenderMonitorin
         this.externalSynchronizationStatusTransitionCounter = 0;
         this.essenceStatusTransitionCounter = 0;
 
-        this.autoResetCounters = true;
+        this.autoResetCountersAndMessages = true;
 
         this.Activated();
 
@@ -1501,33 +1472,8 @@ export class NcSenderMonitor extends NcStatusMonitor implements ISenderMonitorin
 
         this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 11), NcPropertyChangeType.ValueChanged, this.essenceStatus, null);
 
-        if(this.autoResetCounters)
-        {
-            this.errorCounters.forEach(counter => {
-                counter.Reset();
-            });
-
-            this.linkStatusTransitionCounter = 0; //4p3
-            this.transmissionStatusTransitionCounter = 0; //4p6
-            this.externalSynchronizationStatusTransitionCounter = 0; //4p9
-            this.essenceStatusTransitionCounter = 0; //4p13
-            this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 3), NcPropertyChangeType.ValueChanged, this.linkStatusTransitionCounter, null);
-            this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 6), NcPropertyChangeType.ValueChanged, this.transmissionStatusTransitionCounter, null);
-            this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 9), NcPropertyChangeType.ValueChanged, this.externalSynchronizationStatusTransitionCounter, null);
-            this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 13), NcPropertyChangeType.ValueChanged, this.essenceStatusTransitionCounter, null);
-
-            this.overallStatusMessage = null; //3p2
-            this.linkStatusMessage = null; //4p2
-            this.transmissionStatusMessage = null; //4p5
-            this.externalSynchronizationStatusMessage = null; //4p8
-            this.essenceStatusMessage = null; //4p12
-
-            this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 2), NcPropertyChangeType.ValueChanged, this.overallStatusMessage, null);
-            this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 2), NcPropertyChangeType.ValueChanged, this.linkStatusMessage, null);
-            this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 5), NcPropertyChangeType.ValueChanged, this.transmissionStatusMessage, null);
-            this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 8), NcPropertyChangeType.ValueChanged, this.externalSynchronizationStatusMessage, null);
-            this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 12), NcPropertyChangeType.ValueChanged, this.essenceStatusMessage, null);
-        }
+        if(this.autoResetCountersAndMessages)
+            this.ResetCountersAndMessages();
     }
 
     public SimulateSignalLost()
@@ -1629,7 +1575,7 @@ export class NcSenderMonitor extends NcStatusMonitor implements ISenderMonitorin
                 case '4p13':
                     return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.essenceStatusTransitionCounter);
                 case '4p14':
-                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.autoResetCounters);
+                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.autoResetCountersAndMessages);
                 default:
                     return super.Get(oid, id, handle);
             }
@@ -1667,8 +1613,8 @@ export class NcSenderMonitor extends NcStatusMonitor implements ISenderMonitorin
                 case '4p13':
                     return new CommandResponseError(handle, NcMethodStatus.Readonly, 'Property is readonly');
                 case '4p14':
-                    this.autoResetCounters = value;
-                    this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.autoResetCounters, null);
+                    this.autoResetCountersAndMessages = value;
+                    this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.autoResetCountersAndMessages, null);
                     return new CommandResponseNoValue(handle, NcMethodStatus.OK);
                 default:
                     return super.Set(oid, id, value, handle);
@@ -1689,18 +1635,17 @@ export class NcSenderMonitor extends NcStatusMonitor implements ISenderMonitorin
                 case '4m1':
                     return new CommandResponseWithValue(handle, NcMethodStatus.OK, this.errorCounters);
                 case '4m2':
-                    this.ResetCounters();
+                    this.ResetCountersAndMessages();
                     return new CommandResponseNoValue(handle, NcMethodStatus.OK);
                 default:
                     return super.InvokeMethod(oid, methodId, args, handle);
-
             }
         }
 
         return new CommandResponseError(handle, NcMethodStatus.BadOid, 'OID could not be found');
     }
 
-    private ResetCounters()
+    private ResetCountersAndMessages()
     {
         this.errorCounters.forEach(counter => {
             counter.Reset();
@@ -1747,11 +1692,11 @@ export class NcSenderMonitor extends NcStatusMonitor implements ISenderMonitorin
                 new NcPropertyDescriptor(new NcElementId(4, 11), "essenceStatus", "NcEssenceStatus", true, false, false, null, "Essence status property"),
                 new NcPropertyDescriptor(new NcElementId(4, 12), "essenceStatusMessage", "NcString", true, true, false, null, "Essence status message property"),
                 new NcPropertyDescriptor(new NcElementId(4, 13), "essenceStatusTransitionCounter", "NcUint64", true, false, false, null, "Essence status transition counter property"),
-                new NcPropertyDescriptor(new NcElementId(4, 14), "autoResetCounters", "NcBoolean", false, false, false, null, "Automatic reset counters property (default: true)")
+                new NcPropertyDescriptor(new NcElementId(4, 14), "autoResetCountersAndMessages", "NcBoolean", false, false, false, null, "Automatic reset counters and status messages property (default: true)")
             ],
             [
                 new NcMethodDescriptor(new NcElementId(4, 1), "GetTransmissionErrorCounters", "NcMethodResultCounters", [], "Gets the transmission error counters"),
-                new NcMethodDescriptor(new NcElementId(4, 2), "ResetCounters", "NcMethodResult", [], "Resets ALL counters"),
+                new NcMethodDescriptor(new NcElementId(4, 2), "ResetCountersAndMessages", "NcMethodResult", [], "Resets ALL counters and status messages")
             ],
             []
         );
@@ -1785,7 +1730,7 @@ export class NcSenderMonitor extends NcStatusMonitor implements ISenderMonitorin
                 new NcPropertyValueHolder(new NcPropertyId(4, 11), "essenceStatus", "NcEssenceStatus", true, this.essenceStatus),
                 new NcPropertyValueHolder(new NcPropertyId(4, 12), "essenceStatusMessage", "NcString", true, this.essenceStatusMessage),
                 new NcPropertyValueHolder(new NcPropertyId(4, 13), "essenceStatusTransitionCounter", "NcUint64", true, this.essenceStatusTransitionCounter),
-                new NcPropertyValueHolder(new NcPropertyId(4, 14), "autoResetCounters", "NcBoolean", false, this.autoResetCounters)
+                new NcPropertyValueHolder(new NcPropertyId(4, 14), "autoResetCountersAndMessages", "NcBoolean", false, this.autoResetCountersAndMessages)
             ], [], this.isRebuildable)
         ];
 
