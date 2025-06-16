@@ -242,9 +242,13 @@ export class GainControl extends NcWorker
     {
         let validationEntries = new Array<NcObjectPropertiesSetValidation>();
 
-        let myRestoreData = restoreArguments.dataSet.values.find(f => f.path.join('.') == this.GetRolePath().join('.'))
+        let localRolePath = this.GetRolePath().join('.');
+
+        let myRestoreData = restoreArguments.dataSet.values.find(f => f.path.join('.') == localRolePath);
         if(myRestoreData)
         {
+            console.log(`Found restore data for path: ${localRolePath}`);
+
             let myNotices = new Array<NcPropertyRestoreNotice>();
 
             myRestoreData.values.forEach(propertyData => {
@@ -376,9 +380,13 @@ export class NcIdentBeacon extends NcWorker
     {
         let validationEntries = new Array<NcObjectPropertiesSetValidation>();
 
-        let myRestoreData = restoreArguments.dataSet.values.find(f => f.path.join('.') == this.GetRolePath().join('.'))
+        let localRolePath = this.GetRolePath().join('.');
+
+        let myRestoreData = restoreArguments.dataSet.values.find(f => f.path.join('.') == localRolePath);
         if(myRestoreData)
         {
+            console.log(`Found restore data for path: ${localRolePath}`);
+
             let myNotices = new Array<NcPropertyRestoreNotice>();
 
             myRestoreData.values.forEach(propertyData => {
@@ -537,9 +545,13 @@ export class NcStatusMonitor extends NcWorker
     {
         let validationEntries = new Array<NcObjectPropertiesSetValidation>();
 
-        let myRestoreData = restoreArguments.dataSet.values.find(f => f.path.join('.') == this.GetRolePath().join('.'))
+        let localRolePath = this.GetRolePath().join('.');
+
+        let myRestoreData = restoreArguments.dataSet.values.find(f => f.path.join('.') == localRolePath);
         if(myRestoreData)
         {
+            console.log(`Found restore data for path: ${localRolePath}`);
+
             let myNotices = new Array<NcPropertyRestoreNotice>();
 
             myRestoreData.values.forEach(propertyData => {
@@ -1323,9 +1335,13 @@ export class NcReceiverMonitor extends NcStatusMonitor implements IReceiverMonit
     {
         let validationEntries = new Array<NcObjectPropertiesSetValidation>();
 
-        let myRestoreData = restoreArguments.dataSet.values.find(f => f.path.join('.') == this.GetRolePath().join('.'))
+        let localRolePath = this.GetRolePath().join('.');
+
+        let myRestoreData = restoreArguments.dataSet.values.find(f => f.path.join('.') == localRolePath);
         if(myRestoreData)
         {
+            console.log(`Found restore data for path: ${localRolePath}`);
+
             let myNotices = new Array<NcPropertyRestoreNotice>();
 
             myRestoreData.values.forEach(propertyData => {
@@ -1782,9 +1798,13 @@ export class NcSenderMonitor extends NcStatusMonitor implements ISenderMonitorin
     {
         let validationEntries = new Array<NcObjectPropertiesSetValidation>();
 
-        let myRestoreData = restoreArguments.dataSet.values.find(f => f.path.join('.') == this.GetRolePath().join('.'))
+        let localRolePath = this.GetRolePath().join('.');
+
+        let myRestoreData = restoreArguments.dataSet.values.find(f => f.path.join('.') == localRolePath);
         if(myRestoreData)
         {
+            console.log(`Found restore data for path: ${localRolePath}`);
+
             let myNotices = new Array<NcPropertyRestoreNotice>();
 
             myRestoreData.values.forEach(propertyData => {
@@ -2073,13 +2093,23 @@ export class ExampleControl extends NcWorker implements IMonitorManager
                     this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.enumProperty, null);
                     return new CommandResponseNoValue(handle, NcMethodStatus.OK);
                 case '3p2':
-                    this.stringProperty = value;
-                    this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.stringProperty, null);
-                    return new CommandResponseNoValue(handle, NcMethodStatus.OK);
+                    if(value.length > 0 && value.length <= 10)
+                    {
+                        this.stringProperty = value;
+                        this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.stringProperty, null);
+                        return new CommandResponseNoValue(handle, NcMethodStatus.OK);
+                    }
+                    else
+                        return new CommandResponseError(handle, NcMethodStatus.ParameterError, "Value does not respect constraints");
                 case '3p3':
-                    this.numberProperty = value;
-                    this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.numberProperty, null);
-                    return new CommandResponseNoValue(handle, NcMethodStatus.OK);
+                    if(value >= 0 && value <= 1000)
+                    {
+                        this.numberProperty = value;
+                        this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.numberProperty, null);
+                        return new CommandResponseNoValue(handle, NcMethodStatus.OK);
+                    }
+                    else
+                        return new CommandResponseError(handle, NcMethodStatus.ParameterError, "Value does not respect constraints");
                 case '3p4':
                     this.booleanProperty = value;
                     this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.booleanProperty, null);
@@ -2655,8 +2685,14 @@ export class ExampleControl extends NcWorker implements IMonitorManager
                             {
                                 if(stringArg)
                                 {
+                                    if(stringArg.length < 0 || stringArg.length > 10)
+                                        return new CommandResponseError(handle, NcMethodStatus.OK, "stringArg does not respect defined constraints");
+
                                     if(numberArg && numberArg > 0)
                                     {
+                                        if(numberArg < 0 || numberArg > 1000)
+                                            return new CommandResponseError(handle, NcMethodStatus.ParameterError, "Value does not respect constraints");
+
                                         if(booleanArg !== null)
                                         {
                                             this.methodSimpleArgsCount = this.methodSimpleArgsCount + 1;
@@ -2802,9 +2838,13 @@ export class ExampleControl extends NcWorker implements IMonitorManager
     {
         let validationEntries = new Array<NcObjectPropertiesSetValidation>();
 
-        let myRestoreData = restoreArguments.dataSet.values.find(f => f.path.join('.') == this.GetRolePath().join('.'))
+        let localRolePath = this.GetRolePath().join('.');
+
+        let myRestoreData = restoreArguments.dataSet.values.find(f => f.path.join('.') == localRolePath);
         if(myRestoreData)
         {
+            console.log(`Found restore data for path: ${localRolePath}`);
+
             let myNotices = new Array<NcPropertyRestoreNotice>();
 
             myRestoreData.values.forEach(propertyData => {

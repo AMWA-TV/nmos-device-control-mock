@@ -12,7 +12,7 @@ import { RegistrationClient } from './RegistrationClient';
 import { SessionManager } from './SessionManager';
 import { ExampleControlsBlock, NcBlock, RootBlock } from './NCModel/Blocks';
 import { NcClassManager, NcDeviceManager } from './NCModel/Managers';
-import { ConfigApiArguments, ConfigApiValue, NcBulkValuesHolder, NcMethodResultBulkValuesHolder, NcMethodResultObjectPropertiesSetValidation, NcMethodStatus, NcTouchpointNmos, NcTouchpointResourceNmos, RestoreBody } from './NCModel/Core';
+import { ConfigApiArguments, ConfigApiValue, NcBulkValuesHolder, NcMethodResultBulkValuesHolder, NcMethodResultClassDescriptor, NcMethodResultDatatypeDescriptor, NcMethodResultError, NcMethodResultObjectPropertiesSetValidation, NcMethodStatus, NcTouchpointNmos, NcTouchpointResourceNmos, RestoreBody } from './NCModel/Core';
 import { ExampleControl, GainControl, NcIdentBeacon, NcReceiverMonitor, NcSenderMonitor } from './NCModel/Features';
 import { ProtocolError, ProtocolSubscription } from './NCProtocol/Commands';
 import { MessageType, ProtocolWrapper } from './NCProtocol/Core';
@@ -996,7 +996,11 @@ try
             res.end();
         }
         else
-            res.sendStatus(404);
+        {
+            res.writeHead(404, { 'Content-Type': 'application/json' });
+            res.write(JSON.stringify(new NcMethodResultError(NcMethodStatus.BadOid, `Role path: ${req.params.rolePath}, was not found`), jsonIgnoreReplacer));
+            res.end();
+        }
     })
 
     app.get('/x-nmos/configuration/:version/rolePaths/:rolePath/descriptor/', function (req, res) {
@@ -1005,12 +1009,26 @@ try
         let member = rootBlock.FindMemberByRolePath(rolePath);
         if(member)
         {
-            res.writeHead(200, { 'Content-Type': 'application/json' });
-            res.write(JSON.stringify(classManager.GetClassDescriptor(member.classID, true), jsonIgnoreReplacer));
-            res.end();
+            let descriptor = classManager.GetClassDescriptor(member.classID, true);
+            if(descriptor)
+            {
+                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.write(JSON.stringify(new NcMethodResultClassDescriptor(NcMethodStatus.OK, descriptor), jsonIgnoreReplacer));
+                res.end();
+            }
+            else
+            {
+                res.writeHead(500, { 'Content-Type': 'application/json' });
+                res.write(JSON.stringify(new NcMethodResultError(NcMethodStatus.DeviceError, `Cannot generate descriptor for classId: ${member.classID.join('.')}`), jsonIgnoreReplacer));
+                res.end();
+            }
         }
         else
-            res.sendStatus(404);
+        {
+            res.writeHead(404, { 'Content-Type': 'application/json' });
+            res.write(JSON.stringify(new NcMethodResultError(NcMethodStatus.BadOid, `Role path: ${req.params.rolePath}, was not found`), jsonIgnoreReplacer));
+            res.end();
+        }
     })
 
     app.get('/x-nmos/configuration/:version/rolePaths/:rolePath/methods/', function (req, res) {
@@ -1019,12 +1037,26 @@ try
         let member = rootBlock.FindMemberByRolePath(rolePath);
         if(member)
         {
-            res.writeHead(200, { 'Content-Type': 'application/json' });
-            res.write(JSON.stringify(classManager.GetClassDescriptor(member.classID, true)?.methods.map(({ id }) => `${id.level}m${id.index}/`).sort((a, b) => (a > b ? 1 : -1)), jsonIgnoreReplacer));
-            res.end();
+            let descriptor = classManager.GetClassDescriptor(member.classID, true);
+            if(descriptor)
+            {
+                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.write(JSON.stringify(descriptor?.methods.map(({ id }) => `${id.level}m${id.index}/`).sort((a, b) => (a > b ? 1 : -1)), jsonIgnoreReplacer));
+                res.end();
+            }
+            else
+            {
+                res.writeHead(500, { 'Content-Type': 'application/json' });
+                res.write(JSON.stringify(new NcMethodResultError(NcMethodStatus.DeviceError, `Cannot list methods for classId: ${member.classID.join('.')}`), jsonIgnoreReplacer));
+                res.end();
+            }
         }
         else
-            res.sendStatus(404);
+        {
+            res.writeHead(404, { 'Content-Type': 'application/json' });
+            res.write(JSON.stringify(new NcMethodResultError(NcMethodStatus.BadOid, `Role path: ${req.params.rolePath}, was not found`), jsonIgnoreReplacer));
+            res.end();
+        }
     })
 
     app.get('/x-nmos/configuration/:version/rolePaths/:rolePath/properties/', function (req, res) {
@@ -1033,12 +1065,26 @@ try
         let member = rootBlock.FindMemberByRolePath(rolePath);
         if(member)
         {
-            res.writeHead(200, { 'Content-Type': 'application/json' });
-            res.write(JSON.stringify(classManager.GetClassDescriptor(member.classID, true)?.properties.map(({ id }) => `${id.level}p${id.index}/`).sort((a, b) => (a > b ? 1 : -1)), jsonIgnoreReplacer));
-            res.end();
+            let descriptor = classManager.GetClassDescriptor(member.classID, true);
+            if(descriptor)
+            {
+                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.write(JSON.stringify(descriptor?.properties.map(({ id }) => `${id.level}p${id.index}/`).sort((a, b) => (a > b ? 1 : -1)), jsonIgnoreReplacer));
+                res.end();
+            }
+            else
+            {
+                res.writeHead(500, { 'Content-Type': 'application/json' });
+                res.write(JSON.stringify(new NcMethodResultError(NcMethodStatus.DeviceError, `Cannot list properties for classId: ${member.classID.join('.')}`), jsonIgnoreReplacer));
+                res.end();
+            }
         }
         else
-            res.sendStatus(404);
+        {
+            res.writeHead(404, { 'Content-Type': 'application/json' });
+            res.write(JSON.stringify(new NcMethodResultError(NcMethodStatus.BadOid, `Role path: ${req.params.rolePath}, was not found`), jsonIgnoreReplacer));
+            res.end();
+        }
     })
 
     app.get('/x-nmos/configuration/:version/rolePaths/:rolePath/properties/:propertyId', function (req, res) {
@@ -1058,10 +1104,18 @@ try
                 res.end();
             }
             else
-                res.sendStatus(404);
+            {
+                res.writeHead(404, { 'Content-Type': 'application/json' });
+                res.write(JSON.stringify(new NcMethodResultError(NcMethodStatus.BadOid, `Role path: ${req.params.rolePath}, property: ${req.params.propertyId} was not found`), jsonIgnoreReplacer));
+                res.end();
+            }
         }
         else
-            res.sendStatus(404);
+        {
+            res.writeHead(404, { 'Content-Type': 'application/json' });
+            res.write(JSON.stringify(new NcMethodResultError(NcMethodStatus.BadOid, `Role path: ${req.params.rolePath}, was not found`), jsonIgnoreReplacer));
+            res.end();
+        }
     })
 
     app.get('/x-nmos/configuration/:version/rolePaths/:rolePath/properties/:propertyId/descriptor', function (req, res) {
@@ -1073,15 +1127,33 @@ try
             let property = classManager.GetClassDescriptor(member.classID, true)?.properties.find(f => req.params.propertyId == `${f.id.level}p${f.id.index}`);
             if(property?.typeName)
             {
-                res.writeHead(200, { 'Content-Type': 'application/json' });
-                res.write(JSON.stringify(classManager.GetTypeDescriptor(property.typeName, true), jsonIgnoreReplacer));
-                res.end();
+                let typeDescriptor = classManager.GetTypeDescriptor(property.typeName, true);
+                if(typeDescriptor)
+                {
+                    res.writeHead(200, { 'Content-Type': 'application/json' });
+                    res.write(JSON.stringify(new NcMethodResultDatatypeDescriptor(NcMethodStatus.OK, typeDescriptor), jsonIgnoreReplacer));
+                    res.end();
+                }
+                else
+                {
+                    res.writeHead(500, { 'Content-Type': 'application/json' });
+                    res.write(JSON.stringify(new NcMethodResultError(NcMethodStatus.DeviceError, `Cannot generate descriptor for type: ${property?.typeName}`), jsonIgnoreReplacer));
+                    res.end();
+                }
             }
             else
-                res.sendStatus(404);
+            {
+                res.writeHead(404, { 'Content-Type': 'application/json' });
+                res.write(JSON.stringify(new NcMethodResultError(NcMethodStatus.BadOid, `Role path: ${req.params.rolePath}, property: ${req.params.propertyId} was not found`), jsonIgnoreReplacer));
+                res.end();
+            }
         }
         else
-            res.sendStatus(404);
+        {
+            res.writeHead(404, { 'Content-Type': 'application/json' });
+            res.write(JSON.stringify(new NcMethodResultError(NcMethodStatus.BadOid, `Role path: ${req.params.rolePath}, was not found`), jsonIgnoreReplacer));
+            res.end();
+        }
     })
 
     app.get('/x-nmos/configuration/:version/rolePaths/:rolePath/properties/:propertyId/value', function (req, res) {
@@ -1098,10 +1170,18 @@ try
                 res.end();
             }
             else
-                res.sendStatus(404);
+            {
+                res.writeHead(404, { 'Content-Type': 'application/json' });
+                res.write(JSON.stringify(new NcMethodResultError(NcMethodStatus.BadOid, `Role path: ${req.params.rolePath}, property: ${req.params.propertyId} was not found`), jsonIgnoreReplacer));
+                res.end();
+            }
         }
         else
-            res.sendStatus(404);
+        {
+            res.writeHead(404, { 'Content-Type': 'application/json' });
+            res.write(JSON.stringify(new NcMethodResultError(NcMethodStatus.BadOid, `Role path: ${req.params.rolePath}, was not found`), jsonIgnoreReplacer));
+            res.end();
+        }
     })
 
     app.put('/x-nmos/configuration/:version/rolePaths/:rolePath/properties/:propertyId/value', function (req, res) {
@@ -1122,10 +1202,18 @@ try
                 res.end();
             }
             else
-                res.sendStatus(404);
+            {
+                res.writeHead(404, { 'Content-Type': 'application/json' });
+                res.write(JSON.stringify(new NcMethodResultError(NcMethodStatus.BadOid, `Role path: ${req.params.rolePath}, property: ${req.params.propertyId} was not found`), jsonIgnoreReplacer));
+                res.end();
+            }
         }
         else
-            res.sendStatus(404);
+        {
+            res.writeHead(404, { 'Content-Type': 'application/json' });
+            res.write(JSON.stringify(new NcMethodResultError(NcMethodStatus.BadOid, `Role path: ${req.params.rolePath}, was not found`), jsonIgnoreReplacer));
+            res.end();
+        }
     });
 
     app.patch('/x-nmos/configuration/:version/rolePaths/:rolePath/methods/:methodId', function (req, res) {
@@ -1148,10 +1236,18 @@ try
                 res.end();
             }
             else
-                res.sendStatus(404);
+            {
+                res.writeHead(404, { 'Content-Type': 'application/json' });
+                res.write(JSON.stringify(new NcMethodResultError(NcMethodStatus.BadOid, `Role path: ${req.params.rolePath}, method: ${req.params.methodId} was not found`), jsonIgnoreReplacer));
+                res.end();
+            }
         }
         else
-            res.sendStatus(404);
+        {
+            res.writeHead(404, { 'Content-Type': 'application/json' });
+            res.write(JSON.stringify(new NcMethodResultError(NcMethodStatus.BadOid, `Role path: ${req.params.rolePath}, was not found`), jsonIgnoreReplacer));
+            res.end();
+        }
     })
 
     app.get('/x-nmos/configuration/:version/rolePaths/:rolePath/bulkProperties', function (req, res) {
@@ -1173,7 +1269,11 @@ try
             res.end();
         }
         else
-            res.sendStatus(404);
+        {
+            res.writeHead(404, { 'Content-Type': 'application/json' });
+            res.write(JSON.stringify(new NcMethodResultError(NcMethodStatus.BadOid, `Role path: ${req.params.rolePath}, was not found`), jsonIgnoreReplacer));
+            res.end();
+        }
     })
 
     app.patch('/x-nmos/configuration/:version/rolePaths/:rolePath/bulkProperties', function (req, res) {
@@ -1188,19 +1288,34 @@ try
         let member = rootBlock.FindMemberByRolePath(rolePath);
         if(member)
         {
-            let response = new NcMethodResultObjectPropertiesSetValidation(
-                NcMethodStatus.OK,
-                member.Restore(restore.arguments, false));
+            if(restore.arguments)
+            {
+                let response = new NcMethodResultObjectPropertiesSetValidation(
+                    NcMethodStatus.OK,
+                    member.Restore(restore.arguments, false));
 
-            res.writeHead(200, { 'Content-Type': 'application/json' });
-            res.write(JSON.stringify(response, jsonIgnoreReplacer));
-            res.end();
+                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.write(JSON.stringify(response, jsonIgnoreReplacer));
+                res.end();
+            }
+            else
+            {
+                res.writeHead(400, { 'Content-Type': 'application/json' });
+                res.write(JSON.stringify(new NcMethodResultError(NcMethodStatus.InvalidRequest, `Invalid dataset: ${JSON.stringify(req.body)}`), jsonIgnoreReplacer));
+                res.end();
+            }
         }
         else
-            res.sendStatus(404);
+        {
+            res.writeHead(404, { 'Content-Type': 'application/json' });
+            res.write(JSON.stringify(new NcMethodResultError(NcMethodStatus.BadOid, `Role path: ${req.params.rolePath}, was not found`), jsonIgnoreReplacer));
+            res.end();
+        }
     })
 
     app.put('/x-nmos/configuration/:version/rolePaths/:rolePath/bulkProperties', function (req, res) {
+        console.log(`put - /x-nmos/configuration/:version/rolePaths/:rolePath/bulkProperties, body: ${JSON.stringify(req.body)}`);
+
         let restore = req.body as RestoreBody;
 
         console.log(`BulkProperties PUT ${req.url}`);
@@ -1210,16 +1325,29 @@ try
         let member = rootBlock.FindMemberByRolePath(rolePath);
         if(member)
         {
-            let response = new NcMethodResultObjectPropertiesSetValidation(
-                NcMethodStatus.OK,
-                member.Restore(restore.arguments, true));
+            if(restore.arguments)
+            {
+                let response = new NcMethodResultObjectPropertiesSetValidation(
+                    NcMethodStatus.OK,
+                    member.Restore(restore.arguments, true));
 
-            res.writeHead(200, { 'Content-Type': 'application/json' });
-            res.write(JSON.stringify(response, jsonIgnoreReplacer));
-            res.end();
+                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.write(JSON.stringify(response, jsonIgnoreReplacer));
+                res.end();
+            }
+            else
+            {
+                res.writeHead(400, { 'Content-Type': 'application/json' });
+                res.write(JSON.stringify(new NcMethodResultError(NcMethodStatus.InvalidRequest, `Invalid dataset: ${JSON.stringify(req.body)}`), jsonIgnoreReplacer));
+                res.end();
+            }
         }
         else
-            res.sendStatus(404);
+        {
+            res.writeHead(404, { 'Content-Type': 'application/json' });
+            res.write(JSON.stringify(new NcMethodResultError(NcMethodStatus.BadOid, `Role path: ${req.params.rolePath}, was not found`), jsonIgnoreReplacer));
+            res.end();
+        }
     })
 
     app.use((req, res, next) => {
