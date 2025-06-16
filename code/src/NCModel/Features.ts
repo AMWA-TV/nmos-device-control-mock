@@ -28,6 +28,7 @@ import {
     NcRestoreValidationStatus,
     NcTouchpoint, 
     RestoreArguments} from './Core';
+import { Console } from 'console';
 
 export abstract class NcWorker extends NcObject
 {
@@ -2109,6 +2110,8 @@ export class ExampleControl extends NcWorker implements IMonitorManager
                             {
                                 this.receiverMonitorFaultEmulation = ReceiverMonitorFaultEmulation.Healthy;
                                 this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.receiverMonitorFaultEmulation, null);
+
+                                return new CommandResponseError(handle, NcMethodStatus.DeviceError, "Property can only be changed when associated receiver has been Activated");
                             }
                         }
                         else
@@ -2138,6 +2141,8 @@ export class ExampleControl extends NcWorker implements IMonitorManager
                             {
                                 this.senderMonitorFaultEmulation = SenderMonitorFaultEmulation.Healthy;
                                 this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.senderMonitorFaultEmulation, null);
+
+                                return new CommandResponseError(handle, NcMethodStatus.DeviceError, "Property can only be changed when associated sender has been Activated");
                             }
                         }
                         else
@@ -2808,7 +2813,24 @@ export class ExampleControl extends NcWorker implements IMonitorManager
                 else if(applyChanges)
                 {
                     //Perform further validation
-                    this.Set(this.oid, propertyData.id, propertyData.value, 0);
+                    let response = this.Set(this.oid, propertyData.id, propertyData.value, 0);
+                    if(response.result['status'] != NcMethodStatus.OK)
+                    {
+                        let propertyId = NcElementId.ToPropertyString(propertyData.id);
+
+                        let noticeMessage = "Property could not be changed due to internal error";
+
+                        if(response.result['errorMessage'])
+                            noticeMessage = response.result['errorMessage']
+
+                        console.log(`Internal error notice for path: ${localRolePath}, id: ${propertyId}, name: ${propertyData.name}, notice: ${noticeMessage}, requested value: ${propertyData.value}`);
+
+                        myNotices.push(new NcPropertyRestoreNotice(
+                            propertyData.id,
+                            propertyData.name,
+                            NcPropertyRestoreNoticeType.Warning,
+                            noticeMessage));
+                    }
                 }
             });
 
