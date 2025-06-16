@@ -2606,9 +2606,6 @@ export class ExampleControl extends NcWorker implements IMonitorManager
                     }
                 case '3m1':
                     {
-                        if(this.receiverMonitoringContext != null && this.receiverMonitoringContext.activated)
-                            this.receiverMonitoringContext.SimulateGrandMasterChange();
-
                         this.methodNoArgsCount = this.methodNoArgsCount + 1;
                         this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(3, 6), NcPropertyChangeType.ValueChanged, this.methodNoArgsCount, null);
                         return new CommandResponseNoValue(handle, NcMethodStatus.OK);
@@ -2677,6 +2674,12 @@ export class ExampleControl extends NcWorker implements IMonitorManager
                         else
                             return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid arguments provided');
                     }
+                case '3m4':
+                    {
+                        if(this.receiverMonitoringContext != null && this.receiverMonitoringContext.activated)
+                            this.receiverMonitoringContext.SimulateGrandMasterChange();
+                        return new CommandResponseNoValue(handle, NcMethodStatus.OK);
+                    }
                 default:
                     return super.InvokeMethod(oid, methodId, args, handle);
             }
@@ -2731,7 +2734,8 @@ export class ExampleControl extends NcWorker implements IMonitorManager
                 ], "Example method with simple arguments"),
                 new NcMethodDescriptor(new NcElementId(3, 3), "MethodObjectArg", "NcMethodResult", [
                     new NcParameterDescriptor("objArg", "ExampleDataType", false, false, null, "Object example argument")
-                ], "Example method with object argument")
+                ], "Example method with object argument"),
+                new NcMethodDescriptor(new NcElementId(3, 4), "SimulateReceiverGrandMasterChange", "NcMethodResult", [], "Triggers the associated receiver to simulate a grand master change")
             ],
             []
         );
