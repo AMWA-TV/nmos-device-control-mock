@@ -645,9 +645,13 @@ export class NcBlock extends NcObject
     {
         let validationEntries = new Array<NcObjectPropertiesSetValidation>();
 
-        let myRestoreData = restoreArguments.dataSet.values.find(f => f.path.join('.') == this.GetRolePath().join('.'))
+        let localRolePath = this.GetRolePath().join('.');
+
+        let myRestoreData = restoreArguments.dataSet.values.find(f => f.path.join('.') == localRolePath);
         if(myRestoreData)
         {
+            console.log(`Found restore data for path: ${localRolePath}`);
+
             let myNotices = new Array<NcPropertyRestoreNotice>();
 
             myRestoreData.values.forEach(propertyData => 
@@ -733,7 +737,9 @@ export class NcBlock extends NcObject
         if(restoreArguments.recurse)
         {
             this.memberObjects.forEach(member => {
-                validationEntries = validationEntries.concat(member.Restore(restoreArguments, applyChanges));
+                var validationEntry = validationEntries.find(f => f.path.join('.') == member.GetRolePath().join('.'));
+                if (validationEntry == undefined)
+                    validationEntries = validationEntries.concat(member.Restore(restoreArguments, applyChanges));
             });
         }
 
@@ -1003,6 +1009,8 @@ export class ExampleControlsBlock extends NcBlock
         let controlMembers: ExampleControl[] = [];
 
         members.forEach(member => {
+            let memberRolepath = this.GetRolePathForMember(member.role);
+
             if(member.classId.join() == ExampleControl.staticClassID.join())
             {
                 if(this.maxMembers != null)
@@ -1011,8 +1019,6 @@ export class ExampleControlsBlock extends NcBlock
                     {
                         if(this.rootContext != null)
                         {
-                            let memberRolepath = this.GetRolePathForMember(member.role);
-    
                             let setValidation: NcObjectPropertiesSetValidation;
     
                             let memberRestoreData = dataSet.values.find(f => f.path.join('.') == memberRolepath.join('.'))
@@ -1047,14 +1053,14 @@ export class ExampleControlsBlock extends NcBlock
                     {
                         blockMembersNotice = new NcPropertyRestoreNotice(new NcPropertyId(2, 2), "members", NcPropertyRestoreNoticeType.Warning, `Member [${member.role}] can't be constructed because it goes over the maximum block members limit of ${this.maxMembers}`);
                         console.log(`Member [${member.role}] can't be constructed because it goes over the maximum block members limit of ${this.maxMembers}`);
+
+                        validationEntries = validationEntries.concat(new NcObjectPropertiesSetValidation(memberRolepath, NcRestoreValidationStatus.Failed, [], `[${member.role}] can't be constructed because it goes over the maximum parent block members limit of ${this.maxMembers}`));
                     }
                 }
                 else
                 {
                     if(this.rootContext != null)
                     {
-                        let memberRolepath = this.GetRolePathForMember(member.role);
-
                         let setValidation: NcObjectPropertiesSetValidation;
 
                         let memberRestoreData = dataSet.values.find(f => f.path.join('.') == memberRolepath.join('.'))
@@ -1090,6 +1096,8 @@ export class ExampleControlsBlock extends NcBlock
             {
                 blockMembersNotice = new NcPropertyRestoreNotice(new NcPropertyId(2, 2), "members", NcPropertyRestoreNoticeType.Warning, `Member [${member.role}] can't be constructed because it has an invalid classId of ${member.classId.join('.')}`);
                 console.log(`Member [${member.role}] can't be constructed because it has an invalid classId of ${member.classId.join('.')}`);
+
+                validationEntries = validationEntries.concat(new NcObjectPropertiesSetValidation(memberRolepath, NcRestoreValidationStatus.Failed, [], `[${member.role}] can't be constructed because it has an invalid classId of ${member.classId.join('.')}`));
             }
         });
         
