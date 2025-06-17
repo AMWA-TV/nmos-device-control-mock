@@ -409,7 +409,13 @@ try
         true,
         "Example control worker",
         sessionManager,
-        true);
+        true,
+        null,
+        receiverMonitor,
+        senderMonitor);
+
+    receiverMonitor.SetMonitorManager(exampleControl);
+    senderMonitor.SetMonitorManager(exampleControl);
 
     exampleControlsBlock.UpdateMembers([ exampleControl ]);
 
