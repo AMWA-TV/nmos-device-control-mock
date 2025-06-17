@@ -669,7 +669,7 @@ export class NcBlock extends NcObject
         let myRestoreData = restoreArguments.dataSet.values.find(f => f.path.join('.') == localRolePath);
         if(myRestoreData)
         {
-            console.log(`Found restore data for path: ${localRolePath}`);
+            console.log(`Found restore data for path: ${localRolePath}, applyChanges: ${applyChanges}`);
 
             let myNotices = new Array<NcPropertyRestoreNotice>();
 
@@ -694,8 +694,6 @@ export class NcBlock extends NcObject
                             let membersData = propertyData.value as NcBlockMemberDescriptor[];
                             if(membersData)
                             {
-                                //TODO: Might need to include the list of members in the outcomes of ReconstructMembers so that we can skip them from further restore actions because they would have already been applied when creating the member objects
-
                                 let outcomes = this.ReconstructMembers(membersData, restoreArguments.dataSet, applyChanges);
                                 if(outcomes[0] != null)
                                     myNotices.push(outcomes[0]);
@@ -712,10 +710,33 @@ export class NcBlock extends NcObject
                                 console.log(`Cannot reconstruct members because the members data is null`);
                             }
                         }
-                        else if(applyChanges)
+                        else
                         {
-                            //Perform further validations
-                            this.Set(this.oid, propertyData.id, propertyData.value, 0);
+                            //Perform further validation
+                            let response : CommandResponseNoValue | null = null;
+
+                            if(applyChanges)
+                                response = this.Set(this.oid, propertyData.id, propertyData.value, 0);
+                            else
+                                response = this.SetValidate(this.oid, propertyData.id, propertyData.value, 0);
+
+                            console.log(`Restore response for path: ${localRolePath}, id: ${propertyId}, name: ${propertyData.name}, status: ${response.result['status']}, requested value: ${propertyData.value}`);
+
+                            if(response.result['status'] != NcMethodStatus.OK)
+                            {
+                                let noticeMessage = "Property could not be changed due to internal error";
+
+                                if(response.result['errorMessage'])
+                                    noticeMessage = response.result['errorMessage']
+
+                                console.log(`Internal error notice for path: ${localRolePath}, id: ${propertyId}, name: ${propertyData.name}, notice: ${noticeMessage}, requested value: ${propertyData.value}`);
+
+                                myNotices.push(new NcPropertyRestoreNotice(
+                                    propertyData.id,
+                                    propertyData.name,
+                                    NcPropertyRestoreNoticeType.Warning,
+                                    noticeMessage));
+                            }
                         }
                     }
                 }
@@ -736,16 +757,33 @@ export class NcBlock extends NcObject
                                 NcPropertyRestoreNoticeType.Warning,
                                 "Property cannot be changed and will be left untouched"));
                     }
-                    else if(propertyId != '1p6')
-                        myNotices.push(new NcPropertyRestoreNotice(
-                            propertyData.id,
-                            propertyData.name,
-                            NcPropertyRestoreNoticeType.Warning,
-                            "Property cannot be changed and will be left untouched"));
-                    else if(applyChanges)
+                    else
                     {
-                        //Perform further validations
-                        this.Set(this.oid, propertyData.id, propertyData.value, 0);
+                        //Perform further validation
+                        let response : CommandResponseNoValue | null = null;
+
+                        if(applyChanges)
+                            response = this.Set(this.oid, propertyData.id, propertyData.value, 0);
+                        else
+                            response = this.SetValidate(this.oid, propertyData.id, propertyData.value, 0);
+
+                        console.log(`Restore response for path: ${localRolePath}, id: ${propertyId}, name: ${propertyData.name}, status: ${response.result['status']}, requested value: ${propertyData.value}`);
+
+                        if(response.result['status'] != NcMethodStatus.OK)
+                        {
+                            let noticeMessage = "Property could not be changed due to internal error";
+
+                            if(response.result['errorMessage'])
+                                noticeMessage = response.result['errorMessage']
+
+                            console.log(`Internal error notice for path: ${localRolePath}, id: ${propertyId}, name: ${propertyData.name}, notice: ${noticeMessage}, requested value: ${propertyData.value}`);
+
+                            myNotices.push(new NcPropertyRestoreNotice(
+                                propertyData.id,
+                                propertyData.name,
+                                NcPropertyRestoreNoticeType.Warning,
+                                noticeMessage));
+                        }
                     }
                 }
             });

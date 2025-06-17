@@ -453,22 +453,37 @@ export class NcDeviceManager extends NcManager
         let myRestoreData = restoreArguments.dataSet.values.find(f => f.path.join('.') == localRolePath);
         if(myRestoreData)
         {
-            console.log(`Found restore data for path: ${localRolePath}`);
+            console.log(`Found restore data for path: ${localRolePath}, applyChanges: ${applyChanges}`);
 
             let myNotices = new Array<NcPropertyRestoreNotice>();
 
             myRestoreData.values.forEach(propertyData => {
                 let propertyId = NcElementId.ToPropertyString(propertyData.id);
-                if(propertyId != '1p6' && propertyId != '3p5' && propertyId != '3p6' && propertyId != '3p7')
+
+                //Perform further validation
+                let response : CommandResponseNoValue | null = null;
+
+                if(applyChanges)
+                    response = this.Set(this.oid, propertyData.id, propertyData.value, 0);
+                else
+                    response = this.SetValidate(this.oid, propertyData.id, propertyData.value, 0);
+
+                console.log(`Restore response for path: ${localRolePath}, id: ${propertyId}, name: ${propertyData.name}, status: ${response.result['status']}, requested value: ${propertyData.value}`);
+
+                if(response.result['status'] != NcMethodStatus.OK)
+                {
+                    let noticeMessage = "Property could not be changed due to internal error";
+
+                    if(response.result['errorMessage'])
+                        noticeMessage = response.result['errorMessage']
+
+                    console.log(`Internal error notice for path: ${localRolePath}, id: ${propertyId}, name: ${propertyData.name}, notice: ${noticeMessage}, requested value: ${propertyData.value}`);
+
                     myNotices.push(new NcPropertyRestoreNotice(
                         propertyData.id,
                         propertyData.name,
                         NcPropertyRestoreNoticeType.Warning,
-                        "Property cannot be changed and will be left untouched"));
-                else if(applyChanges)
-                {
-                    //Perform further validation
-                    this.Set(this.oid, propertyData.id, propertyData.value, 0);
+                        noticeMessage));
                 }
             });
 
@@ -1117,21 +1132,37 @@ export class NcClassManager extends NcManager
         let myRestoreData = restoreArguments.dataSet.values.find(f => f.path.join('.') == localRolePath);
         if(myRestoreData)
         {
-            console.log(`Found restore data for path: ${localRolePath}`);
+            console.log(`Found restore data for path: ${localRolePath}, applyChanges: ${applyChanges}`);
 
             let myNotices = new Array<NcPropertyRestoreNotice>();
 
             myRestoreData.values.forEach(propertyData => {
-                if(NcElementId.ToPropertyString(propertyData.id) != '1p6')
+                let propertyId = NcElementId.ToPropertyString(propertyData.id);
+
+                //Perform further validation
+                let response : CommandResponseNoValue | null = null;
+
+                if(applyChanges)
+                    response = this.Set(this.oid, propertyData.id, propertyData.value, 0);
+                else
+                    response = this.SetValidate(this.oid, propertyData.id, propertyData.value, 0);
+
+                console.log(`Restore response for path: ${localRolePath}, id: ${propertyId}, name: ${propertyData.name}, status: ${response.result['status']}, requested value: ${propertyData.value}`);
+
+                if(response.result['status'] != NcMethodStatus.OK)
+                {
+                    let noticeMessage = "Property could not be changed due to internal error";
+
+                    if(response.result['errorMessage'])
+                        noticeMessage = response.result['errorMessage']
+
+                    console.log(`Internal error notice for path: ${localRolePath}, id: ${propertyId}, name: ${propertyData.name}, notice: ${noticeMessage}, requested value: ${propertyData.value}`);
+
                     myNotices.push(new NcPropertyRestoreNotice(
                         propertyData.id,
                         propertyData.name,
                         NcPropertyRestoreNoticeType.Warning,
-                        "Property cannot be changed and will be left untouched"));
-                else if(applyChanges)
-                {
-                    //Perform further validation
-                    this.Set(this.oid, propertyData.id, propertyData.value, 0);
+                        noticeMessage));
                 }
             });
 
@@ -1260,22 +1291,37 @@ export class NcBulkPropertiesManager extends NcManager
         let myRestoreData = restoreArguments.dataSet.values.find(f => f.path.join('.') == localRolePath);
         if(myRestoreData)
         {
-            console.log(`Found restore data for path: ${localRolePath}`);
+            console.log(`Found restore data for path: ${localRolePath}, applyChanges: ${applyChanges}`);
 
             let myNotices = new Array<NcPropertyRestoreNotice>();
 
             myRestoreData.values.forEach(propertyData => {
                 let propertyId = NcElementId.ToPropertyString(propertyData.id);
-                if(propertyId != '1p6')
+
+                //Perform further validation
+                let response : CommandResponseNoValue | null = null;
+
+                if(applyChanges)
+                    response = this.Set(this.oid, propertyData.id, propertyData.value, 0);
+                else
+                    response = this.SetValidate(this.oid, propertyData.id, propertyData.value, 0);
+
+                console.log(`Restore response for path: ${localRolePath}, id: ${propertyId}, name: ${propertyData.name}, status: ${response.result['status']}, requested value: ${propertyData.value}`);
+
+                if(response.result['status'] != NcMethodStatus.OK)
+                {
+                    let noticeMessage = "Property could not be changed due to internal error";
+
+                    if(response.result['errorMessage'])
+                        noticeMessage = response.result['errorMessage']
+
+                    console.log(`Internal error notice for path: ${localRolePath}, id: ${propertyId}, name: ${propertyData.name}, notice: ${noticeMessage}, requested value: ${propertyData.value}`);
+
                     myNotices.push(new NcPropertyRestoreNotice(
                         propertyData.id,
                         propertyData.name,
                         NcPropertyRestoreNoticeType.Warning,
-                        "Property cannot be changed and will be left untouched"));
-                else if(applyChanges)
-                {
-                    //Perform further validation
-                    this.Set(this.oid, propertyData.id, propertyData.value, 0);
+                        noticeMessage));
                 }
             });
 
