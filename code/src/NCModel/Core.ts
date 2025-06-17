@@ -139,6 +139,33 @@ export abstract class NcObject
         return new CommandResponseError(handle, NcMethodStatus.BadOid, 'OID could not be found');
     }
 
+    public SetValidate(oid: number, id: NcElementId, value: any, handle: number) : CommandResponseNoValue
+    {
+        if(oid == this.oid)
+        {
+            let key: string = `${id.level}p${id.index}`;
+
+            switch(key)
+            {
+                case '1p1':
+                case '1p2':
+                case '1p3':
+                case '1p4':
+                case '1p5':
+                    return new CommandResponseError(handle, NcMethodStatus.Readonly, 'Property is readonly');
+                case '1p6':
+                    return new CommandResponseNoValue(handle, NcMethodStatus.OK);
+                case '1p7':
+                case '1p8':
+                    return new CommandResponseError(handle, NcMethodStatus.Readonly, 'Property is readonly');
+                default:
+                    return new CommandResponseError(handle, NcMethodStatus.PropertyNotImplemented, 'Property does not exist in object');
+            }
+        }
+
+        return new CommandResponseError(handle, NcMethodStatus.BadOid, 'OID could not be found');
+    }
+
     public InvokeMethod(oid: number, methodId: NcElementId, args: { [key: string]: any } | null, handle: number) : CommandResponseNoValue
     {
         if(oid == this.oid)

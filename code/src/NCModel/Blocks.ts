@@ -118,6 +118,25 @@ export class NcBlock extends NcObject
         return new CommandResponseError(handle, NcMethodStatus.BadOid, 'OID could not be found');
     }
 
+    public override SetValidate(oid: number, id: NcElementId, value: any, handle: number) : CommandResponseNoValue
+    {
+        if(oid == this.oid)
+        {
+            let key: string = `${id.level}p${id.index}`;
+
+            switch(key)
+            {
+                case '2p1':
+                case '2p2':
+                    return new CommandResponseError(handle, NcMethodStatus.Readonly, 'Property is readonly');
+                default:
+                    return super.SetValidate(oid, id, value, handle);
+            }
+        }
+
+        return new CommandResponseError(handle, NcMethodStatus.BadOid, 'OID could not be found');
+    }
+
     public override InvokeMethod(oid: number, methodId: NcElementId, args: { [key: string]: any; } | null, handle: number): CommandResponseNoValue 
     {
         if(oid == this.oid)

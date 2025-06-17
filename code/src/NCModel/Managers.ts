@@ -360,6 +360,36 @@ export class NcDeviceManager extends NcManager
         return new CommandResponseError(handle, NcMethodStatus.BadOid, 'OID could not be found');
     }
 
+    public override SetValidate(oid: number, id: NcElementId, value: any, handle: number) : CommandResponseNoValue
+    {
+        if(oid == this.oid)
+        {
+            let key: string = `${id.level}p${id.index}`;
+
+            switch(key)
+            {
+                case '3p1':
+                case '3p2':
+                case '3p3':
+                case '3p4':
+                case '3p8':
+                case '3p9':
+                case '3p10':
+                    return new CommandResponseError(handle, NcMethodStatus.Readonly, 'Property is readonly');
+                case '3p5':
+                    return new CommandResponseNoValue(handle, NcMethodStatus.OK);
+                case '3p6':
+                    return new CommandResponseNoValue(handle, NcMethodStatus.OK);
+                case '3p7':
+                    return new CommandResponseNoValue(handle, NcMethodStatus.OK);
+                default:
+                    return super.SetValidate(oid, id, value, handle);
+            }
+        }
+
+        return new CommandResponseError(handle, NcMethodStatus.BadOid, 'OID could not be found');
+    }
+
     public static override GetClassDescriptor(includeInherited: boolean): NcClassDescriptor
     {
         let currentClassDescriptor = new NcClassDescriptor(`${NcDeviceManager.name} class descriptor`,
@@ -1155,6 +1185,18 @@ export class NcBulkPropertiesManager extends NcManager
             let key: string = `${id.level}p${id.index}`;
 
             return super.Set(oid, id, value, handle);
+        }
+
+        return new CommandResponseError(handle, NcMethodStatus.BadOid, 'OID could not be found');
+    }
+
+    public override SetValidate(oid: number, id: NcElementId, value: any, handle: number) : CommandResponseNoValue
+    {
+        if(oid == this.oid)
+        {
+            let key: string = `${id.level}p${id.index}`;
+
+            return super.SetValidate(oid, id, value, handle);
         }
 
         return new CommandResponseError(handle, NcMethodStatus.BadOid, 'OID could not be found');

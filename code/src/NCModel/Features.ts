@@ -98,6 +98,24 @@ export abstract class NcWorker extends NcObject
         return new CommandResponseError(handle, NcMethodStatus.BadOid, 'OID could not be found');
     }
 
+    public override SetValidate(oid: number, id: NcElementId, value: any, handle: number) : CommandResponseNoValue
+    {
+        if(oid == this.oid)
+        {
+            let key: string = `${id.level}p${id.index}`;
+
+            switch(key)
+            {
+                case '2p1':
+                    return new CommandResponseNoValue(handle, NcMethodStatus.OK);
+                default:
+                    return super.SetValidate(oid, id, value, handle);
+            }
+        }
+
+        return new CommandResponseError(handle, NcMethodStatus.BadOid, 'OID could not be found');
+    }
+
     public static override GetClassDescriptor(includeInherited: boolean): NcClassDescriptor
     {
         let currentClassDescriptor = new NcClassDescriptor(`${NcWorker.name} class descriptor`,
@@ -197,6 +215,24 @@ export class GainControl extends NcWorker
                     return new CommandResponseNoValue(handle, NcMethodStatus.OK);
                 default:
                     return super.Set(oid, id, value, handle);
+            }
+        }
+
+        return new CommandResponseError(handle, NcMethodStatus.BadOid, 'OID could not be found');
+    }
+
+    public override SetValidate(oid: number, id: NcElementId, value: any, handle: number) : CommandResponseNoValue
+    {
+        if(oid == this.oid)
+        {
+            let key: string = `${id.level}p${id.index}`;
+
+            switch(key)
+            {
+                case '3p1':
+                    return new CommandResponseNoValue(handle, NcMethodStatus.OK);
+                default:
+                    return super.SetValidate(oid, id, value, handle);
             }
         }
 
@@ -336,6 +372,24 @@ export class NcIdentBeacon extends NcWorker
                     return new CommandResponseNoValue(handle, NcMethodStatus.OK);
                 default:
                     return super.Set(oid, id, value, handle);
+            }
+        }
+
+        return new CommandResponseError(handle, NcMethodStatus.BadOid, 'OID could not be found');
+    }
+
+    public override SetValidate(oid: number, id: NcElementId, value: any, handle: number) : CommandResponseNoValue
+    {
+        if(oid == this.oid)
+        {
+            let key: string = `${id.level}p${id.index}`;
+
+            switch(key)
+            {
+                case '3p1':
+                    return new CommandResponseNoValue(handle, NcMethodStatus.OK);
+                default:
+                    return super.SetValidate(oid, id, value, handle);
             }
         }
 
@@ -496,6 +550,27 @@ export class NcStatusMonitor extends NcWorker
                     return new CommandResponseNoValue(handle, NcMethodStatus.OK);
                 default:
                     return super.Set(oid, id, value, handle);
+            }
+        }
+
+        return new CommandResponseError(handle, NcMethodStatus.BadOid, 'OID could not be found');
+    }
+
+    public override SetValidate(oid: number, id: NcElementId, value: any, handle: number) : CommandResponseNoValue
+    {
+        if(oid == this.oid)
+        {
+            let key: string = `${id.level}p${id.index}`;
+
+            switch(key)
+            {
+                case '3p1':
+                case '3p2':
+                    return new CommandResponseError(handle, NcMethodStatus.Readonly, 'Property is readonly');
+                case '3p3':
+                    return new CommandResponseNoValue(handle, NcMethodStatus.OK);
+                default:
+                    return super.SetValidate(oid, id, value, handle);
             }
         }
 
@@ -1180,6 +1255,43 @@ export class NcReceiverMonitor extends NcStatusMonitor implements IReceiverMonit
         return new CommandResponseError(handle, NcMethodStatus.BadOid, 'OID could not be found');
     }
 
+    public override SetValidate(oid: number, id: NcElementId, value: any, handle: number) : CommandResponseNoValue
+    {
+        if(oid == this.oid)
+        {
+            let key: string = `${id.level}p${id.index}`;
+
+            switch(key)
+            {
+                case '2p1':
+                    if(value === true)
+                        return new CommandResponseNoValue(handle, NcMethodStatus.OK);
+                    else
+                        return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, "Receiver monitors cannot be disabled");
+                case '4p1':
+                case '4p2':
+                case '4p3':
+                case '4p4':
+                case '4p5':
+                case '4p6':
+                case '4p7':
+                case '4p8':
+                case '4p9':
+                case '4p10':
+                case '4p11':
+                case '4p12':
+                case '4p13':
+                    return new CommandResponseError(handle, NcMethodStatus.Readonly, 'Property is readonly');
+                case '4p14':
+                    return new CommandResponseNoValue(handle, NcMethodStatus.OK);
+                default:
+                    return super.SetValidate(oid, id, value, handle);
+            }
+        }
+
+        return new CommandResponseError(handle, NcMethodStatus.BadOid, 'OID could not be found');
+    }
+
     public override InvokeMethod(oid: number, methodId: NcElementId, args: { [key: string]: any; } | null, handle: number): CommandResponseNoValue 
     {
         if(oid == this.oid)
@@ -1619,6 +1731,43 @@ export class NcSenderMonitor extends NcStatusMonitor implements ISenderMonitorin
                     return new CommandResponseNoValue(handle, NcMethodStatus.OK);
                 default:
                     return super.Set(oid, id, value, handle);
+            }
+        }
+
+        return new CommandResponseError(handle, NcMethodStatus.BadOid, 'OID could not be found');
+    }
+
+    public override SetValidate(oid: number, id: NcElementId, value: any, handle: number) : CommandResponseNoValue
+    {
+        if(oid == this.oid)
+        {
+            let key: string = `${id.level}p${id.index}`;
+
+            switch(key)
+            {
+                case '2p1':
+                    if(value === true)
+                        return new CommandResponseNoValue(handle, NcMethodStatus.OK);
+                    else
+                        return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, "Receiver monitors cannot be disabled");
+                case '4p1':
+                case '4p2':
+                case '4p3':
+                case '4p4':
+                case '4p5':
+                case '4p6':
+                case '4p7':
+                case '4p8':
+                case '4p9':
+                case '4p10':
+                case '4p11':
+                case '4p12':
+                case '4p13':
+                    return new CommandResponseError(handle, NcMethodStatus.Readonly, 'Property is readonly');
+                case '4p14':
+                    return new CommandResponseNoValue(handle, NcMethodStatus.OK);
+                default:
+                    return super.SetValidate(oid, id, value, handle);
             }
         }
 
@@ -2154,6 +2303,72 @@ export class ExampleControl extends NcWorker implements IMonitorManager
                     }
                 default:
                     return super.Set(oid, id, value, handle);
+            }
+        }
+
+        return new CommandResponseError(handle, NcMethodStatus.BadOid, 'OID could not be found');
+    }
+
+    public override SetValidate(oid: number, id: NcElementId, value: any, handle: number) : CommandResponseNoValue
+    {
+        if(oid == this.oid)
+        {
+            let key: string = `${id.level}p${id.index}`;
+
+            switch(key)
+            {
+                case '3p1':
+                    return new CommandResponseNoValue(handle, NcMethodStatus.OK);
+                case '3p2':
+                    if(value.length > 0 && value.length <= 10)
+                        return new CommandResponseNoValue(handle, NcMethodStatus.OK);
+                    else
+                        return new CommandResponseError(handle, NcMethodStatus.ParameterError, "Value does not respect constraints");
+                case '3p3':
+                    if(value >= 0 && value <= 1000)
+                        return new CommandResponseNoValue(handle, NcMethodStatus.OK);
+                    else
+                        return new CommandResponseError(handle, NcMethodStatus.ParameterError, "Value does not respect constraints");
+                case '3p4':
+                    return new CommandResponseNoValue(handle, NcMethodStatus.OK);
+                case '3p5':
+                    return new CommandResponseNoValue(handle, NcMethodStatus.OK);
+                case '3p6':
+                case '3p7':
+                case '3p8':
+                    return new CommandResponseError(handle, NcMethodStatus.Readonly, "Property is read only");
+                case '3p9':
+                    return new CommandResponseNoValue(handle, NcMethodStatus.OK);
+                case '3p10':
+                    return new CommandResponseNoValue(handle, NcMethodStatus.OK);
+                case '3p11':
+                    return new CommandResponseNoValue(handle, NcMethodStatus.OK);
+                case '3p12':
+                    return new CommandResponseNoValue(handle, NcMethodStatus.OK);
+                case '3p13':
+                    return new CommandResponseNoValue(handle, NcMethodStatus.OK);
+                case '3p14':
+                    let enumValueReceiverEmulation = value as ReceiverMonitorFaultEmulation;
+                    if(enumValueReceiverEmulation !== undefined)
+                    {
+                        if(this.receiverMonitoringContext != null && !this.receiverMonitoringContext.activated)
+                            return new CommandResponseError(handle, NcMethodStatus.DeviceError, "Property can only be changed when associated receiver has been Activated");
+                        return new CommandResponseNoValue(handle, NcMethodStatus.OK);
+                    }
+                    else
+                        return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, "Invalid property value");
+                case '3p15':
+                    let enumValueSenderEmulation = value as SenderMonitorFaultEmulation;
+                    if(enumValueSenderEmulation !== undefined)
+                    {
+                        if(this.senderMonitoringContext != null && !this.senderMonitoringContext.activated)
+                            return new CommandResponseError(handle, NcMethodStatus.DeviceError, "Property can only be changed when associated receiver has been Activated");
+                        return new CommandResponseNoValue(handle, NcMethodStatus.OK);
+                    }
+                    else
+                        return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, "Invalid property value");
+                default:
+                    return super.SetValidate(oid, id, value, handle);
             }
         }
 
