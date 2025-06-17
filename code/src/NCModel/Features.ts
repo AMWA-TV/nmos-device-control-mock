@@ -3066,7 +3066,7 @@ export class ExampleControl extends NcWorker implements IMonitorManager
                 new NcPropertyValueHolder(new NcPropertyId(3, 12), "numberSequence", "NcUint64", false, this.numberSequence),
                 new NcPropertyValueHolder(new NcPropertyId(3, 13), "objectSequence", "ExampleDataType", false, this.objectSequence),
                 new NcPropertyValueHolder(new NcPropertyId(3, 14), "receiverMonitorFaultEmulation", "ReceiverMonitorFaultEmulation", false, this.receiverMonitorFaultEmulation),
-                new NcPropertyValueHolder(new NcPropertyId(3, 15), "senderMonitorFaultEmulation", "SenderMonitorFaultEmulation", false, this.receiverMonitorFaultEmulation)
+                new NcPropertyValueHolder(new NcPropertyId(3, 15), "senderMonitorFaultEmulation", "SenderMonitorFaultEmulation", false, this.senderMonitorFaultEmulation)
             ], [], this.isRebuildable)
         ];
 
