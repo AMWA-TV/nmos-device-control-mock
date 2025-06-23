@@ -12,7 +12,7 @@ import { RegistrationClient } from './RegistrationClient';
 import { SessionManager } from './SessionManager';
 import { ExampleControlsBlock, NcBlock, RootBlock } from './NCModel/Blocks';
 import { NcClassManager, NcDeviceManager } from './NCModel/Managers';
-import { ConfigApiArguments, ConfigApiValue, NcBulkValuesHolder, NcMethodResultBulkValuesHolder, NcMethodResultClassDescriptor, NcMethodResultDatatypeDescriptor, NcMethodResultError, NcMethodResultObjectPropertiesSetValidation, NcMethodStatus, NcTouchpointNmos, NcTouchpointResourceNmos, RestoreBody } from './NCModel/Core';
+import { ConfigApiArguments, ConfigApiValue, NcBulkPropertiesHolder, NcMethodResultBulkPropertiesHolder, NcMethodResultClassDescriptor, NcMethodResultDatatypeDescriptor, NcMethodResultError, NcMethodResultObjectPropertiesSetValidation, NcMethodStatus, NcTouchpointNmos, NcTouchpointResourceNmos, RestoreBody } from './NCModel/Core';
 import { ExampleControl, GainControl, NcIdentBeacon, NcReceiverMonitor, NcSenderMonitor } from './NCModel/Features';
 import { ProtocolError, ProtocolSubscription } from './NCProtocol/Commands';
 import { MessageType, ProtocolWrapper } from './NCProtocol/Core';
@@ -1260,8 +1260,8 @@ try
         let member = rootBlock.FindMemberByRolePath(rolePath);
         if(member)
         {
-            let response = new NcMethodResultBulkValuesHolder(
-                NcMethodStatus.OK, new NcBulkValuesHolder("AMWA NMOS Device Control Mock Application|v1.0",
+            let response = new NcMethodResultBulkPropertiesHolder(
+                NcMethodStatus.OK, new NcBulkPropertiesHolder("AMWA NMOS Device Control Mock Application|v1.0",
                 member.GetAllProperties(recurse)));
 
             res.writeHead(200, { 'Content-Type': 'application/json' });

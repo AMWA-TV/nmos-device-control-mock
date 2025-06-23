@@ -7,7 +7,7 @@ import {
     BaseType,
     myIdDecorator,
     NcBlockMemberDescriptor,
-    NcBulkValuesHolder,
+    NcBulkPropertiesHolder,
     NcClassDescriptor,
     NcDatatypeDescriptor,
     NcDatatypeDescriptorEnum,
@@ -24,7 +24,7 @@ import {
     NcMethodId,
     NcMethodResult,
     NcMethodResultBlockMemberDescriptors,
-    NcMethodResultBulkValuesHolder,
+    NcMethodResultBulkPropertiesHolder,
     NcMethodResultClassDescriptor,
     NcMethodResultDatatypeDescriptor,
     NcMethodResultError,
@@ -48,7 +48,7 @@ import {
     NcPropertyId,
     NcPropertyRestoreNotice,
     NcPropertyRestoreNoticeType,
-    NcPropertyValueHolder,
+    NcPropertyHolder,
     NcRestoreValidationStatus,
     NcTouchpoint,
     NcTouchpointNmos,
@@ -426,16 +426,16 @@ export class NcDeviceManager extends NcManager
     {
         let properties = [
             new NcObjectPropertiesHolder(this.GetRolePath(), [], [
-                new NcPropertyValueHolder(new NcPropertyId(3, 1), "ncVersion", "NcVersionCode", true, this.ncVersion),
-                new NcPropertyValueHolder(new NcPropertyId(3, 2), "manufacturer", "NcManufacturer", true, this.manufacturer),
-                new NcPropertyValueHolder(new NcPropertyId(3, 3), "product", "NcProduct", true, this.product),
-                new NcPropertyValueHolder(new NcPropertyId(3, 4), "serialNumber", "NcString", true, this.serialNumber),
-                new NcPropertyValueHolder(new NcPropertyId(3, 5), "userInventoryCode", "NcString", false, this.userInventoryCode),
-                new NcPropertyValueHolder(new NcPropertyId(3, 6), "deviceName", "NcString", false, this.deviceName),
-                new NcPropertyValueHolder(new NcPropertyId(3, 7), "deviceRole", "NcString", false, this.deviceRole),
-                new NcPropertyValueHolder(new NcPropertyId(3, 8), "operationalState", "NcDeviceOperationalState", true, this.operationalState),
-                new NcPropertyValueHolder(new NcPropertyId(3, 9), "resetCause", "NcResetCause", true, this.resetCause),
-                new NcPropertyValueHolder(new NcPropertyId(3, 10), "message", "NcString", true, this.message),
+                new NcPropertyHolder(new NcPropertyId(3, 1), "ncVersion", "NcVersionCode", true, this.ncVersion),
+                new NcPropertyHolder(new NcPropertyId(3, 2), "manufacturer", "NcManufacturer", true, this.manufacturer),
+                new NcPropertyHolder(new NcPropertyId(3, 3), "product", "NcProduct", true, this.product),
+                new NcPropertyHolder(new NcPropertyId(3, 4), "serialNumber", "NcString", true, this.serialNumber),
+                new NcPropertyHolder(new NcPropertyId(3, 5), "userInventoryCode", "NcString", false, this.userInventoryCode),
+                new NcPropertyHolder(new NcPropertyId(3, 6), "deviceName", "NcString", false, this.deviceName),
+                new NcPropertyHolder(new NcPropertyId(3, 7), "deviceRole", "NcString", false, this.deviceRole),
+                new NcPropertyHolder(new NcPropertyId(3, 8), "operationalState", "NcDeviceOperationalState", true, this.operationalState),
+                new NcPropertyHolder(new NcPropertyId(3, 9), "resetCause", "NcResetCause", true, this.resetCause),
+                new NcPropertyHolder(new NcPropertyId(3, 10), "message", "NcString", true, this.message),
             ], [], this.isRebuildable)
         ];
 
@@ -1015,13 +1015,13 @@ export class NcClassManager extends NcManager
             'NcPropertyConstraints': NcPropertyConstraints.GetTypeDescriptor(false),
             'NcPropertyConstraintsNumber': NcPropertyConstraintsNumber.GetTypeDescriptor(false),
             'NcPropertyConstraintsString': NcPropertyConstraintsString.GetTypeDescriptor(false),
-            'NcBulkValuesHolder': NcBulkValuesHolder.GetTypeDescriptor(false),
-            'NcMethodResultBulkValuesHolder': NcMethodResultBulkValuesHolder.GetTypeDescriptor(false),
+            'NcBulkPropertiesHolder': NcBulkPropertiesHolder.GetTypeDescriptor(false),
+            'NcMethodResultBulkPropertiesHolder': NcMethodResultBulkPropertiesHolder.GetTypeDescriptor(false),
             'NcMethodResultObjectPropertiesSetValidation': NcMethodResultObjectPropertiesSetValidation.GetTypeDescriptor(false),
             'NcObjectPropertiesHolder': NcObjectPropertiesHolder.GetTypeDescriptor(false),
             'NcObjectPropertiesSetValidation': NcObjectPropertiesSetValidation.GetTypeDescriptor(false),
             'NcPropertyRestoreNotice': NcPropertyRestoreNotice.GetTypeDescriptor(false),
-            'NcPropertyValueHolder': NcPropertyValueHolder.GetTypeDescriptor(false),
+            'NcPropertyHolder': NcPropertyHolder.GetTypeDescriptor(false),
             'NcPropertyRestoreNoticeType': new NcDatatypeDescriptorEnum("NcPropertyRestoreNoticeType", [
                 new NcEnumItemDescriptor("Warning", 300, "Warning property restore notice"),
                 new NcEnumItemDescriptor("Error", 400, "Error property restore notice")
@@ -1078,13 +1078,13 @@ export class NcClassManager extends NcManager
             case 'NcMethodResultId': return NcMethodResultId.GetTypeDescriptor(true);
             case 'NcMethodResultLength': return NcMethodResultLength.GetTypeDescriptor(true);
             case 'NcMethodResultCounters': return NcMethodResultCounters.GetTypeDescriptor(true);
-            case 'NcBulkValuesHolder': return NcBulkValuesHolder.GetTypeDescriptor(true);
-            case 'NcMethodResultBulkValuesHolder': return NcMethodResultBulkValuesHolder.GetTypeDescriptor(true);
+            case 'NcBulkPropertiesHolder': return NcBulkPropertiesHolder.GetTypeDescriptor(true);
+            case 'NcMethodResultBulkPropertiesHolder': return NcMethodResultBulkPropertiesHolder.GetTypeDescriptor(true);
             case 'NcMethodResultObjectPropertiesSetValidation': return NcMethodResultObjectPropertiesSetValidation.GetTypeDescriptor(true);
             case 'NcObjectPropertiesHolder': return NcObjectPropertiesHolder.GetTypeDescriptor(true);
             case 'NcObjectPropertiesSetValidation': return NcObjectPropertiesSetValidation.GetTypeDescriptor(true);
             case 'NcPropertyRestoreNotice': return NcPropertyRestoreNotice.GetTypeDescriptor(true);
-            case 'NcPropertyValueHolder': return NcPropertyValueHolder.GetTypeDescriptor(true);
+            case 'NcPropertyHolder': return NcPropertyHolder.GetTypeDescriptor(true);
             default: return this.dataTypesRegister[name];
         }
     }
@@ -1113,8 +1113,8 @@ export class NcClassManager extends NcManager
     {
         let properties = [
             new NcObjectPropertiesHolder(this.GetRolePath(), [], [
-                new NcPropertyValueHolder(new NcPropertyId(3, 1), "controlClasses", "NcClassDescriptor", true, this.controlClasses),
-                new NcPropertyValueHolder(new NcPropertyId(3, 2), "datatypes", "NcDatatypeDescriptor", true, this.dataTypes)
+                new NcPropertyHolder(new NcPropertyId(3, 1), "controlClasses", "NcClassDescriptor", true, this.controlClasses),
+                new NcPropertyHolder(new NcPropertyId(3, 2), "datatypes", "NcDatatypeDescriptor", true, this.dataTypes)
             ], [], this.isRebuildable)
         ];
 
@@ -1239,18 +1239,18 @@ export class NcBulkPropertiesManager extends NcManager
             NcBulkPropertiesManager.staticClassID, NcBulkPropertiesManager.name, NcBulkPropertiesManager.staticRole,
             [],
             [ 
-                new NcMethodDescriptor(new NcElementId(3, 1), "GetPropertiesByPath", "NcMethodResultBulkValuesHolder", [
+                new NcMethodDescriptor(new NcElementId(3, 1), "GetPropertiesByPath", "NcMethodResultBulkPropertiesHolder", [
                     new NcParameterDescriptor("path", "NcRolePath", false, false, null, "The target role path"),
                     new NcParameterDescriptor("recurse", "NcBoolean", false, false, null, "If true will return properties on specified path and all the nested paths")
                 ], "Get bulk object properties by given path"),
                 new NcMethodDescriptor(new NcElementId(3, 2), "ValidateSetPropertiesByPath", "NcMethodResultObjectPropertiesSetValidation", [
-                    new NcParameterDescriptor("dataSet", "NcBulkValuesHolder", false, false, null, "The values offered (this may include read-only values and also paths which are not the target role path)"),
+                    new NcParameterDescriptor("dataSet", "NcBulkPropertiesHolder", false, false, null, "The values offered (this may include read-only values and also paths which are not the target role path)"),
                     new NcParameterDescriptor("path", "NcRolePath", false, false, null, "The target role path"),
                     new NcParameterDescriptor("recurse", "NcBoolean", false, false, null, "If true will validate properties on target path and all the nested paths"),
                     new NcParameterDescriptor("restoreMode", "NcRestoreMode", false, false, null, "Defines the restore mode to be applied")
                 ], "Validate bulk properties for setting by given paths"),
                 new NcMethodDescriptor(new NcElementId(3, 3), "SetPropertiesByPath", "NcMethodResultObjectPropertiesSetValidation", [
-                    new NcParameterDescriptor("dataSet", "NcBulkValuesHolder", false, false, null, "The values offered (this may include read-only values and also paths which are not the target role path)"),
+                    new NcParameterDescriptor("dataSet", "NcBulkPropertiesHolder", false, false, null, "The values offered (this may include read-only values and also paths which are not the target role path)"),
                     new NcParameterDescriptor("path", "NcRolePath", false, false, null, "The target role path"),
                     new NcParameterDescriptor("recurse", "NcBoolean", false, false, null, "If true will set properties on target path and all the nested paths"),
                     new NcParameterDescriptor("restoreMode", "NcRestoreMode", false, false, null, "Defines the restore mode to be applied")

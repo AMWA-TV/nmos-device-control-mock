@@ -6,7 +6,7 @@ import { INotificationContext } from '../SessionManager';
 import {
     myIdDecorator,
     NcBlockMemberDescriptor,
-    NcBulkValuesHolder,
+    NcBulkPropertiesHolder,
     NcClassDescriptor,
     NcElementId,
     NcMethodDescriptor,
@@ -21,7 +21,7 @@ import {
     NcPropertyId,
     NcPropertyRestoreNotice,
     NcPropertyRestoreNoticeType,
-    NcPropertyValueHolder,
+    NcPropertyHolder,
     NcRestoreMode,
     NcRestoreValidationStatus,
     NcTouchpoint, 
@@ -550,8 +550,8 @@ export class NcBlock extends NcObject
     {
         let holders = [
             new NcObjectPropertiesHolder(this.GetRolePath(), [], [
-                new NcPropertyValueHolder(new NcPropertyId(2, 1), "enabled", "NcBoolean", true, this.enabled),
-                new NcPropertyValueHolder(new NcPropertyId(2, 2), "members", "NcBlockMemberDescriptor", true, this.members)
+                new NcPropertyHolder(new NcPropertyId(2, 1), "enabled", "NcBoolean", true, this.enabled),
+                new NcPropertyHolder(new NcPropertyId(2, 2), "members", "NcBlockMemberDescriptor", true, this.members)
             ], [], this.isRebuildable)
         ];
 
@@ -654,7 +654,7 @@ export class NcBlock extends NcObject
         return this.GetRolePath().concat(role);
     }
 
-    public ReconstructMembers(members: NcBlockMemberDescriptor[], dataSet: NcBulkValuesHolder, applyChanges: Boolean = true) : [NcPropertyRestoreNotice | null, NcObjectPropertiesSetValidation[]]
+    public ReconstructMembers(members: NcBlockMemberDescriptor[], dataSet: NcBulkPropertiesHolder, applyChanges: Boolean = true) : [NcPropertyRestoreNotice | null, NcObjectPropertiesSetValidation[]]
     {
         //Left intentionally empty as "virtual" so that rebuildable blocks override this with the desired behaviour
         return [null, []];
@@ -1055,7 +1055,7 @@ export class ExampleControlsBlock extends NcBlock
         return holders
     }
 
-    public override ReconstructMembers(members: NcBlockMemberDescriptor[], dataSet: NcBulkValuesHolder, applyChanges: Boolean = true) : [NcPropertyRestoreNotice | null, NcObjectPropertiesSetValidation[]]
+    public override ReconstructMembers(members: NcBlockMemberDescriptor[], dataSet: NcBulkPropertiesHolder, applyChanges: Boolean = true) : [NcPropertyRestoreNotice | null, NcObjectPropertiesSetValidation[]]
     {
         let blockMembersNotice: NcPropertyRestoreNotice | null = null;
 

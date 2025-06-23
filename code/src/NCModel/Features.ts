@@ -24,7 +24,7 @@ import {
     NcPropertyId,
     NcPropertyRestoreNotice,
     NcPropertyRestoreNoticeType,
-    NcPropertyValueHolder,
+    NcPropertyHolder,
     NcRestoreValidationStatus,
     NcTouchpoint, 
     RestoreArguments} from './Core';
@@ -143,7 +143,7 @@ export abstract class NcWorker extends NcObject
     {
         let properties = [
             new NcObjectPropertiesHolder(this.GetRolePath(), [], [
-                new NcPropertyValueHolder(new NcPropertyId(2, 1), "enabled", "NcBoolean", false, this.enabled)
+                new NcPropertyHolder(new NcPropertyId(2, 1), "enabled", "NcBoolean", false, this.enabled)
             ], [], this.isRebuildable)
         ];
 
@@ -266,7 +266,7 @@ export class GainControl extends NcWorker
     {
         let properties = [
             new NcObjectPropertiesHolder(this.GetRolePath(), [], [
-                new NcPropertyValueHolder(new NcPropertyId(3, 1), "gainValue", "NcFloat32", false, this.gainValue)
+                new NcPropertyHolder(new NcPropertyId(3, 1), "gainValue", "NcFloat32", false, this.gainValue)
             ], [], this.isRebuildable)
         ];
 
@@ -438,7 +438,7 @@ export class NcIdentBeacon extends NcWorker
     {
         let properties = [
             new NcObjectPropertiesHolder(this.GetRolePath(), [], [
-                new NcPropertyValueHolder(new NcPropertyId(3, 1), "active", "NcBoolean", false, this.active)
+                new NcPropertyHolder(new NcPropertyId(3, 1), "active", "NcBoolean", false, this.active)
             ], [], this.isRebuildable)
         ];
 
@@ -636,9 +636,9 @@ export class NcStatusMonitor extends NcWorker
     {
         let properties = [
             new NcObjectPropertiesHolder(this.GetRolePath(), [], [
-                new NcPropertyValueHolder(new NcPropertyId(3, 1), "overallStatus", "NcOverallStatus", true, this.overallStatus),
-                new NcPropertyValueHolder(new NcPropertyId(3, 2), "overallStatusMessage", "NcString", true, this.overallStatusMessage),
-                new NcPropertyValueHolder(new NcPropertyId(3, 3), "statusReportingDelay", "NcUint32", false, this.statusReportingDelay)
+                new NcPropertyHolder(new NcPropertyId(3, 1), "overallStatus", "NcOverallStatus", true, this.overallStatus),
+                new NcPropertyHolder(new NcPropertyId(3, 2), "overallStatusMessage", "NcString", true, this.overallStatusMessage),
+                new NcPropertyHolder(new NcPropertyId(3, 3), "statusReportingDelay", "NcUint32", false, this.statusReportingDelay)
             ], [], this.isRebuildable)
         ];
 
@@ -1439,20 +1439,20 @@ export class NcReceiverMonitor extends NcStatusMonitor implements IReceiverMonit
     {
         let properties = [
             new NcObjectPropertiesHolder(this.GetRolePath(), [], [
-                new NcPropertyValueHolder(new NcPropertyId(4, 1), "linkStatus", "NcLinkStatus", true, this.linkStatus),
-                new NcPropertyValueHolder(new NcPropertyId(4, 2), "linkStatusMessage", "NcString", true, this.linkStatusMessage),
-                new NcPropertyValueHolder(new NcPropertyId(4, 3), "linkStatusTransitionCounter", "NcUint64", true, this.linkStatusTransitionCounter),
-                new NcPropertyValueHolder(new NcPropertyId(4, 4), "connectionStatus", "NcConnectionStatus", true, this.connectionStatus),
-                new NcPropertyValueHolder(new NcPropertyId(4, 5), "connectionStatusMessage", "NcString", true, this.connectionStatusMessage),
-                new NcPropertyValueHolder(new NcPropertyId(4, 6), "connectionStatusTransitionCounter", "NcUint64", true, this.connectionStatusTransitionCounter),
-                new NcPropertyValueHolder(new NcPropertyId(4, 7), "externalSynchronizationStatus", "NcSynchronizationStatus", true, this.externalSynchronizationStatus),
-                new NcPropertyValueHolder(new NcPropertyId(4, 8), "externalSynchronizationStatusMessage", "NcString", true, this.externalSynchronizationStatusMessage),
-                new NcPropertyValueHolder(new NcPropertyId(4, 9), "externalSynchronizationStatusTransitionCounter", "NcUint64", true, this.externalSynchronizationStatusTransitionCounter),
-                new NcPropertyValueHolder(new NcPropertyId(4, 10), "synchronizationSourceId", "NcString", true, this.synchronizationSourceId),
-                new NcPropertyValueHolder(new NcPropertyId(4, 11), "streamStatus", "NcStreamStatus", true, this.streamStatus),
-                new NcPropertyValueHolder(new NcPropertyId(4, 12), "streamStatusMessage", "NcString", true, this.streamStatusMessage),
-                new NcPropertyValueHolder(new NcPropertyId(4, 13), "streamStatusTransitionCounter", "NcUint64", true, this.streamStatusTransitionCounter),
-                new NcPropertyValueHolder(new NcPropertyId(4, 14), "autoResetCountersAndMessages", "NcBoolean", false, this.autoResetCountersAndMessages)
+                new NcPropertyHolder(new NcPropertyId(4, 1), "linkStatus", "NcLinkStatus", true, this.linkStatus),
+                new NcPropertyHolder(new NcPropertyId(4, 2), "linkStatusMessage", "NcString", true, this.linkStatusMessage),
+                new NcPropertyHolder(new NcPropertyId(4, 3), "linkStatusTransitionCounter", "NcUint64", true, this.linkStatusTransitionCounter),
+                new NcPropertyHolder(new NcPropertyId(4, 4), "connectionStatus", "NcConnectionStatus", true, this.connectionStatus),
+                new NcPropertyHolder(new NcPropertyId(4, 5), "connectionStatusMessage", "NcString", true, this.connectionStatusMessage),
+                new NcPropertyHolder(new NcPropertyId(4, 6), "connectionStatusTransitionCounter", "NcUint64", true, this.connectionStatusTransitionCounter),
+                new NcPropertyHolder(new NcPropertyId(4, 7), "externalSynchronizationStatus", "NcSynchronizationStatus", true, this.externalSynchronizationStatus),
+                new NcPropertyHolder(new NcPropertyId(4, 8), "externalSynchronizationStatusMessage", "NcString", true, this.externalSynchronizationStatusMessage),
+                new NcPropertyHolder(new NcPropertyId(4, 9), "externalSynchronizationStatusTransitionCounter", "NcUint64", true, this.externalSynchronizationStatusTransitionCounter),
+                new NcPropertyHolder(new NcPropertyId(4, 10), "synchronizationSourceId", "NcString", true, this.synchronizationSourceId),
+                new NcPropertyHolder(new NcPropertyId(4, 11), "streamStatus", "NcStreamStatus", true, this.streamStatus),
+                new NcPropertyHolder(new NcPropertyId(4, 12), "streamStatusMessage", "NcString", true, this.streamStatusMessage),
+                new NcPropertyHolder(new NcPropertyId(4, 13), "streamStatusTransitionCounter", "NcUint64", true, this.streamStatusTransitionCounter),
+                new NcPropertyHolder(new NcPropertyId(4, 14), "autoResetCountersAndMessages", "NcBoolean", false, this.autoResetCountersAndMessages)
             ], [], this.isRebuildable)
         ];
 
@@ -1926,20 +1926,20 @@ export class NcSenderMonitor extends NcStatusMonitor implements ISenderMonitorin
     {
         let properties = [
             new NcObjectPropertiesHolder(this.GetRolePath(), [], [
-                new NcPropertyValueHolder(new NcPropertyId(4, 1), "linkStatus", "NcLinkStatus", true, this.linkStatus),
-                new NcPropertyValueHolder(new NcPropertyId(4, 2), "linkStatusMessage", "NcString", true, this.linkStatusMessage),
-                new NcPropertyValueHolder(new NcPropertyId(4, 3), "linkStatusTransitionCounter", "NcUint64", true, this.linkStatusTransitionCounter),
-                new NcPropertyValueHolder(new NcPropertyId(4, 4), "transmissionStatus", "NcTransmissionStatus", true, this.transmissionStatus),
-                new NcPropertyValueHolder(new NcPropertyId(4, 5), "transmissionStatusMessage", "NcString", true, this.transmissionStatusMessage),
-                new NcPropertyValueHolder(new NcPropertyId(4, 6), "transmissionStatusTransitionCounter", "NcUint64", true, this.transmissionStatusTransitionCounter),
-                new NcPropertyValueHolder(new NcPropertyId(4, 7), "externalSynchronizationStatus", "NcSynchronizationStatus", true, this.externalSynchronizationStatus),
-                new NcPropertyValueHolder(new NcPropertyId(4, 8), "externalSynchronizationStatusMessage", "NcString", true, this.externalSynchronizationStatusMessage),
-                new NcPropertyValueHolder(new NcPropertyId(4, 9), "externalSynchronizationStatusTransitionCounter", "NcUint64", true, this.externalSynchronizationStatusTransitionCounter),
-                new NcPropertyValueHolder(new NcPropertyId(4, 10), "synchronizationSourceId", "NcString", true, this.synchronizationSourceId),
-                new NcPropertyValueHolder(new NcPropertyId(4, 11), "essenceStatus", "NcEssenceStatus", true, this.essenceStatus),
-                new NcPropertyValueHolder(new NcPropertyId(4, 12), "essenceStatusMessage", "NcString", true, this.essenceStatusMessage),
-                new NcPropertyValueHolder(new NcPropertyId(4, 13), "essenceStatusTransitionCounter", "NcUint64", true, this.essenceStatusTransitionCounter),
-                new NcPropertyValueHolder(new NcPropertyId(4, 14), "autoResetCountersAndMessages", "NcBoolean", false, this.autoResetCountersAndMessages)
+                new NcPropertyHolder(new NcPropertyId(4, 1), "linkStatus", "NcLinkStatus", true, this.linkStatus),
+                new NcPropertyHolder(new NcPropertyId(4, 2), "linkStatusMessage", "NcString", true, this.linkStatusMessage),
+                new NcPropertyHolder(new NcPropertyId(4, 3), "linkStatusTransitionCounter", "NcUint64", true, this.linkStatusTransitionCounter),
+                new NcPropertyHolder(new NcPropertyId(4, 4), "transmissionStatus", "NcTransmissionStatus", true, this.transmissionStatus),
+                new NcPropertyHolder(new NcPropertyId(4, 5), "transmissionStatusMessage", "NcString", true, this.transmissionStatusMessage),
+                new NcPropertyHolder(new NcPropertyId(4, 6), "transmissionStatusTransitionCounter", "NcUint64", true, this.transmissionStatusTransitionCounter),
+                new NcPropertyHolder(new NcPropertyId(4, 7), "externalSynchronizationStatus", "NcSynchronizationStatus", true, this.externalSynchronizationStatus),
+                new NcPropertyHolder(new NcPropertyId(4, 8), "externalSynchronizationStatusMessage", "NcString", true, this.externalSynchronizationStatusMessage),
+                new NcPropertyHolder(new NcPropertyId(4, 9), "externalSynchronizationStatusTransitionCounter", "NcUint64", true, this.externalSynchronizationStatusTransitionCounter),
+                new NcPropertyHolder(new NcPropertyId(4, 10), "synchronizationSourceId", "NcString", true, this.synchronizationSourceId),
+                new NcPropertyHolder(new NcPropertyId(4, 11), "essenceStatus", "NcEssenceStatus", true, this.essenceStatus),
+                new NcPropertyHolder(new NcPropertyId(4, 12), "essenceStatusMessage", "NcString", true, this.essenceStatusMessage),
+                new NcPropertyHolder(new NcPropertyId(4, 13), "essenceStatusTransitionCounter", "NcUint64", true, this.essenceStatusTransitionCounter),
+                new NcPropertyHolder(new NcPropertyId(4, 14), "autoResetCountersAndMessages", "NcBoolean", false, this.autoResetCountersAndMessages)
             ], [], this.isRebuildable)
         ];
 
@@ -3052,21 +3052,21 @@ export class ExampleControl extends NcWorker implements IMonitorManager
                 this.ownerObject?.GetRolePath() ?? []
             ], 
             [
-                new NcPropertyValueHolder(new NcPropertyId(3, 1), "enumProperty", "ExampleEnum", false, this.enumProperty),
-                new NcPropertyValueHolder(new NcPropertyId(3, 2), "stringProperty", "NcString", false, this.stringProperty),
-                new NcPropertyValueHolder(new NcPropertyId(3, 3), "numberProperty", "NcUint64", false, this.numberProperty),
-                new NcPropertyValueHolder(new NcPropertyId(3, 4), "booleanProperty", "NcBoolean", false, this.booleanProperty),
-                new NcPropertyValueHolder(new NcPropertyId(3, 5), "objectProperty", "ExampleDataType", false, this.objectProperty),
-                new NcPropertyValueHolder(new NcPropertyId(3, 6), "methodNoArgsCount", "NcUint64", true, this.methodNoArgsCount),
-                new NcPropertyValueHolder(new NcPropertyId(3, 7), "methodSimpleArgsCount", "NcUint64", true, this.methodSimpleArgsCount),
-                new NcPropertyValueHolder(new NcPropertyId(3, 8), "methodObjectArgCount", "NcUint64", true, this.methodObjectArgCount),
-                new NcPropertyValueHolder(new NcPropertyId(3, 9), "stringSequence", "NcString", false, this.stringSequence),
-                new NcPropertyValueHolder(new NcPropertyId(3, 10), "booleanSequence", "NcBoolean", false, this.booleanSequence),
-                new NcPropertyValueHolder(new NcPropertyId(3, 11), "enumSequence", "ExampleEnum", false, this.enumSequence),
-                new NcPropertyValueHolder(new NcPropertyId(3, 12), "numberSequence", "NcUint64", false, this.numberSequence),
-                new NcPropertyValueHolder(new NcPropertyId(3, 13), "objectSequence", "ExampleDataType", false, this.objectSequence),
-                new NcPropertyValueHolder(new NcPropertyId(3, 14), "receiverMonitorFaultEmulation", "ReceiverMonitorFaultEmulation", false, this.receiverMonitorFaultEmulation),
-                new NcPropertyValueHolder(new NcPropertyId(3, 15), "senderMonitorFaultEmulation", "SenderMonitorFaultEmulation", false, this.senderMonitorFaultEmulation)
+                new NcPropertyHolder(new NcPropertyId(3, 1), "enumProperty", "ExampleEnum", false, this.enumProperty),
+                new NcPropertyHolder(new NcPropertyId(3, 2), "stringProperty", "NcString", false, this.stringProperty),
+                new NcPropertyHolder(new NcPropertyId(3, 3), "numberProperty", "NcUint64", false, this.numberProperty),
+                new NcPropertyHolder(new NcPropertyId(3, 4), "booleanProperty", "NcBoolean", false, this.booleanProperty),
+                new NcPropertyHolder(new NcPropertyId(3, 5), "objectProperty", "ExampleDataType", false, this.objectProperty),
+                new NcPropertyHolder(new NcPropertyId(3, 6), "methodNoArgsCount", "NcUint64", true, this.methodNoArgsCount),
+                new NcPropertyHolder(new NcPropertyId(3, 7), "methodSimpleArgsCount", "NcUint64", true, this.methodSimpleArgsCount),
+                new NcPropertyHolder(new NcPropertyId(3, 8), "methodObjectArgCount", "NcUint64", true, this.methodObjectArgCount),
+                new NcPropertyHolder(new NcPropertyId(3, 9), "stringSequence", "NcString", false, this.stringSequence),
+                new NcPropertyHolder(new NcPropertyId(3, 10), "booleanSequence", "NcBoolean", false, this.booleanSequence),
+                new NcPropertyHolder(new NcPropertyId(3, 11), "enumSequence", "ExampleEnum", false, this.enumSequence),
+                new NcPropertyHolder(new NcPropertyId(3, 12), "numberSequence", "NcUint64", false, this.numberSequence),
+                new NcPropertyHolder(new NcPropertyId(3, 13), "objectSequence", "ExampleDataType", false, this.objectSequence),
+                new NcPropertyHolder(new NcPropertyId(3, 14), "receiverMonitorFaultEmulation", "ReceiverMonitorFaultEmulation", false, this.receiverMonitorFaultEmulation),
+                new NcPropertyHolder(new NcPropertyId(3, 15), "senderMonitorFaultEmulation", "SenderMonitorFaultEmulation", false, this.senderMonitorFaultEmulation)
             ], [], this.isRebuildable)
         ];
 
