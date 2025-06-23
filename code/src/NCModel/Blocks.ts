@@ -6,7 +6,7 @@ import { INotificationContext } from '../SessionManager';
 import {
     myIdDecorator,
     NcBlockMemberDescriptor,
-    NcBulkValuesHolder,
+    NcBulkPropertiesHolder,
     NcClassDescriptor,
     NcElementId,
     NcMethodDescriptor,
@@ -21,7 +21,7 @@ import {
     NcPropertyId,
     NcPropertyRestoreNotice,
     NcPropertyRestoreNoticeType,
-    NcPropertyValueHolder,
+    NcPropertyHolder,
     NcRestoreMode,
     NcRestoreValidationStatus,
     NcTouchpoint, 
@@ -112,6 +112,25 @@ export class NcBlock extends NcObject
                     return new CommandResponseError(handle, NcMethodStatus.Readonly, 'Property is readonly');
                 default:
                     return super.Set(oid, id, value, handle);
+            }
+        }
+
+        return new CommandResponseError(handle, NcMethodStatus.BadOid, 'OID could not be found');
+    }
+
+    public override SetValidate(oid: number, id: NcElementId, value: any, handle: number) : CommandResponseNoValue
+    {
+        if(oid == this.oid)
+        {
+            let key: string = `${id.level}p${id.index}`;
+
+            switch(key)
+            {
+                case '2p1':
+                case '2p2':
+                    return new CommandResponseError(handle, NcMethodStatus.Readonly, 'Property is readonly');
+                default:
+                    return super.SetValidate(oid, id, value, handle);
             }
         }
 
@@ -531,8 +550,8 @@ export class NcBlock extends NcObject
     {
         let holders = [
             new NcObjectPropertiesHolder(this.GetRolePath(), [], [
-                new NcPropertyValueHolder(new NcPropertyId(2, 1), "enabled", "NcBoolean", true, this.enabled),
-                new NcPropertyValueHolder(new NcPropertyId(2, 2), "members", "NcBlockMemberDescriptor", true, this.members)
+                new NcPropertyHolder(new NcPropertyId(2, 1), "enabled", "NcBoolean", true, this.enabled),
+                new NcPropertyHolder(new NcPropertyId(2, 2), "members", "NcBlockMemberDescriptor", true, this.members)
             ], [], this.isRebuildable)
         ];
 
@@ -635,7 +654,7 @@ export class NcBlock extends NcObject
         return this.GetRolePath().concat(role);
     }
 
-    public ReconstructMembers(members: NcBlockMemberDescriptor[], dataSet: NcBulkValuesHolder, applyChanges: Boolean = true) : [NcPropertyRestoreNotice | null, NcObjectPropertiesSetValidation[]]
+    public ReconstructMembers(members: NcBlockMemberDescriptor[], dataSet: NcBulkPropertiesHolder, applyChanges: Boolean = true) : [NcPropertyRestoreNotice | null, NcObjectPropertiesSetValidation[]]
     {
         //Left intentionally empty as "virtual" so that rebuildable blocks override this with the desired behaviour
         return [null, []];
@@ -650,7 +669,7 @@ export class NcBlock extends NcObject
         let myRestoreData = restoreArguments.dataSet.values.find(f => f.path.join('.') == localRolePath);
         if(myRestoreData)
         {
-            console.log(`Found restore data for path: ${localRolePath}`);
+            console.log(`Found restore data for path: ${localRolePath}, applyChanges: ${applyChanges}`);
 
             let myNotices = new Array<NcPropertyRestoreNotice>();
 
@@ -675,8 +694,6 @@ export class NcBlock extends NcObject
                             let membersData = propertyData.value as NcBlockMemberDescriptor[];
                             if(membersData)
                             {
-                                //TODO: Might need to include the list of members in the outcomes of ReconstructMembers so that we can skip them from further restore actions because they would have already been applied when creating the member objects
-
                                 let outcomes = this.ReconstructMembers(membersData, restoreArguments.dataSet, applyChanges);
                                 if(outcomes[0] != null)
                                     myNotices.push(outcomes[0]);
@@ -693,10 +710,33 @@ export class NcBlock extends NcObject
                                 console.log(`Cannot reconstruct members because the members data is null`);
                             }
                         }
-                        else if(applyChanges)
+                        else
                         {
-                            //Perform further validations
-                            this.Set(this.oid, propertyData.id, propertyData.value, 0);
+                            //Perform further validation
+                            let response : CommandResponseNoValue | null = null;
+
+                            if(applyChanges)
+                                response = this.Set(this.oid, propertyData.id, propertyData.value, 0);
+                            else
+                                response = this.SetValidate(this.oid, propertyData.id, propertyData.value, 0);
+
+                            console.log(`Restore response for path: ${localRolePath}, id: ${propertyId}, name: ${propertyData.name}, status: ${response.result['status']}, requested value: ${propertyData.value}`);
+
+                            if(response.result['status'] != NcMethodStatus.OK)
+                            {
+                                let noticeMessage = "Property could not be changed due to internal error";
+
+                                if(response.result['errorMessage'])
+                                    noticeMessage = response.result['errorMessage']
+
+                                console.log(`Internal error notice for path: ${localRolePath}, id: ${propertyId}, name: ${propertyData.name}, notice: ${noticeMessage}, requested value: ${propertyData.value}`);
+
+                                myNotices.push(new NcPropertyRestoreNotice(
+                                    propertyData.id,
+                                    propertyData.name,
+                                    NcPropertyRestoreNoticeType.Warning,
+                                    noticeMessage));
+                            }
                         }
                     }
                 }
@@ -717,16 +757,33 @@ export class NcBlock extends NcObject
                                 NcPropertyRestoreNoticeType.Warning,
                                 "Property cannot be changed and will be left untouched"));
                     }
-                    else if(propertyId != '1p6')
-                        myNotices.push(new NcPropertyRestoreNotice(
-                            propertyData.id,
-                            propertyData.name,
-                            NcPropertyRestoreNoticeType.Warning,
-                            "Property cannot be changed and will be left untouched"));
-                    else if(applyChanges)
+                    else
                     {
-                        //Perform further validations
-                        this.Set(this.oid, propertyData.id, propertyData.value, 0);
+                        //Perform further validation
+                        let response : CommandResponseNoValue | null = null;
+
+                        if(applyChanges)
+                            response = this.Set(this.oid, propertyData.id, propertyData.value, 0);
+                        else
+                            response = this.SetValidate(this.oid, propertyData.id, propertyData.value, 0);
+
+                        console.log(`Restore response for path: ${localRolePath}, id: ${propertyId}, name: ${propertyData.name}, status: ${response.result['status']}, requested value: ${propertyData.value}`);
+
+                        if(response.result['status'] != NcMethodStatus.OK)
+                        {
+                            let noticeMessage = "Property could not be changed due to internal error";
+
+                            if(response.result['errorMessage'])
+                                noticeMessage = response.result['errorMessage']
+
+                            console.log(`Internal error notice for path: ${localRolePath}, id: ${propertyId}, name: ${propertyData.name}, notice: ${noticeMessage}, requested value: ${propertyData.value}`);
+
+                            myNotices.push(new NcPropertyRestoreNotice(
+                                propertyData.id,
+                                propertyData.name,
+                                NcPropertyRestoreNoticeType.Warning,
+                                noticeMessage));
+                        }
                     }
                 }
             });
@@ -998,7 +1055,7 @@ export class ExampleControlsBlock extends NcBlock
         return holders
     }
 
-    public override ReconstructMembers(members: NcBlockMemberDescriptor[], dataSet: NcBulkValuesHolder, applyChanges: Boolean = true) : [NcPropertyRestoreNotice | null, NcObjectPropertiesSetValidation[]]
+    public override ReconstructMembers(members: NcBlockMemberDescriptor[], dataSet: NcBulkPropertiesHolder, applyChanges: Boolean = true) : [NcPropertyRestoreNotice | null, NcObjectPropertiesSetValidation[]]
     {
         let blockMembersNotice: NcPropertyRestoreNotice | null = null;
 
