@@ -894,8 +894,8 @@ export class NcReceiverMonitor extends NcStatusMonitor implements IReceiverMonit
 
     public activated: boolean;
 
-    private readonly emulatedGM1 = "0xD4:AD:71:FF:FE:6F:E2:80";
-    private readonly emulatedGM2 = "0xEC:46:70:FF:FE:00:FF:A9";
+    private readonly emulatedGM1 = "00:0c:ec:ff:fe:0a:2b:a1";
+    private readonly emulatedGM2 = "ec:46:70:ff:fe:00:ff:a9";
 
     private monitorManager: IMonitorManager | null;
 
@@ -935,8 +935,8 @@ export class NcReceiverMonitor extends NcStatusMonitor implements IReceiverMonit
         ];
         
         this.externalSynchronizationStatus = NcSynchronizationStatus.Healthy;
-        this.synchronizationSourceId = "0xD4:AD:71:FF:FE:6F:E2:80";
-        this.externalSynchronizationStatusMessage = `Sync source change, from: None, to: ${this.synchronizationSourceId} on NIC1` //4p8
+        this.synchronizationSourceId = `${this.emulatedGM1} on NIC1`; //4p10
+        this.externalSynchronizationStatusMessage = null; //4p8
 
         this.streamStatus = NcStreamStatus.Inactive;
         this.streamStatusMessage = null;
@@ -995,13 +995,14 @@ export class NcReceiverMonitor extends NcStatusMonitor implements IReceiverMonit
         this.externalSynchronizationStatus = NcSynchronizationStatus.PartiallyHealthy; //4p7
         if(!transitionFromUnhealthy)
         {
-            this.externalSynchronizationStatusMessage = `Sync source change, from: ${this.synchronizationSourceId} on NIC1, to: ${this.synchronizationSourceId} on NIC2` //4p8
+            this.synchronizationSourceId = `${this.emulatedGM1} on NIC2`; //4p10
+            this.externalSynchronizationStatusMessage = `No sync on NIC1`; //4p8
             this.externalSynchronizationStatusTransitionCounter++; //4p9
         }
         else
         {
-            this.synchronizationSourceId = "0xD4:AD:71:FF:FE:6F:E2:80"; //4p10
-            this.externalSynchronizationStatusMessage = `Sync source change, from: None, to: ${this.synchronizationSourceId} on NIC2` //4p8
+            this.synchronizationSourceId = `${this.emulatedGM1} on NIC2`; //4p10
+            this.externalSynchronizationStatusMessage = `No sync on NIC1`; //4p8
         }
 
         this.streamStatus = NcStreamStatus.Healthy; //4p11
@@ -1030,8 +1031,8 @@ export class NcReceiverMonitor extends NcStatusMonitor implements IReceiverMonit
             this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 6), NcPropertyChangeType.ValueChanged, this.connectionStatusTransitionCounter, null);
             this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 9), NcPropertyChangeType.ValueChanged, this.externalSynchronizationStatusTransitionCounter, null);
         }
-        else
-            this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 10), NcPropertyChangeType.ValueChanged, this.synchronizationSourceId, null);
+
+        this.notificationContext.NotifyPropertyChanged(this.oid, new NcElementId(4, 10), NcPropertyChangeType.ValueChanged, this.synchronizationSourceId, null);
     }
 
     public SimulateAllNicsDown()
@@ -1049,7 +1050,7 @@ export class NcReceiverMonitor extends NcStatusMonitor implements IReceiverMonit
         this.connectionStatusTransitionCounter++; //4p6
 
         this.externalSynchronizationStatus = NcSynchronizationStatus.Unhealthy; //4p7
-        this.externalSynchronizationStatusMessage = `Sync source change, from: ${this.synchronizationSourceId} on NIC2, to: None`; //4p8
+        this.externalSynchronizationStatusMessage = `No sync`; //4p8
         this.externalSynchronizationStatusTransitionCounter++; //4p9
         this.synchronizationSourceId = null; //4p10
 
@@ -1105,8 +1106,8 @@ export class NcReceiverMonitor extends NcStatusMonitor implements IReceiverMonit
         
         if(this.synchronizationSourceId == null)
         {
-            this.synchronizationSourceId = "0xD4:AD:71:FF:FE:6F:E2:80"; //4p10
-            this.externalSynchronizationStatusMessage = `Previously: Sync source change, from: None, to: ${this.synchronizationSourceId} on NIC1`; //4p8
+            this.synchronizationSourceId = `${this.emulatedGM1} on NIC1`; //4p10
+            this.externalSynchronizationStatusMessage = `Previously: No sync`; //4p8
         }
         else
             this.externalSynchronizationStatusMessage = this.externalSynchronizationStatusMessage != null ? `Previously: ${this.externalSynchronizationStatusMessage}` : null; //4p8
@@ -1152,13 +1153,13 @@ export class NcReceiverMonitor extends NcStatusMonitor implements IReceiverMonit
 
         let previousGM = this.synchronizationSourceId;
 
-        if(this.synchronizationSourceId == this.emulatedGM1)
-            this.synchronizationSourceId = this.emulatedGM2; //4p10
+        if(this.synchronizationSourceId == `${this.emulatedGM1} on NIC1`)
+            this.synchronizationSourceId = `${this.emulatedGM2} on NIC1`; //4p10
         else
-            this.synchronizationSourceId = this.emulatedGM1; //4p10
+            this.synchronizationSourceId = `${this.emulatedGM1} on NIC1`; //4p10
 
         this.externalSynchronizationStatus = NcSynchronizationStatus.PartiallyHealthy; //4p7
-        this.externalSynchronizationStatusMessage = `Sync source change, from: ${previousGM} on NIC1, to: ${this.synchronizationSourceId} on NIC1`; //4p8;
+        this.externalSynchronizationStatusMessage = `Source change from: ${previousGM}`; //4p8;
         this.externalSynchronizationStatusTransitionCounter++; //4p9
 
         this.overallStatusMessage = this.externalSynchronizationStatusMessage; //3p2
@@ -1605,8 +1606,8 @@ export class NcSenderMonitor extends NcStatusMonitor implements ISenderMonitorin
         ];
         
         this.externalSynchronizationStatus = NcSynchronizationStatus.Healthy;
-        this.synchronizationSourceId = "0xD4:AD:71:FF:FE:6F:E2:80";
-        this.externalSynchronizationStatusMessage = `Sync source change, from: None, to: ${this.synchronizationSourceId} on NIC1` //4p8
+        this.synchronizationSourceId = "00:0c:ec:ff:fe:0a:2b:a1 on NIC1";
+        this.externalSynchronizationStatusMessage = null; //4p8
 
         this.essenceStatus = NcEssenceStatus.Inactive;
         this.essenceStatusMessage = null;
