@@ -995,12 +995,19 @@ export class NcReceiverMonitor extends NcStatusMonitor implements IReceiverMonit
         this.externalSynchronizationStatus = NcSynchronizationStatus.PartiallyHealthy; //4p7
         if(!transitionFromUnhealthy)
         {
-            this.synchronizationSourceId = `${this.emulatedGM1} on NIC2`; //4p10
+            // Transition from Healthy
             this.externalSynchronizationStatusMessage = `No sync on NIC1`; //4p8
+
+            if(this.synchronizationSourceId?.includes(this.emulatedGM1) == true)
+                this.synchronizationSourceId = `${this.emulatedGM1} on NIC2`; //4p10
+            else if(this.synchronizationSourceId?.includes(this.emulatedGM2) == true)
+                this.synchronizationSourceId = `${this.emulatedGM2} on NIC2`; //4p10
+
             this.externalSynchronizationStatusTransitionCounter++; //4p9
         }
         else
         {
+            // Transition from Unhealthy
             this.synchronizationSourceId = `${this.emulatedGM1} on NIC2`; //4p10
             this.externalSynchronizationStatusMessage = `No sync on NIC1`; //4p8
         }
@@ -1151,15 +1158,22 @@ export class NcReceiverMonitor extends NcStatusMonitor implements IReceiverMonit
     {
         this.overallStatus = NcOverallStatus.PartiallyHealthy; //3p1
 
-        let previousGM = this.synchronizationSourceId;
+        let previousGM = this.emulatedGM1;
+        let previousNic = "NIC1";
 
-        if(this.synchronizationSourceId == `${this.emulatedGM1} on NIC1`)
+        if(this.synchronizationSourceId?.includes(this.emulatedGM2) == true)
+            previousGM = this.emulatedGM2;
+
+        if(this.synchronizationSourceId?.includes("NIC2") == true)
+            previousNic = "NIC2";
+
+        if(previousGM == this.emulatedGM1)
             this.synchronizationSourceId = `${this.emulatedGM2} on NIC1`; //4p10
         else
             this.synchronizationSourceId = `${this.emulatedGM1} on NIC1`; //4p10
 
         this.externalSynchronizationStatus = NcSynchronizationStatus.PartiallyHealthy; //4p7
-        this.externalSynchronizationStatusMessage = `Source change from: ${previousGM}`; //4p8;
+        this.externalSynchronizationStatusMessage = `Source change from: ${previousGM} on ${previousNic}`; //4p8;
         this.externalSynchronizationStatusTransitionCounter++; //4p9
 
         this.overallStatusMessage = this.externalSynchronizationStatusMessage; //3p2
