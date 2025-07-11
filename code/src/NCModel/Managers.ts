@@ -422,24 +422,31 @@ export class NcDeviceManager extends NcManager
         return currentClassDescriptor;
     }
 
-    public override GetAllProperties(recurse: boolean) : NcObjectPropertiesHolder[]
+    public override GetAllProperties(recurse: boolean, includeDescriptors: boolean) : NcObjectPropertiesHolder[]
     {
+        let descriptor = NcDeviceManager.GetClassDescriptor(false);
+        var propDescriptors: { [id: string] : NcPropertyDescriptor; } = {};
+
+        descriptor.properties.forEach(p => {
+            propDescriptors[NcElementId.ToPropertyString(p.id)] = p;
+        });
+
         let properties = [
             new NcObjectPropertiesHolder(this.GetRolePath(), [], [
-                new NcPropertyHolder(new NcPropertyId(3, 1), "ncVersion", "NcVersionCode", true, this.ncVersion),
-                new NcPropertyHolder(new NcPropertyId(3, 2), "manufacturer", "NcManufacturer", true, this.manufacturer),
-                new NcPropertyHolder(new NcPropertyId(3, 3), "product", "NcProduct", true, this.product),
-                new NcPropertyHolder(new NcPropertyId(3, 4), "serialNumber", "NcString", true, this.serialNumber),
-                new NcPropertyHolder(new NcPropertyId(3, 5), "userInventoryCode", "NcString", false, this.userInventoryCode),
-                new NcPropertyHolder(new NcPropertyId(3, 6), "deviceName", "NcString", false, this.deviceName),
-                new NcPropertyHolder(new NcPropertyId(3, 7), "deviceRole", "NcString", false, this.deviceRole),
-                new NcPropertyHolder(new NcPropertyId(3, 8), "operationalState", "NcDeviceOperationalState", true, this.operationalState),
-                new NcPropertyHolder(new NcPropertyId(3, 9), "resetCause", "NcResetCause", true, this.resetCause),
-                new NcPropertyHolder(new NcPropertyId(3, 10), "message", "NcString", true, this.message),
+                new NcPropertyHolder(new NcPropertyId(3, 1), includeDescriptors ? propDescriptors['3p1'] : null, this.ncVersion),
+                new NcPropertyHolder(new NcPropertyId(3, 2), includeDescriptors ? propDescriptors['3p2'] : null, this.manufacturer),
+                new NcPropertyHolder(new NcPropertyId(3, 3), includeDescriptors ? propDescriptors['3p3'] : null, this.product),
+                new NcPropertyHolder(new NcPropertyId(3, 4), includeDescriptors ? propDescriptors['3p4'] : null, this.serialNumber),
+                new NcPropertyHolder(new NcPropertyId(3, 5), includeDescriptors ? propDescriptors['3p5'] : null, this.userInventoryCode),
+                new NcPropertyHolder(new NcPropertyId(3, 6), includeDescriptors ? propDescriptors['3p6'] : null, this.deviceName),
+                new NcPropertyHolder(new NcPropertyId(3, 7), includeDescriptors ? propDescriptors['3p7'] : null, this.deviceRole),
+                new NcPropertyHolder(new NcPropertyId(3, 8), includeDescriptors ? propDescriptors['3p8'] : null, this.operationalState),
+                new NcPropertyHolder(new NcPropertyId(3, 9), includeDescriptors ? propDescriptors['3p9'] : null, this.resetCause),
+                new NcPropertyHolder(new NcPropertyId(3, 10), includeDescriptors ? propDescriptors['3p10'] : null, this.message),
             ], [], this.isRebuildable)
         ];
 
-        properties[0].values = properties[0].values.concat(super.GetAllProperties(recurse)[0].values);
+        properties[0].values = properties[0].values.concat(super.GetAllProperties(recurse, includeDescriptors)[0].values);
 
         return properties;
     }
@@ -457,6 +464,13 @@ export class NcDeviceManager extends NcManager
 
             let myNotices = new Array<NcPropertyRestoreNotice>();
 
+            let descriptor = NcDeviceManager.GetClassDescriptor(false);
+            var propDescriptors: { [id: string] : NcPropertyDescriptor; } = {};
+
+            descriptor.properties.forEach(p => {
+                propDescriptors[NcElementId.ToPropertyString(p.id)] = p;
+            });
+
             myRestoreData.values.forEach(propertyData => {
                 let propertyId = NcElementId.ToPropertyString(propertyData.id);
 
@@ -468,7 +482,7 @@ export class NcDeviceManager extends NcManager
                 else
                     response = this.SetValidate(this.oid, propertyData.id, propertyData.value, 0);
 
-                console.log(`Restore response for path: ${localRolePath}, id: ${propertyId}, name: ${propertyData.name}, status: ${response.result['status']}, requested value: ${propertyData.value}`);
+                console.log(`Restore response for path: ${localRolePath}, id: ${propertyId}, name: ${propDescriptors[propertyId].name}, status: ${response.result['status']}, requested value: ${propertyData.value}`);
 
                 if(response.result['status'] != NcMethodStatus.OK)
                 {
@@ -477,11 +491,11 @@ export class NcDeviceManager extends NcManager
                     if(response.result['errorMessage'])
                         noticeMessage = response.result['errorMessage']
 
-                    console.log(`Internal error notice for path: ${localRolePath}, id: ${propertyId}, name: ${propertyData.name}, notice: ${noticeMessage}, requested value: ${propertyData.value}`);
+                    console.log(`Internal error notice for path: ${localRolePath}, id: ${propertyId}, name: ${propDescriptors[propertyId].name}, notice: ${noticeMessage}, requested value: ${propertyData.value}`);
 
                     myNotices.push(new NcPropertyRestoreNotice(
                         propertyData.id,
-                        propertyData.name,
+                        propDescriptors[propertyId].name,
                         NcPropertyRestoreNoticeType.Warning,
                         noticeMessage));
                 }
@@ -1109,18 +1123,30 @@ export class NcClassManager extends NcManager
             return this.dataTypesRegister[name];
     }
 
-    public override GetAllProperties(recurse: boolean) : NcObjectPropertiesHolder[]
+    public override GetAllProperties(recurse: boolean, includeDescriptors: boolean) : NcObjectPropertiesHolder[]
     {
-        let properties = [
-            new NcObjectPropertiesHolder(this.GetRolePath(), [], [
-                new NcPropertyHolder(new NcPropertyId(3, 1), "controlClasses", "NcClassDescriptor", true, this.controlClasses),
-                new NcPropertyHolder(new NcPropertyId(3, 2), "datatypes", "NcDatatypeDescriptor", true, this.dataTypes)
-            ], [], this.isRebuildable)
-        ];
+        if(includeDescriptors)
+        {
+            let descriptor = NcClassManager.GetClassDescriptor(false);
+            var propDescriptors: { [id: string] : NcPropertyDescriptor; } = {};
 
-        properties[0].values = properties[0].values.concat(super.GetAllProperties(recurse)[0].values);
+            descriptor.properties.forEach(p => {
+                propDescriptors[NcElementId.ToPropertyString(p.id)] = p;
+            });
 
-        return properties;
+            let properties = [
+                new NcObjectPropertiesHolder(this.GetRolePath(), [], [
+                    new NcPropertyHolder(new NcPropertyId(3, 1), propDescriptors['3p1'], this.controlClasses),
+                    new NcPropertyHolder(new NcPropertyId(3, 2), propDescriptors['3p2'], this.dataTypes)
+                ], [], this.isRebuildable)
+            ];
+
+            properties[0].values = properties[0].values.concat(super.GetAllProperties(recurse, true)[0].values);
+
+            return properties;
+        }
+        else
+            return [];
     }
 
     public override Restore(restoreArguments: RestoreArguments, applyChanges: Boolean) : NcObjectPropertiesSetValidation[]
@@ -1136,6 +1162,13 @@ export class NcClassManager extends NcManager
 
             let myNotices = new Array<NcPropertyRestoreNotice>();
 
+            let descriptor = NcClassManager.GetClassDescriptor(false);
+            var propDescriptors: { [id: string] : NcPropertyDescriptor; } = {};
+
+            descriptor.properties.forEach(p => {
+                propDescriptors[NcElementId.ToPropertyString(p.id)] = p;
+            });
+
             myRestoreData.values.forEach(propertyData => {
                 let propertyId = NcElementId.ToPropertyString(propertyData.id);
 
@@ -1147,7 +1180,7 @@ export class NcClassManager extends NcManager
                 else
                     response = this.SetValidate(this.oid, propertyData.id, propertyData.value, 0);
 
-                console.log(`Restore response for path: ${localRolePath}, id: ${propertyId}, name: ${propertyData.name}, status: ${response.result['status']}, requested value: ${propertyData.value}`);
+                console.log(`Restore response for path: ${localRolePath}, id: ${propertyId}, name: ${propDescriptors[propertyId].name}, status: ${response.result['status']}, requested value: ${propertyData.value}`);
 
                 if(response.result['status'] != NcMethodStatus.OK)
                 {
@@ -1156,11 +1189,11 @@ export class NcClassManager extends NcManager
                     if(response.result['errorMessage'])
                         noticeMessage = response.result['errorMessage']
 
-                    console.log(`Internal error notice for path: ${localRolePath}, id: ${propertyId}, name: ${propertyData.name}, notice: ${noticeMessage}, requested value: ${propertyData.value}`);
+                    console.log(`Internal error notice for path: ${localRolePath}, id: ${propertyId}, name: ${propDescriptors[propertyId].name}, notice: ${noticeMessage}, requested value: ${propertyData.value}`);
 
                     myNotices.push(new NcPropertyRestoreNotice(
                         propertyData.id,
-                        propertyData.name,
+                        propDescriptors[propertyId].name,
                         NcPropertyRestoreNoticeType.Warning,
                         noticeMessage));
                 }
@@ -1271,13 +1304,13 @@ export class NcBulkPropertiesManager extends NcManager
         return currentClassDescriptor;
     }
 
-    public override GetAllProperties(recurse: boolean) : NcObjectPropertiesHolder[]
+    public override GetAllProperties(recurse: boolean, includeDescriptors: boolean) : NcObjectPropertiesHolder[]
     {
         let properties = [
             new NcObjectPropertiesHolder(this.GetRolePath(), [], [], [], this.isRebuildable)
         ];
 
-        properties[0].values = properties[0].values.concat(super.GetAllProperties(recurse)[0].values);
+        properties[0].values = properties[0].values.concat(super.GetAllProperties(recurse, includeDescriptors)[0].values);
 
         return properties;
     }
@@ -1295,6 +1328,13 @@ export class NcBulkPropertiesManager extends NcManager
 
             let myNotices = new Array<NcPropertyRestoreNotice>();
 
+            let descriptor = NcBulkPropertiesManager.GetClassDescriptor(true);
+            var propDescriptors: { [id: string] : NcPropertyDescriptor; } = {};
+
+            descriptor.properties.forEach(p => {
+                propDescriptors[NcElementId.ToPropertyString(p.id)] = p;
+            });
+
             myRestoreData.values.forEach(propertyData => {
                 let propertyId = NcElementId.ToPropertyString(propertyData.id);
 
@@ -1306,7 +1346,7 @@ export class NcBulkPropertiesManager extends NcManager
                 else
                     response = this.SetValidate(this.oid, propertyData.id, propertyData.value, 0);
 
-                console.log(`Restore response for path: ${localRolePath}, id: ${propertyId}, name: ${propertyData.name}, status: ${response.result['status']}, requested value: ${propertyData.value}`);
+                console.log(`Restore response for path: ${localRolePath}, id: ${propertyId}, name: ${propDescriptors[propertyId].name}, status: ${response.result['status']}, requested value: ${propertyData.value}`);
 
                 if(response.result['status'] != NcMethodStatus.OK)
                 {
@@ -1315,11 +1355,11 @@ export class NcBulkPropertiesManager extends NcManager
                     if(response.result['errorMessage'])
                         noticeMessage = response.result['errorMessage']
 
-                    console.log(`Internal error notice for path: ${localRolePath}, id: ${propertyId}, name: ${propertyData.name}, notice: ${noticeMessage}, requested value: ${propertyData.value}`);
+                    console.log(`Internal error notice for path: ${localRolePath}, id: ${propertyId}, name: ${propDescriptors[propertyId].name}, notice: ${noticeMessage}, requested value: ${propertyData.value}`);
 
                     myNotices.push(new NcPropertyRestoreNotice(
                         propertyData.id,
-                        propertyData.name,
+                        propDescriptors[propertyId].name,
                         NcPropertyRestoreNoticeType.Warning,
                         noticeMessage));
                 }

@@ -403,18 +403,25 @@ export abstract class NcObject
         );
     }
 
-    public GetAllProperties(recurse: boolean) : NcObjectPropertiesHolder[]
+    public GetAllProperties(recurse: boolean, includeDescriptors: boolean) : NcObjectPropertiesHolder[]
     {
+        let descriptor = NcObject.GetClassDescriptor(false);
+        var propDescriptors: { [id: string] : NcPropertyDescriptor; } = {};
+
+        descriptor.properties.forEach(p => {
+            propDescriptors[NcElementId.ToPropertyString(p.id)] = p;
+        });
+
         return [
             new NcObjectPropertiesHolder(this.GetRolePath(), [], [
-                new NcPropertyHolder(new NcPropertyId(1, 1), "classId", "NcClassId", true, this.classID),
-                new NcPropertyHolder(new NcPropertyId(1, 2), "oid", "NcOid", true, this.oid),
-                new NcPropertyHolder(new NcPropertyId(1, 3), "constantOid", "NcBoolean", true, this.constantOid),
-                new NcPropertyHolder(new NcPropertyId(1, 4), "owner", "NcOid", true, this.owner),
-                new NcPropertyHolder(new NcPropertyId(1, 5), "role", "NcString", true, this.role),
-                new NcPropertyHolder(new NcPropertyId(1, 6), "userLabel", "NcString", false, this.userLabel),
-                new NcPropertyHolder(new NcPropertyId(1, 7), "touchpoints", "NcTouchpoint", true, this.touchpoints),
-                new NcPropertyHolder(new NcPropertyId(1, 8), "runtimePropertyConstraints", "NcPropertyConstraints", true, this.runtimePropertyConstraints),
+                new NcPropertyHolder(new NcPropertyId(1, 1), includeDescriptors ? propDescriptors['1p1'] : null, this.classID),
+                new NcPropertyHolder(new NcPropertyId(1, 2), includeDescriptors ? propDescriptors['1p2'] : null, this.oid),
+                new NcPropertyHolder(new NcPropertyId(1, 3), includeDescriptors ? propDescriptors['1p3'] : null, this.constantOid),
+                new NcPropertyHolder(new NcPropertyId(1, 4), includeDescriptors ? propDescriptors['1p4'] : null, this.owner),
+                new NcPropertyHolder(new NcPropertyId(1, 5), includeDescriptors ? propDescriptors['1p5'] : null, this.role),
+                new NcPropertyHolder(new NcPropertyId(1, 6), includeDescriptors ? propDescriptors['1p6'] : null, this.userLabel),
+                new NcPropertyHolder(new NcPropertyId(1, 7), includeDescriptors ? propDescriptors['1p7'] : null, this.touchpoints),
+                new NcPropertyHolder(new NcPropertyId(1, 8), includeDescriptors ? propDescriptors['1p8'] : null, this.runtimePropertyConstraints),
             ], [], this.isRebuildable)
         ];
     }
@@ -1925,24 +1932,18 @@ export class NcDatatypeDescriptorEnum extends NcDatatypeDescriptor
 export class NcPropertyHolder extends BaseType
 {
     public id: NcPropertyId;
-    public name: string;
-    public typeName: string | null;
-    public isReadOnly: boolean;
+    public descriptor: NcPropertyDescriptor | null;
     public value: any;
 
     public constructor(
         id: NcPropertyId,
-        name: string,
-        typeName: string | null,
-        isReadOnly: boolean,
+        descriptor: NcPropertyDescriptor | null,
         value: any)
     {
         super();
 
         this.id = id;
-        this.name = name;
-        this.typeName = typeName;
-        this.isReadOnly = isReadOnly;
+        this.descriptor = descriptor;
         this.value = value;
     }
 
@@ -1950,9 +1951,7 @@ export class NcPropertyHolder extends BaseType
     {
         return new NcDatatypeDescriptorStruct("NcPropertyHolder", [
             new NcFieldDescriptor("id", "NcPropertyId", false, false, null, "Property id"),
-            new NcFieldDescriptor("name", "NcString", false, false, null, "Property name"),
-            new NcFieldDescriptor("typeName", "NcName", true, false, null, "Property type name. If null it means the type is any"),
-            new NcFieldDescriptor("isReadOnly", "NcBoolean", false, false, null, "Is the property ReadOnly?"),
+            new NcFieldDescriptor("descriptor", "NcPropertyDescriptor", true, false, null, "Property descriptor"),
             new NcFieldDescriptor("value", null, true, false, null, "Property value"),
         ], null, null, "Property value holder descriptor");
     }

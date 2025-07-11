@@ -546,21 +546,28 @@ export class NcBlock extends NcObject
             return null;
     }
 
-    public override GetAllProperties(recurse: boolean) : NcObjectPropertiesHolder[]
+    public override GetAllProperties(recurse: boolean, includeDescriptors: boolean) : NcObjectPropertiesHolder[]
     {
+        let descriptor = NcBlock.GetClassDescriptor(false);
+        var propDescriptors: { [id: string] : NcPropertyDescriptor; } = {};
+
+        descriptor.properties.forEach(p => {
+            propDescriptors[NcElementId.ToPropertyString(p.id)] = p;
+        });
+
         let holders = [
             new NcObjectPropertiesHolder(this.GetRolePath(), [], [
-                new NcPropertyHolder(new NcPropertyId(2, 1), "enabled", "NcBoolean", true, this.enabled),
-                new NcPropertyHolder(new NcPropertyId(2, 2), "members", "NcBlockMemberDescriptor", true, this.members)
+                new NcPropertyHolder(new NcPropertyId(2, 1), includeDescriptors ? propDescriptors['2p1'] : null, this.enabled),
+                new NcPropertyHolder(new NcPropertyId(2, 2), includeDescriptors ? propDescriptors['2p2'] : null, this.members)
             ], [], this.isRebuildable)
         ];
 
-        holders[0].values = holders[0].values.concat(super.GetAllProperties(recurse)[0].values);
+        holders[0].values = holders[0].values.concat(super.GetAllProperties(recurse, includeDescriptors)[0].values);
 
         if(recurse)
         {
             this.memberObjects.forEach(member => {
-                holders = holders.concat(member.GetAllProperties(recurse));
+                holders = holders.concat(member.GetAllProperties(recurse, includeDescriptors));
             });
         }
 
@@ -673,6 +680,13 @@ export class NcBlock extends NcObject
 
             let myNotices = new Array<NcPropertyRestoreNotice>();
 
+            let descriptor = NcBlock.GetClassDescriptor(true);
+            var propDescriptors: { [id: string] : NcPropertyDescriptor; } = {};
+
+            descriptor.properties.forEach(p => {
+                propDescriptors[NcElementId.ToPropertyString(p.id)] = p;
+            });
+
             myRestoreData.values.forEach(propertyData => 
             {
                 let propertyId = NcElementId.ToPropertyString(propertyData.id);
@@ -682,7 +696,7 @@ export class NcBlock extends NcObject
                     if(propertyId != '1p6' && propertyId != '2p2')
                         myNotices.push(new NcPropertyRestoreNotice(
                             propertyData.id,
-                            propertyData.name,
+                            propDescriptors[propertyId].name,
                             NcPropertyRestoreNoticeType.Warning,
                             "Property cannot be changed and will be left untouched"));
                     else
@@ -704,7 +718,7 @@ export class NcBlock extends NcObject
                             {
                                 myNotices.push(new NcPropertyRestoreNotice(
                                     propertyData.id,
-                                    propertyData.name,
+                                    propDescriptors[propertyId].name,
                                     NcPropertyRestoreNoticeType.Warning,
                                     `Cannot reconstruct members because the members data is null`));
                                 console.log(`Cannot reconstruct members because the members data is null`);
@@ -720,7 +734,7 @@ export class NcBlock extends NcObject
                             else
                                 response = this.SetValidate(this.oid, propertyData.id, propertyData.value, 0);
 
-                            console.log(`Restore response for path: ${localRolePath}, id: ${propertyId}, name: ${propertyData.name}, status: ${response.result['status']}, requested value: ${propertyData.value}`);
+                            console.log(`Restore response for path: ${localRolePath}, id: ${propertyId}, name: ${propDescriptors[propertyId].name}, status: ${response.result['status']}, requested value: ${propertyData.value}`);
 
                             if(response.result['status'] != NcMethodStatus.OK)
                             {
@@ -729,11 +743,11 @@ export class NcBlock extends NcObject
                                 if(response.result['errorMessage'])
                                     noticeMessage = response.result['errorMessage']
 
-                                console.log(`Internal error notice for path: ${localRolePath}, id: ${propertyId}, name: ${propertyData.name}, notice: ${noticeMessage}, requested value: ${propertyData.value}`);
+                                console.log(`Internal error notice for path: ${localRolePath}, id: ${propertyId}, name: ${propDescriptors[propertyId].name}, notice: ${noticeMessage}, requested value: ${propertyData.value}`);
 
                                 myNotices.push(new NcPropertyRestoreNotice(
                                     propertyData.id,
-                                    propertyData.name,
+                                    propDescriptors[propertyId].name,
                                     NcPropertyRestoreNoticeType.Warning,
                                     noticeMessage));
                             }
@@ -747,13 +761,13 @@ export class NcBlock extends NcObject
                         if(this.isRebuildable)
                             myNotices.push(new NcPropertyRestoreNotice(
                                 propertyData.id,
-                                propertyData.name,
+                                propDescriptors[propertyId].name,
                                 NcPropertyRestoreNoticeType.Warning,
                                 "Property cannot be changed and will be left untouched unless restoreMode is changed to Rebuild"));
                         else
                             myNotices.push(new NcPropertyRestoreNotice(
                                 propertyData.id,
-                                propertyData.name,
+                                propDescriptors[propertyId].name,
                                 NcPropertyRestoreNoticeType.Warning,
                                 "Property cannot be changed and will be left untouched"));
                     }
@@ -767,7 +781,7 @@ export class NcBlock extends NcObject
                         else
                             response = this.SetValidate(this.oid, propertyData.id, propertyData.value, 0);
 
-                        console.log(`Restore response for path: ${localRolePath}, id: ${propertyId}, name: ${propertyData.name}, status: ${response.result['status']}, requested value: ${propertyData.value}`);
+                        console.log(`Restore response for path: ${localRolePath}, id: ${propertyId}, name: ${propDescriptors[propertyId].name}, status: ${response.result['status']}, requested value: ${propertyData.value}`);
 
                         if(response.result['status'] != NcMethodStatus.OK)
                         {
@@ -776,11 +790,11 @@ export class NcBlock extends NcObject
                             if(response.result['errorMessage'])
                                 noticeMessage = response.result['errorMessage']
 
-                            console.log(`Internal error notice for path: ${localRolePath}, id: ${propertyId}, name: ${propertyData.name}, notice: ${noticeMessage}, requested value: ${propertyData.value}`);
+                            console.log(`Internal error notice for path: ${localRolePath}, id: ${propertyId}, name: ${propDescriptors[propertyId].name}, notice: ${noticeMessage}, requested value: ${propertyData.value}`);
 
                             myNotices.push(new NcPropertyRestoreNotice(
                                 propertyData.id,
-                                propertyData.name,
+                                propDescriptors[propertyId].name,
                                 NcPropertyRestoreNoticeType.Warning,
                                 noticeMessage));
                         }
@@ -1035,7 +1049,7 @@ export class ExampleControlsBlock extends NcBlock
             isRebuildable);
     }
 
-    public override GetAllProperties(recurse: boolean) : NcObjectPropertiesHolder[]
+    public override GetAllProperties(recurse: boolean, includeDescriptors: boolean) : NcObjectPropertiesHolder[]
     {
         let holders = [
             new NcObjectPropertiesHolder(this.GetRolePath(), [], [], [
@@ -1043,12 +1057,12 @@ export class ExampleControlsBlock extends NcBlock
             ], this.isRebuildable)
         ];
 
-        holders[0].values = holders[0].values.concat(super.GetAllProperties(recurse)[0].values);
+        holders[0].values = holders[0].values.concat(super.GetAllProperties(recurse, includeDescriptors)[0].values);
 
         if(recurse)
         {
             this.memberObjects.forEach(member => {
-                holders = holders.concat(member.GetAllProperties(recurse));
+                holders = holders.concat(member.GetAllProperties(recurse, includeDescriptors));
             });
         }
 
@@ -1168,6 +1182,13 @@ export class ExampleControlsBlock extends NcBlock
     {
         let myNotices = new Array<NcPropertyRestoreNotice>();
 
+        let descriptor = ExampleControlsBlock.GetClassDescriptor(true);
+        var propDescriptors: { [id: string] : NcPropertyDescriptor; } = {};
+
+        descriptor.properties.forEach(p => {
+            propDescriptors[NcElementId.ToPropertyString(p.id)] = p;
+        });
+
         holder.values.forEach(propertyData => 
         {
             let propertyId = NcElementId.ToPropertyString(propertyData.id);
@@ -1190,7 +1211,7 @@ export class ExampleControlsBlock extends NcBlock
                     }
                     break;
                 default:
-                    myNotices.push(new NcPropertyRestoreNotice(propertyData.id, propertyData.name, NcPropertyRestoreNoticeType.Warning, "Property can't be changed and will receive a default value"));
+                    myNotices.push(new NcPropertyRestoreNotice(propertyData.id, propDescriptors[propertyId].name, NcPropertyRestoreNoticeType.Warning, "Property can't be changed and will receive a default value"));
             }
         });
 

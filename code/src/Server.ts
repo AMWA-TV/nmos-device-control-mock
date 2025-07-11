@@ -1253,7 +1253,9 @@ try
     app.get('/x-nmos/configuration/:version/rolePaths/:rolePath/bulkProperties', function (req, res) {
         let recurse: boolean = req.query.recurse === 'false' ? false : true;
 
-        console.log(`BulkProperties GET ${req.url}, recurse: ${recurse}`);
+        let includeDescriptors: boolean = req.query.includeDescriptors === 'false' ? false : true;
+
+        console.log(`BulkProperties GET ${req.url}, recurse: ${recurse}, includeDescriptors: ${includeDescriptors}`);
 
         let rolePath = req.params.rolePath.split('.');
 
@@ -1262,7 +1264,7 @@ try
         {
             let response = new NcMethodResultBulkPropertiesHolder(
                 NcMethodStatus.OK, new NcBulkPropertiesHolder("AMWA NMOS Device Control Mock Application|v1.0",
-                member.GetAllProperties(recurse)));
+                member.GetAllProperties(recurse, includeDescriptors)));
 
             res.writeHead(200, { 'Content-Type': 'application/json' });
             res.write(JSON.stringify(response, jsonIgnoreReplacer));
