@@ -1182,7 +1182,7 @@ export class ExampleControlsBlock extends NcBlock
     {
         let myNotices = new Array<NcPropertyRestoreNotice>();
 
-        let descriptor = ExampleControlsBlock.GetClassDescriptor(true);
+        let descriptor = ExampleControl.GetClassDescriptor(true);
         var propDescriptors: { [id: string] : NcPropertyDescriptor; } = {};
 
         descriptor.properties.forEach(p => {

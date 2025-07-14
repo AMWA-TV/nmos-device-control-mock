@@ -487,7 +487,7 @@ export class NcIdentBeacon extends NcWorker
 
             let myNotices = new Array<NcPropertyRestoreNotice>();
 
-            let descriptor = NcIdentBeacon.GetClassDescriptor(false);
+            let descriptor = NcIdentBeacon.GetClassDescriptor(true);
             var propDescriptors: { [id: string] : NcPropertyDescriptor; } = {};
 
             descriptor.properties.forEach(p => {
@@ -702,7 +702,7 @@ export class NcStatusMonitor extends NcWorker
 
             let myNotices = new Array<NcPropertyRestoreNotice>();
 
-            let descriptor = NcStatusMonitor.GetClassDescriptor(false);
+            let descriptor = NcStatusMonitor.GetClassDescriptor(true);
             var propDescriptors: { [id: string] : NcPropertyDescriptor; } = {};
 
             descriptor.properties.forEach(p => {
@@ -1545,7 +1545,7 @@ export class NcReceiverMonitor extends NcStatusMonitor implements IReceiverMonit
 
             let myNotices = new Array<NcPropertyRestoreNotice>();
 
-            let descriptor = NcReceiverMonitor.GetClassDescriptor(false);
+            let descriptor = NcReceiverMonitor.GetClassDescriptor(true);
             var propDescriptors: { [id: string] : NcPropertyDescriptor; } = {};
 
             descriptor.properties.forEach(p => {
@@ -2046,7 +2046,7 @@ export class NcSenderMonitor extends NcStatusMonitor implements ISenderMonitorin
 
             let myNotices = new Array<NcPropertyRestoreNotice>();
 
-            let descriptor = NcSenderMonitor.GetClassDescriptor(false);
+            let descriptor = NcSenderMonitor.GetClassDescriptor(true);
             var propDescriptors: { [id: string] : NcPropertyDescriptor; } = {};
 
             descriptor.properties.forEach(p => {
@@ -3187,7 +3187,7 @@ export class ExampleControl extends NcWorker implements IMonitorManager
 
             let myNotices = new Array<NcPropertyRestoreNotice>();
 
-            let descriptor = ExampleControl.GetClassDescriptor(false);
+            let descriptor = ExampleControl.GetClassDescriptor(true);
             var propDescriptors: { [id: string] : NcPropertyDescriptor; } = {};
 
             descriptor.properties.forEach(p => {

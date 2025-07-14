@@ -464,7 +464,7 @@ export class NcDeviceManager extends NcManager
 
             let myNotices = new Array<NcPropertyRestoreNotice>();
 
-            let descriptor = NcDeviceManager.GetClassDescriptor(false);
+            let descriptor = NcDeviceManager.GetClassDescriptor(true);
             var propDescriptors: { [id: string] : NcPropertyDescriptor; } = {};
 
             descriptor.properties.forEach(p => {
@@ -1162,7 +1162,7 @@ export class NcClassManager extends NcManager
 
             let myNotices = new Array<NcPropertyRestoreNotice>();
 
-            let descriptor = NcClassManager.GetClassDescriptor(false);
+            let descriptor = NcClassManager.GetClassDescriptor(true);
             var propDescriptors: { [id: string] : NcPropertyDescriptor; } = {};
 
             descriptor.properties.forEach(p => {
