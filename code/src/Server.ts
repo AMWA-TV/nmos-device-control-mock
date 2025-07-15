@@ -254,7 +254,6 @@ try
     const rootBlock = new RootBlock(
         true,
         null,
-        'root',
         'Root',
         null,
         null,

@@ -32,8 +32,6 @@ export class NcBlock extends NcObject
 {
     public static staticClassID: number[] = [ 1, 1 ];
 
-    public static readonly RootOid: number = 1;
-
     @myIdDecorator('1p1')
     public override classID: number[] = NcBlock.staticClassID;
 
@@ -827,10 +825,13 @@ export class RootBlock extends NcBlock implements IRootContext
 {
     private oidAllocations: { [id: number] : string; } = {};
 
+    public static readonly RootOid: number = 1;
+
+    public static StaticRole: string = "root";
+
     public constructor(
         constantOid: boolean,
         ownerObject: NcObject | null,
-        role: string,
         userLabel: string,
         touchpoints: NcTouchpoint[] | null,
         runtimePropertyConstraints: NcPropertyConstraints[] | null,
@@ -841,10 +842,10 @@ export class RootBlock extends NcBlock implements IRootContext
         maxMembers: number | null = null)
     {
         super(
-            NcBlock.RootOid,
+            RootBlock.RootOid,
             constantOid,
             ownerObject,
-            role,
+            RootBlock.StaticRole,
             userLabel,
             touchpoints,
             runtimePropertyConstraints,
@@ -855,7 +856,7 @@ export class RootBlock extends NcBlock implements IRootContext
             null,
             maxMembers);
 
-        this.oidAllocations[NcBlock.RootOid] = this.GetRolePathUrl();
+        this.oidAllocations[RootBlock.RootOid] = this.GetRolePathUrl();
     }
 
     public AllocateOid(path: string) : number
