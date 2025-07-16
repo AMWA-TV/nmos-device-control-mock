@@ -11,7 +11,7 @@ import { NmosDevice } from './NmosDevice';
 import { RegistrationClient } from './RegistrationClient';
 import { SessionManager } from './SessionManager';
 import { ExampleControlsBlock, NcBlock, RootBlock } from './NCModel/Blocks';
-import { NcClassManager, NcDeviceManager } from './NCModel/Managers';
+import { NcBulkPropertiesManager, NcClassManager, NcDeviceManager } from './NCModel/Managers';
 import { ConfigApiArguments, ConfigApiValue, NcBulkPropertiesHolder, NcMethodResultBulkPropertiesHolder, NcMethodResultClassDescriptor, NcMethodResultDatatypeDescriptor, NcMethodResultError, NcMethodResultObjectPropertiesSetValidation, NcMethodStatus, NcTouchpointNmos, NcTouchpointResourceNmos, RestoreBody } from './NCModel/Core';
 import { ExampleControl, GainControl, NcIdentBeacon, NcReceiverMonitor, NcSenderMonitor } from './NCModel/Features';
 import { ProtocolError, ProtocolSubscription } from './NCProtocol/Commands';
@@ -418,7 +418,17 @@ try
 
     exampleControlsBlock.UpdateMembers([ exampleControl ]);
 
-    rootBlock.UpdateMembers([ deviceManager, classManager, receiversBlock, sendersBlock, stereoGainBlock, exampleControlsBlock, identBeacon ]);
+    const bulkPropertiesManager = new NcBulkPropertiesManager(
+        rootBlock.AllocateOid(rootBlock.GetRolePathForMember(NcBulkPropertiesManager.staticRole).join('.')),
+        true,
+        rootBlock,
+        'Bulk properties manager',
+        null,
+        null,
+        "The BulkPropertiesManager offers a central model for getting and setting multiple properties on multiple role paths. It also allows pre-validation of a data set before attempting these get and set operations",
+        sessionManager);
+
+    rootBlock.UpdateMembers([ deviceManager, classManager, bulkPropertiesManager, receiversBlock, sendersBlock, stereoGainBlock, exampleControlsBlock, identBeacon ]);
 
     async function doAsync () {
         await registrationClient.RegisterOrUpdateResource('node', myNode);

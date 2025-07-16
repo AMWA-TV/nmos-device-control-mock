@@ -2,7 +2,7 @@ import { jsonIgnoreReplacer, jsonIgnore } from 'json-ignore';
 import { CommandResponseError, CommandResponseNoValue, CommandResponseWithValue } from '../NCProtocol/Commands';
 import { NcPropertyChangedEventData } from '../NCProtocol/Notifications';
 import { INotificationContext } from '../SessionManager';
-import { NcBlock } from './Blocks';
+import { NcBlock, RootBlock } from './Blocks';
 import {
     BaseType,
     myIdDecorator,
@@ -56,7 +56,8 @@ import {
     NcTouchpointResource,
     NcTouchpointResourceNmos,
     NcTouchpointResourceNmosChannelMapping,
-    RestoreArguments} from './Core';
+    RestoreArguments,
+    NcRestoreMode} from './Core';
 import { ExampleDataType, ExampleControl, GainControl, NcIdentBeacon, NcReceiverMonitor, NcWorker, NcStatusMonitor, NcMethodResultCounters, NcCounter, NcSenderMonitor } from './Features';
 
 export abstract class NcManager extends NcObject
@@ -1261,6 +1262,122 @@ export class NcBulkPropertiesManager extends NcManager
             let key: string = `${id.level}p${id.index}`;
 
             return super.SetValidate(oid, id, value, handle);
+        }
+
+        return new CommandResponseError(handle, NcMethodStatus.BadOid, 'OID could not be found');
+    }
+
+    public override InvokeMethod(oid: number, methodId: NcElementId, args: { [key: string]: any; } | null, handle: number): CommandResponseNoValue 
+    {
+        if(oid == this.oid)
+        {
+            let key: string = `${methodId.level}m${methodId.index}`;
+
+            switch(key)
+            {
+                case '3m1': //GetPropertiesByPath
+                    {
+                        if(args != null &&
+                            'path' in args &&
+                            'recurse' in args &&
+                            'includeDescriptors' in args)
+                        {
+                            let rolePath = args['path'] as string[];
+                            let recurse = args['recurse'] as boolean;
+                            let includeDescriptors = args['includeDescriptors'] as boolean;
+
+                            let rootBlock = this.ownerObject as RootBlock;
+                            if(rootBlock && rolePath && recurse != undefined && includeDescriptors != undefined)
+                            {
+                                let member = rootBlock.FindMemberByRolePath(rolePath);
+                                if(member)
+                                {
+                                    let response = new NcMethodResultBulkPropertiesHolder(
+                                        NcMethodStatus.OK, new NcBulkPropertiesHolder("AMWA NMOS Device Control Mock Application|v1.0",
+                                        member.GetAllProperties(recurse, includeDescriptors)));
+
+                                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, response);
+                                }
+                                else
+                                    return new CommandResponseError(handle, NcMethodStatus.BadOid, 'Role path was not found');
+                            }
+                            else
+                                return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid arguments provided');
+                        }
+                        else
+                            return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid arguments provided');
+                    }
+                case '3m2': //ValidateSetPropertiesByPath
+                    {
+                        if(args != null &&
+                            'dataSet' in args &&
+                            'path' in args &&
+                            'recurse' in args &&
+                            'restoreMode' in args)
+                        {
+                            let dataSet = args['dataSet'] as NcBulkPropertiesHolder;
+                            let rolePath = args['path'] as string[];
+                            let recurse = args['recurse'] as boolean;
+                            let restoreMode = args['restoreMode'] as NcRestoreMode;
+
+                            let rootBlock = this.ownerObject as RootBlock;
+                            if(rootBlock && dataSet && rolePath && recurse != undefined && restoreMode != undefined)
+                            {
+                                let member = rootBlock.FindMemberByRolePath(rolePath);
+                                if(member)
+                                {
+                                    let response = new NcMethodResultObjectPropertiesSetValidation(
+                                        NcMethodStatus.OK,
+                                        member.Restore(new RestoreArguments(dataSet, recurse, restoreMode), false));
+
+                                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, response);
+                                }
+                                else
+                                    return new CommandResponseError(handle, NcMethodStatus.BadOid, 'Role path was not found');
+                            }
+                            else
+                                return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid arguments provided');
+                        }
+                        else
+                            return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid arguments provided');
+                    }
+                case '3m3': //SetPropertiesByPath
+                    {
+                        if(args != null &&
+                            'dataSet' in args &&
+                            'path' in args &&
+                            'recurse' in args &&
+                            'restoreMode' in args)
+                        {
+                            let dataSet = args['dataSet'] as NcBulkPropertiesHolder;
+                            let rolePath = args['path'] as string[];
+                            let recurse = args['recurse'] as boolean;
+                            let restoreMode = args['restoreMode'] as NcRestoreMode;
+
+                            let rootBlock = this.ownerObject as RootBlock;
+                            if(rootBlock && dataSet && rolePath && recurse != undefined && restoreMode != undefined)
+                            {
+                                let member = rootBlock.FindMemberByRolePath(rolePath);
+                                if(member)
+                                {
+                                    let response = new NcMethodResultObjectPropertiesSetValidation(
+                                        NcMethodStatus.OK,
+                                        member.Restore(new RestoreArguments(dataSet, recurse, restoreMode), true));
+
+                                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, response);
+                                }
+                                else
+                                    return new CommandResponseError(handle, NcMethodStatus.BadOid, 'Role path was not found');
+                            }
+                            else
+                                return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid arguments provided');
+                        }
+                        else
+                            return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid arguments provided');
+                    }
+                default:
+                    return super.InvokeMethod(oid, methodId, args, handle);
+            }
         }
 
         return new CommandResponseError(handle, NcMethodStatus.BadOid, 'OID could not be found');
