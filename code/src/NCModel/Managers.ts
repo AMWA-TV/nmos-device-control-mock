@@ -1274,7 +1274,8 @@ export class NcBulkPropertiesManager extends NcManager
             [ 
                 new NcMethodDescriptor(new NcElementId(3, 1), "GetPropertiesByPath", "NcMethodResultBulkPropertiesHolder", [
                     new NcParameterDescriptor("path", "NcRolePath", false, false, null, "The target role path"),
-                    new NcParameterDescriptor("recurse", "NcBoolean", false, false, null, "If true will return properties on specified path and all the nested paths")
+                    new NcParameterDescriptor("recurse", "NcBoolean", false, false, null, "If true will return properties on specified path and all the nested paths"),
+                    new NcParameterDescriptor("includeDescriptors", "NcBoolean", false, false, null, "If true, property holders returned will contain non-null property descriptors and for full backups the ClassManager role path will also be included")
                 ], "Get bulk object properties by given path"),
                 new NcMethodDescriptor(new NcElementId(3, 2), "ValidateSetPropertiesByPath", "NcMethodResultObjectPropertiesSetValidation", [
                     new NcParameterDescriptor("dataSet", "NcBulkPropertiesHolder", false, false, null, "The values offered (this may include read-only values and also paths which are not the target role path)"),
