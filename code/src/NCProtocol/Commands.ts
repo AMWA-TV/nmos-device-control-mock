@@ -24,24 +24,6 @@ export class CommandMsg extends ProtoMsg
     }
 }
 
-export class CommandResponseError extends ProtoMsg
-{
-    public result: { [key: string]: any };
-
-    constructor(
-        handle: number,
-        status: NcMethodStatus,
-        errorMessage: string | null)
-    {
-        super(handle);
-
-        this.result = {};
-        this.result['status'] = status;
-        if(errorMessage != null)
-            this.result['errorMessage'] = errorMessage;
-    }
-}
-
 export class CommandResponseNoValue extends ProtoMsg
 {
     public result: { [key: string]: any };
@@ -54,6 +36,20 @@ export class CommandResponseNoValue extends ProtoMsg
 
         this.result = {};
         this.result['status'] = status;
+    }
+}
+
+export class CommandResponseError extends CommandResponseNoValue
+{
+    constructor(
+        handle: number,
+        status: NcMethodStatus,
+        errorMessage: string | null)
+    {
+        super(handle, status);
+
+        if(errorMessage != null)
+            this.result['errorMessage'] = errorMessage;
     }
 }
 

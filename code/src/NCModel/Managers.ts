@@ -2,12 +2,12 @@ import { jsonIgnoreReplacer, jsonIgnore } from 'json-ignore';
 import { CommandResponseError, CommandResponseNoValue, CommandResponseWithValue } from '../NCProtocol/Commands';
 import { NcPropertyChangedEventData } from '../NCProtocol/Notifications';
 import { INotificationContext } from '../SessionManager';
-import { NcBlock } from './Blocks';
+import { NcBlock, RootBlock } from './Blocks';
 import {
     BaseType,
     myIdDecorator,
     NcBlockMemberDescriptor,
-    NcBulkValuesHolder,
+    NcBulkPropertiesHolder,
     NcClassDescriptor,
     NcDatatypeDescriptor,
     NcDatatypeDescriptorEnum,
@@ -24,7 +24,7 @@ import {
     NcMethodId,
     NcMethodResult,
     NcMethodResultBlockMemberDescriptors,
-    NcMethodResultBulkValuesHolder,
+    NcMethodResultBulkPropertiesHolder,
     NcMethodResultClassDescriptor,
     NcMethodResultDatatypeDescriptor,
     NcMethodResultError,
@@ -48,7 +48,7 @@ import {
     NcPropertyId,
     NcPropertyRestoreNotice,
     NcPropertyRestoreNoticeType,
-    NcPropertyValueHolder,
+    NcPropertyHolder,
     NcRestoreValidationStatus,
     NcTouchpoint,
     NcTouchpointNmos,
@@ -56,7 +56,8 @@ import {
     NcTouchpointResource,
     NcTouchpointResourceNmos,
     NcTouchpointResourceNmosChannelMapping,
-    RestoreArguments} from './Core';
+    RestoreArguments,
+    NcRestoreMode} from './Core';
 import { ExampleDataType, ExampleControl, GainControl, NcIdentBeacon, NcReceiverMonitor, NcWorker, NcStatusMonitor, NcMethodResultCounters, NcCounter, NcSenderMonitor } from './Features';
 
 export abstract class NcManager extends NcObject
@@ -360,6 +361,36 @@ export class NcDeviceManager extends NcManager
         return new CommandResponseError(handle, NcMethodStatus.BadOid, 'OID could not be found');
     }
 
+    public override SetValidate(oid: number, id: NcElementId, value: any, handle: number) : CommandResponseNoValue
+    {
+        if(oid == this.oid)
+        {
+            let key: string = `${id.level}p${id.index}`;
+
+            switch(key)
+            {
+                case '3p1':
+                case '3p2':
+                case '3p3':
+                case '3p4':
+                case '3p8':
+                case '3p9':
+                case '3p10':
+                    return new CommandResponseError(handle, NcMethodStatus.Readonly, 'Property is readonly');
+                case '3p5':
+                    return new CommandResponseNoValue(handle, NcMethodStatus.OK);
+                case '3p6':
+                    return new CommandResponseNoValue(handle, NcMethodStatus.OK);
+                case '3p7':
+                    return new CommandResponseNoValue(handle, NcMethodStatus.OK);
+                default:
+                    return super.SetValidate(oid, id, value, handle);
+            }
+        }
+
+        return new CommandResponseError(handle, NcMethodStatus.BadOid, 'OID could not be found');
+    }
+
     public static override GetClassDescriptor(includeInherited: boolean): NcClassDescriptor
     {
         let currentClassDescriptor = new NcClassDescriptor(`${NcDeviceManager.name} class descriptor`,
@@ -392,24 +423,31 @@ export class NcDeviceManager extends NcManager
         return currentClassDescriptor;
     }
 
-    public override GetAllProperties(recurse: boolean) : NcObjectPropertiesHolder[]
+    public override GetAllProperties(recurse: boolean, includeDescriptors: boolean) : NcObjectPropertiesHolder[]
     {
+        let descriptor = NcDeviceManager.GetClassDescriptor(false);
+        var propDescriptors: { [id: string] : NcPropertyDescriptor; } = {};
+
+        descriptor.properties.forEach(p => {
+            propDescriptors[NcElementId.ToPropertyString(p.id)] = p;
+        });
+
         let properties = [
             new NcObjectPropertiesHolder(this.GetRolePath(), [], [
-                new NcPropertyValueHolder(new NcPropertyId(3, 1), "ncVersion", "NcVersionCode", true, this.ncVersion),
-                new NcPropertyValueHolder(new NcPropertyId(3, 2), "manufacturer", "NcManufacturer", true, this.manufacturer),
-                new NcPropertyValueHolder(new NcPropertyId(3, 3), "product", "NcProduct", true, this.product),
-                new NcPropertyValueHolder(new NcPropertyId(3, 4), "serialNumber", "NcString", true, this.serialNumber),
-                new NcPropertyValueHolder(new NcPropertyId(3, 5), "userInventoryCode", "NcString", false, this.userInventoryCode),
-                new NcPropertyValueHolder(new NcPropertyId(3, 6), "deviceName", "NcString", false, this.deviceName),
-                new NcPropertyValueHolder(new NcPropertyId(3, 7), "deviceRole", "NcString", false, this.deviceRole),
-                new NcPropertyValueHolder(new NcPropertyId(3, 8), "operationalState", "NcDeviceOperationalState", true, this.operationalState),
-                new NcPropertyValueHolder(new NcPropertyId(3, 9), "resetCause", "NcResetCause", true, this.resetCause),
-                new NcPropertyValueHolder(new NcPropertyId(3, 10), "message", "NcString", true, this.message),
+                new NcPropertyHolder(new NcPropertyId(3, 1), includeDescriptors ? propDescriptors['3p1'] : null, this.ncVersion),
+                new NcPropertyHolder(new NcPropertyId(3, 2), includeDescriptors ? propDescriptors['3p2'] : null, this.manufacturer),
+                new NcPropertyHolder(new NcPropertyId(3, 3), includeDescriptors ? propDescriptors['3p3'] : null, this.product),
+                new NcPropertyHolder(new NcPropertyId(3, 4), includeDescriptors ? propDescriptors['3p4'] : null, this.serialNumber),
+                new NcPropertyHolder(new NcPropertyId(3, 5), includeDescriptors ? propDescriptors['3p5'] : null, this.userInventoryCode),
+                new NcPropertyHolder(new NcPropertyId(3, 6), includeDescriptors ? propDescriptors['3p6'] : null, this.deviceName),
+                new NcPropertyHolder(new NcPropertyId(3, 7), includeDescriptors ? propDescriptors['3p7'] : null, this.deviceRole),
+                new NcPropertyHolder(new NcPropertyId(3, 8), includeDescriptors ? propDescriptors['3p8'] : null, this.operationalState),
+                new NcPropertyHolder(new NcPropertyId(3, 9), includeDescriptors ? propDescriptors['3p9'] : null, this.resetCause),
+                new NcPropertyHolder(new NcPropertyId(3, 10), includeDescriptors ? propDescriptors['3p10'] : null, this.message),
             ], [], this.isRebuildable)
         ];
 
-        properties[0].values = properties[0].values.concat(super.GetAllProperties(recurse)[0].values);
+        properties[0].values = properties[0].values.concat(super.GetAllProperties(recurse, includeDescriptors)[0].values);
 
         return properties;
     }
@@ -423,22 +461,44 @@ export class NcDeviceManager extends NcManager
         let myRestoreData = restoreArguments.dataSet.values.find(f => f.path.join('.') == localRolePath);
         if(myRestoreData)
         {
-            console.log(`Found restore data for path: ${localRolePath}`);
+            console.log(`Found restore data for path: ${localRolePath}, applyChanges: ${applyChanges}`);
 
             let myNotices = new Array<NcPropertyRestoreNotice>();
 
+            let descriptor = NcDeviceManager.GetClassDescriptor(true);
+            var propDescriptors: { [id: string] : NcPropertyDescriptor; } = {};
+
+            descriptor.properties.forEach(p => {
+                propDescriptors[NcElementId.ToPropertyString(p.id)] = p;
+            });
+
             myRestoreData.values.forEach(propertyData => {
                 let propertyId = NcElementId.ToPropertyString(propertyData.id);
-                if(propertyId != '1p6' && propertyId != '3p5' && propertyId != '3p6' && propertyId != '3p7')
+
+                //Perform further validation
+                let response : CommandResponseNoValue | null = null;
+
+                if(applyChanges)
+                    response = this.Set(this.oid, propertyData.id, propertyData.value, 0);
+                else
+                    response = this.SetValidate(this.oid, propertyData.id, propertyData.value, 0);
+
+                console.log(`Restore response for path: ${localRolePath}, id: ${propertyId}, name: ${propDescriptors[propertyId].name}, status: ${response.result['status']}, requested value: ${propertyData.value}`);
+
+                if(response.result['status'] != NcMethodStatus.OK)
+                {
+                    let noticeMessage = "Property could not be changed due to internal error";
+
+                    if(response.result['errorMessage'])
+                        noticeMessage = response.result['errorMessage']
+
+                    console.log(`Internal error notice for path: ${localRolePath}, id: ${propertyId}, name: ${propDescriptors[propertyId].name}, notice: ${noticeMessage}, requested value: ${propertyData.value}`);
+
                     myNotices.push(new NcPropertyRestoreNotice(
                         propertyData.id,
-                        propertyData.name,
+                        propDescriptors[propertyId].name,
                         NcPropertyRestoreNoticeType.Warning,
-                        "Property cannot be changed and will be left untouched"));
-                else if(applyChanges)
-                {
-                    //Perform further validation
-                    this.Set(this.oid, propertyData.id, propertyData.value, 0);
+                        noticeMessage));
                 }
             });
 
@@ -956,18 +1016,27 @@ export class NcClassManager extends NcManager
                 new NcEnumItemDescriptor("Beta", 2, "Beta option"),
                 new NcEnumItemDescriptor("Gamma", 3, "Gamma option")
             ], null, "Example enum data type"),
+            'ReceiverMonitorFaultEmulation': new NcDatatypeDescriptorEnum("ReceiverMonitorFaultEmulation", [
+                new NcEnumItemDescriptor("Healthy", 1, "Receiver monitor is healthy"),
+                new NcEnumItemDescriptor("NIC 1 down", 2, "Network interface 1 is down"),
+                new NcEnumItemDescriptor("All NICs down", 3, "All network interfaces are down")
+            ], null, "Receiver monitor fault emulation enum data type"),
+            'SenderMonitorFaultEmulation': new NcDatatypeDescriptorEnum("SenderMonitorFaultEmulation", [
+                new NcEnumItemDescriptor("Healthy", 1, "Sender monitor is healthy"),
+                new NcEnumItemDescriptor("Signal lost", 2, "Signal is lost")
+            ], null, "Receiver monitor fault emulation enum data type"),
             'ExampleDataType': ExampleDataType.GetTypeDescriptor(false),
             'NcRegex': new NcDatatypeDescriptorTypeDef("NcRegex", "NcString", false, null, "Regex pattern"),
             'NcPropertyConstraints': NcPropertyConstraints.GetTypeDescriptor(false),
             'NcPropertyConstraintsNumber': NcPropertyConstraintsNumber.GetTypeDescriptor(false),
             'NcPropertyConstraintsString': NcPropertyConstraintsString.GetTypeDescriptor(false),
-            'NcBulkValuesHolder': NcBulkValuesHolder.GetTypeDescriptor(false),
-            'NcMethodResultBulkValuesHolder': NcMethodResultBulkValuesHolder.GetTypeDescriptor(false),
+            'NcBulkPropertiesHolder': NcBulkPropertiesHolder.GetTypeDescriptor(false),
+            'NcMethodResultBulkPropertiesHolder': NcMethodResultBulkPropertiesHolder.GetTypeDescriptor(false),
             'NcMethodResultObjectPropertiesSetValidation': NcMethodResultObjectPropertiesSetValidation.GetTypeDescriptor(false),
             'NcObjectPropertiesHolder': NcObjectPropertiesHolder.GetTypeDescriptor(false),
             'NcObjectPropertiesSetValidation': NcObjectPropertiesSetValidation.GetTypeDescriptor(false),
             'NcPropertyRestoreNotice': NcPropertyRestoreNotice.GetTypeDescriptor(false),
-            'NcPropertyValueHolder': NcPropertyValueHolder.GetTypeDescriptor(false),
+            'NcPropertyHolder': NcPropertyHolder.GetTypeDescriptor(false),
             'NcPropertyRestoreNoticeType': new NcDatatypeDescriptorEnum("NcPropertyRestoreNoticeType", [
                 new NcEnumItemDescriptor("Warning", 300, "Warning property restore notice"),
                 new NcEnumItemDescriptor("Error", 400, "Error property restore notice")
@@ -1024,13 +1093,13 @@ export class NcClassManager extends NcManager
             case 'NcMethodResultId': return NcMethodResultId.GetTypeDescriptor(true);
             case 'NcMethodResultLength': return NcMethodResultLength.GetTypeDescriptor(true);
             case 'NcMethodResultCounters': return NcMethodResultCounters.GetTypeDescriptor(true);
-            case 'NcBulkValuesHolder': return NcBulkValuesHolder.GetTypeDescriptor(true);
-            case 'NcMethodResultBulkValuesHolder': return NcMethodResultBulkValuesHolder.GetTypeDescriptor(true);
+            case 'NcBulkPropertiesHolder': return NcBulkPropertiesHolder.GetTypeDescriptor(true);
+            case 'NcMethodResultBulkPropertiesHolder': return NcMethodResultBulkPropertiesHolder.GetTypeDescriptor(true);
             case 'NcMethodResultObjectPropertiesSetValidation': return NcMethodResultObjectPropertiesSetValidation.GetTypeDescriptor(true);
             case 'NcObjectPropertiesHolder': return NcObjectPropertiesHolder.GetTypeDescriptor(true);
             case 'NcObjectPropertiesSetValidation': return NcObjectPropertiesSetValidation.GetTypeDescriptor(true);
             case 'NcPropertyRestoreNotice': return NcPropertyRestoreNotice.GetTypeDescriptor(true);
-            case 'NcPropertyValueHolder': return NcPropertyValueHolder.GetTypeDescriptor(true);
+            case 'NcPropertyHolder': return NcPropertyHolder.GetTypeDescriptor(true);
             default: return this.dataTypesRegister[name];
         }
     }
@@ -1055,18 +1124,30 @@ export class NcClassManager extends NcManager
             return this.dataTypesRegister[name];
     }
 
-    public override GetAllProperties(recurse: boolean) : NcObjectPropertiesHolder[]
+    public override GetAllProperties(recurse: boolean, includeDescriptors: boolean) : NcObjectPropertiesHolder[]
     {
-        let properties = [
-            new NcObjectPropertiesHolder(this.GetRolePath(), [], [
-                new NcPropertyValueHolder(new NcPropertyId(3, 1), "controlClasses", "NcClassDescriptor", true, this.controlClasses),
-                new NcPropertyValueHolder(new NcPropertyId(3, 2), "datatypes", "NcDatatypeDescriptor", true, this.dataTypes)
-            ], [], this.isRebuildable)
-        ];
+        if(includeDescriptors)
+        {
+            let descriptor = NcClassManager.GetClassDescriptor(false);
+            var propDescriptors: { [id: string] : NcPropertyDescriptor; } = {};
 
-        properties[0].values = properties[0].values.concat(super.GetAllProperties(recurse)[0].values);
+            descriptor.properties.forEach(p => {
+                propDescriptors[NcElementId.ToPropertyString(p.id)] = p;
+            });
 
-        return properties;
+            let properties = [
+                new NcObjectPropertiesHolder(this.GetRolePath(), [], [
+                    new NcPropertyHolder(new NcPropertyId(3, 1), propDescriptors['3p1'], this.controlClasses),
+                    new NcPropertyHolder(new NcPropertyId(3, 2), propDescriptors['3p2'], this.dataTypes)
+                ], [], this.isRebuildable)
+            ];
+
+            properties[0].values = properties[0].values.concat(super.GetAllProperties(recurse, true)[0].values);
+
+            return properties;
+        }
+        else
+            return [];
     }
 
     public override Restore(restoreArguments: RestoreArguments, applyChanges: Boolean) : NcObjectPropertiesSetValidation[]
@@ -1078,21 +1159,44 @@ export class NcClassManager extends NcManager
         let myRestoreData = restoreArguments.dataSet.values.find(f => f.path.join('.') == localRolePath);
         if(myRestoreData)
         {
-            console.log(`Found restore data for path: ${localRolePath}`);
+            console.log(`Found restore data for path: ${localRolePath}, applyChanges: ${applyChanges}`);
 
             let myNotices = new Array<NcPropertyRestoreNotice>();
 
+            let descriptor = NcClassManager.GetClassDescriptor(true);
+            var propDescriptors: { [id: string] : NcPropertyDescriptor; } = {};
+
+            descriptor.properties.forEach(p => {
+                propDescriptors[NcElementId.ToPropertyString(p.id)] = p;
+            });
+
             myRestoreData.values.forEach(propertyData => {
-                if(NcElementId.ToPropertyString(propertyData.id) != '1p6')
+                let propertyId = NcElementId.ToPropertyString(propertyData.id);
+
+                //Perform further validation
+                let response : CommandResponseNoValue | null = null;
+
+                if(applyChanges)
+                    response = this.Set(this.oid, propertyData.id, propertyData.value, 0);
+                else
+                    response = this.SetValidate(this.oid, propertyData.id, propertyData.value, 0);
+
+                console.log(`Restore response for path: ${localRolePath}, id: ${propertyId}, name: ${propDescriptors[propertyId].name}, status: ${response.result['status']}, requested value: ${propertyData.value}`);
+
+                if(response.result['status'] != NcMethodStatus.OK)
+                {
+                    let noticeMessage = "Property could not be changed due to internal error";
+
+                    if(response.result['errorMessage'])
+                        noticeMessage = response.result['errorMessage']
+
+                    console.log(`Internal error notice for path: ${localRolePath}, id: ${propertyId}, name: ${propDescriptors[propertyId].name}, notice: ${noticeMessage}, requested value: ${propertyData.value}`);
+
                     myNotices.push(new NcPropertyRestoreNotice(
                         propertyData.id,
-                        propertyData.name,
+                        propDescriptors[propertyId].name,
                         NcPropertyRestoreNoticeType.Warning,
-                        "Property cannot be changed and will be left untouched"));
-                else if(applyChanges)
-                {
-                    //Perform further validation
-                    this.Set(this.oid, propertyData.id, propertyData.value, 0);
+                        noticeMessage));
                 }
             });
 
@@ -1151,24 +1255,153 @@ export class NcBulkPropertiesManager extends NcManager
         return new CommandResponseError(handle, NcMethodStatus.BadOid, 'OID could not be found');
     }
 
+    public override SetValidate(oid: number, id: NcElementId, value: any, handle: number) : CommandResponseNoValue
+    {
+        if(oid == this.oid)
+        {
+            let key: string = `${id.level}p${id.index}`;
+
+            return super.SetValidate(oid, id, value, handle);
+        }
+
+        return new CommandResponseError(handle, NcMethodStatus.BadOid, 'OID could not be found');
+    }
+
+    public override InvokeMethod(oid: number, methodId: NcElementId, args: { [key: string]: any; } | null, handle: number): CommandResponseNoValue 
+    {
+        if(oid == this.oid)
+        {
+            let key: string = `${methodId.level}m${methodId.index}`;
+
+            switch(key)
+            {
+                case '3m1': //GetPropertiesByPath
+                    {
+                        if(args != null &&
+                            'path' in args &&
+                            'recurse' in args &&
+                            'includeDescriptors' in args)
+                        {
+                            let rolePath = args['path'] as string[];
+                            let recurse = args['recurse'] as boolean;
+                            let includeDescriptors = args['includeDescriptors'] as boolean;
+
+                            let rootBlock = this.ownerObject as RootBlock;
+                            if(rootBlock && rolePath && recurse != undefined && includeDescriptors != undefined)
+                            {
+                                let member = rootBlock.FindMemberByRolePath(rolePath);
+                                if(member)
+                                {
+                                    let response = new NcMethodResultBulkPropertiesHolder(
+                                        NcMethodStatus.OK, new NcBulkPropertiesHolder("AMWA NMOS Device Control Mock Application|v1.0",
+                                        member.GetAllProperties(recurse, includeDescriptors)));
+
+                                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, response);
+                                }
+                                else
+                                    return new CommandResponseError(handle, NcMethodStatus.BadOid, 'Role path was not found');
+                            }
+                            else
+                                return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid arguments provided');
+                        }
+                        else
+                            return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid arguments provided');
+                    }
+                case '3m2': //ValidateSetPropertiesByPath
+                    {
+                        if(args != null &&
+                            'dataSet' in args &&
+                            'path' in args &&
+                            'recurse' in args &&
+                            'restoreMode' in args)
+                        {
+                            let dataSet = args['dataSet'] as NcBulkPropertiesHolder;
+                            let rolePath = args['path'] as string[];
+                            let recurse = args['recurse'] as boolean;
+                            let restoreMode = args['restoreMode'] as NcRestoreMode;
+
+                            let rootBlock = this.ownerObject as RootBlock;
+                            if(rootBlock && dataSet && rolePath && recurse != undefined && restoreMode != undefined)
+                            {
+                                let member = rootBlock.FindMemberByRolePath(rolePath);
+                                if(member)
+                                {
+                                    let response = new NcMethodResultObjectPropertiesSetValidation(
+                                        NcMethodStatus.OK,
+                                        member.Restore(new RestoreArguments(dataSet, recurse, restoreMode), false));
+
+                                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, response);
+                                }
+                                else
+                                    return new CommandResponseError(handle, NcMethodStatus.BadOid, 'Role path was not found');
+                            }
+                            else
+                                return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid arguments provided');
+                        }
+                        else
+                            return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid arguments provided');
+                    }
+                case '3m3': //SetPropertiesByPath
+                    {
+                        if(args != null &&
+                            'dataSet' in args &&
+                            'path' in args &&
+                            'recurse' in args &&
+                            'restoreMode' in args)
+                        {
+                            let dataSet = args['dataSet'] as NcBulkPropertiesHolder;
+                            let rolePath = args['path'] as string[];
+                            let recurse = args['recurse'] as boolean;
+                            let restoreMode = args['restoreMode'] as NcRestoreMode;
+
+                            let rootBlock = this.ownerObject as RootBlock;
+                            if(rootBlock && dataSet && rolePath && recurse != undefined && restoreMode != undefined)
+                            {
+                                let member = rootBlock.FindMemberByRolePath(rolePath);
+                                if(member)
+                                {
+                                    let response = new NcMethodResultObjectPropertiesSetValidation(
+                                        NcMethodStatus.OK,
+                                        member.Restore(new RestoreArguments(dataSet, recurse, restoreMode), true));
+
+                                    return new CommandResponseWithValue(handle, NcMethodStatus.OK, response);
+                                }
+                                else
+                                    return new CommandResponseError(handle, NcMethodStatus.BadOid, 'Role path was not found');
+                            }
+                            else
+                                return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid arguments provided');
+                        }
+                        else
+                            return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid arguments provided');
+                    }
+                default:
+                    return super.InvokeMethod(oid, methodId, args, handle);
+            }
+        }
+
+        return new CommandResponseError(handle, NcMethodStatus.BadOid, 'OID could not be found');
+    }
+
     public static override GetClassDescriptor(includeInherited: boolean): NcClassDescriptor
     {
         let currentClassDescriptor = new NcClassDescriptor(`${NcBulkPropertiesManager.name} class descriptor`,
             NcBulkPropertiesManager.staticClassID, NcBulkPropertiesManager.name, NcBulkPropertiesManager.staticRole,
             [],
             [ 
-                new NcMethodDescriptor(new NcElementId(3, 1), "GetPropertiesByPath", "NcMethodResultBulkValuesHolder", [
+                new NcMethodDescriptor(new NcElementId(3, 1), "GetPropertiesByPath", "NcMethodResultBulkPropertiesHolder", [
                     new NcParameterDescriptor("path", "NcRolePath", false, false, null, "The target role path"),
-                    new NcParameterDescriptor("recurse", "NcBoolean", false, false, null, "If true will return properties on specified path and all the nested paths")
+                    new NcParameterDescriptor("recurse", "NcBoolean", false, false, null, "If true will return properties on specified path and all the nested paths"),
+                    new NcParameterDescriptor("includeDescriptors", "NcBoolean", false, false, null, "If true, property holders returned will contain non-null property descriptors and for full backups the ClassManager role path will also be included")
                 ], "Get bulk object properties by given path"),
                 new NcMethodDescriptor(new NcElementId(3, 2), "ValidateSetPropertiesByPath", "NcMethodResultObjectPropertiesSetValidation", [
-                    new NcParameterDescriptor("dataSet", "NcBulkValuesHolder", false, false, null, "The values offered (this may include read-only values and also paths which are not the target role path)"),
+                    new NcParameterDescriptor("dataSet", "NcBulkPropertiesHolder", false, false, null, "The values offered (this may include read-only values and also paths which are not the target role path)"),
                     new NcParameterDescriptor("path", "NcRolePath", false, false, null, "The target role path"),
                     new NcParameterDescriptor("recurse", "NcBoolean", false, false, null, "If true will validate properties on target path and all the nested paths"),
                     new NcParameterDescriptor("restoreMode", "NcRestoreMode", false, false, null, "Defines the restore mode to be applied")
                 ], "Validate bulk properties for setting by given paths"),
                 new NcMethodDescriptor(new NcElementId(3, 3), "SetPropertiesByPath", "NcMethodResultObjectPropertiesSetValidation", [
-                    new NcParameterDescriptor("dataSet", "NcBulkValuesHolder", false, false, null, "The values offered (this may include read-only values and also paths which are not the target role path)"),
+                    new NcParameterDescriptor("dataSet", "NcBulkPropertiesHolder", false, false, null, "The values offered (this may include read-only values and also paths which are not the target role path)"),
                     new NcParameterDescriptor("path", "NcRolePath", false, false, null, "The target role path"),
                     new NcParameterDescriptor("recurse", "NcBoolean", false, false, null, "If true will set properties on target path and all the nested paths"),
                     new NcParameterDescriptor("restoreMode", "NcRestoreMode", false, false, null, "Defines the restore mode to be applied")
@@ -1189,13 +1422,13 @@ export class NcBulkPropertiesManager extends NcManager
         return currentClassDescriptor;
     }
 
-    public override GetAllProperties(recurse: boolean) : NcObjectPropertiesHolder[]
+    public override GetAllProperties(recurse: boolean, includeDescriptors: boolean) : NcObjectPropertiesHolder[]
     {
         let properties = [
             new NcObjectPropertiesHolder(this.GetRolePath(), [], [], [], this.isRebuildable)
         ];
 
-        properties[0].values = properties[0].values.concat(super.GetAllProperties(recurse)[0].values);
+        properties[0].values = properties[0].values.concat(super.GetAllProperties(recurse, includeDescriptors)[0].values);
 
         return properties;
     }
@@ -1209,22 +1442,44 @@ export class NcBulkPropertiesManager extends NcManager
         let myRestoreData = restoreArguments.dataSet.values.find(f => f.path.join('.') == localRolePath);
         if(myRestoreData)
         {
-            console.log(`Found restore data for path: ${localRolePath}`);
+            console.log(`Found restore data for path: ${localRolePath}, applyChanges: ${applyChanges}`);
 
             let myNotices = new Array<NcPropertyRestoreNotice>();
 
+            let descriptor = NcBulkPropertiesManager.GetClassDescriptor(true);
+            var propDescriptors: { [id: string] : NcPropertyDescriptor; } = {};
+
+            descriptor.properties.forEach(p => {
+                propDescriptors[NcElementId.ToPropertyString(p.id)] = p;
+            });
+
             myRestoreData.values.forEach(propertyData => {
                 let propertyId = NcElementId.ToPropertyString(propertyData.id);
-                if(propertyId != '1p6')
+
+                //Perform further validation
+                let response : CommandResponseNoValue | null = null;
+
+                if(applyChanges)
+                    response = this.Set(this.oid, propertyData.id, propertyData.value, 0);
+                else
+                    response = this.SetValidate(this.oid, propertyData.id, propertyData.value, 0);
+
+                console.log(`Restore response for path: ${localRolePath}, id: ${propertyId}, name: ${propDescriptors[propertyId].name}, status: ${response.result['status']}, requested value: ${propertyData.value}`);
+
+                if(response.result['status'] != NcMethodStatus.OK)
+                {
+                    let noticeMessage = "Property could not be changed due to internal error";
+
+                    if(response.result['errorMessage'])
+                        noticeMessage = response.result['errorMessage']
+
+                    console.log(`Internal error notice for path: ${localRolePath}, id: ${propertyId}, name: ${propDescriptors[propertyId].name}, notice: ${noticeMessage}, requested value: ${propertyData.value}`);
+
                     myNotices.push(new NcPropertyRestoreNotice(
                         propertyData.id,
-                        propertyData.name,
+                        propDescriptors[propertyId].name,
                         NcPropertyRestoreNoticeType.Warning,
-                        "Property cannot be changed and will be left untouched"));
-                else if(applyChanges)
-                {
-                    //Perform further validation
-                    this.Set(this.oid, propertyData.id, propertyData.value, 0);
+                        noticeMessage));
                 }
             });
 

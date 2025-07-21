@@ -11,8 +11,8 @@ import { NmosDevice } from './NmosDevice';
 import { RegistrationClient } from './RegistrationClient';
 import { SessionManager } from './SessionManager';
 import { ExampleControlsBlock, NcBlock, RootBlock } from './NCModel/Blocks';
-import { NcClassManager, NcDeviceManager } from './NCModel/Managers';
-import { ConfigApiArguments, ConfigApiValue, NcBulkValuesHolder, NcMethodResultBulkValuesHolder, NcMethodResultClassDescriptor, NcMethodResultDatatypeDescriptor, NcMethodResultError, NcMethodResultObjectPropertiesSetValidation, NcMethodStatus, NcTouchpointNmos, NcTouchpointResourceNmos, RestoreBody } from './NCModel/Core';
+import { NcBulkPropertiesManager, NcClassManager, NcDeviceManager } from './NCModel/Managers';
+import { ConfigApiArguments, ConfigApiValue, NcBulkPropertiesHolder, NcMethodResultBulkPropertiesHolder, NcMethodResultClassDescriptor, NcMethodResultDatatypeDescriptor, NcMethodResultError, NcMethodResultObjectPropertiesSetValidation, NcMethodStatus, NcTouchpointNmos, NcTouchpointResourceNmos, RestoreBody } from './NCModel/Core';
 import { ExampleControl, GainControl, NcIdentBeacon, NcReceiverMonitor, NcSenderMonitor } from './NCModel/Features';
 import { ProtocolError, ProtocolSubscription } from './NCProtocol/Commands';
 import { MessageType, ProtocolWrapper } from './NCProtocol/Core';
@@ -254,7 +254,6 @@ try
     const rootBlock = new RootBlock(
         true,
         null,
-        'root',
         'Root',
         null,
         null,
@@ -409,11 +408,27 @@ try
         true,
         "Example control worker",
         sessionManager,
-        true);
+        true,
+        null,
+        receiverMonitor,
+        senderMonitor);
+
+    receiverMonitor.SetMonitorManager(exampleControl);
+    senderMonitor.SetMonitorManager(exampleControl);
 
     exampleControlsBlock.UpdateMembers([ exampleControl ]);
 
-    rootBlock.UpdateMembers([ deviceManager, classManager, receiversBlock, sendersBlock, stereoGainBlock, exampleControlsBlock, identBeacon ]);
+    const bulkPropertiesManager = new NcBulkPropertiesManager(
+        rootBlock.AllocateOid(rootBlock.GetRolePathForMember(NcBulkPropertiesManager.staticRole).join('.')),
+        true,
+        rootBlock,
+        'Bulk properties manager',
+        null,
+        null,
+        "The BulkPropertiesManager offers a central model for getting and setting multiple properties on multiple role paths. It also allows pre-validation of a data set before attempting these get and set operations",
+        sessionManager);
+
+    rootBlock.UpdateMembers([ deviceManager, classManager, bulkPropertiesManager, receiversBlock, sendersBlock, stereoGainBlock, exampleControlsBlock, identBeacon ]);
 
     async function doAsync () {
         await registrationClient.RegisterOrUpdateResource('node', myNode);
@@ -1247,16 +1262,18 @@ try
     app.get('/x-nmos/configuration/:version/rolePaths/:rolePath/bulkProperties', function (req, res) {
         let recurse: boolean = req.query.recurse === 'false' ? false : true;
 
-        console.log(`BulkProperties GET ${req.url}, recurse: ${recurse}`);
+        let includeDescriptors: boolean = req.query.includeDescriptors === 'false' ? false : true;
+
+        console.log(`BulkProperties GET ${req.url}, recurse: ${recurse}, includeDescriptors: ${includeDescriptors}`);
 
         let rolePath = req.params.rolePath.split('.');
 
         let member = rootBlock.FindMemberByRolePath(rolePath);
         if(member)
         {
-            let response = new NcMethodResultBulkValuesHolder(
-                NcMethodStatus.OK, new NcBulkValuesHolder("AMWA NMOS Device Control Mock Application|v1.0",
-                member.GetAllProperties(recurse)));
+            let response = new NcMethodResultBulkPropertiesHolder(
+                NcMethodStatus.OK, new NcBulkPropertiesHolder("AMWA NMOS Device Control Mock Application|v1.0",
+                member.GetAllProperties(recurse, includeDescriptors)));
 
             res.writeHead(200, { 'Content-Type': 'application/json' });
             res.write(JSON.stringify(response, jsonIgnoreReplacer));
