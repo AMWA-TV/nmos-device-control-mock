@@ -66,10 +66,12 @@ Building a Docker image is achieved using the build command ran from the same fo
 docker build -t nmos-device-control-mock .
 ```
 
+We map our `config` subfolder as a volume to our container when running. This needs to have the `config.json` file with suitable values for `address` (the address of your Docker host as this will be avertised in the NMOS APIs) and `registry_address` as 127.0.0.1 is not a suitable address when running in Docker. You also need to change the `outside_port` to the port you will map from your host to your container (we use 49999 in the following examples).
+
 Then we can run our `nmos-device-control-mock` Docker image directly:
 
 ```bash
-docker run --name=nmos-device-control-mock -v ./config:/app/dist/server/config -p 49999:80 nmos-device-control-mock
+docker run --name=nmos-device-control-mock -v ./config:/app/dist/server/config -p 49999:8080 nmos-device-control-mock
 ```
 
 or through the provided docker-compose.yml which refers to the image:
