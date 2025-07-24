@@ -1,0 +1,12 @@
+version: "3.8"
+
+services:
+  pc1:
+    image: nmos-device-control-mock:latest
+    restart: always
+    container_name: nmos-device-control-mock
+    hostname: nmos-device-control-mock
+    ports:
+      - 49999:80
+    volumes:
+      - ./config:/app/dist/server/config
