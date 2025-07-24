@@ -19,6 +19,7 @@ export class Configuration implements IConfiguration
     public sender_id: string;
     public address: string;
     public port: number;
+    public outside_port: number;
     public base_label: string;
     public registry_address: string;
     public registry_port: string;
@@ -49,6 +50,7 @@ export class Configuration implements IConfiguration
         this.base_label = config.base_label;
         this.address = config.address;
         this.port = config.port;
+        this.outside_port = config.outside_port;
         this.registry_address = config.registry_address;
         this.registry_port = config.registry_port;
         this.notify_without_subscriptions = config.notify_without_subscriptions;
@@ -62,6 +64,9 @@ export class Configuration implements IConfiguration
         this.streaming_profile = StreamingProfile.RTP_RAW;
         if(config.streaming_profile)
             this.streaming_profile = config.streaming_profile
+
+        if(this.outside_port == null || this.outside_port == undefined)
+            this.outside_port = this.port;
 
         this.CheckIdentifiers();
         this.CheckDistinguishingInformation();
@@ -180,6 +185,7 @@ export interface IConfiguration
     sender_id: string;
     address: string;
     port: number;
+    outside_port: number;
     base_label: string;
     registry_address: string;
     registry_port: string;

@@ -71,7 +71,7 @@ try
         config.node_id,
         config.base_label,
         config.address,
-        config.port,
+        config.outside_port,
         config.manufacturer,
         config.product,
         config.instance,
@@ -82,7 +82,7 @@ try
         config.node_id,
         config.base_label,
         config.address,
-        config.port,
+        config.outside_port,
         config.manufacturer,
         config.product,
         config.instance,
@@ -193,7 +193,7 @@ try
                 config.device_id,
                 config.base_label,
                 "urn:x-nmos:transport:rtp.mcast",
-                `http://${config.address}:${config.port}/x-nmos/node/v1.2/senders/${config.sender_id}/sdp`,
+                `http://${config.address}:${config.outside_port}/x-nmos/node/v1.2/senders/${config.sender_id}/sdp`,
                 [ 'eth0', 'eth1' ],
                 registrationClient);
         }
@@ -208,7 +208,7 @@ try
                 config.base_label,
                 "urn:x-nmos:transport:rtp.mcast",
                 100000,
-                `http://${config.address}:${config.port}/x-nmos/node/v1.2/senders/${config.sender_id}/sdp`,
+                `http://${config.address}:${config.outside_port}/x-nmos/node/v1.2/senders/${config.sender_id}/sdp`,
                 [ 'eth0' ],
                 registrationClient);
         }
@@ -1374,7 +1374,7 @@ try
         console.log(`Server started on port ${(server.address() as AddressInfo).port}`);
     });
 }
-catch (err) 
+catch (err)
 {
     console.log(err);
 }
