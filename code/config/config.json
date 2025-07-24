@@ -1,7 +1,7 @@
 {
     "address": "127.0.0.1",
     "port": 8080,
-    "outside_port": 49999,
+    "outside_port": 8080,
     "base_label": "NC-01",
     "registry_address": "127.0.0.1",
     "registry_port": 80,
