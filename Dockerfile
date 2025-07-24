@@ -36,7 +36,7 @@ RUN npm -v
 WORKDIR /app
 
 # Copy application code into the container
-COPY . /app
+COPY ./code /app
 
 # Install application dependencies
 RUN npm install

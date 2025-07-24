@@ -9,4 +9,4 @@ services:
     ports:
       - 49999:8080
     volumes:
-      - ./config:/app/dist/server/config
+      - ./code/config:/app/dist/server/config
