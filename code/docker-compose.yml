@@ -4,8 +4,8 @@ services:
   mock-01:
     image: nmos-device-control-mock:latest
     restart: always
-    container_name: nmos-device-control-mock
-    hostname: nmos-device-control-mock
+    container_name: nmos-device-control-mock-01
+    hostname: nmos-device-control-mock-01
     ports:
       - 49999:8080
     volumes:
