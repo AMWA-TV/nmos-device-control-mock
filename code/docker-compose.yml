@@ -1,7 +1,7 @@
 version: "3.8"
 
 services:
-  pc1:
+  mock-01:
     image: nmos-device-control-mock:latest
     restart: always
     container_name: nmos-device-control-mock
