@@ -51,7 +51,7 @@ RUN mkdir -p /app/server/config
 RUN rm -f /app/server/config/config.json
 
 # Expose a port
-EXPOSE 80
+EXPOSE 8080
 
 # Define the command to run the application when the container starts
 CMD ["node", "dist/server/Server.js"]

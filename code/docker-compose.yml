@@ -7,6 +7,6 @@ services:
     container_name: nmos-device-control-mock
     hostname: nmos-device-control-mock
     ports:
-      - 49999:80
+      - 49999:8080
     volumes:
       - ./config:/app/dist/server/config
