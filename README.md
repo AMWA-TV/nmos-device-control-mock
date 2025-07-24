@@ -54,6 +54,29 @@ These are the configuration keys which can be specified in the configuration fil
 * notify_without_subscriptions - boolean flag which is set to false by default, but it can be set to true if you would like to get all notifications on all sessions without subscribing (for debugging purposes only).
 * work_without_registry - boolean flag which is set to false by default, but it can be set to true if you would like the mock device not to attempt to register with an NMOS registry.
 * streaming_profile - enum option `[RTP_RAW, RTP_MPEG_TS]` specifying the streaming profile of senders and receivers (default is `RTP_RAW`)
+* outside_port - allows users to configure the port used in the NMOS APIs which might be different than the server binding port when running inside a container due to port mappings
+
+## Docker support
+
+The application has Docker support using the provided Dockerfile and the docker-compose.yml example file.
+
+Building a Docker image is achieved using the build command ran from the same folder where the Dockerfile is located:
+
+```bash
+docker build -t nmos-device-control-mock .
+```
+
+Then we can run our `nmos-device-control-mock` Docker image directly:
+
+```bash
+docker run --name=nmos-device-control-mock -v ./config:/app/dist/server/config -p 49999:80 nmos-device-control-mock
+```
+
+or through the provided docker-compose.yml which refers to the image:
+
+```bash
+docker compose -p nmos-control up -d
+```
 
 ## Specifications supported
 
