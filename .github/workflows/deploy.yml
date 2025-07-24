@@ -29,7 +29,7 @@ jobs:
     - name: Build
       uses: docker/build-push-action@v4.0.0
       with:
-        context: .
+        # context: .
         builder: ${{ steps.buildx.outputs.name }}
         platforms: linux/amd64,linux/arm64
         push: true
