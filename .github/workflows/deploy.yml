@@ -1,4 +1,4 @@
-name: Render
+name: Deploy
 on:
   workflow_dispatch:
 
