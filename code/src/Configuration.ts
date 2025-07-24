@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { jsonIgnoreReplacer } from 'json-ignore';
+import { jsonIgnore, jsonIgnoreReplacer } from 'json-ignore';
 const fs = require("fs");
 const writeFileAtomic = require('write-file-atomic')
 
@@ -30,11 +30,14 @@ export class Configuration implements IConfiguration
     public function: string;
     public streaming_profile: StreamingProfile;
 
+    @jsonIgnore()
+    private configFilePath: string = './dist/server/config/config.json';
+
     public constructor()
     {
         //read configuration
         console.log('Configuration: Reading config.json');
-        const jsonString = fs.readFileSync('./dist/server/config.json');
+        const jsonString = fs.readFileSync(this.configFilePath);
         let config: IConfiguration = JSON.parse(jsonString);
 
         this.node_id = config.node_id;
@@ -154,7 +157,7 @@ export class Configuration implements IConfiguration
     {
         console.log('Configuration- Writing back config.json');
         
-        writeFileAtomic('./dist/server/config.json', this.ToJson(), function (err) {
+        writeFileAtomic(this.configFilePath, this.ToJson(), function (err) {
             if (err)
             {
                 console.log('Error writing file', err);
