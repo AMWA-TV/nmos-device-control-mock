@@ -71,7 +71,7 @@ We map our `config` subfolder as a volume to our container when running. This ne
 Then we can run our `nmos-device-control-mock` Docker image directly:
 
 ```bash
-docker run --name=nmos-device-control-mock -v ./config:/app/dist/server/config -p 49999:8080 nmos-device-control-mock
+docker run --name=nmos-device-control-mock -v ./code/config:/app/dist/server/config -p 49999:8080 nmos-device-control-mock
 ```
 
 or through the provided docker-compose.yml which refers to the image:
