@@ -14,7 +14,9 @@ It has support for the NMOS Control & Monitoring suite:
 * BCP-008-01
 * BCP-008-02
 
-It also has support for IS-04 and IS-05 with some limitations:
+It also has support for the [IS-14 NMOS Device Configuration](https://specs.amwa.tv/is-14/) specification.
+
+It has support for IS-04 and IS-05 with some limitations:
 
 * It does not support DND-SD discovery (the NMOS registry endpoint has to be configured in the config.json file)
 * It does not support the IS-05 bulk API as it currently only runs 1 receiver and 1 sender
@@ -85,6 +87,7 @@ docker compose -p nmos-control up -d
 * [AMWA IS-04 NMOS Discovery and Registration](https://specs.amwa.tv/is-04)
 * [AMWA IS-05 NMOS Device Connection Management](https://specs.amwa.tv/is-05)
 * [AMWA IS-12 NMOS Control Protocol](https://specs.amwa.tv/is-12)
+* [AMWA IS-14 NMOS Device Configuration](https://specs.amwa.tv/is-14/)
 * [AMWA MS-05-01 NMOS Control Architecture](https://specs.amwa.tv/ms-05-01)
 * [AMWA MS-05-02 NMOS Control Framework](https://specs.amwa.tv/ms-05-02)
 * [AMWA BCP-002-02 NMOS Asset Distinguishing Information](https://specs.amwa.tv/bcp-002-02)
