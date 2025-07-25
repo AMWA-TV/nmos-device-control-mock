@@ -7,7 +7,9 @@ This is a mock [NMOS](https://specs.amwa.tv/nmos/) device with support for the [
 * BCP-008-01
 * BCP-008-02
 
-<br> It also has support for the [IS-14 NMOS Device Configuration](https://specs.amwa.tv/is-14/) specification.
+<br/>
+
+It also has support for the [IS-14 NMOS Device Configuration](https://specs.amwa.tv/is-14/) specification.
 
 It also has support for other NMOS specifications (for a full list check the GitHub [repo](https://github.com/AMWA-TV/nmos-device-control-mock)).
 
@@ -54,7 +56,9 @@ where:
 * registry_port - the port number of the NMOS Registration service
 * work_without_registry - controls if the device can operate without an NMOS Registration service
 
-<br> For details on the other configuration options check the GitHub [repo](https://github.com/AMWA-TV/nmos-device-control-mock).
+<br/>
+
+For details on the other configuration options check the GitHub [repo](https://github.com/AMWA-TV/nmos-device-control-mock).
 
 Running a container can be achieved using docker run:
 
