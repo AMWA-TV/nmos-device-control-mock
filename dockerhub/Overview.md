@@ -5,7 +5,7 @@ This is a mock [NMOS](https://specs.amwa.tv/nmos/) device with support for the [
 * MS-05-02
 * IS-12
 * BCP-008-01
-* BCP-008-02
+* BCP-008-02  
 
 It also has support for the [IS-14 NMOS Device Configuration](https://specs.amwa.tv/is-14/) specification.
 
@@ -52,7 +52,7 @@ where:
 * base_label - the base label fragment used in NMOS Resource labels
 * registry_address - the address of the NMOS Registration service
 * registry_port - the port number of the NMOS Registration service
-* work_without_registry - controls if the device can operate without an NMOS Registration service
+* work_without_registry - controls if the device can operate without an NMOS Registration service  
 
 For details on the other configuration options check the GitHub [repo](https://github.com/AMWA-TV/nmos-device-control-mock).
 
