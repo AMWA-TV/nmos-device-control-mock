@@ -21,10 +21,10 @@ jobs:
         tags: |
           # Tag all builds with branch name and sha
           type=sha,prefix=${{ github.ref_name }}-
-          # Tag if non-master branch with branch name and latest
-          type=raw,value=latest,prefix=${{ github.ref_name }}-,enable=${{ github.ref_name != 'master' }}
-          # Tag if master branch with latest (no branch name prefix)
-          type=raw,value=latest,enable=${{ github.ref_name == 'master' }}
+          # Tag if non-main branch with branch name and latest
+          type=raw,value=latest,prefix=${{ github.ref_name }}-,enable=${{ github.ref_name != 'main' }}
+          # Tag if main branch with latest (no branch name prefix)
+          type=raw,value=latest,enable=${{ github.ref_name == 'main' }}
 
     - name: Set up QEMU
       uses: docker/setup-qemu-action@v2.1.0
