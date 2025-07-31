@@ -112,6 +112,8 @@ export abstract class NcObject
     //'1m2'
     public Set(oid: number, id: NcElementId, value: any, handle: number) : CommandResponseNoValue
     {
+        //NcObject
+
         if(oid == this.oid)
         {
             let key: string = `${id.level}p${id.index}`;
@@ -125,9 +127,14 @@ export abstract class NcObject
                 case '1p5':
                     return new CommandResponseError(handle, NcMethodStatus.Readonly, 'Property is readonly');
                 case '1p6':
-                    this.userLabel = value;
-                    this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.userLabel, null);
-                    return new CommandResponseNoValue(handle, NcMethodStatus.OK);
+                    if(value != null && value != undefined && typeof value === 'string')
+                    {
+                        this.userLabel = value;
+                        this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.userLabel, null);
+                        return new CommandResponseNoValue(handle, NcMethodStatus.OK);
+                    }
+                    else
+                        return new CommandResponseError(handle, NcMethodStatus.ParameterError, "Invalid property value");
                 case '1p7':
                 case '1p8':
                     return new CommandResponseError(handle, NcMethodStatus.Readonly, 'Property is readonly');
@@ -141,6 +148,8 @@ export abstract class NcObject
 
     public SetValidate(oid: number, id: NcElementId, value: any, handle: number) : CommandResponseNoValue
     {
+        //NcObject
+
         if(oid == this.oid)
         {
             let key: string = `${id.level}p${id.index}`;
@@ -154,7 +163,10 @@ export abstract class NcObject
                 case '1p5':
                     return new CommandResponseError(handle, NcMethodStatus.Readonly, 'Property is readonly');
                 case '1p6':
-                    return new CommandResponseNoValue(handle, NcMethodStatus.OK);
+                    if(value != null && value != undefined && typeof value === 'string')
+                        return new CommandResponseNoValue(handle, NcMethodStatus.OK);
+                    else
+                        return new CommandResponseError(handle, NcMethodStatus.ParameterError, "Invalid property value");
                 case '1p7':
                 case '1p8':
                     return new CommandResponseError(handle, NcMethodStatus.Readonly, 'Property is readonly');
