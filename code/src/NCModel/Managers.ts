@@ -327,6 +327,8 @@ export class NcDeviceManager extends NcManager
     //'1m2'
     public override Set(oid: number, id: NcElementId, value: any, handle: number) : CommandResponseNoValue
     {
+        //NcDeviceManager
+
         if(oid == this.oid)
         {
             let key: string = `${id.level}p${id.index}`;
@@ -342,17 +344,32 @@ export class NcDeviceManager extends NcManager
                 case '3p10':
                     return new CommandResponseError(handle, NcMethodStatus.Readonly, 'Property is readonly');
                 case '3p5':
-                    this.userInventoryCode = value;
-                    this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.userInventoryCode, null);
-                    return new CommandResponseNoValue(handle, NcMethodStatus.OK);
+                    if((value != null && value != undefined && typeof value === 'string') || (value == null))
+                    {
+                        this.userInventoryCode = value;
+                        this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.userInventoryCode, null);
+                        return new CommandResponseNoValue(handle, NcMethodStatus.OK);
+                    }
+                    else
+                        return new CommandResponseError(handle, NcMethodStatus.ParameterError, "Invalid property value");
                 case '3p6':
-                    this.deviceName = value;
-                    this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.deviceName, null);
-                    return new CommandResponseNoValue(handle, NcMethodStatus.OK);
+                    if((value != null && value != undefined && typeof value === 'string') || (value == null))
+                    {
+                        this.deviceName = value;
+                        this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.deviceName, null);
+                        return new CommandResponseNoValue(handle, NcMethodStatus.OK);
+                    }
+                    else
+                        return new CommandResponseError(handle, NcMethodStatus.ParameterError, "Invalid property value");
                 case '3p7':
-                    this.deviceRole = value;
-                    this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.deviceRole, null);
-                    return new CommandResponseNoValue(handle, NcMethodStatus.OK);
+                    if((value != null && value != undefined && typeof value === 'string') || (value == null))
+                    {
+                        this.deviceRole = value;
+                        this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.deviceRole, null);
+                        return new CommandResponseNoValue(handle, NcMethodStatus.OK);
+                    }
+                    else
+                        return new CommandResponseError(handle, NcMethodStatus.ParameterError, "Invalid property value");
                 default:
                     return super.Set(oid, id, value, handle);
             }
@@ -363,6 +380,8 @@ export class NcDeviceManager extends NcManager
 
     public override SetValidate(oid: number, id: NcElementId, value: any, handle: number) : CommandResponseNoValue
     {
+        //NcDeviceManager
+
         if(oid == this.oid)
         {
             let key: string = `${id.level}p${id.index}`;
@@ -378,11 +397,12 @@ export class NcDeviceManager extends NcManager
                 case '3p10':
                     return new CommandResponseError(handle, NcMethodStatus.Readonly, 'Property is readonly');
                 case '3p5':
-                    return new CommandResponseNoValue(handle, NcMethodStatus.OK);
                 case '3p6':
-                    return new CommandResponseNoValue(handle, NcMethodStatus.OK);
                 case '3p7':
-                    return new CommandResponseNoValue(handle, NcMethodStatus.OK);
+                    if((value != null && value != undefined && typeof value === 'string') || (value == null))
+                        return new CommandResponseNoValue(handle, NcMethodStatus.OK);
+                    else
+                        return new CommandResponseError(handle, NcMethodStatus.ParameterError, "Invalid property value");
                 default:
                     return super.SetValidate(oid, id, value, handle);
             }
@@ -1246,11 +1266,7 @@ export class NcBulkPropertiesManager extends NcManager
     public override Set(oid: number, id: NcElementId, value: any, handle: number) : CommandResponseNoValue
     {
         if(oid == this.oid)
-        {
-            let key: string = `${id.level}p${id.index}`;
-
             return super.Set(oid, id, value, handle);
-        }
 
         return new CommandResponseError(handle, NcMethodStatus.BadOid, 'OID could not be found');
     }
@@ -1258,11 +1274,7 @@ export class NcBulkPropertiesManager extends NcManager
     public override SetValidate(oid: number, id: NcElementId, value: any, handle: number) : CommandResponseNoValue
     {
         if(oid == this.oid)
-        {
-            let key: string = `${id.level}p${id.index}`;
-
             return super.SetValidate(oid, id, value, handle);
-        }
 
         return new CommandResponseError(handle, NcMethodStatus.BadOid, 'OID could not be found');
     }

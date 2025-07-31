@@ -118,6 +118,8 @@ export class NcBlock extends NcObject
 
     public override SetValidate(oid: number, id: NcElementId, value: any, handle: number) : CommandResponseNoValue
     {
+        //NcBlock
+
         if(oid == this.oid)
         {
             let key: string = `${id.level}p${id.index}`;
