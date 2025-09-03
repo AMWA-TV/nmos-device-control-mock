@@ -14,7 +14,9 @@ It has support for the NMOS Control & Monitoring suite:
 * BCP-008-01
 * BCP-008-02
 
-It also has support for IS-04 and IS-05 with some limitations:
+It also has support for the [IS-14 NMOS Device Configuration](https://specs.amwa.tv/is-14/) specification.
+
+It has support for IS-04 and IS-05 with some limitations:
 
 * It does not support DND-SD discovery (the NMOS registry endpoint has to be configured in the config.json file)
 * It does not support the IS-05 bulk API as it currently only runs 1 receiver and 1 sender
@@ -54,12 +56,38 @@ These are the configuration keys which can be specified in the configuration fil
 * notify_without_subscriptions - boolean flag which is set to false by default, but it can be set to true if you would like to get all notifications on all sessions without subscribing (for debugging purposes only).
 * work_without_registry - boolean flag which is set to false by default, but it can be set to true if you would like the mock device not to attempt to register with an NMOS registry.
 * streaming_profile - enum option `[RTP_RAW, RTP_MPEG_TS]` specifying the streaming profile of senders and receivers (default is `RTP_RAW`)
+* outside_port - allows users to configure the port used in the NMOS APIs which might be different than the server binding port when running inside a container due to port mappings
+
+## Docker support
+
+The application has Docker support using the provided Dockerfile and the docker-compose.yml example file.
+
+Building a Docker image is achieved using the build command ran from the same folder where the Dockerfile is located:
+
+```bash
+docker build -t nmos-device-control-mock .
+```
+
+We map our `config` subfolder as a volume to our container when running. This needs to have the `config.json` file with suitable values for `address` (the address of your Docker host as this will be avertised in the NMOS APIs) and `registry_address` as 127.0.0.1 is not a suitable address when running in Docker. You also need to change the `outside_port` to the port you will map from your host to your container (we use 49999 in the following examples).
+
+Then we can run our `nmos-device-control-mock` Docker image directly:
+
+```bash
+docker run --name=nmos-device-control-mock -v ./code/config:/app/dist/server/config -p 49999:8080 nmos-device-control-mock
+```
+
+or through the provided docker-compose.yml which refers to the image:
+
+```bash
+docker compose -p nmos-control up -d
+```
 
 ## Specifications supported
 
 * [AMWA IS-04 NMOS Discovery and Registration](https://specs.amwa.tv/is-04)
 * [AMWA IS-05 NMOS Device Connection Management](https://specs.amwa.tv/is-05)
 * [AMWA IS-12 NMOS Control Protocol](https://specs.amwa.tv/is-12)
+* [AMWA IS-14 NMOS Device Configuration](https://specs.amwa.tv/is-14/)
 * [AMWA MS-05-01 NMOS Control Architecture](https://specs.amwa.tv/ms-05-01)
 * [AMWA MS-05-02 NMOS Control Framework](https://specs.amwa.tv/ms-05-02)
 * [AMWA BCP-002-02 NMOS Asset Distinguishing Information](https://specs.amwa.tv/bcp-002-02)

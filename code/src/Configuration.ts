@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { jsonIgnoreReplacer } from 'json-ignore';
+import { jsonIgnore, jsonIgnoreReplacer } from 'json-ignore';
 const fs = require("fs");
 const writeFileAtomic = require('write-file-atomic')
 
@@ -19,6 +19,7 @@ export class Configuration implements IConfiguration
     public sender_id: string;
     public address: string;
     public port: number;
+    public outside_port: number;
     public base_label: string;
     public registry_address: string;
     public registry_port: string;
@@ -30,11 +31,14 @@ export class Configuration implements IConfiguration
     public function: string;
     public streaming_profile: StreamingProfile;
 
+    @jsonIgnore()
+    private configFilePath: string = './dist/server/config/config.json';
+
     public constructor()
     {
         //read configuration
         console.log('Configuration: Reading config.json');
-        const jsonString = fs.readFileSync('./dist/server/config.json');
+        const jsonString = fs.readFileSync(this.configFilePath);
         let config: IConfiguration = JSON.parse(jsonString);
 
         this.node_id = config.node_id;
@@ -46,6 +50,7 @@ export class Configuration implements IConfiguration
         this.base_label = config.base_label;
         this.address = config.address;
         this.port = config.port;
+        this.outside_port = config.outside_port;
         this.registry_address = config.registry_address;
         this.registry_port = config.registry_port;
         this.notify_without_subscriptions = config.notify_without_subscriptions;
@@ -59,6 +64,9 @@ export class Configuration implements IConfiguration
         this.streaming_profile = StreamingProfile.RTP_RAW;
         if(config.streaming_profile)
             this.streaming_profile = config.streaming_profile
+
+        if(this.outside_port == null || this.outside_port == undefined)
+            this.outside_port = this.port;
 
         this.CheckIdentifiers();
         this.CheckDistinguishingInformation();
@@ -154,7 +162,7 @@ export class Configuration implements IConfiguration
     {
         console.log('Configuration- Writing back config.json');
         
-        writeFileAtomic('./dist/server/config.json', this.ToJson(), function (err) {
+        writeFileAtomic(this.configFilePath, this.ToJson(), function (err) {
             if (err)
             {
                 console.log('Error writing file', err);
@@ -177,6 +185,7 @@ export interface IConfiguration
     sender_id: string;
     address: string;
     port: number;
+    outside_port: number;
     base_label: string;
     registry_address: string;
     registry_port: string;

@@ -80,6 +80,8 @@ export abstract class NcWorker extends NcObject
     //'1m2'
     public override Set(oid: number, id: NcElementId, value: any, handle: number) : CommandResponseNoValue
     {
+        //NcWorker
+
         if(oid == this.oid)
         {
             let key: string = `${id.level}p${id.index}`;
@@ -87,9 +89,14 @@ export abstract class NcWorker extends NcObject
             switch(key)
             {
                 case '2p1':
-                    this.enabled = value;
-                    this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.enabled, null);
-                    return new CommandResponseNoValue(handle, NcMethodStatus.OK);
+                    if(value != null && value != undefined && typeof value === 'boolean')
+                    {
+                        this.enabled = value;
+                        this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.enabled, null);
+                        return new CommandResponseNoValue(handle, NcMethodStatus.OK);
+                    }
+                    else
+                        return new CommandResponseError(handle, NcMethodStatus.ParameterError, "Invalid property value");
                 default:
                     return super.Set(oid, id, value, handle);
             }
@@ -100,6 +107,8 @@ export abstract class NcWorker extends NcObject
 
     public override SetValidate(oid: number, id: NcElementId, value: any, handle: number) : CommandResponseNoValue
     {
+        //NcWorker
+
         if(oid == this.oid)
         {
             let key: string = `${id.level}p${id.index}`;
@@ -107,7 +116,10 @@ export abstract class NcWorker extends NcObject
             switch(key)
             {
                 case '2p1':
-                    return new CommandResponseNoValue(handle, NcMethodStatus.OK);
+                    if(value != null && value != undefined && typeof value === 'boolean')
+                        return new CommandResponseNoValue(handle, NcMethodStatus.OK);
+                    else
+                        return new CommandResponseError(handle, NcMethodStatus.ParameterError, "Invalid property value");
                 default:
                     return super.SetValidate(oid, id, value, handle);
             }
@@ -210,6 +222,8 @@ export class GainControl extends NcWorker
     //'1m2'
     public override Set(oid: number, id: NcElementId, value: any, handle: number) : CommandResponseNoValue
     {
+        //GainControl
+
         if(oid == this.oid)
         {
             let key: string = `${id.level}p${id.index}`;
@@ -217,9 +231,14 @@ export class GainControl extends NcWorker
             switch(key)
             {
                 case '3p1':
-                    this.gainValue = value;
-                    this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.gainValue, null);
-                    return new CommandResponseNoValue(handle, NcMethodStatus.OK);
+                    if(value != null && value != undefined && typeof value === 'number')
+                    {
+                        this.gainValue = value;
+                        this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.gainValue, null);
+                        return new CommandResponseNoValue(handle, NcMethodStatus.OK);
+                    }
+                    else
+                        return new CommandResponseError(handle, NcMethodStatus.ParameterError, "Invalid property value");
                 default:
                     return super.Set(oid, id, value, handle);
             }
@@ -230,6 +249,8 @@ export class GainControl extends NcWorker
 
     public override SetValidate(oid: number, id: NcElementId, value: any, handle: number) : CommandResponseNoValue
     {
+        //GainControl
+
         if(oid == this.oid)
         {
             let key: string = `${id.level}p${id.index}`;
@@ -237,7 +258,10 @@ export class GainControl extends NcWorker
             switch(key)
             {
                 case '3p1':
-                    return new CommandResponseNoValue(handle, NcMethodStatus.OK);
+                    if(value != null && value != undefined && typeof value === 'number')
+                        return new CommandResponseNoValue(handle, NcMethodStatus.OK);
+                    else
+                        return new CommandResponseError(handle, NcMethodStatus.ParameterError, "Invalid property value");
                 default:
                     return super.SetValidate(oid, id, value, handle);
             }
@@ -396,6 +420,8 @@ export class NcIdentBeacon extends NcWorker
     //'1m2'
     public override Set(oid: number, id: NcElementId, value: any, handle: number) : CommandResponseNoValue
     {
+        //NcIdentBeacon
+
         if(oid == this.oid)
         {
             let key: string = `${id.level}p${id.index}`;
@@ -403,9 +429,14 @@ export class NcIdentBeacon extends NcWorker
             switch(key)
             {
                 case '3p1':
-                    this.active = value;
-                    this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.active, null);
-                    return new CommandResponseNoValue(handle, NcMethodStatus.OK);
+                    if(value != null && value != undefined && typeof value === 'boolean')
+                    {
+                        this.active = value;
+                        this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.active, null);
+                        return new CommandResponseNoValue(handle, NcMethodStatus.OK);
+                    }
+                    else
+                        return new CommandResponseError(handle, NcMethodStatus.ParameterError, "Invalid property value");
                 default:
                     return super.Set(oid, id, value, handle);
             }
@@ -416,6 +447,8 @@ export class NcIdentBeacon extends NcWorker
 
     public override SetValidate(oid: number, id: NcElementId, value: any, handle: number) : CommandResponseNoValue
     {
+        //NcIdentBeacon
+
         if(oid == this.oid)
         {
             let key: string = `${id.level}p${id.index}`;
@@ -423,7 +456,10 @@ export class NcIdentBeacon extends NcWorker
             switch(key)
             {
                 case '3p1':
-                    return new CommandResponseNoValue(handle, NcMethodStatus.OK);
+                    if(value != null && value != undefined && typeof value === 'boolean')
+                        return new CommandResponseNoValue(handle, NcMethodStatus.OK);
+                    else
+                        return new CommandResponseError(handle, NcMethodStatus.ParameterError, "Invalid property value");
                 default:
                     return super.SetValidate(oid, id, value, handle);
             }
@@ -600,6 +636,8 @@ export class NcStatusMonitor extends NcWorker
     //'1m2'
     public override Set(oid: number, id: NcElementId, value: any, handle: number) : CommandResponseNoValue
     {
+        //NcStatusMonitor
+
         if(oid == this.oid)
         {
             let key: string = `${id.level}p${id.index}`;
@@ -610,9 +648,14 @@ export class NcStatusMonitor extends NcWorker
                 case '3p2':
                     return new CommandResponseError(handle, NcMethodStatus.Readonly, 'Property is readonly');
                 case '3p3':
-                    this.statusReportingDelay = value;
-                    this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.statusReportingDelay, null);
-                    return new CommandResponseNoValue(handle, NcMethodStatus.OK);
+                    if(value != null && value != undefined && typeof value === 'number' && value >= 0)
+                    {
+                        this.statusReportingDelay = value;
+                        this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.statusReportingDelay, null);
+                        return new CommandResponseNoValue(handle, NcMethodStatus.OK);
+                    }
+                    else
+                        return new CommandResponseError(handle, NcMethodStatus.ParameterError, "Invalid property value");
                 default:
                     return super.Set(oid, id, value, handle);
             }
@@ -623,6 +666,8 @@ export class NcStatusMonitor extends NcWorker
 
     public override SetValidate(oid: number, id: NcElementId, value: any, handle: number) : CommandResponseNoValue
     {
+        //NcStatusMonitor
+
         if(oid == this.oid)
         {
             let key: string = `${id.level}p${id.index}`;
@@ -633,7 +678,10 @@ export class NcStatusMonitor extends NcWorker
                 case '3p2':
                     return new CommandResponseError(handle, NcMethodStatus.Readonly, 'Property is readonly');
                 case '3p3':
-                    return new CommandResponseNoValue(handle, NcMethodStatus.OK);
+                    if(value != null && value != undefined && typeof value === 'number' && value >= 0)
+                        return new CommandResponseNoValue(handle, NcMethodStatus.OK);
+                    else
+                        return new CommandResponseError(handle, NcMethodStatus.ParameterError, "Invalid property value");
                 default:
                     return super.SetValidate(oid, id, value, handle);
             }
@@ -1328,6 +1376,8 @@ export class NcReceiverMonitor extends NcStatusMonitor implements IReceiverMonit
     //'1m2'
     public override Set(oid: number, id: NcElementId, value: any, handle: number) : CommandResponseNoValue
     {
+        //NcReceiverMonitor
+
         if(oid == this.oid)
         {
             let key: string = `${id.level}p${id.index}`;
@@ -1354,9 +1404,14 @@ export class NcReceiverMonitor extends NcStatusMonitor implements IReceiverMonit
                 case '4p13':
                     return new CommandResponseError(handle, NcMethodStatus.Readonly, 'Property is readonly');
                 case '4p14':
-                    this.autoResetCountersAndMessages = value;
-                    this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.autoResetCountersAndMessages, null);
-                    return new CommandResponseNoValue(handle, NcMethodStatus.OK);
+                    if(value != null && value != undefined && typeof value === 'boolean')
+                    {
+                        this.autoResetCountersAndMessages = value;
+                        this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.autoResetCountersAndMessages, null);
+                        return new CommandResponseNoValue(handle, NcMethodStatus.OK);
+                    }
+                    else
+                        return new CommandResponseError(handle, NcMethodStatus.ParameterError, "Invalid property value");
                 default:
                     return super.Set(oid, id, value, handle);
             }
@@ -1367,6 +1422,8 @@ export class NcReceiverMonitor extends NcStatusMonitor implements IReceiverMonit
 
     public override SetValidate(oid: number, id: NcElementId, value: any, handle: number) : CommandResponseNoValue
     {
+        //NcReceiverMonitor
+
         if(oid == this.oid)
         {
             let key: string = `${id.level}p${id.index}`;
@@ -1393,7 +1450,10 @@ export class NcReceiverMonitor extends NcStatusMonitor implements IReceiverMonit
                 case '4p13':
                     return new CommandResponseError(handle, NcMethodStatus.Readonly, 'Property is readonly');
                 case '4p14':
-                    return new CommandResponseNoValue(handle, NcMethodStatus.OK);
+                    if(value != null && value != undefined && typeof value === 'boolean')
+                        return new CommandResponseNoValue(handle, NcMethodStatus.OK);
+                    else
+                        return new CommandResponseError(handle, NcMethodStatus.ParameterError, "Invalid property value");
                 default:
                     return super.SetValidate(oid, id, value, handle);
             }
@@ -1837,6 +1897,8 @@ export class NcSenderMonitor extends NcStatusMonitor implements ISenderMonitorin
     //'1m2'
     public override Set(oid: number, id: NcElementId, value: any, handle: number) : CommandResponseNoValue
     {
+        //NcSenderMonitor
+
         if(oid == this.oid)
         {
             let key: string = `${id.level}p${id.index}`;
@@ -1863,9 +1925,14 @@ export class NcSenderMonitor extends NcStatusMonitor implements ISenderMonitorin
                 case '4p13':
                     return new CommandResponseError(handle, NcMethodStatus.Readonly, 'Property is readonly');
                 case '4p14':
-                    this.autoResetCountersAndMessages = value;
-                    this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.autoResetCountersAndMessages, null);
-                    return new CommandResponseNoValue(handle, NcMethodStatus.OK);
+                    if(value != null && value != undefined && typeof value === 'boolean')
+                    {
+                        this.autoResetCountersAndMessages = value;
+                        this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.autoResetCountersAndMessages, null);
+                        return new CommandResponseNoValue(handle, NcMethodStatus.OK);
+                    }
+                    else
+                        return new CommandResponseError(handle, NcMethodStatus.ParameterError, "Invalid property value");
                 default:
                     return super.Set(oid, id, value, handle);
             }
@@ -1876,6 +1943,8 @@ export class NcSenderMonitor extends NcStatusMonitor implements ISenderMonitorin
 
     public override SetValidate(oid: number, id: NcElementId, value: any, handle: number) : CommandResponseNoValue
     {
+        //NcSenderMonitor
+
         if(oid == this.oid)
         {
             let key: string = `${id.level}p${id.index}`;
@@ -1902,7 +1971,10 @@ export class NcSenderMonitor extends NcStatusMonitor implements ISenderMonitorin
                 case '4p13':
                     return new CommandResponseError(handle, NcMethodStatus.Readonly, 'Property is readonly');
                 case '4p14':
-                    return new CommandResponseNoValue(handle, NcMethodStatus.OK);
+                    if(value != null && value != undefined && typeof value === 'boolean')
+                        return new CommandResponseNoValue(handle, NcMethodStatus.OK);
+                    else
+                        return new CommandResponseError(handle, NcMethodStatus.ParameterError, "Invalid property value");
                 default:
                     return super.SetValidate(oid, id, value, handle);
             }
@@ -2341,6 +2413,8 @@ export class ExampleControl extends NcWorker implements IMonitorManager
     //'1m2'
     public override Set(oid: number, id: NcElementId, value: any, handle: number) : CommandResponseNoValue
     {
+        //ExampleControl
+
         if(oid == this.oid)
         {
             let key: string = `${id.level}p${id.index}`;
@@ -2348,62 +2422,119 @@ export class ExampleControl extends NcWorker implements IMonitorManager
             switch(key)
             {
                 case '3p1':
-                    this.enumProperty = value;
-                    this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.enumProperty, null);
-                    return new CommandResponseNoValue(handle, NcMethodStatus.OK);
+                    let valueEnum = value as ExampleEnum;
+                    if(valueEnum !== undefined && ExampleEnum.hasOwnProperty(valueEnum))
+                    {
+                        this.enumProperty = valueEnum;
+                        this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.enumProperty, null);
+                        return new CommandResponseNoValue(handle, NcMethodStatus.OK);
+                    }
+                    else
+                        return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid property value');
                 case '3p2':
-                    if(value.length > 0 && value.length <= 10)
+                    if(value != null && value != undefined && typeof value === 'string')
                     {
-                        this.stringProperty = value;
-                        this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.stringProperty, null);
-                        return new CommandResponseNoValue(handle, NcMethodStatus.OK);
+                        if(value.length > 0 && value.length <= 10)
+                        {
+                            this.stringProperty = value;
+                            this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.stringProperty, null);
+                            return new CommandResponseNoValue(handle, NcMethodStatus.OK);
+                        }
+                        else
+                            return new CommandResponseError(handle, NcMethodStatus.ParameterError, "Value does not respect constraints");
                     }
                     else
-                        return new CommandResponseError(handle, NcMethodStatus.ParameterError, "Value does not respect constraints");
+                        return new CommandResponseError(handle, NcMethodStatus.ParameterError, "Invalid property value");
                 case '3p3':
-                    if(value >= 0 && value <= 1000)
+                    if(value != null && value != undefined && typeof value === 'number')
                     {
-                        this.numberProperty = value;
-                        this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.numberProperty, null);
+                        if(value >= 0 && value <= 1000)
+                        {
+                            this.numberProperty = value;
+                            this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.numberProperty, null);
+                            return new CommandResponseNoValue(handle, NcMethodStatus.OK);
+                        }
+                        else
+                            return new CommandResponseError(handle, NcMethodStatus.ParameterError, "Value does not respect constraints");
+                    }
+                    else
+                        return new CommandResponseError(handle, NcMethodStatus.ParameterError, "Invalid property value");
+                case '3p4':
+                    if(value != null && value != undefined && typeof value === 'boolean')
+                    {
+                        this.booleanProperty = value;
+                        this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.booleanProperty, null);
                         return new CommandResponseNoValue(handle, NcMethodStatus.OK);
                     }
                     else
-                        return new CommandResponseError(handle, NcMethodStatus.ParameterError, "Value does not respect constraints");
-                case '3p4':
-                    this.booleanProperty = value;
-                    this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.booleanProperty, null);
-                    return new CommandResponseNoValue(handle, NcMethodStatus.OK);
+                        return new CommandResponseError(handle, NcMethodStatus.ParameterError, "Invalid property value");
                 case '3p5':
-                    this.objectProperty = value;
-                    this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.objectProperty, null);
-                    return new CommandResponseNoValue(handle, NcMethodStatus.OK);
+                    let valueObj = value as ExampleDataType;
+                    if(valueObj != null && valueObj !== undefined)
+                    {
+                        this.objectProperty = valueObj;
+                        this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.objectProperty, null);
+                        return new CommandResponseNoValue(handle, NcMethodStatus.OK);
+                    }
+                    else
+                        return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid property value');
                 case '3p6':
                 case '3p7':
                 case '3p8':
                         return new CommandResponseError(handle, NcMethodStatus.Readonly, "Property is read only");
                 case '3p9':
-                    this.stringSequence = value;
-                    this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.stringSequence, null);
-                    return new CommandResponseNoValue(handle, NcMethodStatus.OK);
+                    let stringSequence = value as string[];
+                    if(stringSequence != null && stringSequence !== undefined)
+                    {
+                        this.stringSequence = stringSequence;
+                        this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.stringSequence, null);
+                        return new CommandResponseNoValue(handle, NcMethodStatus.OK);
+                    }
+                    else
+                        return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid property value');
                 case '3p10':
-                    this.booleanSequence = value;
-                    this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.booleanSequence, null);
-                    return new CommandResponseNoValue(handle, NcMethodStatus.OK);
+                    let booleanSequence = value as boolean[];
+                    if(booleanSequence != null && booleanSequence !== undefined)
+                    {
+                        this.booleanSequence = booleanSequence;
+                        this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.booleanSequence, null);
+                        return new CommandResponseNoValue(handle, NcMethodStatus.OK);
+                    }
+                    else
+                        return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid property value');
                 case '3p11':
-                    this.enumSequence = value;
-                    this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.enumSequence, null);
-                    return new CommandResponseNoValue(handle, NcMethodStatus.OK);
+                    let enumSequence = value as ExampleEnum[];
+                    if(enumSequence != null && enumSequence !== undefined)
+                    {
+                        this.enumSequence = enumSequence;
+                        this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.enumSequence, null);
+                        return new CommandResponseNoValue(handle, NcMethodStatus.OK);
+                    }
+                    else
+                        return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid property value');
                 case '3p12':
-                    this.numberSequence = value;
-                    this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.numberSequence, null);
-                    return new CommandResponseNoValue(handle, NcMethodStatus.OK);
+                    let numberSequence = value as number[];
+                    if(numberSequence != null && numberSequence !== undefined)
+                    {
+                        this.numberSequence = numberSequence;
+                        this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.numberSequence, null);
+                        return new CommandResponseNoValue(handle, NcMethodStatus.OK);
+                    }
+                    else
+                        return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid property value');
                 case '3p13':
-                    this.objectSequence = value;
-                    this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.objectSequence, null);
-                    return new CommandResponseNoValue(handle, NcMethodStatus.OK);
+                    let objectSequence = value as ExampleDataType[];
+                    if(objectSequence != null && objectSequence !== undefined)
+                    {
+                        this.objectSequence = value;
+                        this.notificationContext.NotifyPropertyChanged(this.oid, id, NcPropertyChangeType.ValueChanged, this.objectSequence, null);
+                        return new CommandResponseNoValue(handle, NcMethodStatus.OK);
+                    }
+                    else
+                        return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid property value');
                 case '3p14':
                     let enumValueReceiverEmulation = value as ReceiverMonitorFaultEmulation;
-                    if(enumValueReceiverEmulation !== undefined)
+                    if(enumValueReceiverEmulation != null && enumValueReceiverEmulation !== undefined)
                     {
                         if(this.receiverMonitoringContext != null)
                         {
@@ -2436,7 +2567,7 @@ export class ExampleControl extends NcWorker implements IMonitorManager
                     }
                 case '3p15':
                     let enumValueSenderEmulation = value as SenderMonitorFaultEmulation;
-                    if(enumValueSenderEmulation !== undefined)
+                    if(enumValueSenderEmulation != null && enumValueSenderEmulation !== undefined)
                     {
                         if(this.senderMonitoringContext != null)
                         {
@@ -2475,6 +2606,8 @@ export class ExampleControl extends NcWorker implements IMonitorManager
 
     public override SetValidate(oid: number, id: NcElementId, value: any, handle: number) : CommandResponseNoValue
     {
+        //ExampleControl
+
         if(oid == this.oid)
         {
             let key: string = `${id.level}p${id.index}`;
@@ -2482,38 +2615,79 @@ export class ExampleControl extends NcWorker implements IMonitorManager
             switch(key)
             {
                 case '3p1':
-                    return new CommandResponseNoValue(handle, NcMethodStatus.OK);
+                    let valueEnum = value as ExampleEnum;
+                    if(valueEnum !== undefined && ExampleEnum.hasOwnProperty(valueEnum))
+                        return new CommandResponseNoValue(handle, NcMethodStatus.OK);
+                    else
+                        return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid property value');
                 case '3p2':
-                    if(value.length > 0 && value.length <= 10)
-                        return new CommandResponseNoValue(handle, NcMethodStatus.OK);
+                    if(value != null && value != undefined && typeof value === 'string')
+                    {
+                        if(value.length > 0 && value.length <= 10)
+                            return new CommandResponseNoValue(handle, NcMethodStatus.OK);
+                        else
+                            return new CommandResponseError(handle, NcMethodStatus.ParameterError, "Value does not respect constraints");
+                    }
                     else
-                        return new CommandResponseError(handle, NcMethodStatus.ParameterError, "Value does not respect constraints");
+                        return new CommandResponseError(handle, NcMethodStatus.ParameterError, "Invalid property value");
                 case '3p3':
-                    if(value >= 0 && value <= 1000)
+                    if(value != null && value != undefined && typeof value === 'number')
+                    {
+                        if(value >= 0 && value <= 1000)
+                            return new CommandResponseNoValue(handle, NcMethodStatus.OK);
+                        else
+                            return new CommandResponseError(handle, NcMethodStatus.ParameterError, "Value does not respect constraints");
+                    }
+                    else
+                        return new CommandResponseError(handle, NcMethodStatus.ParameterError, "Invalid property value");
+                case '3p4':
+                    if(value != null && value != undefined && typeof value === 'boolean')
                         return new CommandResponseNoValue(handle, NcMethodStatus.OK);
                     else
-                        return new CommandResponseError(handle, NcMethodStatus.ParameterError, "Value does not respect constraints");
-                case '3p4':
-                    return new CommandResponseNoValue(handle, NcMethodStatus.OK);
+                        return new CommandResponseError(handle, NcMethodStatus.ParameterError, "Invalid property value");
                 case '3p5':
-                    return new CommandResponseNoValue(handle, NcMethodStatus.OK);
+                    let valueObj = value as ExampleDataType;
+                    if(valueObj != null && valueObj !== undefined)
+                        return new CommandResponseNoValue(handle, NcMethodStatus.OK);
+                    else
+                        return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid property value');
                 case '3p6':
                 case '3p7':
                 case '3p8':
                     return new CommandResponseError(handle, NcMethodStatus.Readonly, "Property is read only");
                 case '3p9':
-                    return new CommandResponseNoValue(handle, NcMethodStatus.OK);
+                    let stringSequence = value as string[];
+                    if(stringSequence != null && stringSequence !== undefined)
+                        return new CommandResponseNoValue(handle, NcMethodStatus.OK);
+                    else
+                        return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid property value');
                 case '3p10':
-                    return new CommandResponseNoValue(handle, NcMethodStatus.OK);
+                    let booleanSequence = value as boolean[];
+                    if(booleanSequence != null && booleanSequence !== undefined)
+                        return new CommandResponseNoValue(handle, NcMethodStatus.OK);
+                    else
+                        return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid property value');
                 case '3p11':
-                    return new CommandResponseNoValue(handle, NcMethodStatus.OK);
+                    let enumSequence = value as ExampleEnum[];
+                    if(enumSequence != null && enumSequence !== undefined)
+                        return new CommandResponseNoValue(handle, NcMethodStatus.OK);
+                    else
+                        return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid property value');
                 case '3p12':
-                    return new CommandResponseNoValue(handle, NcMethodStatus.OK);
+                    let numberSequence = value as number[];
+                    if(numberSequence != null && numberSequence !== undefined)
+                        return new CommandResponseNoValue(handle, NcMethodStatus.OK);
+                    else
+                        return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid property value');
                 case '3p13':
-                    return new CommandResponseNoValue(handle, NcMethodStatus.OK);
+                    let objectSequence = value as ExampleDataType[];
+                    if(objectSequence != null && objectSequence !== undefined)
+                        return new CommandResponseNoValue(handle, NcMethodStatus.OK);
+                    else
+                        return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, 'Invalid property value');
                 case '3p14':
                     let enumValueReceiverEmulation = value as ReceiverMonitorFaultEmulation;
-                    if(enumValueReceiverEmulation !== undefined)
+                    if(enumValueReceiverEmulation != null && enumValueReceiverEmulation !== undefined)
                     {
                         if(this.receiverMonitoringContext != null && !this.receiverMonitoringContext.activated)
                             return new CommandResponseError(handle, NcMethodStatus.DeviceError, "Property can only be changed when associated receiver has been Activated");
@@ -2523,7 +2697,7 @@ export class ExampleControl extends NcWorker implements IMonitorManager
                         return new CommandResponseError(handle, NcMethodStatus.InvalidRequest, "Invalid property value");
                 case '3p15':
                     let enumValueSenderEmulation = value as SenderMonitorFaultEmulation;
-                    if(enumValueSenderEmulation !== undefined)
+                    if(enumValueSenderEmulation != null && enumValueSenderEmulation !== undefined)
                     {
                         if(this.senderMonitoringContext != null && !this.senderMonitoringContext.activated)
                             return new CommandResponseError(handle, NcMethodStatus.DeviceError, "Property can only be changed when associated receiver has been Activated");
