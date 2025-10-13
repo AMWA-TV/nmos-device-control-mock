@@ -32,7 +32,7 @@
     "timestamp-nano": "^1.0.1",
     "uuid": "^13.0.0",
     "wait-on": "^9.0.1",
-    "write-file-atomic": "^5.0.1",
+    "write-file-atomic": "^6.0.0",
     "ws": "^8.18.3"
   },
   "devDependencies": {
