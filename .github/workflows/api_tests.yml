@@ -79,7 +79,7 @@ jobs:
           --host $LocalIPAddress $LocalIPAddress null null \
           --port 6789 6789 0 0 \
           --version v1.3 v1.0 v1.0 v1.0 \
-          --urlpath null /x-nmos/ncp/v1.0/ws null null \
+          --urlpath null /x-nmos/ncp/v1.0/connect null null \
           --output ../test_results/is_12_01_results.json
 
 
