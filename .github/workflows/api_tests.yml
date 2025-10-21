@@ -70,6 +70,11 @@ jobs:
         echo $! > ../node_pid.txt
         sleep 10  # give the server time to start
 
+    - name: Copy UserConfig.py
+      run: |
+        mkdir -p nmos-testing/nmostesting
+        cp nmos-testing-config/UserConfig.py nmos-testing/nmostesting/UserConfig.py
+
     - name: Run NMOS Test Suite
       working-directory: nmos-testing
       run: |
@@ -82,6 +87,25 @@ jobs:
           --urlpath null /x-nmos/ncp/v1.0/connect null null \
           --output ../test_results/is_12_01_results.json
 
+    - name: Check IS-12 Test Results
+      run: |
+        RESULTS_FILE="test_results/is_12_01_results.json"
+
+        if [ ! -f "$RESULTS_FILE" ]; then
+          echo "ERROR: Results file $RESULTS_FILE not found"
+          exit 1
+        fi
+
+        # Extract failed tests
+        FAILED=$(jq -r '.results[] | select(.state=="Fail") | "\(.name): \(.state), detail: \(.detail // "")"' "$RESULTS_FILE")
+
+        if [ -n "$FAILED" ]; then
+          echo "❌ NMOS Test Failures:"
+          echo "$FAILED"
+          exit 1
+        else
+          echo "✅ All NMOS tests passed!"
+        fi
 
     - name: Stop Node.js App
       if: always()
