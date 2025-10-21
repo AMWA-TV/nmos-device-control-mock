@@ -80,7 +80,7 @@ jobs:
       run: |
         echo "Using IP: $LocalIPAddress"
         mkdir -p ../test_results
-        python nmos-test.py suite IS-12-01 \
+        python nmos-test.py suite IS-05-02 \
           --host $LocalIPAddress $LocalIPAddress \
           --port 8080 8080 \
           --version v1.3 v1.1 \
