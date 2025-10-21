@@ -84,7 +84,7 @@ jobs:
           --host $LocalIPAddress \
           --port 8080 \
           --version v1.1 \
-          --output ../test_results/is_05_01_results.json
+          --output ../test_results/is_05_01_results.json || true
 
     - name: Check IS-05-01 Test Results
       run: |
@@ -115,7 +115,7 @@ jobs:
           --host $LocalIPAddress $LocalIPAddress \
           --port 8080 8080 \
           --version v1.3 v1.1 \
-          --output ../test_results/is_05_02_results.json
+          --output ../test_results/is_05_02_results.json || true
 
     - name: Check IS-05-02 Test Results
       run: |
@@ -147,7 +147,7 @@ jobs:
           --port 8080 8080 0 0 \
           --version v1.3 v1.0 v1.0 v1.0 \
           --urlpath null /x-nmos/ncp/v1.0/connect null null \
-          --output ../test_results/is_12_01_results.json
+          --output ../test_results/is_12_01_results.json || true
 
     - name: Check IS-12 Test Results
       run: |
@@ -179,7 +179,7 @@ jobs:
           --port 8080 8080 8080 8080 \
           --version v1.3 v1.1 v1.0 v1.0 \
           --urlpath null null /x-nmos/ncp/v1.0/connect null \
-          --output ../test_results/bcp_008_01_01_results.json
+          --output ../test_results/bcp_008_01_01_results.json || true
 
     - name: Check BCP-008-01 Test Results
       run: |
@@ -211,7 +211,7 @@ jobs:
           --port 8080 8080 8080 8080 \
           --version v1.3 v1.1 v1.0 v1.0 \
           --urlpath null null /x-nmos/ncp/v1.0/connect null \
-          --output ../test_results/bcp_008_02_01_results.json
+          --output ../test_results/bcp_008_02_01_results.json || true
 
     - name: Check BCP-008-02 Test Results
       run: |
