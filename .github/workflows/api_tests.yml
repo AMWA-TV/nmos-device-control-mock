@@ -54,15 +54,16 @@ jobs:
         sleep 10  # give the server time to start
 
     - name: Run NMOS Test Suite
+      working-directory: nmos-testing
       run: |
         echo "Using IP: $LocalIPAddress"
-        mkdir -p test_results
-        python nmos-testing/nmos-test.py suite IS-12-01 \
+        mkdir -p ../test_results
+        python nmos-test.py suite IS-12-01 \
           --host $LocalIPAddress $LocalIPAddress null null \
           --port 6789 6789 null null \
           --version v1.3 v1.0 v1.0 v1.0 \
           --urlpath null /x-nmos/ncp/v1.0/ws null null \
-          --output ./test_results/is_12_01_results.json
+          --output ../test_results/is_12_01_results.json
 
     - name: Stop Node.js App
       if: always()
