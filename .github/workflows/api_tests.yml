@@ -46,6 +46,23 @@ jobs:
         echo "Local IP Address: $local_ip"
         echo "LocalIPAddress=$local_ip" >> $GITHUB_ENV
 
+    - name: Update config.json with LocalIPAddress and work_without_registry
+      run: |
+        CONFIG_FILE="code/config/config.json"
+
+        # Check that LocalIPAddress is set
+        if [ -z "$LocalIPAddress" ]; then
+          echo "LocalIPAddress is not set"
+          exit 1
+        fi
+
+        # Use jq to update the two keys
+        jq --arg ip "$LocalIPAddress" '.work_without_registry = true | .address = $ip' "$CONFIG_FILE" > "$CONFIG_FILE.tmp"
+        mv "$CONFIG_FILE.tmp" "$CONFIG_FILE"
+
+        echo "Updated $CONFIG_FILE:"
+        cat "$CONFIG_FILE"
+
     - name: Start Node.js App
       run: |
         cd code
@@ -59,11 +76,12 @@ jobs:
         echo "Using IP: $LocalIPAddress"
         mkdir -p ../test_results
         python nmos-test.py suite IS-12-01 \
-          --host $LocalIPAddress $LocalIPAddress null null \
-          --port 6789 6789 null null \
+          --host $LocalIPAddress $LocalIPAddress 'null' 'null' \
+          --port 6789 6789 'null' 'null' \
           --version v1.3 v1.0 v1.0 v1.0 \
-          --urlpath null /x-nmos/ncp/v1.0/ws null null \
+          --urlpath 'null' /x-nmos/ncp/v1.0/ws 'null' 'null' \
           --output ../test_results/is_12_01_results.json
+
 
     - name: Stop Node.js App
       if: always()
