@@ -75,37 +75,6 @@ jobs:
         mkdir -p nmos-testing/nmostesting
         cp nmos-testing-config/UserConfig.py nmos-testing/nmostesting/UserConfig.py
 
-    - name: Run IS-05-02 Test Suite
-      working-directory: nmos-testing
-      run: |
-        echo "Using IP: $LocalIPAddress"
-        mkdir -p ../test_results
-        python nmos-test.py suite IS-05-02 \
-          --host $LocalIPAddress $LocalIPAddress \
-          --port 8080 8080 \
-          --version v1.3 v1.1 \
-          --output ../test_results/is_05_02_results.json || true
-
-    - name: Check IS-05-02 Test Results
-      run: |
-        RESULTS_FILE="test_results/is_05_02_results.json"
-
-        if [ ! -f "$RESULTS_FILE" ]; then
-          echo "ERROR: Results file $RESULTS_FILE not found"
-          exit 1
-        fi
-
-        # Extract failed tests
-        FAILED=$(jq -r '.results[] | select(.state=="Fail") | "\(.name): \(.state), detail: \(.detail // "")"' "$RESULTS_FILE")
-
-        if [ -n "$FAILED" ]; then
-          echo "❌ NMOS Test Failures:"
-          echo "$FAILED"
-          exit 1
-        else
-          echo "✅ All NMOS tests passed!"
-        fi
-
     - name: Run IS-12 Test Suite
       working-directory: nmos-testing
       run: |
@@ -185,6 +154,38 @@ jobs:
     - name: Check BCP-008-02 Test Results
       run: |
         RESULTS_FILE="test_results/bcp_008_02_01_results.json"
+
+        if [ ! -f "$RESULTS_FILE" ]; then
+          echo "ERROR: Results file $RESULTS_FILE not found"
+          exit 1
+        fi
+
+        # Extract failed tests
+        FAILED=$(jq -r '.results[] | select(.state=="Fail") | "\(.name): \(.state), detail: \(.detail // "")"' "$RESULTS_FILE")
+
+        if [ -n "$FAILED" ]; then
+          echo "❌ NMOS Test Failures:"
+          echo "$FAILED"
+          exit 1
+        else
+          echo "✅ All NMOS tests passed!"
+        fi
+
+    - name: Run IS-14 Test Suite
+      working-directory: nmos-testing
+      run: |
+        echo "Using IP: $LocalIPAddress"
+        mkdir -p ../test_results
+        python nmos-test.py suite IS-14-01 \
+          --host $LocalIPAddress $LocalIPAddress null null \
+          --port 8080 8080 0 0 \
+          --version v1.3 v1.0 v1.0 v1.0 \
+          --urlpath null /x-nmos/configuration/v1.0/ null null \
+          --output ../test_results/is_14_01_results.json || true
+
+    - name: Check IS-14 Test Results
+      run: |
+        RESULTS_FILE="test_results/is_14_01_results.json"
 
         if [ ! -f "$RESULTS_FILE" ]; then
           echo "ERROR: Results file $RESULTS_FILE not found"
