@@ -1,4 +1,4 @@
-import { jsonIgnoreReplacer, jsonIgnore } from 'json-ignore';
+import { jsonIgnore } from 'json-ignore';
 import { TAI64 } from "tai64";
 
 import { RegistrationClient } from './RegistrationClient';

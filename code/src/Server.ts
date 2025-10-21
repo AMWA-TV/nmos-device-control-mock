@@ -25,11 +25,13 @@ import { NmosFlowMpegTS } from './NmosFlowMpegTS';
 import { NmosSender } from './NmosSender';
 import { NmosSenderVideoRaw } from './NmosSenderVideoRaw';
 import { NmosSenderMpegTS } from './NmosSenderMpegTS';
-import { NmosSenderActiveRtp, NmosSenderStagedRtp } from './NmosSenderRtp';
+import { NmosSenderStagedRtp } from './NmosSenderRtp';
 import { NmosReceiver } from './NmosReceiver';
 import { NmosReceiverVideoRaw } from './NmosReceiverVideoRaw';
 import { NmosReceiverMpegTS } from './NmosReceiverMpegTS';
-import { NmosReceiverActiveRtp, NmosReceiverStagedRtp } from './NmosReceiverRtp';
+import { NmosReceiverStagedRtp } from './NmosReceiverRtp';
+
+import cors from 'cors';
 
 export interface WebSocketConnection extends WebSocket {
     isAlive: boolean;
@@ -38,14 +40,14 @@ export interface WebSocketConnection extends WebSocket {
 
 export class ApiError
 {
-    public code: Number;
+    public code: number;
 
     public error: string;
 
     public debug: string;
 
     public constructor(
-        code: Number,
+        code: number,
         error: string,
         debug: string)
     {
@@ -55,6 +57,7 @@ export class ApiError
     }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function DelayTask(timeMs: number | undefined) 
 {
     return new Promise(resolve => setTimeout(resolve, timeMs));
@@ -449,7 +452,6 @@ try
     //initialize the Express HTTP listener
     const app = application();
     const corsOptions = { optionsSuccessStatus: 200 };
-    var cors = require('cors');
     app.use(cors(corsOptions));
     app.use(application.json({ limit: '50mb' }));
     app.use(application.urlencoded({ extended: true }));
@@ -1361,7 +1363,7 @@ try
         }
     })
 
-    app.use((req, res, next) => {
+    app.use((req, res, _next) => {
         //This applied to any invalid path
 
         res.writeHead(404, { 'Content-Type': 'application/json' });

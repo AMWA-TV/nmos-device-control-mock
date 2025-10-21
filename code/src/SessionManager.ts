@@ -1,4 +1,4 @@
-import { jsonIgnoreReplacer, jsonIgnore } from 'json-ignore';
+import { jsonIgnoreReplacer } from 'json-ignore';
 
 import { WebSocketConnection } from './Server';
 import { NcElementId, NcMethodStatus, NcPropertyChangeType } from './NCModel/Core';
@@ -7,6 +7,7 @@ import { ProtocolError, ProtocolSubscription, ProtocolSubscriptionResponse } fro
 
 export interface INotificationContext
 {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     NotifyPropertyChanged(oid: number, propertyId: NcElementId, changeType: NcPropertyChangeType, value: any | null, sequenceItemIndex: number | null);
 }
 
@@ -48,6 +49,7 @@ export class SessionManager implements INotificationContext
         }
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public NotifyPropertyChanged(oid: number, propertyId: NcElementId, changeType: NcPropertyChangeType, value: any | null, sequenceItemIndex: number | null)
     {
         console.log(`NotifyPropertyChanged oid: ${oid}, property: ${propertyId.level}p${propertyId.index}, value: ${JSON.stringify(value)}`);

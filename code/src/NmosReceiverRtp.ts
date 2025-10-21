@@ -1,4 +1,4 @@
-import { jsonIgnoreReplacer, jsonIgnore } from 'json-ignore';
+import { jsonIgnoreReplacer } from 'json-ignore';
 import { NmosReceiverActive, NmosActivation, TransportParamsSetActive, TransportParamsSetStaged, NmosReceiverStaged } from './NmosReceiver';
 
 export class NmosReceiverActiveRtp extends NmosReceiverActive
@@ -125,6 +125,7 @@ export class RtpReceiverTransportParamsSetActive extends TransportParamsSetActiv
 
 export class RtpReceiverTransportParamsSetStaged extends TransportParamsSetStaged
 {
+    /* eslint-disable @typescript-eslint/no-explicit-any */
     public multicast_ip: string | null;
     public source_ip: string | null;
     public destination_port: any | null;
@@ -165,4 +166,5 @@ export class RtpReceiverTransportParamsSetStaged extends TransportParamsSetStage
     {
         return JSON.stringify(this, jsonIgnoreReplacer);
     }
+    /* eslint-enable @typescript-eslint/no-explicit-any */
 }

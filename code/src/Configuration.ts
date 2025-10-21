@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
 import { jsonIgnore, jsonIgnoreReplacer } from 'json-ignore';
-const fs = require("fs");
-const writeFileAtomic = require('write-file-atomic')
+import fs from "fs";
+import writeFileAtomic from 'write-file-atomic';
 
 export enum StreamingProfile
 {
@@ -38,7 +38,7 @@ export class Configuration implements IConfiguration
     {
         //read configuration
         console.log('Configuration: Reading config.json');
-        const jsonString = fs.readFileSync(this.configFilePath);
+        const jsonString: string = fs.readFileSync(this.configFilePath, 'utf8');
         let config: IConfiguration = JSON.parse(jsonString);
 
         this.node_id = config.node_id;

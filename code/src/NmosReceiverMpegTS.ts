@@ -1,4 +1,3 @@
-import { jsonIgnoreReplacer, jsonIgnore } from 'json-ignore';
 import * as sdpTransform from 'sdp-transform';
 
 import { NmosReceiverActiveRtp, NmosReceiverStagedRtp, RtpReceiverTransportParamsSetActive, RtpReceiverTransportParamsSetStaged } from './NmosReceiverRtp';

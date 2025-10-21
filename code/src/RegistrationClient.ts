@@ -1,9 +1,7 @@
 import { TAI64 } from "tai64";
 
-import { jsonIgnoreReplacer, jsonIgnore } from 'json-ignore';
-import { Axios, AxiosResponse } from 'axios';
-
-const axios = require('axios').default as Axios;
+import { jsonIgnoreReplacer } from 'json-ignore';
+import axios, { AxiosResponse } from 'axios';
 
 export class RegistrationClient
 {
@@ -82,7 +80,7 @@ export class RegistrationClient
                             'Content-Type': 'application/json'
                         }
                     })
-                    .then(response => { 
+                    .then(_response => { 
                         return true;
                     });
             }

@@ -1,4 +1,4 @@
-import { jsonIgnoreReplacer, jsonIgnore } from 'json-ignore';
+import { jsonIgnoreReplacer } from 'json-ignore';
 import { CommandResponseError, CommandResponseNoValue, CommandResponseWithValue } from '../NCProtocol/Commands';
 import { INotificationContext } from '../SessionManager';
 
@@ -8,7 +8,7 @@ export function myIdDecorator(identity: string) {
 
 export abstract class BaseType
 {
-    public static GetTypeDescriptor(includeInherited: boolean) : NcDatatypeDescriptor
+    public static GetTypeDescriptor(_includeInherited: boolean) : NcDatatypeDescriptor
     {
         return new NcDatatypeDescriptor("NotDefined", NcDatatypeType.Struct, null, "Base");
     }
@@ -110,6 +110,7 @@ export abstract class NcObject
     }
 
     //'1m2'
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public Set(oid: number, id: NcElementId, value: any, handle: number) : CommandResponseNoValue
     {
         //NcObject
@@ -146,6 +147,7 @@ export abstract class NcObject
         return new CommandResponseError(handle, NcMethodStatus.BadOid, 'OID could not be found');
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public SetValidate(oid: number, id: NcElementId, value: any, handle: number) : CommandResponseNoValue
     {
         //NcObject
@@ -178,6 +180,7 @@ export abstract class NcObject
         return new CommandResponseError(handle, NcMethodStatus.BadOid, 'OID could not be found');
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public InvokeMethod(oid: number, methodId: NcElementId, args: { [key: string]: any } | null, handle: number) : CommandResponseNoValue
     {
         if(oid == this.oid)
@@ -368,7 +371,7 @@ export abstract class NcObject
         return new NcBlockMemberDescriptor(this.role, this.oid, this.constantOid, this.classID, this.userLabel, this.owner, this.description);
     }
 
-    public static GetClassDescriptor(includeInherited: boolean) : NcClassDescriptor
+    public static GetClassDescriptor(_includeInherited: boolean) : NcClassDescriptor
     {
         return new NcClassDescriptor(`${NcObject.name} class descriptor`,
             NcObject.staticClassID, NcObject.name, null,
@@ -455,7 +458,7 @@ export abstract class NcObject
         return this.GetRolePath().join('.') + "/";
     }
 
-    public abstract Restore(restoreArguments: RestoreArguments, applyChanges: Boolean) : NcObjectPropertiesSetValidation[]
+    public abstract Restore(restoreArguments: RestoreArguments, applyChanges: boolean) : NcObjectPropertiesSetValidation[]
 }
 
 export class NcElementId extends BaseType
@@ -473,7 +476,7 @@ export class NcElementId extends BaseType
         this.index = index;
     }
 
-    public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor
+    public static override GetTypeDescriptor(_includeInherited: boolean): NcDatatypeDescriptor
     {
         return new NcDatatypeDescriptorStruct("NcElementId", [
             new NcFieldDescriptor("level", "NcUint16", false, false, null, "Level of the element"),
@@ -650,7 +653,7 @@ export abstract class NcMethodResult extends BaseType
         this.status = status;
     }
 
-    public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor
+    public static override GetTypeDescriptor(_includeInherited: boolean): NcDatatypeDescriptor
     {
         return new NcDatatypeDescriptorStruct("NcMethodResult", [
             new NcFieldDescriptor("status", "NcMethodStatus", false, false, null, "Status for the invoked method")
@@ -692,10 +695,12 @@ export class NcMethodResultError extends NcMethodResult
 
 export class NcMethodResultPropertyValue extends NcMethodResult
 {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public value: any | null;
 
     public constructor(
         status: NcMethodStatus,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         value: any | null)
     {
         super(status);
@@ -886,6 +891,7 @@ export abstract class NcTouchpointResource extends BaseType
 {
     public resourceType: string;
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public id: any;
 
     public constructor(
@@ -896,7 +902,7 @@ export abstract class NcTouchpointResource extends BaseType
         this.resourceType = resourceType;
     }
 
-    public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor
+    public static override GetTypeDescriptor(_includeInherited: boolean): NcDatatypeDescriptor
     {
         return new NcDatatypeDescriptorStruct("NcTouchpointResource", [
             new NcFieldDescriptor("resourceType", "NcString", false, false, null, "The type of the resource")
@@ -985,7 +991,7 @@ export abstract class NcTouchpoint extends BaseType
         this.resource = resource;
     }
 
-    public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor
+    public static override GetTypeDescriptor(_includeInherited: boolean): NcDatatypeDescriptor
     {
         return new NcDatatypeDescriptorStruct("NcTouchpoint", [
             new NcFieldDescriptor("contextNamespace", "NcString", false, false, null, "Context namespace")
@@ -1061,7 +1067,7 @@ export abstract class NcDescriptor extends BaseType
         this.description = description;
     }
 
-    public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor
+    public static override GetTypeDescriptor(_includeInherited: boolean): NcDatatypeDescriptor
     {
         return new NcDatatypeDescriptorStruct("NcDescriptor", [
             new NcFieldDescriptor("description", "NcString", true, false, null, "Optional user facing description")
@@ -1200,10 +1206,12 @@ export class NcPropertyDescriptor extends NcDescriptor
 export class NcPropertyConstraints extends BaseType
 {
     public propertyId: NcElementId;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public defaultValue: any | null;
 
     constructor(
         propertyId: NcElementId,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         defaultValue: any | null)
     {
         super();
@@ -1212,7 +1220,7 @@ export class NcPropertyConstraints extends BaseType
         this.defaultValue = defaultValue;
     }
 
-    public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor
+    public static override GetTypeDescriptor(_includeInherited: boolean): NcDatatypeDescriptor
     {
         return new NcDatatypeDescriptorStruct("NcPropertyConstraints", [
             new NcFieldDescriptor("propertyId", "NcPropertyId", false, false, null, "The id of the property being constrained"),
@@ -1234,6 +1242,7 @@ export class NcPropertyConstraintsNumber extends NcPropertyConstraints
 
     constructor(
         propertyId: NcElementId,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         defaultValue: any | null,
         maximum: number,
         minimum: number,
@@ -1279,6 +1288,7 @@ export class NcPropertyConstraintsString extends NcPropertyConstraints
 
     constructor(
         propertyId: NcElementId,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         defaultValue: any | null,
         maxCharacters: number,
         pattern: string)
@@ -1316,17 +1326,18 @@ export class NcPropertyConstraintsString extends NcPropertyConstraints
 
 export abstract class NcParameterConstraints extends BaseType
 {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public defaultValue: any | null;
 
-    constructor(
-        defaultValue: any | null)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    constructor(defaultValue: any | null)
     {
         super();
 
         this.defaultValue = defaultValue;
     } 
 
-    public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor
+    public static override GetTypeDescriptor(_includeInherited: boolean): NcDatatypeDescriptor
     {
         return new NcDatatypeDescriptorStruct("NcParameterConstraints", [
             new NcFieldDescriptor("defaultValue", null, true, false, null, "Default value")
@@ -1349,6 +1360,7 @@ export class NcParameterConstraintsNumber extends NcParameterConstraints
         maximum: number,
         minimum: number,
         step: number,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         defaultValue: any | null = null)
     {
         super(defaultValue);
@@ -1945,11 +1957,13 @@ export class NcPropertyHolder extends BaseType
 {
     public id: NcPropertyId;
     public descriptor: NcPropertyDescriptor | null;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public value: any;
 
     public constructor(
         id: NcPropertyId,
         descriptor: NcPropertyDescriptor | null,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         value: any)
     {
         super();
@@ -1959,7 +1973,7 @@ export class NcPropertyHolder extends BaseType
         this.value = value;
     }
 
-    public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor
+    public static override GetTypeDescriptor(_includeInherited: boolean): NcDatatypeDescriptor
     {
         return new NcDatatypeDescriptorStruct("NcPropertyHolder", [
             new NcFieldDescriptor("id", "NcPropertyId", false, false, null, "Property id"),
@@ -1993,7 +2007,7 @@ export class NcObjectPropertiesHolder extends BaseType
         this.isRebuildable = isRebuildable;
     }
 
-    public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor
+    public static override GetTypeDescriptor(_includeInherited: boolean): NcDatatypeDescriptor
     {
         return new NcDatatypeDescriptorStruct("NcObjectPropertiesHolder", [
             new NcFieldDescriptor("path", "NcRolePath", false, false, null, "Object role path"),
@@ -2020,7 +2034,7 @@ export class NcBulkPropertiesHolder extends BaseType
         this.values = values;
     }
 
-    public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor
+    public static override GetTypeDescriptor(_includeInherited: boolean): NcDatatypeDescriptor
     {
         return new NcDatatypeDescriptorStruct("NcBulkPropertiesHolder", [
             new NcFieldDescriptor("validationFingerprint", "NcString", true, false, null, "Optional vendor specific fingerprinting mechanism used for validation purposes"),
@@ -2063,10 +2077,11 @@ export class NcMethodResultBulkPropertiesHolder extends NcMethodResult
 
 export class ConfigApiValue
 {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public value: any;
 
-    constructor(
-        value: any)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    constructor(value: any)
     {
         this.value = value;
     }
@@ -2074,10 +2089,11 @@ export class ConfigApiValue
 
 export class ConfigApiArguments
 {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public arguments: { [key: string]: any } | null;
 
-    constructor(
-        configArguments: { [key: string]: any } | null)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    constructor(configArguments: { [key: string]: any } | null)
     {
         this.arguments = configArguments;
     }
@@ -2152,7 +2168,7 @@ export class NcPropertyRestoreNotice extends BaseType
         this.noticeMessage = noticeMessage;
     }
 
-    public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor
+    public static override GetTypeDescriptor(_includeInherited: boolean): NcDatatypeDescriptor
     {
         return new NcDatatypeDescriptorStruct("NcPropertyRestoreNotice", [
             new NcFieldDescriptor("id", "NcPropertyId", false, false, null, "Property id"),
@@ -2184,7 +2200,7 @@ export class NcObjectPropertiesSetValidation extends BaseType
         this.statusMessage = statusMessage;
     }
 
-    public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor
+    public static override GetTypeDescriptor(_includeInherited: boolean): NcDatatypeDescriptor
     {
         return new NcDatatypeDescriptorStruct("NcObjectPropertiesSetValidation", [
             new NcFieldDescriptor("path", "NcRolePath", false, false, null, "Object role path"),
