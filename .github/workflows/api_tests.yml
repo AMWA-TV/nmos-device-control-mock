@@ -182,7 +182,7 @@ jobs:
           --host $LocalIPAddress $LocalIPAddress null null \
           --port 8080 8080 0 0 \
           --version v1.3 v1.0 v1.0 v1.0 \
-          --urlpath null null null null \
+          --selector null null null null \
           --output ../test_results/is_14_01_results.json || true
 
     - name: Check IS-14 Test Results
