@@ -1,4 +1,3 @@
-import { jsonIgnoreReplacer, jsonIgnore } from 'json-ignore';
 import { NmosSender, NmosSenderActive, NmosSenderStaged } from './NmosSender';
 import { NmosSenderActiveRtp, NmosSenderStagedRtp, RtpSenderTransportParamsSetActive, RtpSenderTransportParamsSetStaged } from './NmosSenderRtp';
 import { RegistrationClient } from './RegistrationClient';

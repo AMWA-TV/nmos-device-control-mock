@@ -1,4 +1,4 @@
-import { jsonIgnoreReplacer, jsonIgnore } from 'json-ignore';
+import { jsonIgnoreReplacer } from 'json-ignore';
 import { CommandResponseError, CommandResponseNoValue, CommandResponseWithValue } from '../NCProtocol/Commands';
 import { NcPropertyChangedEventData } from '../NCProtocol/Notifications';
 import { INotificationContext } from '../SessionManager';
@@ -117,7 +117,7 @@ export class NcManufacturer extends BaseType
         this.website = website;
     }
 
-    public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor
+    public static override GetTypeDescriptor(_includeInherited: boolean): NcDatatypeDescriptor
     {
         return new NcDatatypeDescriptorStruct("NcManufacturer", [
             new NcFieldDescriptor("name", "NcString", false, false, null, "Manufacturer's name"),
@@ -159,7 +159,7 @@ export class NcProduct extends BaseType
         this.description = description;
     }
 
-    public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor
+    public static override GetTypeDescriptor(_includeInherited: boolean): NcDatatypeDescriptor
     {
         return new NcDatatypeDescriptorStruct("NcProduct", [
             new NcFieldDescriptor("name", "NcString", false, false, null, "Product name"),
@@ -191,7 +191,7 @@ export class NcDeviceOperationalState extends BaseType
         this.deviceSpecificDetails = null;
     }
 
-    public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor
+    public static override GetTypeDescriptor(_includeInherited: boolean): NcDatatypeDescriptor
     {
         return new NcDatatypeDescriptorStruct("NcDeviceOperationalState", [
             new NcFieldDescriptor("generic", "NcDeviceGenericState", false, false, null, "Generic operational state"),
@@ -325,6 +325,7 @@ export class NcDeviceManager extends NcManager
     }
 
     //'1m2'
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public override Set(oid: number, id: NcElementId, value: any, handle: number) : CommandResponseNoValue
     {
         //NcDeviceManager
@@ -378,6 +379,7 @@ export class NcDeviceManager extends NcManager
         return new CommandResponseError(handle, NcMethodStatus.BadOid, 'OID could not be found');
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public override SetValidate(oid: number, id: NcElementId, value: any, handle: number) : CommandResponseNoValue
     {
         //NcDeviceManager
@@ -472,7 +474,7 @@ export class NcDeviceManager extends NcManager
         return properties;
     }
 
-    public override Restore(restoreArguments: RestoreArguments, applyChanges: Boolean) : NcObjectPropertiesSetValidation[]
+    public override Restore(restoreArguments: RestoreArguments, applyChanges: boolean) : NcObjectPropertiesSetValidation[]
     {
         let validationEntries = new Array<NcObjectPropertiesSetValidation>();
 
@@ -587,6 +589,7 @@ export class NcClassManager extends NcManager
         return new CommandResponseError(handle, NcMethodStatus.BadOid, 'OID could not be found');
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public override InvokeMethod(oid: number, methodId: NcElementId, args: { [key: string]: any; } | null, handle: number): CommandResponseNoValue 
     {
         if(oid == this.oid)
@@ -1170,7 +1173,7 @@ export class NcClassManager extends NcManager
             return [];
     }
 
-    public override Restore(restoreArguments: RestoreArguments, applyChanges: Boolean) : NcObjectPropertiesSetValidation[]
+    public override Restore(restoreArguments: RestoreArguments, applyChanges: boolean) : NcObjectPropertiesSetValidation[]
     {
         let validationEntries = new Array<NcObjectPropertiesSetValidation>();
 
@@ -1253,16 +1256,13 @@ export class NcBulkPropertiesManager extends NcManager
     public override Get(oid: number, propertyId: NcElementId, handle: number) : CommandResponseNoValue
     {
         if(oid == this.oid)
-        {
-            let key: string = `${propertyId.level}p${propertyId.index}`;
-
             return super.Get(oid, propertyId, handle);
-        }
 
         return new CommandResponseError(handle, NcMethodStatus.BadOid, 'OID could not be found');
     }
 
     //'1m2'
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public override Set(oid: number, id: NcElementId, value: any, handle: number) : CommandResponseNoValue
     {
         if(oid == this.oid)
@@ -1271,6 +1271,7 @@ export class NcBulkPropertiesManager extends NcManager
         return new CommandResponseError(handle, NcMethodStatus.BadOid, 'OID could not be found');
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public override SetValidate(oid: number, id: NcElementId, value: any, handle: number) : CommandResponseNoValue
     {
         if(oid == this.oid)
@@ -1279,6 +1280,7 @@ export class NcBulkPropertiesManager extends NcManager
         return new CommandResponseError(handle, NcMethodStatus.BadOid, 'OID could not be found');
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public override InvokeMethod(oid: number, methodId: NcElementId, args: { [key: string]: any; } | null, handle: number): CommandResponseNoValue 
     {
         if(oid == this.oid)
@@ -1445,7 +1447,7 @@ export class NcBulkPropertiesManager extends NcManager
         return properties;
     }
 
-    public override Restore(restoreArguments: RestoreArguments, applyChanges: Boolean) : NcObjectPropertiesSetValidation[]
+    public override Restore(restoreArguments: RestoreArguments, applyChanges: boolean) : NcObjectPropertiesSetValidation[]
     {
         let validationEntries = new Array<NcObjectPropertiesSetValidation>();
 

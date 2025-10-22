@@ -1,4 +1,4 @@
-import { jsonIgnoreReplacer, jsonIgnore } from 'json-ignore';
+import { jsonIgnoreReplacer } from 'json-ignore';
 import { NcElementId, NcMethodStatus } from '../NCModel/Core';
 import { MessageType, ProtocolWrapper, ProtoMsg } from './Core';
 
@@ -8,12 +8,14 @@ export class CommandMsg extends ProtoMsg
 
     public methodId: NcElementId;
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public arguments: { [key: string]: any } | null;
 
     constructor(
         handle: number,
         oid: number,
         methodId: NcElementId,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         commandArguments: { [key: string]: any } | null)
     {
         super(handle);
@@ -26,6 +28,7 @@ export class CommandMsg extends ProtoMsg
 
 export class CommandResponseNoValue extends ProtoMsg
 {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public result: { [key: string]: any };
 
     constructor(
@@ -58,6 +61,7 @@ export class CommandResponseWithValue extends CommandResponseNoValue
     constructor(
         handle: number,
         status: NcMethodStatus,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         value: any | null)
     {
         super(handle, status);

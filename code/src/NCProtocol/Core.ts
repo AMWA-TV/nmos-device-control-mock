@@ -1,5 +1,3 @@
-import { jsonIgnoreReplacer, jsonIgnore } from 'json-ignore';
-
 export enum MessageType {
     Command = 0,
     CommandResponse = 1,
