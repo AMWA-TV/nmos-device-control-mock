@@ -70,10 +70,12 @@ jobs:
         echo $! > ../node_pid.txt
         sleep 10  # give the server time to start
 
-    - name: Copy UserConfig.py
+    - name: Copy and show UserConfig.py
       run: |
         mkdir -p nmos-testing/nmostesting
         cp nmos-testing-config/UserConfig.py nmos-testing/nmostesting/UserConfig.py
+        echo "Contents of copied UserConfig.py:"
+        cat nmos-testing/nmostesting/UserConfig.py
 
     - name: Run IS-12 Test Suite
       working-directory: nmos-testing
@@ -180,7 +182,7 @@ jobs:
           --host $LocalIPAddress $LocalIPAddress null null \
           --port 8080 8080 0 0 \
           --version v1.3 v1.0 v1.0 v1.0 \
-          --urlpath null /x-nmos/configuration/v1.0/ null null \
+          --urlpath null null null null \
           --output ../test_results/is_14_01_results.json || true
 
     - name: Check IS-14 Test Results
