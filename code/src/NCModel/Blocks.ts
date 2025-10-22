@@ -1,4 +1,3 @@
-import { jsonIgnoreReplacer, jsonIgnore } from 'json-ignore';
 import { CommandMsg, CommandResponseError, CommandResponseNoValue, CommandResponseWithValue, ProtocolCommand, ProtocolCommandResponse, ProtocolError } from '../NCProtocol/Commands';
 import { MessageType, ProtocolWrapper } from '../NCProtocol/Core';
 import { WebSocketConnection } from '../Server';
@@ -97,6 +96,7 @@ export class NcBlock extends NcObject
     }
 
     //'1m2'
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public override Set(oid: number, id: NcElementId, value: any, handle: number) : CommandResponseNoValue
     {
         if(oid == this.oid)
@@ -116,6 +116,7 @@ export class NcBlock extends NcObject
         return new CommandResponseError(handle, NcMethodStatus.BadOid, 'OID could not be found');
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public override SetValidate(oid: number, id: NcElementId, value: any, handle: number) : CommandResponseNoValue
     {
         //NcBlock
@@ -137,6 +138,7 @@ export class NcBlock extends NcObject
         return new CommandResponseError(handle, NcMethodStatus.BadOid, 'OID could not be found');
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public override InvokeMethod(oid: number, methodId: NcElementId, args: { [key: string]: any; } | null, handle: number): CommandResponseNoValue 
     {
         if(oid == this.oid)
@@ -661,13 +663,13 @@ export class NcBlock extends NcObject
         return this.GetRolePath().concat(role);
     }
 
-    public ReconstructMembers(members: NcBlockMemberDescriptor[], dataSet: NcBulkPropertiesHolder, applyChanges: Boolean = true) : [NcPropertyRestoreNotice | null, NcObjectPropertiesSetValidation[]]
+    public ReconstructMembers(_members: NcBlockMemberDescriptor[], _dataSet: NcBulkPropertiesHolder, _applyChanges: boolean = true) : [NcPropertyRestoreNotice | null, NcObjectPropertiesSetValidation[]]
     {
         //Left intentionally empty as "virtual" so that rebuildable blocks override this with the desired behaviour
         return [null, []];
     }
 
-    public override Restore(restoreArguments: RestoreArguments, applyChanges: Boolean) : NcObjectPropertiesSetValidation[]
+    public override Restore(restoreArguments: RestoreArguments, applyChanges: boolean) : NcObjectPropertiesSetValidation[]
     {
         let validationEntries = new Array<NcObjectPropertiesSetValidation>();
 
@@ -942,7 +944,7 @@ export class RootBlock extends NcBlock implements IRootContext
         return responses;
     }
 
-    public ProcessCommandMessage(commandMsg: CommandMsg, socket: WebSocketConnection) : CommandResponseNoValue
+    public ProcessCommandMessage(commandMsg: CommandMsg, _socket: WebSocketConnection) : CommandResponseNoValue
     {
         if (this.IsGenericGetter(commandMsg.methodId))
         {
@@ -1072,7 +1074,7 @@ export class ExampleControlsBlock extends NcBlock
         return holders
     }
 
-    public override ReconstructMembers(members: NcBlockMemberDescriptor[], dataSet: NcBulkPropertiesHolder, applyChanges: Boolean = true) : [NcPropertyRestoreNotice | null, NcObjectPropertiesSetValidation[]]
+    public override ReconstructMembers(members: NcBlockMemberDescriptor[], dataSet: NcBulkPropertiesHolder, applyChanges: boolean = true) : [NcPropertyRestoreNotice | null, NcObjectPropertiesSetValidation[]]
     {
         let blockMembersNotice: NcPropertyRestoreNotice | null = null;
 

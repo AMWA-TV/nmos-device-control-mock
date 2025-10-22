@@ -2,12 +2,8 @@ import { jsonIgnoreReplacer, jsonIgnore } from 'json-ignore';
 
 import { NmosReceiver, NmosReceiverStaged } from './NmosReceiver';
 import { NmosResource } from './NmosResource';
-import { NmosReceiverActiveRtp, NmosReceiverStagedRtp } from './NmosReceiverRtp';
-import { NmosReceiverVideoRaw } from './NmosReceiverVideoRaw';
 import { RegistrationClient } from './RegistrationClient';
 import { NmosSender, NmosSenderStaged } from './NmosSender';
-import { NmosSenderActiveRtp, NmosSenderStagedRtp } from './NmosSenderRtp';
-import { NmosSenderVideoRaw } from './NmosSenderVideoRaw';
 
 export class NmosDevice extends NmosResource
 {

@@ -1,4 +1,4 @@
-import { jsonIgnoreReplacer, jsonIgnore } from 'json-ignore';
+import { jsonIgnoreReplacer } from 'json-ignore';
 import { CommandResponseError, CommandResponseNoValue, CommandResponseWithValue } from '../NCProtocol/Commands';
 import { INotificationContext } from '../SessionManager';
 import {
@@ -28,7 +28,6 @@ import {
     NcRestoreValidationStatus,
     NcTouchpoint, 
     RestoreArguments} from './Core';
-import { Console } from 'console';
 
 export abstract class NcWorker extends NcObject
 {
@@ -78,6 +77,7 @@ export abstract class NcWorker extends NcObject
     }
 
     //'1m2'
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public override Set(oid: number, id: NcElementId, value: any, handle: number) : CommandResponseNoValue
     {
         //NcWorker
@@ -105,6 +105,7 @@ export abstract class NcWorker extends NcObject
         return new CommandResponseError(handle, NcMethodStatus.BadOid, 'OID could not be found');
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public override SetValidate(oid: number, id: NcElementId, value: any, handle: number) : CommandResponseNoValue
     {
         //NcWorker
@@ -220,6 +221,7 @@ export class GainControl extends NcWorker
     }
 
     //'1m2'
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public override Set(oid: number, id: NcElementId, value: any, handle: number) : CommandResponseNoValue
     {
         //GainControl
@@ -247,6 +249,7 @@ export class GainControl extends NcWorker
         return new CommandResponseError(handle, NcMethodStatus.BadOid, 'OID could not be found');
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public override SetValidate(oid: number, id: NcElementId, value: any, handle: number) : CommandResponseNoValue
     {
         //GainControl
@@ -313,7 +316,7 @@ export class GainControl extends NcWorker
         return properties;
     }
 
-    public override Restore(restoreArguments: RestoreArguments, applyChanges: Boolean) : NcObjectPropertiesSetValidation[]
+    public override Restore(restoreArguments: RestoreArguments, applyChanges: boolean) : NcObjectPropertiesSetValidation[]
     {
         let validationEntries = new Array<NcObjectPropertiesSetValidation>();
 
@@ -418,6 +421,7 @@ export class NcIdentBeacon extends NcWorker
     }
 
     //'1m2'
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public override Set(oid: number, id: NcElementId, value: any, handle: number) : CommandResponseNoValue
     {
         //NcIdentBeacon
@@ -445,6 +449,7 @@ export class NcIdentBeacon extends NcWorker
         return new CommandResponseError(handle, NcMethodStatus.BadOid, 'OID could not be found');
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public override SetValidate(oid: number, id: NcElementId, value: any, handle: number) : CommandResponseNoValue
     {
         //NcIdentBeacon
@@ -510,7 +515,7 @@ export class NcIdentBeacon extends NcWorker
         return properties;
     }
 
-    public override Restore(restoreArguments: RestoreArguments, applyChanges: Boolean) : NcObjectPropertiesSetValidation[]
+    public override Restore(restoreArguments: RestoreArguments, applyChanges: boolean) : NcObjectPropertiesSetValidation[]
     {
         let validationEntries = new Array<NcObjectPropertiesSetValidation>();
 
@@ -634,6 +639,7 @@ export class NcStatusMonitor extends NcWorker
     }
 
     //'1m2'
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public override Set(oid: number, id: NcElementId, value: any, handle: number) : CommandResponseNoValue
     {
         //NcStatusMonitor
@@ -664,6 +670,7 @@ export class NcStatusMonitor extends NcWorker
         return new CommandResponseError(handle, NcMethodStatus.BadOid, 'OID could not be found');
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public override SetValidate(oid: number, id: NcElementId, value: any, handle: number) : CommandResponseNoValue
     {
         //NcStatusMonitor
@@ -737,7 +744,7 @@ export class NcStatusMonitor extends NcWorker
         return properties;
     }
 
-    public override Restore(restoreArguments: RestoreArguments, applyChanges: Boolean) : NcObjectPropertiesSetValidation[]
+    public override Restore(restoreArguments: RestoreArguments, applyChanges: boolean) : NcObjectPropertiesSetValidation[]
     {
         let validationEntries = new Array<NcObjectPropertiesSetValidation>();
 
@@ -864,7 +871,7 @@ export class NcCounter extends BaseType
         this.description = description;
     }
 
-    public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor
+    public static override GetTypeDescriptor(_includeInherited: boolean): NcDatatypeDescriptor
     {
         return new NcDatatypeDescriptorStruct("NcCounter", [
             new NcFieldDescriptor("name", "NcString", false, false, null, "Counter name"),
@@ -1374,6 +1381,7 @@ export class NcReceiverMonitor extends NcStatusMonitor implements IReceiverMonit
     }
 
     //'1m2'
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public override Set(oid: number, id: NcElementId, value: any, handle: number) : CommandResponseNoValue
     {
         //NcReceiverMonitor
@@ -1420,6 +1428,7 @@ export class NcReceiverMonitor extends NcStatusMonitor implements IReceiverMonit
         return new CommandResponseError(handle, NcMethodStatus.BadOid, 'OID could not be found');
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public override SetValidate(oid: number, id: NcElementId, value: any, handle: number) : CommandResponseNoValue
     {
         //NcReceiverMonitor
@@ -1462,6 +1471,7 @@ export class NcReceiverMonitor extends NcStatusMonitor implements IReceiverMonit
         return new CommandResponseError(handle, NcMethodStatus.BadOid, 'OID could not be found');
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public override InvokeMethod(oid: number, methodId: NcElementId, args: { [key: string]: any; } | null, handle: number): CommandResponseNoValue 
     {
         if(oid == this.oid)
@@ -1592,7 +1602,7 @@ export class NcReceiverMonitor extends NcStatusMonitor implements IReceiverMonit
         return properties;
     }
 
-    public override Restore(restoreArguments: RestoreArguments, applyChanges: Boolean) : NcObjectPropertiesSetValidation[]
+    public override Restore(restoreArguments: RestoreArguments, applyChanges: boolean) : NcObjectPropertiesSetValidation[]
     {
         let validationEntries = new Array<NcObjectPropertiesSetValidation>();
 
@@ -1895,6 +1905,7 @@ export class NcSenderMonitor extends NcStatusMonitor implements ISenderMonitorin
     }
 
     //'1m2'
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public override Set(oid: number, id: NcElementId, value: any, handle: number) : CommandResponseNoValue
     {
         //NcSenderMonitor
@@ -1941,6 +1952,7 @@ export class NcSenderMonitor extends NcStatusMonitor implements ISenderMonitorin
         return new CommandResponseError(handle, NcMethodStatus.BadOid, 'OID could not be found');
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public override SetValidate(oid: number, id: NcElementId, value: any, handle: number) : CommandResponseNoValue
     {
         //NcSenderMonitor
@@ -1983,6 +1995,7 @@ export class NcSenderMonitor extends NcStatusMonitor implements ISenderMonitorin
         return new CommandResponseError(handle, NcMethodStatus.BadOid, 'OID could not be found');
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public override InvokeMethod(oid: number, methodId: NcElementId, args: { [key: string]: any; } | null, handle: number): CommandResponseNoValue 
     {
         if(oid == this.oid)
@@ -2105,7 +2118,7 @@ export class NcSenderMonitor extends NcStatusMonitor implements ISenderMonitorin
         return properties;
     }
 
-    public override Restore(restoreArguments: RestoreArguments, applyChanges: Boolean) : NcObjectPropertiesSetValidation[]
+    public override Restore(restoreArguments: RestoreArguments, applyChanges: boolean) : NcObjectPropertiesSetValidation[]
     {
         let validationEntries = new Array<NcObjectPropertiesSetValidation>();
 
@@ -2204,7 +2217,7 @@ export class ExampleDataType extends BaseType
         this.booleanProperty = booleanProperty;
     }
 
-    public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor
+    public static override GetTypeDescriptor(_includeInherited: boolean): NcDatatypeDescriptor
     {
         return new NcDatatypeDescriptorStruct("ExampleDataType", [
             new NcFieldDescriptor("enumProperty", "ExampleEnum", false, false, null, "Enum property example"),
@@ -2411,6 +2424,7 @@ export class ExampleControl extends NcWorker implements IMonitorManager
     }
 
     //'1m2'
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public override Set(oid: number, id: NcElementId, value: any, handle: number) : CommandResponseNoValue
     {
         //ExampleControl
@@ -2604,6 +2618,7 @@ export class ExampleControl extends NcWorker implements IMonitorManager
         return new CommandResponseError(handle, NcMethodStatus.BadOid, 'OID could not be found');
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public override SetValidate(oid: number, id: NcElementId, value: any, handle: number) : CommandResponseNoValue
     {
         //ExampleControl
@@ -2713,6 +2728,7 @@ export class ExampleControl extends NcWorker implements IMonitorManager
         return new CommandResponseError(handle, NcMethodStatus.BadOid, 'OID could not be found');
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public override InvokeMethod(oid: number, methodId: NcElementId, args: { [key: string]: any; } | null, handle: number): CommandResponseNoValue 
     {
         if(oid == this.oid)
@@ -3348,7 +3364,7 @@ export class ExampleControl extends NcWorker implements IMonitorManager
         return properties;
     }
 
-    public override Restore(restoreArguments: RestoreArguments, applyChanges: Boolean) : NcObjectPropertiesSetValidation[]
+    public override Restore(restoreArguments: RestoreArguments, applyChanges: boolean) : NcObjectPropertiesSetValidation[]
     {
         let validationEntries = new Array<NcObjectPropertiesSetValidation>();
 

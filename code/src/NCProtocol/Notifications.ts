@@ -1,4 +1,4 @@
-import { jsonIgnoreReplacer, jsonIgnore } from 'json-ignore';
+import { jsonIgnoreReplacer } from 'json-ignore';
 import { BaseType, NcDatatypeDescriptor, NcDatatypeDescriptorStruct, NcElementId, NcFieldDescriptor, NcPropertyChangeType } from '../NCModel/Core';
 import { MessageType, ProtocolWrapper } from './Core';
 
@@ -8,6 +8,7 @@ export class NcPropertyChangedEventData extends BaseType
 
     public changeType: NcPropertyChangeType;
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public value: any | null;
 
     public sequenceItemIndex: number | null;
@@ -15,6 +16,7 @@ export class NcPropertyChangedEventData extends BaseType
     constructor(
         propertyId: NcElementId,
         changeType: NcPropertyChangeType,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         value: any | null,
         sequenceItemIndex: number | null)
     {
@@ -26,7 +28,7 @@ export class NcPropertyChangedEventData extends BaseType
         this.sequenceItemIndex = sequenceItemIndex;
     }
 
-    public static override GetTypeDescriptor(includeInherited: boolean): NcDatatypeDescriptor
+    public static override GetTypeDescriptor(_includeInherited: boolean): NcDatatypeDescriptor
     {
         return new NcDatatypeDescriptorStruct("NcPropertyChangedEventData", [
             new NcFieldDescriptor("propertyId", "NcPropertyId", false, false, null, "ID of changed property"),

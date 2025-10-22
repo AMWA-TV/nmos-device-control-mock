@@ -3,7 +3,7 @@ import { jsonIgnoreReplacer, jsonIgnore } from 'json-ignore';
 import { NmosResource } from './NmosResource';
 import { RegistrationClient } from './RegistrationClient';
 
-const os = require('os');
+import os from 'os';
 
 export class NmosNode extends NmosResource
 {
@@ -11,6 +11,7 @@ export class NmosNode extends NmosResource
     public caps: object;
     public href: string;
     public clocks: NmosClock[];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public services: any[];
     public api: NmosApi;
     public interfaces: NmosInterface[]
