@@ -1,0 +1,26 @@
+from . import Config as CONFIG
+
+CONFIG.ENABLE_HTTPS = False
+
+CONFIG.SDP_PREFERENCES = {
+    **CONFIG.SDP_PREFERENCES,
+    "channels": 16,
+    "exactframerate": 25,
+    "width": 1920,
+    "height": 1080,
+    "interlace": True,
+}
+
+CONFIG.MS05_INVASIVE_TESTING = False
+
+CONFIG.DNS_SD_MODE = 'multicast'
+
+CONFIG.DNS_SD_ADVERT_TIMEOUT = 2
+
+CONFIG.WS_MESSAGE_TIMEOUT = 5
+
+CONFIG.MQTT_MESSAGE_TIMEOUT = 5
+
+CONFIG.API_PROCESSING_TIMEOUT = 3
+
+CONFIG.HTTP_TIMEOUT = 5

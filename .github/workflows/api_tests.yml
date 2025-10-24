@@ -1,0 +1,213 @@
+name: API Tests
+on:
+  pull_request:
+    branches: [ "main" ]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Use Node.js 22.x
+      uses: actions/setup-node@v4
+      with:
+        node-version: 22.x
+        cache: 'npm'
+        cache-dependency-path: code/package-lock.json
+    
+    - name: Set up Python 3.9
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.9'
+    
+    - name: Clone nmos-testing Repository
+      run: |
+        git clone https://github.com/AMWA-TV/nmos-testing.git nmos-testing
+
+    - name: Install nmos-testing Requirements
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r nmos-testing/requirements.txt
+
+    - name: Verify Python and Packages
+      run: |
+        python --version
+        pip --version
+        pip list
+    
+    - name: Install dependencies
+      run: npm ci
+      working-directory: code
+
+    - name: Get Local IP Address
+      run: |
+        local_ip=$(hostname -I | awk '{print $1}')
+        echo "Local IP Address: $local_ip"
+        echo "LocalIPAddress=$local_ip" >> $GITHUB_ENV
+
+    - name: Update config.json with LocalIPAddress and work_without_registry
+      run: |
+        CONFIG_FILE="code/config/config.json"
+
+        # Check that LocalIPAddress is set
+        if [ -z "$LocalIPAddress" ]; then
+          echo "LocalIPAddress is not set"
+          exit 1
+        fi
+
+        # Use jq to update the two keys
+        jq --arg ip "$LocalIPAddress" '.work_without_registry = true | .address = $ip' "$CONFIG_FILE" > "$CONFIG_FILE.tmp"
+        mv "$CONFIG_FILE.tmp" "$CONFIG_FILE"
+
+        echo "Updated $CONFIG_FILE:"
+        cat "$CONFIG_FILE"
+
+    - name: Start Node.js App
+      run: |
+        cd code
+        npm run build-and-start &
+        echo $! > ../node_pid.txt
+        sleep 10  # give the server time to start
+
+    - name: Copy and show UserConfig.py
+      run: |
+        mkdir -p nmos-testing/nmostesting
+        cp nmos-testing-config/UserConfig.py nmos-testing/nmostesting/UserConfig.py
+        echo "Contents of copied UserConfig.py:"
+        cat nmos-testing/nmostesting/UserConfig.py
+
+    - name: Run IS-12 Test Suite
+      working-directory: nmos-testing
+      run: |
+        echo "Using IP: $LocalIPAddress"
+        mkdir -p ../test_results
+        python nmos-test.py suite IS-12-01 \
+          --host $LocalIPAddress $LocalIPAddress null null \
+          --port 8080 8080 0 0 \
+          --version v1.3 v1.0 v1.0 v1.0 \
+          --urlpath null /x-nmos/ncp/v1.0/connect null null \
+          --output ../test_results/is_12_01_results.json || true
+
+    - name: Check IS-12 Test Results
+      run: |
+        RESULTS_FILE="test_results/is_12_01_results.json"
+
+        if [ ! -f "$RESULTS_FILE" ]; then
+          echo "ERROR: Results file $RESULTS_FILE not found"
+          exit 1
+        fi
+
+        # Extract failed tests
+        FAILED=$(jq -r '.results[] | select(.state=="Fail") | "\(.name): \(.state), detail: \(.detail // "")"' "$RESULTS_FILE")
+
+        if [ -n "$FAILED" ]; then
+          echo "❌ NMOS Test Failures:"
+          echo "$FAILED"
+          exit 1
+        else
+          echo "✅ All NMOS tests passed!"
+        fi
+
+    - name: Run BCP-008-01 Test Suite
+      working-directory: nmos-testing
+      run: |
+        echo "Using IP: $LocalIPAddress"
+        mkdir -p ../test_results
+        python nmos-test.py suite BCP-008-01-01 \
+          --host $LocalIPAddress $LocalIPAddress $LocalIPAddress null \
+          --port 8080 8080 8080 8080 \
+          --version v1.3 v1.1 v1.0 v1.0 \
+          --urlpath null null /x-nmos/ncp/v1.0/connect null \
+          --output ../test_results/bcp_008_01_01_results.json || true
+
+    - name: Check BCP-008-01 Test Results
+      run: |
+        RESULTS_FILE="test_results/bcp_008_01_01_results.json"
+
+        if [ ! -f "$RESULTS_FILE" ]; then
+          echo "ERROR: Results file $RESULTS_FILE not found"
+          exit 1
+        fi
+
+        # Extract failed tests
+        FAILED=$(jq -r '.results[] | select(.state=="Fail") | "\(.name): \(.state), detail: \(.detail // "")"' "$RESULTS_FILE")
+
+        if [ -n "$FAILED" ]; then
+          echo "❌ NMOS Test Failures:"
+          echo "$FAILED"
+          exit 1
+        else
+          echo "✅ All NMOS tests passed!"
+        fi
+
+    - name: Run BCP-008-02 Test Suite
+      working-directory: nmos-testing
+      run: |
+        echo "Using IP: $LocalIPAddress"
+        mkdir -p ../test_results
+        python nmos-test.py suite BCP-008-02-01 \
+          --host $LocalIPAddress $LocalIPAddress $LocalIPAddress null \
+          --port 8080 8080 8080 8080 \
+          --version v1.3 v1.1 v1.0 v1.0 \
+          --urlpath null null /x-nmos/ncp/v1.0/connect null \
+          --output ../test_results/bcp_008_02_01_results.json || true
+
+    - name: Check BCP-008-02 Test Results
+      run: |
+        RESULTS_FILE="test_results/bcp_008_02_01_results.json"
+
+        if [ ! -f "$RESULTS_FILE" ]; then
+          echo "ERROR: Results file $RESULTS_FILE not found"
+          exit 1
+        fi
+
+        # Extract failed tests
+        FAILED=$(jq -r '.results[] | select(.state=="Fail") | "\(.name): \(.state), detail: \(.detail // "")"' "$RESULTS_FILE")
+
+        if [ -n "$FAILED" ]; then
+          echo "❌ NMOS Test Failures:"
+          echo "$FAILED"
+          exit 1
+        else
+          echo "✅ All NMOS tests passed!"
+        fi
+
+    - name: Run IS-14 Test Suite
+      working-directory: nmos-testing
+      run: |
+        echo "Using IP: $LocalIPAddress"
+        mkdir -p ../test_results
+        python nmos-test.py suite IS-14-01 \
+          --host $LocalIPAddress $LocalIPAddress null null \
+          --port 8080 8080 0 0 \
+          --version v1.3 v1.0 v1.0 v1.0 \
+          --selector null null null null \
+          --output ../test_results/is_14_01_results.json || true
+
+    - name: Check IS-14 Test Results
+      run: |
+        RESULTS_FILE="test_results/is_14_01_results.json"
+
+        if [ ! -f "$RESULTS_FILE" ]; then
+          echo "ERROR: Results file $RESULTS_FILE not found"
+          exit 1
+        fi
+
+        # Extract failed tests
+        FAILED=$(jq -r '.results[] | select(.state=="Fail") | "\(.name): \(.state), detail: \(.detail // "")"' "$RESULTS_FILE")
+
+        if [ -n "$FAILED" ]; then
+          echo "❌ NMOS Test Failures:"
+          echo "$FAILED"
+          exit 1
+        else
+          echo "✅ All NMOS tests passed!"
+        fi
+
+    - name: Stop Node.js App
+      if: always()
+      run: |
+        if [ -f node_pid.txt ]; then
+          kill $(cat node_pid.txt) || true
+        fi
