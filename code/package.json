@@ -28,7 +28,7 @@
     "cors": "^2.8.5",
     "express": "^5.1.0",
     "json-ignore": "^0.4.0",
-    "sdp-transform": "^2.15.0",
+    "sdp-transform": "^3.0.0",
     "shx": "^0.4.0",
     "tai64": "^1.0.0",
     "timestamp-nano": "^1.0.1",
