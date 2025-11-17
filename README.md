@@ -2,6 +2,8 @@
 
 [![Lint Status](https://github.com/AMWA-TV/nmos-device-control-mock/workflows/Lint/badge.svg)](https://github.com/AMWA-TV/nmos-device-control-mock/actions?query=workflow%3ALint)
 [![Render Status](https://github.com/AMWA-TV/nmos-device-control-mock/workflows/Render/badge.svg)](https://github.com/AMWA-TV/nmos-device-control-mock/actions?query=workflow%3ARender)
+[![Build checks](https://github.com/AMWA-TV/nmos-device-control-mock/actions/workflows/basic_checks.yml/badge.svg)](https://github.com/AMWA-TV/nmos-device-control-mock/actions/workflows/basic_checks.yml)
+[![API Tests](https://github.com/AMWA-TV/nmos-device-control-mock/actions/workflows/api_tests.yml/badge.svg)](https://github.com/AMWA-TV/nmos-device-control-mock/actions/workflows/api_tests.yml)
 
 <!-- INTRO-START -->
 
