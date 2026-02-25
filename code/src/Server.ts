@@ -734,7 +734,12 @@ try
     //IS-05 paths
     app.get('/x-nmos/connection', function (req, res) {
         res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.write(JSON.stringify([ 'v1.1/' ]));
+
+        if(config.streaming_profile == StreamingProfile.MXL)
+            res.write(JSON.stringify([ 'v1.2/' ]));
+        else
+            res.write(JSON.stringify([ 'v1.1/', 'v1.2/' ]));
+
         res.end();
     })
 
