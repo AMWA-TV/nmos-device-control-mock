@@ -11,7 +11,7 @@ export abstract class NmosSender extends NmosResource
     public transport: string;
     public interface_bindings: string[];
     public subscription: object;
-    public manifest_href: string;
+    public manifest_href: string | null;
     
     @jsonIgnore()
     public constraints: object[];
@@ -33,7 +33,7 @@ export abstract class NmosSender extends NmosResource
         device_id: string,
         base_label: string,
         transport: string,
-        manifest_href: string,
+        manifest_href: string | null,
         interface_bindings: string[],
         registrationClient: RegistrationClient)
     {
