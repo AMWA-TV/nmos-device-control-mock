@@ -6,7 +6,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { jsonIgnoreReplacer } from 'json-ignore';
 
 import { Configuration, StreamingProfile } from './Configuration';
-import { NmosNode } from './NmosNode';
+import { NmosClock, NmosInterface, NmosNode } from './NmosNode';
 import { NmosDevice } from './NmosDevice';
 import { RegistrationClient } from './RegistrationClient';
 import { SessionManager } from './SessionManager';
@@ -32,6 +32,10 @@ import { NmosReceiverMpegTS } from './NmosReceiverMpegTS';
 import { NmosReceiverStagedRtp } from './NmosReceiverRtp';
 
 import cors from 'cors';
+import { NmosFlowVideoMXL } from './NmosFlowVideoMXL';
+import { NmosSourceVideoMXL } from './NmosSourceVideoMXL';
+import { NmosSenderMXL } from './NmosSenderMXL';
+import { NmosReceiverVideoMXL } from './NmosReceiverVideoMXL';
 
 export interface WebSocketConnection extends WebSocket {
     isAlive: boolean;
@@ -70,15 +74,61 @@ try
 
     const registrationClient = new RegistrationClient(config.registry_address, config.registry_port, config.work_without_registry);
 
-    const myNode = new NmosNode(
-        config.node_id,
-        config.base_label,
-        config.address,
-        config.outside_port,
-        config.manufacturer,
-        config.product,
-        config.instance,
-        registrationClient);
+    let myNode: NmosNode;
+
+    switch(config.streaming_profile)
+    {
+        case StreamingProfile.RTP_RAW:
+        {
+            myNode = new NmosNode(
+                config.node_id,
+                config.base_label,
+                config.address,
+                config.outside_port,
+                [ new NmosClock('clk0', 'internal') ],
+                [ new NmosInterface('00-15-5d-67-c3-4e', 'eth0', '00-15-5d-67-c3-4e'), new NmosInterface('96-1c-70-61-b1-54', 'eth1', '96-1c-70-61-b1-54') ],
+                config.manufacturer,
+                config.product,
+                config.instance,
+                registrationClient);
+        }
+        break;
+
+        case StreamingProfile.RTP_MPEG_TS:
+        {
+            myNode = new NmosNode(
+                config.node_id,
+                config.base_label,
+                config.address,
+                config.outside_port,
+                [ new NmosClock('clk0', 'internal') ],
+                [ new NmosInterface('00-15-5d-67-c3-4e', 'eth0', '00-15-5d-67-c3-4e') ],
+                config.manufacturer,
+                config.product,
+                config.instance,
+                registrationClient);
+        }
+        break;
+
+        case StreamingProfile.MXL:
+        {
+            myNode = new NmosNode(
+                config.node_id,
+                config.base_label,
+                config.address,
+                config.outside_port,
+                [],
+                [],
+                config.manufacturer,
+                config.product,
+                config.instance,
+                registrationClient);
+        }
+        break;
+
+        default:
+            throw new Error(`Invalid streaming profile in configuration: ${config.streaming_profile}`);
+    }
 
     const myDevice = new NmosDevice(
         config.device_id,
@@ -90,6 +140,7 @@ try
         config.product,
         config.instance,
         config.function,
+        config.streaming_profile == StreamingProfile.MXL,
         registrationClient);
 
     let mySource: NmosSource | null = null;
@@ -119,6 +170,20 @@ try
                 config.base_label,
                 [],
                 "urn:x-nmos:format:mux",
+                registrationClient);
+        }
+        break;
+
+        case StreamingProfile.MXL:
+        {
+            mySource = new NmosSourceVideoMXL(
+                config.source_id,
+                config.device_id,
+                config.base_label,
+                [],
+                30000,
+                1001,
+                "urn:x-nmos:format:video",
                 registrationClient);
         }
         break;
@@ -182,6 +247,47 @@ try
                 registrationClient);
         }
         break;
+
+        case StreamingProfile.MXL:
+        {
+            myFlow = new NmosFlowVideoMXL(
+                config.flow_id,
+                config.source_id,
+                config.device_id,
+                config.base_label,
+                [],
+                30000,
+                1001,
+                "urn:x-nmos:format:video",
+                1920,
+                1080,
+                "BT709",
+                "progressive",
+                "SDR",
+                "video/v210",
+                [
+                    {
+                        "name": "Y",
+                        "width": 1920,
+                        "height": 1080,
+                        "bit_depth": 10
+                    },
+                    {
+                        "name": "Cb",
+                        "width": 960,
+                        "height": 1080,
+                        "bit_depth": 10
+                    },
+                    {
+                        "name": "Cr",
+                        "width": 960,
+                        "height": 1080,
+                        "bit_depth": 10
+                    }
+                ],
+                registrationClient);
+        }
+        break;
     }
 
     let mySender: NmosSender | null = null;
@@ -216,6 +322,18 @@ try
                 registrationClient);
         }
         break;
+
+        case StreamingProfile.MXL:
+        {
+            mySender = new NmosSenderMXL(
+                config.sender_id,
+                config.flow_id,
+                config.device_id,
+                config.base_label,
+                "urn:x-nmos:transport:mxl",
+                registrationClient);
+        }
+        break;
     }
 
     let myReceiver: NmosReceiver | null = null;
@@ -242,6 +360,17 @@ try
                 config.base_label,
                 'urn:x-nmos:transport:rtp.mcast',
                 [ 'eth0' ],
+                registrationClient);
+        }
+        break;
+
+        case StreamingProfile.MXL:
+        {
+            myReceiver = new NmosReceiverVideoMXL(
+                config.receiver_id,
+                config.device_id,
+                config.base_label,
+                'urn:x-nmos:transport:mxl',
                 registrationClient);
         }
         break;
