@@ -61,6 +61,10 @@ export abstract class NmosSender extends NmosResource
 
     public FetchTransportType()
     {
+        if (!this.transport.includes('.')) {
+            return this.transport;
+        }
+
         let split = this.transport.split('.');
         split.pop();
         return split.join('.');
