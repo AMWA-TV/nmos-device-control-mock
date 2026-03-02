@@ -30,6 +30,8 @@ export class NmosNode extends NmosResource
         base_label: string,
         address: string,
         port: number,
+        clocks: NmosClock[],
+        interfaces: NmosInterface[],
         manufacturer: string,
         product: string,
         instance: string,
@@ -51,7 +53,7 @@ export class NmosNode extends NmosResource
 
         this.hostname = os.hostname();
 
-        this.clocks = [ new NmosClock('clk0', 'internal') ];
+        this.clocks = clocks;
 
         this.caps = {};
 
@@ -59,7 +61,7 @@ export class NmosNode extends NmosResource
 
         this.api = new NmosApi(address, port);
 
-        this.interfaces = [ new NmosInterface('00-15-5d-67-c3-4e', 'eth0', '00-15-5d-67-c3-4e'), new NmosInterface('96-1c-70-61-b1-54', 'eth1', '96-1c-70-61-b1-54') ];
+        this.interfaces = interfaces;
     }
 
     public ToJson()
@@ -68,7 +70,7 @@ export class NmosNode extends NmosResource
     }
 }
 
-class NmosClock
+export class NmosClock
 {
     public name : string;
     public ref_type : string;
@@ -128,7 +130,7 @@ class NmosApi
     }
 }
 
-class NmosInterface
+export class NmosInterface
 {
     public chassis_id: string;
     public name: string;

@@ -1,61 +1,36 @@
 import { NmosSender, NmosSenderActive, NmosSenderStaged } from './NmosSender';
-import { NmosSenderActiveRtp, NmosSenderStagedRtp, RtpSenderTransportParamsSetActive, RtpSenderTransportParamsSetStaged } from './NmosSenderRtp';
 import { RegistrationClient } from './RegistrationClient';
-import { NmosActivation } from './NmosReceiver';
+import { NmosActivation, TransportParamsSetActive, TransportParamsSetStaged } from './NmosReceiver';
 import { TAI64 } from 'tai64';
+import { jsonIgnoreReplacer } from 'json-ignore';
 
-export class NmosSenderMpegTS extends NmosSender
+export class NmosSenderMXL extends NmosSender
 {
-    public bit_rate: number;
-
     public constructor(
         id: string,
         flow_id: string,
         device_id: string,
         base_label: string,
         transport: string,
-        bit_rate: number,
-        manifest_href: string,
-        interface_bindings: string[],
         registrationClient: RegistrationClient)
     {
-        super(id, flow_id, device_id, base_label, transport, manifest_href, interface_bindings, registrationClient);
+        super(id, flow_id, device_id, base_label, transport, null, [], registrationClient);
 
-        this.bit_rate = bit_rate;
-
-        this.active = new NmosSenderActiveRtp(
+        this.active = new NmosSenderActiveMXL(
             null,
             true,
             new NmosActivation(null, null, null),
-            [ new RtpSenderTransportParamsSetActive("239.100.20.0", "192.168.10.101", 10000, 10000)]);
+            [ new MXLSenderTransportParamsSetActive(flow_id)]);
 
-        this.staged = new NmosSenderStagedRtp(
+        this.staged = new NmosSenderStagedMXL(
             null,
             true,
             new NmosActivation(null, null, null),
-            [ new RtpSenderTransportParamsSetStaged("239.100.20.0", "192.168.10.101", 10000, 10000)]);
+            [ new MXLSenderTransportParamsSetStaged(flow_id)]);
 
-        this.constraints = [ 
+        this.constraints = [
         {
-            'destination_ip': {},
-            'source_ip': {},
-            'source_port': {},
-            'destination_port': {},
-            'rtcp_enabled': {},
-            'fec_enabled': {},
-            'fec_destination_ip': {},
-            'fec_type': {},
-            'fec_mode': {},
-            'fec_block_width': {},
-            'fec_block_height': {},
-            'fec1D_destination_port': {},
-            'fec2D_destination_port': {},
-            'fec1D_source_port': {},
-            'fec2D_source_port': {},
-            'rtcp_destination_ip': {},
-            'rtcp_destination_port': {},
-            'rtcp_source_port': {},
-            'rtp_enabled': {},
+            'flow_id': {}
         }];
     }
 
@@ -73,39 +48,26 @@ export class NmosSenderMpegTS extends NmosSender
 
     public FetchSdp() : string | null
     {
-        if(this.active?.transport_params != null)
-        {
-            let myTransportParamsLeg_0 = this.active?.transport_params[0] as RtpSenderTransportParamsSetActive;
-            return `v=0
-o=- 3948176205 3948176205 IN IP4 ${myTransportParamsLeg_0.source_ip}
-s=${this.label}
-t=0 0
-m=video ${myTransportParamsLeg_0.destination_port} RTP/AVP 33
-c=IN IP4 ${myTransportParamsLeg_0.destination_ip}/32
-a=source-filter: incl IN IP4 ${myTransportParamsLeg_0.destination_ip} ${myTransportParamsLeg_0.source_ip}
-a=rtpmap:33 MP2T/90000\r\n`;
-        }
-
         return null;
     }
 
     public ChangeSenderSettings(settings: NmosSenderStaged) : NmosSenderStaged | null
     {
-        let rtpSettings = settings as NmosSenderStagedRtp;
-        if(rtpSettings && this.active != null && this.staged != null)
+        let mxlSettings = settings as NmosSenderStagedMXL;
+        if(mxlSettings && this.active != null && this.staged != null)
         {
-            let currentParams = this.active as NmosSenderActiveRtp;
+            let currentParams = this.active as NmosSenderActiveMXL;
             if(currentParams)
             {
-                let activeParams: RtpSenderTransportParamsSetActive[];
-                if(rtpSettings.transport_params)
+                let activeParams: MXLSenderTransportParamsSetActive[];
+                if(mxlSettings.transport_params)
                 {
                     activeParams = [];
-                    activeParams.push(currentParams.transport_params[0].ProcessStagedTransportParams(rtpSettings.transport_params[0]));
+                    activeParams.push(currentParams.transport_params[0].ProcessStagedTransportParams(mxlSettings.transport_params[0]));
                     if(currentParams.transport_params.length == 2)
                     {
-                        if(rtpSettings.transport_params.length == 2)
-                            activeParams.push(currentParams.transport_params[1].ProcessStagedTransportParams(rtpSettings.transport_params[1]));
+                        if(mxlSettings.transport_params.length == 2)
+                            activeParams.push(currentParams.transport_params[1].ProcessStagedTransportParams(mxlSettings.transport_params[1]));
                         else
                             activeParams.push(currentParams.transport_params[1]);
                     }
@@ -140,23 +102,23 @@ a=rtpmap:33 MP2T/90000\r\n`;
                 else
                     activation = currentParams.activation;
 
-                this.active = new NmosSenderActiveRtp(
+                this.active = new NmosSenderActiveMXL(
                     settings.receiver_id !== undefined ? settings.receiver_id : this.active.receiver_id,
                     settings.master_enable !== undefined ? settings.master_enable : this.active.master_enable,
                     activation,
                     activeParams);
     
-                this.staged = new NmosSenderStagedRtp(
+                this.staged = new NmosSenderStagedMXL(
                     settings.receiver_id !== undefined ? settings.receiver_id : this.active.receiver_id,
                     settings.master_enable !== undefined ? settings.master_enable : this.active.master_enable,
                     new NmosActivation(null, null, null),
-                    rtpSettings.transport_params !== undefined ? rtpSettings.transport_params : activeParams);
+                    mxlSettings.transport_params !== undefined ? mxlSettings.transport_params : activeParams);
 
-                let response = new NmosSenderStagedRtp(
+                let response = new NmosSenderStagedMXL(
                     settings.receiver_id !== undefined ? settings.receiver_id : this.active.receiver_id,
                     settings.master_enable !== undefined ? settings.master_enable : this.active.master_enable,
                     activation,
-                    rtpSettings.transport_params !== undefined ? rtpSettings.transport_params : activeParams);
+                    mxlSettings.transport_params !== undefined ? mxlSettings.transport_params : activeParams);
 
                 if(this.active.master_enable)
                 {
@@ -179,5 +141,82 @@ a=rtpmap:33 MP2T/90000\r\n`;
         }
 
         return null;
+    }
+}
+
+export class NmosSenderActiveMXL extends NmosSenderActive
+{
+    public constructor(
+        receiver_id: string | null,
+        master_enable: boolean,
+        activation: NmosActivation,
+        public transport_params: MXLSenderTransportParamsSetActive[])
+    {
+        super(receiver_id, master_enable, activation, transport_params);
+    }
+
+    public ToJson()
+    {
+        return JSON.stringify(this, jsonIgnoreReplacer);
+    }
+}
+
+export class MXLSenderTransportParamsSetActive extends TransportParamsSetActive
+{
+    public flow_id: string | null;
+
+    public constructor(
+        flow_id: string | null)
+    {
+        super();
+
+        this.flow_id = flow_id;
+    }
+
+    public ProcessStagedTransportParams(stagedSet: MXLSenderTransportParamsSetStaged) : MXLSenderTransportParamsSetActive
+    {
+        return new MXLSenderTransportParamsSetActive(
+            stagedSet.flow_id != "auto" && stagedSet.flow_id !== undefined ? stagedSet.flow_id : this.flow_id
+        );
+    }
+
+    public ToJson()
+    {
+        return JSON.stringify(this, jsonIgnoreReplacer);
+    }
+}
+
+export class NmosSenderStagedMXL extends NmosSenderStaged
+{
+    public constructor(
+        receiver_id: string | null,
+        master_enable: boolean,
+        activation: NmosActivation,
+        public transport_params: MXLSenderTransportParamsSetStaged[])
+    {
+        super(receiver_id, master_enable, activation, transport_params);
+    }
+
+    public ToJson()
+    {
+        return JSON.stringify(this, jsonIgnoreReplacer);
+    }
+}
+
+export class MXLSenderTransportParamsSetStaged extends TransportParamsSetStaged
+{
+    public flow_id: string | null;
+
+    public constructor(
+        flow_id: string | null)
+    {
+        super();
+
+        this.flow_id = flow_id;
+    }
+
+    public ToJson()
+    {
+        return JSON.stringify(this, jsonIgnoreReplacer);
     }
 }

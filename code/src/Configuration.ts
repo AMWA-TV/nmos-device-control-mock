@@ -6,7 +6,8 @@ import writeFileAtomic from 'write-file-atomic';
 export enum StreamingProfile
 {
     RTP_RAW = "RTP_RAW",
-    RTP_MPEG_TS = "RTP_MPEG_TS"
+    RTP_MPEG_TS = "RTP_MPEG_TS",
+    MXL = "MXL"
 }
 
 export class Configuration implements IConfiguration

@@ -35,12 +35,11 @@ export class NmosDevice extends NmosResource
         id: string,
         node_id: string,
         base_label: string,
-        address: string,
-        port: number,
         manufacturer: string,
         product: string,
         instance: string,
         application: string,
+        controls: NmosControl[],
         registrationClient: RegistrationClient)
     {
         super(id, `${base_label} device`, registrationClient);
@@ -64,12 +63,8 @@ export class NmosDevice extends NmosResource
 
         this.receivers = [];
         this.senders = [];
-        this.controls = [
-            new NmosControl(`http://${address}:${port}/x-nmos/connection/v1.1/`, 'urn:x-nmos:control:sr-ctrl/v1.1'),
-            new NmosControl(`http://${address}:${port}/x-nmos/connection/v1.0/`, 'urn:x-nmos:control:sr-ctrl/v1.0'),
-            new NmosControl(`ws://${address}:${port}/x-nmos/ncp/v1.0/connect`, 'urn:x-nmos:control:ncp/v1.0'),
-            new NmosControl(`http://${address}:${port}/x-nmos/configuration/v1.0/`, 'urn:x-nmos:control:configuration/v1.0'),
-        ];
+
+        this.controls = controls;
 
         this.type = 'urn:x-nmos:device:generic';
     }
@@ -171,7 +166,7 @@ export class NmosDevice extends NmosResource
     }
 }
 
-class NmosControl
+export class NmosControl
 {
     public href : string;
     public type : string;
