@@ -7,7 +7,7 @@ import { jsonIgnoreReplacer } from 'json-ignore';
 
 import { Configuration, StreamingProfile } from './Configuration';
 import { NmosClock, NmosInterface, NmosNode } from './NmosNode';
-import { NmosDevice } from './NmosDevice';
+import { NmosControl, NmosDevice } from './NmosDevice';
 import { RegistrationClient } from './RegistrationClient';
 import { SessionManager } from './SessionManager';
 import { ExampleControlsBlock, NcBlock, RootBlock } from './NCModel/Blocks';
@@ -130,17 +130,41 @@ try
             throw new Error(`Invalid streaming profile in configuration: ${config.streaming_profile}`);
     }
 
+    let myDeviceControls: NmosControl[] = [];
+
+    switch(config.streaming_profile)
+    {
+        case StreamingProfile.RTP_RAW:
+        case StreamingProfile.RTP_MPEG_TS:
+            {
+                myDeviceControls = [
+                    new NmosControl(`http://${config.address}:${config.outside_port}/x-nmos/connection/v1.1/`, 'urn:x-nmos:control:sr-ctrl/v1.1'),
+                    new NmosControl(`http://${config.address}:${config.outside_port}/x-nmos/connection/v1.0/`, 'urn:x-nmos:control:sr-ctrl/v1.0'),
+                    new NmosControl(`ws://${config.address}:${config.outside_port}/x-nmos/ncp/v1.0/connect`, 'urn:x-nmos:control:ncp/v1.0'),
+                    new NmosControl(`http://${config.address}:${config.outside_port}/x-nmos/configuration/v1.0/`, 'urn:x-nmos:control:configuration/v1.0'),
+                ];
+            }
+            break;
+        case StreamingProfile.MXL:
+            {
+                myDeviceControls = [
+                    new NmosControl(`http://${config.address}:${config.outside_port}/x-nmos/connection/v1.2/`, 'urn:x-nmos:control:sr-ctrl/v1.2'),
+                    new NmosControl(`ws://${config.address}:${config.outside_port}/x-nmos/ncp/v1.0/connect`, 'urn:x-nmos:control:ncp/v1.0'),
+                    new NmosControl(`http://${config.address}:${config.outside_port}/x-nmos/configuration/v1.0/`, 'urn:x-nmos:control:configuration/v1.0'),
+                ];
+            }
+            break;
+    }
+
     const myDevice = new NmosDevice(
         config.device_id,
         config.node_id,
         config.base_label,
-        config.address,
-        config.outside_port,
         config.manufacturer,
         config.product,
         config.instance,
         config.function,
-        config.streaming_profile == StreamingProfile.MXL,
+        myDeviceControls,
         registrationClient);
 
     let mySource: NmosSource | null = null;
