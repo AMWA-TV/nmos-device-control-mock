@@ -1006,9 +1006,15 @@ try
     app.get('/x-nmos/connection/:version/single/senders/:id/transportfile', function (req, res) {
         if(myDevice.FindSender(req.params.id))
         {
-            res.writeHead(200, { 'Content-Type': 'application/sdp' });
-            res.write(myDevice.FetchSender(req.params.id)?.FetchSdp());
-            res.end();
+            let sdp = myDevice.FetchSender(req.params.id)?.FetchSdp();
+            if(sdp)
+            {
+                res.writeHead(200, { 'Content-Type': 'application/sdp' });
+                res.write(sdp);
+                res.end();
+            }
+            else
+                res.sendStatus(404);
         }
         else
             res.sendStatus(404);
