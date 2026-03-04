@@ -22,13 +22,13 @@ export class NmosReceiverVideoMXL extends NmosReceiver
 
         this.active = new NmosReceiverActiveMXL(
             null,
-            true,
+            false,
             new NmosActivation(null, null, null),
             [ new MXLReceiverTransportParamsSetActive(null) ]);
 
         this.staged = new NmosReceiverStagedMXL(
             null,
-            true,
+            false,
             new NmosActivation(null, null, null),
             [ new MXLReceiverTransportParamsSetStaged(null) ]);
 
