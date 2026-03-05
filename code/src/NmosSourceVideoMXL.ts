@@ -12,12 +12,13 @@ export class NmosSourceVideoMXL extends NmosSource
         device_id: string,
         label: string,
         parents: string[],
+        clock_name: string | null,
         grain_rate_numerator: number,
         grain_rate_denominator: number,
         format: string,
         registrationClient: RegistrationClient)
     {
-        super(id, device_id, label, parents, null, registrationClient);
+        super(id, device_id, label, parents, clock_name, registrationClient);
 
         this.grain_rate = {
             "numerator": grain_rate_numerator,
