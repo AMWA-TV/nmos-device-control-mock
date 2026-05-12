@@ -34,7 +34,7 @@
     "timestamp-nano": "^1.0.1",
     "uuid": "^14.0.0",
     "wait-on": "^9.0.10",
-    "write-file-atomic": "^7.0.1",
+    "write-file-atomic": "^8.0.0",
     "ws": "^8.20.0"
   },
   "devDependencies": {
