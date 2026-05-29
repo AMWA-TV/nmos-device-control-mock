@@ -20,7 +20,16 @@ export class NmosReceiverMpegTS extends NmosReceiver
     {
         super(id, device_id, base_label, transport, interface_bindings, registrationClient);
 
-        this.caps = { 'media_types': ['video/MP2T'] };
+        this.caps = {
+            'media_types': ['video/MP2T'],
+            'version': this.version,
+            'constraint_sets': [{
+                'urn:x-nmos:cap:format:media_type': {
+                    "enum": ["video/MP2T"]
+                }
+            }]
+        };
+
         this.format = 'urn:x-nmos:format:mux';
 
         this.active = new NmosReceiverActiveRtp(

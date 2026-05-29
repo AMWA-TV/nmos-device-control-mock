@@ -17,7 +17,16 @@ export class NmosReceiverVideoMXL extends NmosReceiver
     {
         super(id, device_id, base_label, transport, [], registrationClient);
 
-        this.caps = { 'media_types': ['video/v210'] };
+        this.caps = {
+            'media_types': ['video/v210'],
+            'version': this.version,
+            'constraint_sets': [{
+                'urn:x-nmos:cap:format:media_type': {
+                    "enum": ["video/v210"]
+                }
+            }]
+        };
+
         this.format = 'urn:x-nmos:format:video';
 
         this.active = new NmosReceiverActiveMXL(
