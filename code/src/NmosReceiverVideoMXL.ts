@@ -63,11 +63,12 @@ export class NmosReceiverVideoMXL extends NmosReceiver
                 let activeParams: MXLReceiverTransportParamsSetActive[];
                 if(mxlSettings.transport_params)
                 {
+                    if(mxlSettings.transport_params[0].mxl_flow_id == 'auto')
+                        return null;
+
                     activeParams = [];
 
                     activeParams.push(currentParams.transport_params[0].ProcessStagedTransportParams(mxlSettings.transport_params[0]));
-                    if(currentParams.transport_params.length == 2)
-                        activeParams.push(currentParams.transport_params[1].ProcessStagedTransportParams(mxlSettings.transport_params[1]));
                 }
                 else
                     activeParams = currentParams.transport_params;
