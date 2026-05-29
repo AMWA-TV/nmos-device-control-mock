@@ -1,8 +1,11 @@
 import { jsonIgnoreReplacer } from 'json-ignore';
 import { NmosReceiverActive, NmosActivation, TransportParamsSetActive, TransportParamsSetStaged, NmosReceiverStaged } from './NmosReceiver';
+import { NmosReceiverTransportFile } from './NmosReceiverRtp';
 
 export class NmosReceiverActiveMXL extends NmosReceiverActive
 {
+    public transport_file: NmosReceiverTransportFile | null;
+
     public constructor(
         sender_id: string | null,
         master_enable: boolean,
@@ -10,6 +13,7 @@ export class NmosReceiverActiveMXL extends NmosReceiverActive
         public transport_params: MXLReceiverTransportParamsSetActive[])
     {
         super(sender_id, master_enable, activation, transport_params);
+        this.transport_file = new NmosReceiverTransportFile(null, null);
     }
 
     public ToJson()
@@ -20,6 +24,8 @@ export class NmosReceiverActiveMXL extends NmosReceiverActive
 
 export class NmosReceiverStagedMXL extends NmosReceiverStaged
 {
+    public transport_file: NmosReceiverTransportFile | null;
+
     public constructor(
         sender_id: string | null,
         master_enable: boolean,
@@ -27,6 +33,7 @@ export class NmosReceiverStagedMXL extends NmosReceiverStaged
         public transport_params: MXLReceiverTransportParamsSetStaged[])
     {
         super(sender_id, master_enable, activation, transport_params);
+        this.transport_file = new NmosReceiverTransportFile(null, null);
     }
 
     public ToJson()
