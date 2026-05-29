@@ -12,6 +12,8 @@ export class NmosSenderMXL extends NmosSender
         device_id: string,
         base_label: string,
         transport: string,
+        mxl_domain_id: string,
+        mxl_flow_id: string,
         registrationClient: RegistrationClient)
     {
         super(id, flow_id, device_id, base_label, transport, null, [], registrationClient);
@@ -20,17 +22,18 @@ export class NmosSenderMXL extends NmosSender
             null,
             true,
             new NmosActivation(null, null, null),
-            [ new MXLSenderTransportParamsSetActive(flow_id)]);
+            [ new MXLSenderTransportParamsSetActive(mxl_domain_id, mxl_flow_id)]);
 
         this.staged = new NmosSenderStagedMXL(
             null,
             true,
             new NmosActivation(null, null, null),
-            [ new MXLSenderTransportParamsSetStaged(flow_id)]);
+            [ new MXLSenderTransportParamsSetStaged(mxl_domain_id, mxl_flow_id)]);
 
         this.constraints = [
         {
-            'flow_id': {}
+            'mxl_domain_id': {},
+            'mxl_flow_id': {}
         }];
     }
 
@@ -163,20 +166,25 @@ export class NmosSenderActiveMXL extends NmosSenderActive
 
 export class MXLSenderTransportParamsSetActive extends TransportParamsSetActive
 {
-    public flow_id: string | null;
+    public mxl_domain_id: string | null;
+
+    public mxl_flow_id: string | null;
 
     public constructor(
-        flow_id: string | null)
+        mxl_domain_id: string | null,
+        mxl_flow_id: string | null)
     {
         super();
 
-        this.flow_id = flow_id;
+        this.mxl_domain_id = mxl_domain_id;
+        this.mxl_flow_id = mxl_flow_id;
     }
 
     public ProcessStagedTransportParams(stagedSet: MXLSenderTransportParamsSetStaged) : MXLSenderTransportParamsSetActive
     {
         return new MXLSenderTransportParamsSetActive(
-            stagedSet.flow_id != "auto" && stagedSet.flow_id !== undefined ? stagedSet.flow_id : this.flow_id
+            stagedSet.mxl_domain_id != "auto" && stagedSet.mxl_domain_id !== undefined ? stagedSet.mxl_domain_id : this.mxl_domain_id,
+            stagedSet.mxl_flow_id != "auto" && stagedSet.mxl_flow_id !== undefined ? stagedSet.mxl_flow_id : this.mxl_flow_id
         );
     }
 
@@ -205,14 +213,18 @@ export class NmosSenderStagedMXL extends NmosSenderStaged
 
 export class MXLSenderTransportParamsSetStaged extends TransportParamsSetStaged
 {
-    public flow_id: string | null;
+    public mxl_domain_id: string | null;
+
+    public mxl_flow_id: string | null;
 
     public constructor(
-        flow_id: string | null)
+        mxl_domain_id: string | null,
+        mxl_flow_id: string | null)
     {
         super();
 
-        this.flow_id = flow_id;
+        this.mxl_domain_id = mxl_domain_id;
+        this.mxl_flow_id = mxl_flow_id;
     }
 
     public ToJson()

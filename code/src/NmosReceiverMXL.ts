@@ -44,20 +44,25 @@ export class NmosReceiverStagedMXL extends NmosReceiverStaged
 
 export class MXLReceiverTransportParamsSetActive extends TransportParamsSetActive
 {
-    public flow_id: string | null;
+    public mxl_domain_id: string | null;
+
+    public mxl_flow_id: string | null;
 
     public constructor(
-        flow_id: string | null)
+        mxl_domain_id: string | null,
+        mxl_flow_id: string | null)
     {
         super();
 
-        this.flow_id = flow_id;
+        this.mxl_domain_id = mxl_domain_id;
+        this.mxl_flow_id = mxl_flow_id;
     }
 
     public ProcessStagedTransportParams(stagedSet: MXLReceiverTransportParamsSetStaged) : MXLReceiverTransportParamsSetActive
     {
         return new MXLReceiverTransportParamsSetActive(
-            stagedSet.flow_id != "auto" && stagedSet.flow_id !== undefined ? stagedSet.flow_id : this.flow_id
+            stagedSet.mxl_domain_id != "auto" && stagedSet.mxl_domain_id !== undefined ? stagedSet.mxl_domain_id : this.mxl_domain_id,
+            stagedSet.mxl_flow_id != "auto" && stagedSet.mxl_flow_id !== undefined ? stagedSet.mxl_flow_id : this.mxl_flow_id
         );
     }
 
@@ -69,14 +74,18 @@ export class MXLReceiverTransportParamsSetActive extends TransportParamsSetActiv
 
 export class MXLReceiverTransportParamsSetStaged extends TransportParamsSetStaged
 {
-    public flow_id: string | null;
+    public mxl_domain_id: string | null;
+
+    public mxl_flow_id: string | null;
 
     public constructor(
-        flow_id: string | null)
+        mxl_domain_id: string | null,
+        mxl_flow_id: string | null)
     {
         super();
 
-        this.flow_id = flow_id;
+        this.mxl_domain_id = mxl_domain_id;
+        this.mxl_flow_id = mxl_flow_id;
     }
 
     public ToJson()

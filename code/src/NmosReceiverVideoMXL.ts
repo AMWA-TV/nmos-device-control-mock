@@ -24,17 +24,18 @@ export class NmosReceiverVideoMXL extends NmosReceiver
             null,
             false,
             new NmosActivation(null, null, null),
-            [ new MXLReceiverTransportParamsSetActive(null) ]);
+            [ new MXLReceiverTransportParamsSetActive(null, null) ]);
 
         this.staged = new NmosReceiverStagedMXL(
             null,
             false,
             new NmosActivation(null, null, null),
-            [ new MXLReceiverTransportParamsSetStaged(null) ]);
+            [ new MXLReceiverTransportParamsSetStaged(null, null) ]);
 
         this.constraints = [
             {
-                'flow_id': {}
+                'mxl_domain_id': {},
+                'mxl_flow_id': {}
             }
         ];
     }
