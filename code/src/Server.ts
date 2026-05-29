@@ -356,6 +356,8 @@ try
                 config.device_id,
                 config.base_label,
                 "urn:x-nmos:transport:mxl",
+                config.mxl_domain_id,
+                config.mxl_flow_id,
                 registrationClient);
         }
         break;

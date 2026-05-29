@@ -30,6 +30,8 @@ export class Configuration implements IConfiguration
     public product: string;
     public instance: string;
     public function: string;
+    public mxl_domain_id: string;
+    public mxl_flow_id: string;
     public streaming_profile: StreamingProfile;
 
     @jsonIgnore()
@@ -65,6 +67,9 @@ export class Configuration implements IConfiguration
         this.streaming_profile = StreamingProfile.RTP_RAW;
         if(config.streaming_profile)
             this.streaming_profile = config.streaming_profile
+
+        this.mxl_domain_id = config.mxl_domain_id ?? "auto";
+        this.mxl_flow_id = config.mxl_flow_id ?? "auto";
 
         if(this.outside_port == null || this.outside_port == undefined)
             this.outside_port = this.port;
@@ -113,6 +118,21 @@ export class Configuration implements IConfiguration
         {
             this.sender_id = uuidv4().toString();
             shouldWriteConfig = true;
+        }
+
+        if(this.streaming_profile == StreamingProfile.MXL)
+        {
+            if(this.mxl_domain_id == "auto")
+            {
+                this.mxl_domain_id = uuidv4().toString();
+                shouldWriteConfig = true;
+            }
+
+            if(this.mxl_flow_id == "auto")
+            {
+                this.mxl_flow_id = uuidv4().toString();
+                shouldWriteConfig = true;
+            }
         }
 
         if(shouldWriteConfig)
@@ -196,5 +216,7 @@ export interface IConfiguration
     product: string;
     instance: string;
     function: string;
+    mxl_domain_id: string | null;
+    mxl_flow_id: string | null;
     streaming_profile: StreamingProfile | null;
 }
