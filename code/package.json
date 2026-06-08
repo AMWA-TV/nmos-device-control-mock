@@ -24,7 +24,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "axios": "^1.16.1",
+    "axios": "^1.17.0",
     "cors": "^2.8.6",
     "express": "^5.2.1",
     "json-ignore": "^0.4.0",
@@ -39,7 +39,7 @@
   },
   "devDependencies": {
     "@types/express": "^5.0.6",
-    "@types/node": "^25.9.1",
+    "@types/node": "^25.9.2",
     "@types/sdp-transform": "^2.15.0",
     "@types/ws": "^8.18.1",
     "@typescript-eslint/eslint-plugin": "^8.60.1",
