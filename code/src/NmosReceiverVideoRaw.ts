@@ -20,7 +20,16 @@ export class NmosReceiverVideoRaw extends NmosReceiver
     {
         super(id, device_id, base_label, transport, interface_bindings, registrationClient);
 
-        this.caps = { 'media_types': ['video/raw'] };
+        this.caps = {
+            'media_types': ['video/raw'],
+            'version': this.version,
+            'constraint_sets': [{
+                'urn:x-nmos:cap:format:media_type': {
+                    "enum": ["video/raw"]
+                }
+            }]
+        };
+
         this.format = 'urn:x-nmos:format:video';
 
         this.active = new NmosReceiverActiveRtp(
