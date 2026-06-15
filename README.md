@@ -93,6 +93,7 @@ docker compose -p nmos-control up -d
 * [AMWA MS-05-01 NMOS Control Architecture](https://specs.amwa.tv/ms-05-01)
 * [AMWA MS-05-02 NMOS Control Framework](https://specs.amwa.tv/ms-05-02)
 * [AMWA BCP-002-02 NMOS Asset Distinguishing Information](https://specs.amwa.tv/bcp-002-02)
+* [AMWA BCP-007-03 NMOS Support for MXL](https://specs.amwa.tv/bcp-007-03/)
 * [AMWA BCP-008-01 NMOS Receiver Status](https://specs.amwa.tv/bcp-008-01/)
 * [AMWA BCP-008-02 NMOS Sender Status](https://specs.amwa.tv/bcp-008-02/)
 * [AMWA BCP-006-04 NMOS Support for MPEG Transport Streams](https://specs.amwa.tv/bcp-006-04/)
