@@ -87,8 +87,9 @@ export class NmosSenderVideoRaw extends NmosSender
         return this.staged;
     }
 
-    public FetchSdp() : string | null {
-        if(this.active?.transport_params != null)
+    public FetchSdp() : string | null
+    {
+        if(this.active?.transport_params?.length)
         {
             let myTransportParamsLeg_0 = this.active?.transport_params[0] as RtpSenderTransportParamsSetActive;
             let myTransportParamsLeg_1 = this.active?.transport_params[1] as RtpSenderTransportParamsSetActive;

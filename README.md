@@ -57,8 +57,19 @@ These are the configuration keys which can be specified in the configuration fil
 
 * notify_without_subscriptions - boolean flag which is set to false by default, but it can be set to true if you would like to get all notifications on all sessions without subscribing (for debugging purposes only).
 * work_without_registry - boolean flag which is set to false by default, but it can be set to true if you would like the mock device not to attempt to register with an NMOS registry.
-* streaming_profile - enum option `[RTP_RAW, RTP_MPEG_TS]` specifying the streaming profile of senders and receivers (default is `RTP_RAW`)
+* streaming_profile - enum option `[RTP_RAW, RTP_MPEG_TS, MXL]` specifying the streaming profile of senders and receivers (default is `RTP_RAW`)
 * outside_port - allows users to configure the port used in the NMOS APIs which might be different than the server binding port when running inside a container due to port mappings
+
+## Working with MXL
+
+When specifically working with MXL as a transport the `streaming_profile` has to be set to `MXL`.
+
+On the first application run the configuration file in `/code/dist/server/config` will generate the following additional keys:
+
+* mxl_domain_id
+* mxl_flow_id
+
+These can be changed to other values if we want to align for example the MXL domain id with other MXL NMOS nodes already in the system.
 
 ## Docker support
 
@@ -93,6 +104,7 @@ docker compose -p nmos-control up -d
 * [AMWA MS-05-01 NMOS Control Architecture](https://specs.amwa.tv/ms-05-01)
 * [AMWA MS-05-02 NMOS Control Framework](https://specs.amwa.tv/ms-05-02)
 * [AMWA BCP-002-02 NMOS Asset Distinguishing Information](https://specs.amwa.tv/bcp-002-02)
+* [AMWA BCP-007-03 NMOS Support for MXL](https://specs.amwa.tv/bcp-007-03/)
 * [AMWA BCP-008-01 NMOS Receiver Status](https://specs.amwa.tv/bcp-008-01/)
 * [AMWA BCP-008-02 NMOS Sender Status](https://specs.amwa.tv/bcp-008-02/)
 * [AMWA BCP-006-04 NMOS Support for MPEG Transport Streams](https://specs.amwa.tv/bcp-006-04/)
