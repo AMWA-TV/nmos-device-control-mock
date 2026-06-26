@@ -63,7 +63,7 @@ export class NmosSenderMXL extends NmosSender
             if(currentParams)
             {
                 let activeParams: MXLSenderTransportParamsSetActive[];
-                if(mxlSettings.transport_params)
+                if(mxlSettings.transport_params?.length)
                 {
                     activeParams = [];
                     activeParams.push(currentParams.transport_params[0].ProcessStagedTransportParams(mxlSettings.transport_params[0]));                    
