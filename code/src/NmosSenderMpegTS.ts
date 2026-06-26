@@ -73,7 +73,7 @@ export class NmosSenderMpegTS extends NmosSender
 
     public FetchSdp() : string | null
     {
-        if(this.active?.transport_params != null)
+        if(this.active?.transport_params?.length != null)
         {
             let myTransportParamsLeg_0 = this.active?.transport_params[0] as RtpSenderTransportParamsSetActive;
             return `v=0
