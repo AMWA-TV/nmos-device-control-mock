@@ -60,6 +60,17 @@ These are the configuration keys which can be specified in the configuration fil
 * streaming_profile - enum option `[RTP_RAW, RTP_MPEG_TS, MXL]` specifying the streaming profile of senders and receivers (default is `RTP_RAW`)
 * outside_port - allows users to configure the port used in the NMOS APIs which might be different than the server binding port when running inside a container due to port mappings
 
+## Working with MXL
+
+When specifically working with MXL as a transport the `streaming_profile` has to be set to `MXL`.
+
+On the first application run the configuration file in `/code/dist/server/config` will generate the following additional keys:
+
+* mxl_domain_id
+* mxl_flow_id
+
+These can be changed to other values if we want to align for example the MXL domain id with other MXL NMOS nodes already in the system.
+
 ## Docker support
 
 The application has Docker support using the provided Dockerfile and the docker-compose.yml example file.
