@@ -76,7 +76,7 @@ export class NmosReceiverMpegTS extends NmosReceiver
         return this.staged;
     }
 
-    public ChangeReceiverSettings(settings: NmosReceiverStaged) : NmosReceiverStaged | null
+    public ChangeReceiverSettings(settings: NmosReceiverStaged) : [result: NmosReceiverStaged | null, errorCode: number | null, errorMessage: string | null]
     {
         let rtpSettings = settings as NmosReceiverStagedRtp;
         if(rtpSettings && this.active != null && this.staged != null)
@@ -168,7 +168,7 @@ export class NmosReceiverMpegTS extends NmosReceiver
                             this.agent?.Disconnected();
                         }
 
-                        return response;
+                        return [response, 200, null];
                     }
                 }
             }
@@ -253,11 +253,11 @@ export class NmosReceiverMpegTS extends NmosReceiver
                         this.agent?.Disconnected();
                     }
 
-                    return response;
+                    return [response, 200, null];
                 }
             }
         }
 
-        return null;
+        return [null, 500, 'Error applying staged parameters'];
     }
 }

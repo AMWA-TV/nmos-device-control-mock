@@ -66,7 +66,7 @@ export abstract class NmosReceiver extends NmosResource
 
     public abstract FetchConstraints() : object | null;
 
-    public abstract ChangeReceiverSettings(settings: NmosReceiverStaged) : NmosReceiverStaged | null;
+    public abstract ChangeReceiverSettings(settings: NmosReceiverStaged) : [result: NmosReceiverStaged | null, errorCode: number | null, errorMessage: string | null];
 
     public UpdateSubscription(
         sender_id : string | null,

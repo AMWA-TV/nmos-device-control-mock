@@ -61,7 +61,7 @@ export class NmosReceiverVideoMXL extends NmosReceiver
         return this.staged;
     }
 
-    public ChangeReceiverSettings(settings: NmosReceiverStaged) : NmosReceiverStaged | null
+    public ChangeReceiverSettings(settings: NmosReceiverStaged) : [result: NmosReceiverStaged | null, errorCode: number | null, errorMessage: string | null]
     {
         let mxlSettings = settings as NmosReceiverStagedMXL;
         if(mxlSettings && this.active != null && this.staged != null)
@@ -73,7 +73,7 @@ export class NmosReceiverVideoMXL extends NmosReceiver
                 if(mxlSettings.transport_params?.length)
                 {
                     if(mxlSettings.transport_params[0].mxl_flow_id == 'auto')
-                        return null;
+                        return [null, 400, 'auto is not supported for MXL flow id'];
 
                     activeParams = [];
 
@@ -143,10 +143,10 @@ export class NmosReceiverVideoMXL extends NmosReceiver
                     this.agent?.Disconnected();
                 }
 
-                return response;
+                return [response, 200, null];
             }
         }
 
-        return null;
+        return [null, 500, 'Error applying staged parameters'];
     }
 }

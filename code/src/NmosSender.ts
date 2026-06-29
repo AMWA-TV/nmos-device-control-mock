@@ -78,7 +78,7 @@ export abstract class NmosSender extends NmosResource
 
     public abstract FetchSdp() : string | null;
 
-    public abstract ChangeSenderSettings(settings: NmosSenderStaged) : NmosSenderStaged | null;
+    public abstract ChangeSenderSettings(settings: NmosSenderStaged) : [result: NmosSenderStaged | null, errorCode: number | null, errorMessage: string | null];
 
     public UpdateSubscription(
         receiver_id : string | null,
