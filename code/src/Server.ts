@@ -981,17 +981,17 @@ try
         {
             if(myDevice.FindSender(req.params.id))
             {
-                let response = myDevice.ChangeSenderSettings(req.params.id, settings);
-                if(response)
+                let [result, errorCode, errorMessage] = myDevice.ChangeSenderSettings(req.params.id, settings);
+                if(result)
                 {
                     res.writeHead(200, { 'Content-Type': 'application/json' });
-                    res.write(response.ToJson());
+                    res.write(result.ToJson());
                     res.end();
                 }
                 else
                 {
-                    res.writeHead(500, { 'Content-Type': 'application/json' });
-                    res.write(JSON.stringify(new ApiError(500, "Error processing the request", "Error processing the request")));
+                    res.writeHead(errorCode ?? 500, { 'Content-Type': 'application/json' });
+                    res.write(JSON.stringify(new ApiError(errorCode ?? 500, errorMessage ?? "Error processing the request", errorMessage ?? "Error processing the request")));
                     res.end();
                 }
             }
@@ -1109,17 +1109,17 @@ try
         {
             if(myDevice.FindReceiver(req.params.id))
             {
-                let response = myDevice.ChangeReceiverSettings(req.params.id, settings);
-                if(response)
+                let [result, errorCode, errorMessage] = myDevice.ChangeReceiverSettings(req.params.id, settings);
+                if(result)
                 {
                     res.writeHead(200, { 'Content-Type': 'application/json' });
-                    res.write(response.ToJson());
+                    res.write(result.ToJson());
                     res.end();
                 }
                 else
                 {
-                    res.writeHead(500, { 'Content-Type': 'application/json' });
-                    res.write(JSON.stringify(new ApiError(500, "Error processing the request", "Error processing the request")));
+                    res.writeHead(errorCode ?? 500, { 'Content-Type': 'application/json' });
+                    res.write(JSON.stringify(new ApiError(errorCode ?? 500, errorMessage ?? "Error processing the request", errorMessage ?? "Error processing the request")));
                     res.end();
                 }
             }

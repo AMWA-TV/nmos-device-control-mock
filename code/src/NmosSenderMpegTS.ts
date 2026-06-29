@@ -89,7 +89,7 @@ a=rtpmap:33 MP2T/90000\r\n`;
         return null;
     }
 
-    public ChangeSenderSettings(settings: NmosSenderStaged) : NmosSenderStaged | null
+    public ChangeSenderSettings(settings: NmosSenderStaged) : [result: NmosSenderStaged | null, errorCode: number | null, errorMessage: string | null]
     {
         let rtpSettings = settings as NmosSenderStagedRtp;
         if(rtpSettings && this.active != null && this.staged != null)
@@ -174,10 +174,10 @@ a=rtpmap:33 MP2T/90000\r\n`;
                     this.agent?.Deactivated();
                 }
 
-                return response;
+                return [response, 200, null];
             }
         }
 
-        return null;
+        return [null, 400, 'Error applying staged parameters'];
     }
 }

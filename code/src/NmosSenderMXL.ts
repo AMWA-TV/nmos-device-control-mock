@@ -54,7 +54,7 @@ export class NmosSenderMXL extends NmosSender
         return null;
     }
 
-    public ChangeSenderSettings(settings: NmosSenderStaged) : NmosSenderStaged | null
+    public ChangeSenderSettings(settings: NmosSenderStaged) : [result: NmosSenderStaged | null, errorCode: number | null, errorMessage: string | null]
     {
         let mxlSettings = settings as NmosSenderStagedMXL;
         if(mxlSettings && this.active != null && this.staged != null)
@@ -66,7 +66,7 @@ export class NmosSenderMXL extends NmosSender
                 if(mxlSettings.transport_params?.length)
                 {
                     activeParams = [];
-                    activeParams.push(currentParams.transport_params[0].ProcessStagedTransportParams(mxlSettings.transport_params[0]));                    
+                    activeParams.push(currentParams.transport_params[0].ProcessStagedTransportParams(mxlSettings.transport_params[0]));
                 }
                 else
                     activeParams = currentParams.transport_params;
@@ -132,11 +132,11 @@ export class NmosSenderMXL extends NmosSender
                     this.agent?.Deactivated();
                 }
 
-                return response;
+                return [response, 200, null];
             }
         }
 
-        return null;
+        return [null, 400, 'Error applying staged parameters'];
     }
 }
 

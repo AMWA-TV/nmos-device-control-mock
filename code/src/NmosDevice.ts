@@ -93,12 +93,12 @@ export class NmosDevice extends NmosResource
         return this.receiverObjects;
     }
 
-    public ChangeReceiverSettings(id: string, settings: NmosReceiverStaged) : NmosReceiverStaged | null
+    public ChangeReceiverSettings(id: string, settings: NmosReceiverStaged) : [result: NmosReceiverStaged | null, errorCode: number | null, errorMessage: string | null]
     {
         let receiver = this.receiverObjects.find(e => e.id === id);
         if(receiver)
             return (receiver as NmosReceiver).ChangeReceiverSettings(settings);
-        return null;
+        return [null, 404, 'Receiver not found'];
     }
 
     public FetchReceiversUris()
@@ -136,12 +136,12 @@ export class NmosDevice extends NmosResource
         return this.senderObjects;
     }
 
-    public ChangeSenderSettings(id: string, settings: NmosSenderStaged) : NmosSenderStaged | null
+    public ChangeSenderSettings(id: string, settings: NmosSenderStaged) : [result: NmosSenderStaged | null, errorCode: number | null, errorMessage: string | null]
     {
         let sender = this.senderObjects.find(e => e.id === id);
         if(sender)
             return (sender as NmosSender).ChangeSenderSettings(settings);
-        return null;
+        return [null, 404, 'Sender not found'];
     }
 
     public FetchSendersUris()

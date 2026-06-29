@@ -103,7 +103,7 @@ c=IN IP4 ${myTransportParamsLeg_0.destination_ip}/64
 a=source-filter: incl IN IP4 ${myTransportParamsLeg_0.destination_ip} ${myTransportParamsLeg_0.source_ip}
 a=rtpmap:96 raw/90000
 a=fmtp:96 sampling=YCbCr-4:2:2; width=1920; height=1080; depth=10; interlace; exactframerate=25; TCS=SDR; colorimetry=BT709; PM=2110GPM; SSN=ST2110-20:2017; TP=2110TPN; 
-a=ts-refclk:localmac=f4-b0-fe-5d-af-8a
+a=ts-refclk:localmac=00-15-5d-67-c3-4e
 a=mediaclk:direct=0
 a=mid:primary
 m=video ${myTransportParamsLeg_1.destination_port} RTP/AVP 96
@@ -111,7 +111,7 @@ c=IN IP4 ${myTransportParamsLeg_1.destination_ip}/64
 a=source-filter: incl IN IP4 ${myTransportParamsLeg_1.destination_ip} ${myTransportParamsLeg_1.source_ip}
 a=rtpmap:96 raw/90000
 a=fmtp:96 sampling=YCbCr-4:2:2; width=1920; height=1080; depth=10; interlace; exactframerate=25; TCS=SDR; colorimetry=BT709; PM=2110GPM; SSN=ST2110-20:2017; TP=2110TPN; 
-a=ts-refclk:localmac=b8-ce-aa-15-e5-cb
+a=ts-refclk:localmac=96-1c-70-61-b1-54
 a=mediaclk:direct=0
 a=mid:secondary\r\n`;
         }
@@ -119,7 +119,7 @@ a=mid:secondary\r\n`;
         return null;
     }
 
-    public ChangeSenderSettings(settings: NmosSenderStaged) : NmosSenderStaged | null
+    public ChangeSenderSettings(settings: NmosSenderStaged) : [result: NmosSenderStaged | null, errorCode: number | null, errorMessage: string | null]
     {
         let rtpSettings = settings as NmosSenderStagedRtp;
         if(rtpSettings && this.active != null && this.staged != null)
@@ -204,10 +204,10 @@ a=mid:secondary\r\n`;
                     this.agent?.Deactivated();
                 }
 
-                return response;
+                return [response, 200, null];
             }
         }
 
-        return null;
+        return [null, 400, 'Error applying staged parameters'];
     }
 }
