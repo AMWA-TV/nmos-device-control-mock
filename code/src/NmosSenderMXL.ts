@@ -136,7 +136,7 @@ export class NmosSenderMXL extends NmosSender
             }
         }
 
-        return [null, 500, 'Error applying staged parameters'];
+        return [null, 400, 'Error applying staged parameters'];
     }
 }
 

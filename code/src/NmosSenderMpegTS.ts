@@ -178,6 +178,6 @@ a=rtpmap:33 MP2T/90000\r\n`;
             }
         }
 
-        return [null, 500, 'Error applying staged parameters'];
+        return [null, 400, 'Error applying staged parameters'];
     }
 }

@@ -147,6 +147,6 @@ export class NmosReceiverVideoMXL extends NmosReceiver
             }
         }
 
-        return [null, 500, 'Error applying staged parameters'];
+        return [null, 400, 'Error applying staged parameters'];
     }
 }
