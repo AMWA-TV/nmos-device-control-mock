@@ -1118,7 +1118,7 @@ try
                 }
                 else
                 {
-                    res.writeHead(errorCode || 500, { 'Content-Type': 'application/json' });
+                    res.writeHead(errorCode ?? 500, { 'Content-Type': 'application/json' });
                     res.write(JSON.stringify(new ApiError(errorCode ?? 500, errorMessage ?? "Error processing the request", errorMessage ?? "Error processing the request")));
                     res.end();
                 }
