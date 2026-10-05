@@ -33,16 +33,16 @@
     "tai64": "^1.0.0",
     "timestamp-nano": "^1.0.1",
     "uuid": "^14.0.2",
-    "wait-on": "^9.1.0",
+    "wait-on": "^9.5.1",
     "write-file-atomic": "^8.0.0",
-    "ws": "^8.21.3"
+    "ws": "^8.22.0"
   },
   "devDependencies": {
     "@types/express": "^5.0.6",
-    "@types/node": "^26.6.2",
+    "@types/node": "^26.6.4",
     "@types/sdp-transform": "^3.0.0",
-    "@types/ws": "^8.18.1",
-    "@typescript-eslint/eslint-plugin": "^8.70.1",
+    "@types/ws": "^8.18.2",
+    "@typescript-eslint/eslint-plugin": "^8.71.0",
     "@typescript-eslint/parser": "^8.46.0",
     "eslint": "^10.11.0",
     "concurrently": "^10.0.5",
