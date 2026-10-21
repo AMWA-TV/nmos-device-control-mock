@@ -42,6 +42,9 @@ export abstract class NmosReceiver extends NmosResource
         this.staged = null;
         this.constraints = [];
         this.agent = null;
+
+        this.registrationType = 'receiver';
+        this.CaptureAnnotationDefaults();
     }
 
     public ToJson()

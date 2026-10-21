@@ -24,6 +24,9 @@ export class NmosFlow extends NmosResource
         this.parents = parents;
         
         this.tags = {};
+
+        this.registrationType = 'flow';
+        this.CaptureAnnotationDefaults();
     }
 
     public ToJson()

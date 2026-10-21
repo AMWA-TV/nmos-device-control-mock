@@ -33,6 +33,7 @@ export class Configuration implements IConfiguration
     public mxl_domain_id: string;
     public mxl_flow_id: string;
     public streaming_profile: StreamingProfile;
+    public annotations: { [id: string]: StoredAnnotation };
 
     @jsonIgnore()
     private configFilePath: string = './dist/server/config/config.json';
@@ -70,6 +71,9 @@ export class Configuration implements IConfiguration
 
         this.mxl_domain_id = config.mxl_domain_id ?? "auto";
         this.mxl_flow_id = config.mxl_flow_id ?? "auto";
+        this.annotations = {};
+        if(config.annotations && typeof config.annotations === 'object' && !Array.isArray(config.annotations))
+            this.annotations = config.annotations;
 
         if(this.outside_port == null || this.outside_port == undefined)
             this.outside_port = this.port;
@@ -182,18 +186,24 @@ export class Configuration implements IConfiguration
     public WriteConfig()
     {
         console.log('Configuration- Writing back config.json');
-        
-        writeFileAtomic(this.configFilePath, this.ToJson(), function (err) {
-            if (err)
-            {
-                console.log('Error writing file', err);
-            }
-            else
-            {
-                console.log('Successfully wrote file');
-            }
-        });
+
+        try
+        {
+            writeFileAtomic.sync(this.configFilePath, this.ToJson());
+            console.log('Successfully wrote file');
+        }
+        catch (err)
+        {
+            console.log('Error writing file', err);
+        }
     }
+}
+
+export interface StoredAnnotation
+{
+    label: string;
+    description: string;
+    tags: { [name: string]: string[] };
 }
 
 export interface IConfiguration
@@ -219,4 +229,5 @@ export interface IConfiguration
     mxl_domain_id: string | null;
     mxl_flow_id: string | null;
     streaming_profile: StreamingProfile | null;
+    annotations?: { [id: string]: StoredAnnotation } | null;
 }
