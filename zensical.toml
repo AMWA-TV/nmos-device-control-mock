@@ -1,0 +1,20 @@
+[project]
+site_name = "AMWA NMOS Device Control Mock Application"
+site_description = "AMWA NMOS Device Control Mock Application documentation"
+site_url = "https://specs.amwa.tv/nmos-device-control-mock/"
+repo_name = "AMWA-TV/nmos-device-control-mock"
+repo_url = "https://github.com/AMWA-TV/nmos-device-control-mock"
+
+[project.theme]
+features = ["navigation.footer"]
+
+[project.markdown_extensions.pymdownx.tabbed]
+alternate_style = true
+
+[project.markdown_extensions.pymdownx.superfences]
+
+[project.markdown_extensions.toc]
+permalink = false
+
+[project.extra.version]
+provider = "mike"
