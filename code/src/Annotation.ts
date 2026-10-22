@@ -171,7 +171,6 @@ async function patchResource(resource: NmosResource, req: Request, res: Response
 {
     console.log(`patch - ${req.url}, body: ${JSON.stringify(req.body)}`);
 
-    const previous = snapshotAnnotation(resource);
     const result = applyAnnotationPatch(resource, req.body);
     if(!result.ok)
     {
@@ -184,55 +183,14 @@ async function patchResource(resource: NmosResource, req: Request, res: Response
     const registered = await result.resource.registrationClient.RegisterOrUpdateResource(
         result.resource.registrationType,
         result.resource);
+
     if(!registered)
     {
-        restoreAnnotation(result.resource, previous);
-        sendError(
-            res,
-            500,
-            'Could not update the IS-04 registry',
-            `The Registration API did not accept ${result.resource.registrationType} ${result.resource.id}`);
-        return;
+        console.warn(`The Registration API did not accept ${result.resource.registrationType} ${result.resource.id}`);
     }
 
     store.Save(result.resource);
     sendJson(res, 200, result.resource.ToAnnotation());
-}
-
-interface AnnotationSnapshot
-{
-    label: string;
-    description: string;
-    tags: NmosTags;
-    version: string;
-    versionSeconds: string;
-    versionNanoSeconds: number;
-}
-
-function snapshotAnnotation(resource: NmosResource): AnnotationSnapshot
-{
-    const tags: NmosTags = {};
-    for(const name of Object.keys(resource.tags))
-        tags[name] = resource.tags[name].slice();
-
-    return {
-        label: resource.label,
-        description: resource.description,
-        tags: tags,
-        version: resource.version,
-        versionSeconds: resource.versionSeconds,
-        versionNanoSeconds: resource.versionNanoSeconds
-    };
-}
-
-function restoreAnnotation(resource: NmosResource, previous: AnnotationSnapshot)
-{
-    resource.label = previous.label;
-    resource.description = previous.description;
-    resource.tags = previous.tags;
-    resource.version = previous.version;
-    resource.versionSeconds = previous.versionSeconds;
-    resource.versionNanoSeconds = previous.versionNanoSeconds;
 }
 
 function applyAnnotationPatch(resource: NmosResource, body: unknown): AnnotationSuccess | AnnotationFailure
