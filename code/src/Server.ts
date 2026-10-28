@@ -36,6 +36,7 @@ import { NmosFlowVideoMXL } from './NmosFlowVideoMXL';
 import { NmosSourceVideoMXL } from './NmosSourceVideoMXL';
 import { NmosSenderMXL } from './NmosSenderMXL';
 import { NmosReceiverVideoMXL } from './NmosReceiverVideoMXL';
+import { AnnotationStore, registerAnnotationApi } from './Annotation';
 
 export interface WebSocketConnection extends WebSocket {
     isAlive: boolean;
@@ -589,6 +590,13 @@ try
 
     rootBlock.UpdateMembers([ deviceManager, classManager, bulkPropertiesManager, receiversBlock, sendersBlock, stereoGainBlock, exampleControlsBlock, identBeacon ]);
 
+    const annotationStore = new AnnotationStore(config);
+    for(const resource of [myNode, myDevice, mySource, myFlow, mySender, myReceiver])
+    {
+        if(resource)
+            annotationStore.Restore(resource);
+    }
+
     async function doAsync () {
         await registrationClient.RegisterOrUpdateResource('node', myNode);
         registrationClient.StartHeatbeats(myNode.id);
@@ -748,6 +756,7 @@ try
         res.write(JSON.stringify([ 
             'node/',
             'connection/',
+            'annotation/',
             'configuration/'
         ]));
         res.end();
@@ -1529,6 +1538,15 @@ try
             res.end();
         }
     })
+
+    registerAnnotationApi(app, {
+        self: myNode,
+        devices: [ myDevice ],
+        sources: mySource ? [ mySource ] : [],
+        flows: myFlow ? [ myFlow ] : [],
+        senders: mySender ? [ mySender ] : [],
+        receivers: myReceiver ? [ myReceiver ] : []
+    }, annotationStore);
 
     app.use((req, res, _next) => {
         //This applied to any invalid path
