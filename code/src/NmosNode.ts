@@ -57,11 +57,19 @@ export class NmosNode extends NmosResource
 
         this.caps = {};
 
-        this.services = [];
+        this.services = [
+            {
+                type: 'urn:x-nmos:service:annotation/v1.0',
+                href: `http://${address}:${port}/x-nmos/annotation/v1.0/`
+            }
+        ];
 
         this.api = new NmosApi(address, port);
 
         this.interfaces = interfaces;
+
+        this.registrationType = 'node';
+        this.CaptureAnnotationDefaults();
     }
 
     public ToJson()

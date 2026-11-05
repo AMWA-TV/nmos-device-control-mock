@@ -67,6 +67,9 @@ export class NmosDevice extends NmosResource
         this.controls = controls;
 
         this.type = 'urn:x-nmos:device:generic';
+
+        this.registrationType = 'device';
+        this.CaptureAnnotationDefaults();
     }
 
     public AddReceiver(receiver: NmosReceiver)
