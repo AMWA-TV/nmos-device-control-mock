@@ -25,6 +25,9 @@ export class NmosSource extends NmosResource
         
         this.tags = {};
         this.caps = {};
+
+        this.registrationType = 'source';
+        this.CaptureAnnotationDefaults();
     }
 
     public ToJson()
