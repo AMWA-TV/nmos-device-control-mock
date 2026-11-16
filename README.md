@@ -60,6 +60,8 @@ These are the configuration keys which can be specified in the configuration fil
 * streaming_profile - enum option `[RTP_RAW, RTP_MPEG_TS, MXL]` specifying the streaming profile of senders and receivers (default is `RTP_RAW`)
 * outside_port - allows users to configure the port used in the NMOS APIs which might be different than the server binding port when running inside a container due to port mappings
 
+IS-13 annotation updates are stored in the `annotations` object in `config.json` and restored on startup for each resource id.
+
 ## Working with MXL
 
 When specifically working with MXL as a transport the `streaming_profile` has to be set to `MXL`.
@@ -100,6 +102,7 @@ docker compose -p nmos-control up -d
 * [AMWA IS-04 NMOS Discovery and Registration](https://specs.amwa.tv/is-04)
 * [AMWA IS-05 NMOS Device Connection Management](https://specs.amwa.tv/is-05)
 * [AMWA IS-12 NMOS Control Protocol](https://specs.amwa.tv/is-12)
+* [AMWA IS-13 NMOS Annotation](https://specs.amwa.tv/is-13/)
 * [AMWA IS-14 NMOS Device Configuration](https://specs.amwa.tv/is-14/)
 * [AMWA MS-05-01 NMOS Control Architecture](https://specs.amwa.tv/ms-05-01)
 * [AMWA MS-05-02 NMOS Control Framework](https://specs.amwa.tv/ms-05-02)

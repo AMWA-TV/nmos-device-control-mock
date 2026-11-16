@@ -1,7 +1,7 @@
 import { TAI64 } from "tai64";
 
 import { jsonIgnoreReplacer } from 'json-ignore';
-import axios, { AxiosResponse } from 'axios';
+import axios from 'axios';
 
 export class RegistrationClient
 {
@@ -37,18 +37,19 @@ export class RegistrationClient
         }, 4000);
     }
 
-    public async RegisterOrUpdateResource<NmosResource>(resourceType: string, resource: NmosResource) : Promise<AxiosResponse | null>
+    public async RegisterOrUpdateResource<NmosResource>(resourceType: string, resource: NmosResource) : Promise<boolean>
     {
         try 
         {
             if(this.work_without_registry)
-                return null;
+                return true;
 
-            console.log(`RegistrationClient - RegisterOrUpdateResource(resourceType:${resourceType})`);
+            const described = resource as { id?: string, version?: string };
+            console.log(`RegistrationClient - RegisterOrUpdateResource(resourceType:${resourceType}, id:${described.id}, version:${described.version})`);
 
             let payload = new RegisterResourceMsg(resourceType, resource);
 
-            return await axios.post<NmosResource>(
+            await axios.post<NmosResource>(
                 `http://${this.registry_address}:${this.registry_port}/x-nmos/registration/v1.3/resource`,
                 payload.ToJson(), 
                 {
@@ -56,11 +57,13 @@ export class RegistrationClient
                         'Content-Type': 'application/json'
                     }
                 });
+
+            return true;
         }
         catch (error) 
         {
             console.log(error);
-                return null;
+            return false;
         }
     }
 

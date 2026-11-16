@@ -48,6 +48,9 @@ export abstract class NmosSender extends NmosResource
         this.tags = {};
         this.caps = {};
 
+        this.registrationType = 'sender';
+        this.CaptureAnnotationDefaults();
+
         this.active = null;
         this.staged = null;
         this.constraints = [];
