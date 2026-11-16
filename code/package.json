@@ -24,7 +24,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "axios": "^1.21.0",
+    "axios": "^1.21.1",
     "cors": "^2.8.6",
     "express": "^5.3.0",
     "json-ignore": "^0.4.0",
@@ -35,17 +35,17 @@
     "uuid": "^14.0.3",
     "wait-on": "^9.5.1",
     "write-file-atomic": "^8.0.0",
-    "ws": "^8.22.1"
+    "ws": "^8.23.0"
   },
   "devDependencies": {
     "@types/express": "^5.0.6",
     "@types/node": "^26.6.6",
     "@types/sdp-transform": "^3.0.0",
     "@types/ws": "^8.18.2",
-    "@typescript-eslint/eslint-plugin": "^8.72.1",
+    "@typescript-eslint/eslint-plugin": "^8.72.2",
     "@typescript-eslint/parser": "^8.46.0",
     "eslint": "^10.14.0",
-    "concurrently": "^10.0.6",
+    "concurrently": "^10.0.7",
     "nodemon": "^3.1.14",
     "rimraf": "^6.1.4",
     "typescript": "^6.0.3"
